@@ -4,6 +4,7 @@ inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/planning-artifacts/technical-research-pieces-2026-02-27.md
   - _bmad-output/planning-artifacts/domain-research-pieces-2026-02-27.md
+  - _bmad-output/planning-artifacts/ux-design-specification.md
 workflowType: 'architecture'
 lastStep: 8
 status: 'complete'
@@ -515,7 +516,10 @@ type JobType =
   | 'NOTIFICATION.SEND_WHATSAPP' // template WhatsApp
   | 'NOTIFICATION.SEND_PUSH'     // Push PWA
   | 'ORDER.CHECK_TIMEOUT'        // vérifier expiration
+  | 'ORDER.LOCK_PRICE_EXPIRE'   // expiration verrouillage prix 2h (UX spec)
   | 'PAYMENT.VERIFY_STATUS'      // polling CinetPay
+  | 'SUPPORT.ESCALATE'          // escalade humaine <2min (identification IA échouée)
+  // Note : analytics events ne passent PAS par pgqueue — INSERT direct dans table analytics_events (fire-and-forget, agrégation par cron quotidien)
 
 interface Job<T = unknown> {
   id: string           // UUID
@@ -599,6 +603,15 @@ class AppError extends Error {
 6. Requêtes API : header `Authorization: Bearer {access_token}`
 7. Fastify preHandler : `supabase.auth.getUser(token)` → role → attach to request
 
+**UX-Driven Business Rules (from UX Spec):**
+- Prix verrouillé 2h : `order.service` crée un `ORDER.LOCK_PRICE_EXPIRE` job pgqueue à +2h lors de l'envoi des résultats. Après expiration, les prix sont recalculés au prochain accès
+- Mode Pause vendeur : flag `is_paused` sur le modèle Seller. Quand `true`, ses pièces n'apparaissent pas dans les résultats de recherche. Toggle via `PATCH /api/v1/sellers/:id/pause`
+- Note séparée : `SellerReview` (qualité pièce, lié à `sellerId`) ≠ `DeliveryReview` (rapidité livraison, lié à `riderId`). Deux tables distinctes, deux moyennes indépendantes
+- Escalade humaine : quand `vision.service` retourne `confidence < threshold` ET désambiguïsation échoue, `SUPPORT.ESCALATE` job pgqueue créé. Dashboard admin `/admin/support` poll toutes les 10s les jobs `SUPPORT.ESCALATE` non résolus. SLA : réponse < 2 min
+- Score de confiance bout-en-bout : chaque `SearchResult` inclut un `confidenceChain: { photoQuality: 0-1, catalogQuality: 0-1, aiConfidence: 0-1, overall: min(3) }`. Le maillon le plus faible détermine le score global. Utilisé pour : tri résultats, décision désambiguïsation, alertes qualité catalogue vendeur. Le `photoQuality` est transmis par le client dans le payload upload : `POST /api/v1/vision/identify` body `{ image: File, photoQualityScore?: number }`. Si absent (WhatsApp, pas de pré-check client), `vision.service` estime la qualité depuis l'image brute (analyse luminosité/netteté côté serveur, fallback)
+- SystemHealth : `lib/systemHealth.ts` track l'état des dépendances critiques (`gemini`, `cinetpay`, `whatsapp`, `dbLoad`) via health checks périodiques (30s). État courant en mémoire (Map avec TTL 30s, refresh automatique). Changements d'état persistés dans table `system_health_events` (INSERT quand état change : `up→degraded`, `degraded→down`, `down→up`). Grace period calculé par query : `SELECT duration FROM system_health_events WHERE service = X AND status != 'up'`. Quand une dépendance est `degraded` ou `down` : (1) `StatusPageBanner` affiché côté PWA via `GET /api/v1/health/status`, (2) les jobs `ORDER.CHECK_TIMEOUT` ajoutent un grace period automatique proportionnel à la durée de panne, (3) mode dégradé activé dans `whatsapp.bot.ts` (fallback texte/COD)
+- Modèle Location partagé : `Location { id, gps: {lat, lng}, plusCode?, description, photoUrl?, signals: Signal[], createdBy, updatedAt }`. Enrichi par Aya (onboarding) et Moussa (livraison). Signalements terrain bidirectionnels : "vendeur fermé", "adresse incorrecte", "nouveau prospect". Table `locations` + table `location_signals`
+
 **Validation Timing :**
 - Client (React Hook Form + Zod) → feedback immédiat UX
 - API (Zod schema route) → validation complète
@@ -617,6 +630,7 @@ class AppError extends Error {
 7. Utiliser `apiClient` modulaire de `packages/shared/api-client/` (jamais `fetch` nu)
 8. Utiliser `queryKeys` factory de `packages/shared/query-keys.ts` pour TanStack Query
 9. Utiliser `formatCfa()` de `packages/shared/formatters/price.ts` pour montants FCFA
+10. Utiliser des clés i18n (fichier JSON) pour toutes les chaînes UI — jamais de strings en dur dans les composants. Prépare le support Dioula/Anglais Phase 2 sans refactoring
 
 **Enforcement ESLint Automatique :**
 - `no-console` → bloque `console.log` → force Pino
@@ -636,6 +650,7 @@ class AppError extends Error {
 | `localStorage.setItem('token', ...)` | Supabase SDK gère les tokens |
 | `queryKey: ['orders', id]` ad hoc | `queryKey: queryKeys.orders.detail(id)` |
 | `15000 + ' FCFA'` | `formatCfa(15000)` → "15 000 F CFA" |
+| `<Button>Commander</Button>` string en dur | `<Button>{t('order.confirm')}</Button>` via clé i18n JSON |
 
 ## Project Structure & Boundaries
 
@@ -727,7 +742,8 @@ pieces/                              # Racine monorepo Turborepo
 │   │   │   │   ├── Card.tsx
 │   │   │   │   ├── Badge.tsx
 │   │   │   │   ├── Skeleton.tsx
-│   │   │   │   └── OfflineBanner.tsx
+│   │   │   │   ├── OfflineBanner.tsx
+│   │   │   └── StatusPageBanner.tsx          # Mode dégradé : WhatsApp/CinetPay/IA down
 │   │   │   ├── order/
 │   │   │   │   ├── OrderCard.tsx
 │   │   │   │   ├── OrderCard.test.tsx
@@ -735,17 +751,30 @@ pieces/                              # Racine monorepo Turborepo
 │   │   │   │   ├── OrderTimeline.tsx
 │   │   │   │   └── OwnerChoiceForm.tsx         # RSC form
 │   │   │   ├── catalog/
-│   │   │   │   ├── PartCard.tsx
+│   │   │   │   ├── PartCard.tsx                # aka PieceResultCard (UX spec)
 │   │   │   │   ├── PartSearch.tsx
 │   │   │   │   ├── VehicleSelector.tsx
-│   │   │   │   └── ImageUpload.tsx
+│   │   │   │   ├── BrandLogoGrid.tsx           # Grille logos marques tapables
+│   │   │   │   └── ComparisonIndicators.tsx     # "Moins cher ✅", "Mieux noté ⭐"
+│   │   │   ├── identification/
+│   │   │   │   ├── PhotoCapture.tsx             # Stream caméra + pré-check qualité
+│   │   │   │   ├── PhotoCapture.test.tsx
+│   │   │   │   ├── DisambiguationPicker.tsx     # 4-5 images IA, RadioGroup 48px+
+│   │   │   │   ├── DisambiguationPicker.test.tsx
+│   │   │   │   ├── IdentificationFunnel.tsx     # useReducer machine à état (photo→VIN→disambig→humain)
+│   │   │   │   └── IdentificationFunnel.test.tsx
+│   │   │   ├── vendor/
+│   │   │   │   ├── PhotoBulkUploader.tsx        # Upload masse offline + score qualité
+│   │   │   │   ├── PhotoBulkUploader.test.tsx
+│   │   │   │   └── VendorProfileSheet.tsx       # Sheet fiche vendeur enrichie >25K
 │   │   │   ├── payment/
 │   │   │   │   ├── CinetPayButton.tsx
 │   │   │   │   └── PaymentStatus.tsx
 │   │   │   ├── delivery/
 │   │   │   │   ├── TrackingMap.tsx              # SSE GPS
 │   │   │   │   ├── DeliveryCard.tsx
-│   │   │   │   └── RiderConfirmation.tsx
+│   │   │   │   ├── RiderConfirmation.tsx
+│   │   │   │   └── RiderDeliveryScreen.tsx      # Mini-app rider : QR, GPS, checkpoints
 │   │   │   ├── review/
 │   │   │   │   ├── RatingForm.tsx
 │   │   │   │   └── BadgeDisplay.tsx
@@ -810,11 +839,16 @@ pieces/                              # Racine monorepo Turborepo
 │       │   │   │   ├── delivery.service.ts
 │       │   │   │   ├── delivery.service.test.ts
 │       │   │   │   └── delivery.sse.ts         # SSE GPS tracking
+│       │   │   ├── location/
+│       │   │   │   ├── location.routes.ts     # CRUD locations partagées (Aya + Moussa + admin)
+│       │   │   │   ├── location.routes.test.ts
+│       │   │   │   └── location.service.ts    # Enrichissement terrain + signalements bidirectionnels
 │       │   │   ├── vision/
-│       │   │   │   ├── vision.routes.ts        # Upload image → identification
+│       │   │   │   ├── vision.routes.ts        # Upload image → identification + disambiguation
 │       │   │   │   ├── vision.routes.test.ts
-│       │   │   │   ├── vision.service.ts       # Gemini Flash API call
-│       │   │   │   └── vision.service.test.ts
+│       │   │   │   ├── vision.service.ts       # Gemini Flash API call + disambiguation candidates
+│       │   │   │   ├── vision.service.test.ts
+│       │   │   │   └── vision.disambiguation.ts # Logique sélection 4-5 images candidates confiance faible
 │       │   │   ├── whatsapp/
 │       │   │   │   ├── whatsapp.webhook.ts     # Webhook entry point
 │       │   │   │   ├── whatsapp.webhook.test.ts
@@ -824,18 +858,25 @@ pieces/                              # Racine monorepo Turborepo
 │       │   │   │   ├── notification.service.ts # Multi-canal dispatch
 │       │   │   │   └── notification.service.test.ts
 │       │   │   ├── review/
-│       │   │   │   ├── review.routes.ts
+│       │   │   │   ├── review.routes.ts         # Note séparée : vendeur (qualité pièce) ≠ rider (rapidité)
 │       │   │   │   ├── review.routes.test.ts
-│       │   │   │   ├── review.service.ts
+│       │   │   │   ├── review.service.ts        # 2 entités : SellerReview + DeliveryReview
 │       │   │   │   └── review.service.test.ts
 │       │   │   ├── admin/
 │       │   │   │   ├── admin.routes.ts
 │       │   │   │   └── admin.routes.test.ts
 │       │   │   ├── support/
 │       │   │   │   ├── support.routes.ts
-│       │   │   │   └── support.service.ts
+│       │   │   │   ├── support.service.ts
+│       │   │   │   └── support.escalation.ts    # Queue escalade humaine <2min : pgqueue SUPPORT.ESCALATE → dashboard admin polling 10s
+│       │   │   ├── onboarding/
+│       │   │   │   ├── onboarding.routes.ts     # Session photo bulk, validation fiches, signature
+│       │   │   │   ├── onboarding.routes.test.ts
+│       │   │   │   └── onboarding.service.ts    # CRM prospects, check-in J+3/J+7, dashboard agente
 │       │   │   └── analytics/
-│       │   │       └── analytics.routes.ts
+│       │   │       ├── analytics.routes.ts
+│       │   │       ├── analytics.funnel.ts     # INSERT direct analytics_events (fire-and-forget, pas pgqueue)
+│       │   │       └── analytics.cron.ts       # Agrégation quotidienne : funnel metrics, taux conversion, top pièces
 │       │   ├── queue/
 │       │   │   ├── queueService.ts             # Interface abstraite pgqueue
 │       │   │   ├── queueService.test.ts
@@ -852,7 +893,8 @@ pieces/                              # Racine monorepo Turborepo
 │       │       ├── cinetpay.ts                 # CinetPay SDK wrapper
 │       │       ├── gemini.ts                   # Gemini Flash API wrapper
 │       │       ├── whatsappApi.ts              # WhatsApp Cloud API wrapper
-│       │       └── appError.ts                 # AppError class
+│       │       ├── appError.ts                 # AppError class
+│       │       └── systemHealth.ts             # Track état dépendances (Gemini/CinetPay/WhatsApp/DB) + grace period timers
 │       └── __tests__/
 │           └── integration/                    # Tests d'intégration API
 │               ├── auth.integration.test.ts
@@ -877,7 +919,9 @@ pieces/                              # Racine monorepo Turborepo
         │   ├── order.ts                    # OrderStatus, Order, OrderEvent
         │   ├── money.ts                    # Money { amount, currency }
         │   ├── roles.ts                    # Role enum, RolePermissions
-        │   └── jobs.ts                     # JobType, Job<T>
+        │   ├── jobs.ts                     # JobType, Job<T>
+        │   ├── location.ts                 # Location { gps, description, photo, signals }
+        │   └── search.ts                   # SearchResult + ConfidenceChain
         ├── constants/
         │   ├── orderStatuses.ts
         │   ├── roles.ts
@@ -921,6 +965,7 @@ WhatsApp Cloud API
 - Modules communiquent via **services** (import direct), jamais via requête HTTP interne
 - `notification.service` est appelé par `order.service`, `payment.service`, `delivery.service` — pas l'inverse
 - `queue/queueService` est le seul point d'accès à la table `jobs`
+- **`whatsapp.bot.ts` est un contrôleur alternatif** — il a la même autorité que les routes API pour déclencher des transitions d'état commande. Pattern : `whatsapp.bot.ts` appelle `order.service.transition()` exactement comme `order.routes.ts`. Les réponses utilisateur ("1", "2", "O", "P+numéro") sont des commandes, pas des messages
 
 **Data Boundaries :**
 - Prisma client unique (`lib/prisma.ts`) — tous les modules l'utilisent
@@ -992,7 +1037,7 @@ Les patterns d'implémentation soutiennent toutes les décisions architecturales
 - AppError class utilisé uniformément dans tous les modules Fastify
 - TanStack Query key factory dans packages/shared garantit la cohérence cache
 - ESLint rules (no-console, no-restricted-syntax, no-restricted-imports) appliquées par CI
-- 28 zones de conflit identifiées et résolues avec des patterns explicites
+- 40 zones de conflit identifiées et résolues avec des patterns explicites (28 originales + 12 corrections UX cross-document)
 
 **Structure Alignment:**
 La structure du projet soutient toutes les décisions architecturales :
@@ -1045,7 +1090,7 @@ La structure du projet soutient toutes les décisions architecturales :
 - ✅ Exemples fournis pour tous les patterns majeurs (AppError, query keys, state machine, pgqueue jobs)
 
 **Structure Completeness:**
-- ✅ Structure projet complète (~120 fichiers et répertoires définis)
+- ✅ Structure projet complète (~140 fichiers et répertoires définis)
 - ✅ Tous les fichiers et répertoires définis avec rôle explicite
 - ✅ Points d'intégration clairement spécifiés (6 services externes)
 - ✅ Boundaries de composants bien définies (API, Module, Data)
@@ -1091,7 +1136,7 @@ La structure du projet soutient toutes les décisions architecturales :
 - [x] Patterns de processus documentés (error handling, validation, auth)
 
 **✅ Project Structure**
-- [x] Structure répertoire complète définie (~120 fichiers)
+- [x] Structure répertoire complète définie (~140 fichiers)
 - [x] Boundaries de composants établies (API, Module, Data)
 - [x] Points d'intégration mappés (6 services externes)
 - [x] Mapping requirements → structure complet (10 catégories FR)
@@ -1104,7 +1149,7 @@ La structure du projet soutient toutes les décisions architecturales :
 - 0 gaps critiques identifiés
 - Toutes les 63 FRs mappées à des modules architecturaux
 - Toutes les 12 NFRs clés adressées par des solutions techniques
-- 28 zones de conflit résolues avec patterns explicites
+- 40 zones de conflit résolues avec patterns explicites (28 + 12 UX cross-document)
 - Validation ADR complète (3 débats architecturaux résolus)
 
 **Key Strengths:**
@@ -1121,6 +1166,24 @@ La structure du projet soutient toutes les décisions architecturales :
 - Load testing scripts k6/Artillery post-MVP
 - Pipeline CI/CD avancé (preview deployments, staged rollouts)
 
+### UX Cross-Document Alignment (Post-Completion Review)
+
+**Corrections appliquées après intégration du UX Design Specification :**
+
+1. **Composants UX custom** — 9 fichiers ajoutés (PhotoCapture, DisambiguationPicker, IdentificationFunnel, PhotoBulkUploader, RiderDeliveryScreen, BrandLogoGrid, ComparisonIndicators, VendorProfileSheet, StatusPageBanner)
+2. **Route désambiguïsation** — `vision.disambiguation.ts` pour candidats IA confiance faible
+3. **Escalade humaine** — `support.escalation.ts` avec pgqueue SUPPORT.ESCALATE + dashboard polling 10s
+4. **Note séparée** — `SellerReview` (qualité pièce) ≠ `DeliveryReview` (rapidité rider)
+5. **Mode Pause vendeur** — flag `is_paused` + route `PATCH /sellers/:id/pause`
+6. **Prix verrouillé 2h** — job `ORDER.LOCK_PRICE_EXPIRE` pgqueue
+7. **i18n** — Clés JSON obligatoires, jamais de strings en dur
+8. **ConfidenceChain** — Score bout-en-bout photo→catalogue→IA sur chaque SearchResult
+9. **WhatsApp contrôleur** — `whatsapp.bot.ts` = contrôleur alternatif avec même autorité que routes API
+10. **SystemHealth** — Health checks 30s + grace period timers + table `system_health_events`
+11. **Modèle Location** — Module `location/` partagé Aya↔Moussa (GPS + description + signalements)
+12. **Analytics funnel** — INSERT direct `analytics_events` (fire-and-forget) + cron agrégation quotidien
+13. **Module onboarding** — `onboarding/` pour agent terrain (session bulk, CRM, check-in J+3/J+7)
+
 ### Implementation Handoff
 
 **AI Agent Guidelines:**
@@ -1128,7 +1191,7 @@ La structure du projet soutient toutes les décisions architecturales :
 - Utiliser les patterns d'implémentation de manière cohérente dans tous les composants
 - Respecter la structure projet et les boundaries
 - Se référer à ce document pour toutes les questions architecturales
-- Consulter les 28 zones de conflit avant chaque implémentation
+- Consulter les 40 zones de conflit avant chaque implémentation (28 originales + 12 UX cross-document)
 
 **First Implementation Priority:**
 ```bash
