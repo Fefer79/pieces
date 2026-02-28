@@ -2,6 +2,10 @@
 stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-02b-vision', 'step-02c-executive-summary', 'step-03-success', 'step-04-journeys', 'step-05-domain', 'step-06-innovation', 'step-07-project-type', 'step-08-scoping', 'step-09-functional', 'step-10-nonfunctional', 'step-11-polish', 'step-12-complete']
 workflowStatus: 'complete'
 completedDate: '2026-02-28'
+lastEdited: '2026-02-28'
+editHistory:
+  - date: '2026-02-28'
+    changes: 'FR3 leakage fix (NHTSA VPIC/CarQuery → service VIN standardisé), FR10 clarification (multi-références + en un seul envoi), ajout §Prévention Fraude & Confiance dans §Domain-Specific Requirements'
 inputDocuments:
   - _bmad-output/brainstorming/brainstorming-session-2026-02-26.md
   - _bmad-output/planning-artifacts/domain-research-pieces-2026-02-27.md
@@ -397,6 +401,24 @@ Le marché ivoirien des pièces auto est estimé à 400–650 M USD, avec une cr
 | WhatsApp Cloud API | Bot mécanicien + notifications | Meta for Business |
 | ARTCI | Déclaration traitement données | Démarche administrative (60j avant J0) |
 
+### Prévention Fraude & Confiance
+
+**KYC Vendeur — Onboarding**
+- Vendeurs formels : RCCM obligatoire — numéro collecté, affiché sur le profil vendeur comme signal de confiance public
+- Vendeurs informels (Adjamé et marchés) : CNI ou carte de résident — scan ou photo lors de l'onboarding terrain
+- Vérification visuelle RCCM par l'agent Pièces lors des premiers onboardings Adjamé — anti-fraude onboarding
+
+**Modèle Escrow — Protection Acheteur**
+- Les fonds de l'acheteur sont séquestrés dès la commande (FR18) et libérés au vendeur uniquement à confirmation de livraison
+- Annulation ou litige tranché en faveur de l'acheteur → remboursement intégral automatique (FR59)
+- Point de vigilance : confirmer avec CinetPay que la rétention prolongée est couverte par sa licence PSP (voir §Compliance BCEAO)
+
+**Badge "Bon Mécano" — Anti-Manipulation par Design**
+- Décerné algorithmiquement : ≥ 4,2/5 de note moyenne sur ≥ 10 commandes évaluées par les propriétaires (FR42)
+- Révoqué automatiquement si la note descend sous le seuil sur fenêtre glissante (FR62)
+- Critères publics, non-négociables, sans intermédiaire humain — la transparence des règles est elle-même un mécanisme anti-manipulation
+- **Phase 2 :** Anti-manipulation notes multi-compte (détection commandes depuis le même numéro/appareil) — faible risque avec 50 mécaniciens pilotes MVP
+
 ### Risques & Mitigations Domaine
 
 | Risque | Probabilité | Impact | Mitigation |
@@ -714,14 +736,14 @@ Les fonctionnalités suivantes seront exécutées manuellement par l'équipe Pi�
 
 - FR1: Le mécanicien peut envoyer une photo de pièce via WhatsApp pour obtenir une liste de correspondances filtrées par véhicule
 - FR2: Le bot peut extraire le VIN d'une photo de carte grise ivoirienne via OCR
-- FR3: Le système peut décoder un VIN pour identifier le véhicule exact (marque, modèle, motorisation, année) via NHTSA VPIC et CarQuery API
+- FR3: Le système peut décoder un VIN pour identifier le véhicule exact (marque, modèle, motorisation, année) via un service de décodage VIN standardisé (international + véhicules européens)
 - FR4: Le mécanicien peut saisir manuellement un VIN en fallback si la photo de carte grise est illisible
 - FR5: Le mécanicien peut naviguer dans le catalogue par marque → modèle → année → catégorie depuis la PWA
 - FR6: Le mécanicien peut rechercher une pièce par numéro de référence OEM dans la PWA
 - FR7: La PWA peut mémoriser et pré-remplir le profil du dernier véhicule utilisé
 - FR8: Le vendeur peut générer automatiquement des fiches catalogue en envoyant des photos de ses pièces en stock
 - FR9: Le vendeur peut valider, ajuster les prix et confirmer le stock de ses fiches catalogue générées par IA
-- FR10: Le mécanicien peut ajouter plusieurs pièces de plusieurs véhicules dans un même panier et déclencher une livraison consolidée
+- FR10: Le mécanicien peut ajouter des pièces de différents véhicules dans un même panier (multi-références) et déclencher une livraison consolidée en un seul envoi
 - FR54: Le vendeur peut mettre à jour ses prix et son stock à tout moment sans validation admin (mise à jour automatique en temps réel)
 - FR55: Le vendeur peut configurer les zones géographiques dans lesquelles il accepte de livrer
 - FR50: Le mécanicien peut enregistrer une demande pour une pièce absente du catalogue et être notifié quand un vendeur l'ajoute (Phase 2)
