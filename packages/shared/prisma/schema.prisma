@@ -180,3 +180,11 @@ model Job {
   @@map("jobs")
   @@index([status, type], name: "idx_jobs_status_type")
 }
+
+model SearchSynonym {
+  id         String @id @default(uuid())
+  typo       String @unique
+  correction String
+
+  @@map("search_synonyms")
+}

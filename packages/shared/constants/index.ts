@@ -1,2 +1,5 @@
 export { ABIDJAN_COMMUNES } from './communes'
 export type { AbidjanCommune } from './communes'
+export { VEHICLE_BRANDS, BRAND_NAMES } from './vehicles'
+export { PART_CATEGORIES } from './categories'
+export type { PartCategory } from './categories'
