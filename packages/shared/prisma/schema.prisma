@@ -34,6 +34,7 @@ model User {
   sellerReviews        SellerReview[] @relation("SellerReviewer")
   deliveryReviews      DeliveryReview[] @relation("DeliveryReviewer")
   disputes             Dispute[] @relation("DisputeOpener")
+  notificationPreference NotificationPreference?
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -406,4 +407,17 @@ model EscrowTransaction {
   refundedAt DateTime?   @map("refunded_at")
 
   @@map("escrow_transactions")
+}
+
+model NotificationPreference {
+  id        String  @id @default(uuid())
+  userId    String  @unique @map("user_id")
+  user      User    @relation(fields: [userId], references: [id])
+  whatsapp  Boolean @default(true)
+  sms       Boolean @default(false)
+  push      Boolean @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_preferences")
 }
