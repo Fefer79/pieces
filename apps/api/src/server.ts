@@ -8,6 +8,7 @@ import { setupErrorHandler } from './plugins/errorHandler.js'
 import { auth } from './plugins/auth.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { userRoutes } from './modules/user/user.routes.js'
+import { consentRoutes } from './modules/consent/consent.routes.js'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -37,6 +38,7 @@ export function buildApp() {
   // Routes
   fastify.register(authRoutes, { prefix: '/api/v1/auth' })
   fastify.register(userRoutes, { prefix: '/api/v1/users' })
+  fastify.register(consentRoutes, { prefix: '/api/v1/users' })
 
   return fastify
 }

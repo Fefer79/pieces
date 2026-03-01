@@ -22,9 +22,30 @@ model User {
   phone         String   @unique
   roles         Role[]
   activeContext  Role?    @map("active_context")
+  consentedAt   DateTime? @map("consented_at")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
+  dataDeletionRequests DataDeletionRequest[]
+
   @@map("users")
   @@index([phone], name: "idx_users_phone")
+}
+
+enum DeletionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model DataDeletionRequest {
+  id          String                @id @default(uuid())
+  userId      String                @map("user_id")
+  user        User                  @relation(fields: [userId], references: [id])
+  status      DeletionRequestStatus @default(PENDING)
+  requestedAt DateTime              @default(now()) @map("requested_at")
+  processedAt DateTime?             @map("processed_at")
+
+  @@map("data_deletion_requests")
+  @@index([userId], name: "idx_data_deletion_requests_user")
 }

@@ -44,6 +44,7 @@ function mockAuthUser(overrides?: Record<string, unknown>) {
     phone: '+2250700000000',
     roles: ['MECHANIC'],
     activeContext: 'MECHANIC',
+    consentedAt: null,
     ...overrides,
   })
 }

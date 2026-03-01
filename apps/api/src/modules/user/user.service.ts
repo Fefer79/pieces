@@ -6,7 +6,7 @@ import type { Role } from 'shared/types'
 export async function getProfile(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, phone: true, roles: true, activeContext: true },
+    select: { id: true, phone: true, roles: true, activeContext: true, consentedAt: true },
   })
 
   if (!user) {

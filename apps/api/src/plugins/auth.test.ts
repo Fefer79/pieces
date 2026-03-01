@@ -53,6 +53,7 @@ describe('requireAuth', () => {
       phone: '+2250700000000',
       roles: ['MECHANIC'],
       activeContext: null,
+      consentedAt: null,
     })
     mockUpdate.mockResolvedValueOnce({})
 
@@ -64,13 +65,14 @@ describe('requireAuth', () => {
       phone: '+2250700000000',
       roles: ['MECHANIC'],
       activeContext: 'MECHANIC',
+      consentedAt: null,
     })
     expect(mockGetUser).toHaveBeenCalledWith('valid-token')
     expect(mockUpsert).toHaveBeenCalledWith({
       where: { supabaseId: 'supabase-123' },
       update: {},
       create: { supabaseId: 'supabase-123', phone: '+2250700000000', roles: ['MECHANIC'] },
-      select: { id: true, phone: true, roles: true, activeContext: true },
+      select: { id: true, phone: true, roles: true, activeContext: true, consentedAt: true },
     })
     // Auto-set activeContext for single role user
     expect(mockUpdate).toHaveBeenCalledWith({

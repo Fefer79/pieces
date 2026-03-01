@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 
 type SupabaseClient = ReturnType<typeof createClient>
@@ -181,6 +182,14 @@ export default function ProfilePage() {
           </div>
         </section>
       )}
+
+      <Link
+        href="/profile/data"
+        className="mb-4 block w-full rounded-lg border border-gray-200 px-4 py-3 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+        style={{ minHeight: '48px', lineHeight: '28px' }}
+      >
+        Mes données personnelles
+      </Link>
 
       <button
         onClick={handleLogout}

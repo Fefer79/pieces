@@ -12,6 +12,7 @@ declare module 'fastify' {
       phone: string
       roles: Role[]
       activeContext: Role | null
+      consentedAt: string | null
     }
   }
 }
@@ -43,7 +44,7 @@ export async function requireAuth(request: FastifyRequest) {
       phone: data.user.phone ?? '',
       roles: ['MECHANIC'],
     },
-    select: { id: true, phone: true, roles: true, activeContext: true },
+    select: { id: true, phone: true, roles: true, activeContext: true, consentedAt: true },
   })
 
   // Auto-set activeContext if single role and not yet set
@@ -60,6 +61,17 @@ export async function requireAuth(request: FastifyRequest) {
     phone: user.phone,
     roles: user.roles as Role[],
     activeContext: (user.activeContext as Role) ?? null,
+    consentedAt: user.consentedAt?.toISOString() ?? null,
+  }
+}
+
+export async function requireConsent(request: FastifyRequest) {
+  if (!request.user) {
+    throw new AppError('AUTH_MISSING_TOKEN', 401)
+  }
+
+  if (!request.user.consentedAt) {
+    throw new AppError('CONSENT_REQUIRED', 403)
   }
 }
 
