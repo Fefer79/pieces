@@ -54,7 +54,8 @@
     "deep-dive-manuel-mecanicien.md",
     "deep-dive-manuel-livreur.md",
     "deep-dive-manuel-proprietaire.md",
-    "deep-dive-manuel-entreprise.md"
+    "deep-dive-manuel-entreprise.md",
+    "deep-dive-manuel-client.md"
   ],
   "deep_dive_targets": [
     {"target_name": "Manuel administrateur", "target_path": "admin feature (cross-module)", "files_analyzed": 16, "output_file": "deep-dive-manuel-administrateur.md", "timestamp": "2026-03-01T13:00:00Z"},
@@ -62,7 +63,8 @@
     {"target_name": "Manuel mécanicien", "target_path": "mechanic feature (cross-module)", "files_analyzed": 25, "output_file": "deep-dive-manuel-mecanicien.md", "timestamp": "2026-03-01T20:00:00Z"},
     {"target_name": "Manuel livreur", "target_path": "rider feature (cross-module)", "files_analyzed": 18, "output_file": "deep-dive-manuel-livreur.md", "timestamp": "2026-03-01T21:00:00Z"},
     {"target_name": "Manuel propriétaire", "target_path": "owner feature (cross-module)", "files_analyzed": 10, "output_file": "deep-dive-manuel-proprietaire.md", "timestamp": "2026-03-01T22:00:00Z"},
-    {"target_name": "Manuel entreprise", "target_path": "enterprise feature (cross-module)", "files_analyzed": 8, "output_file": "deep-dive-manuel-entreprise.md", "timestamp": "2026-03-01T23:00:00Z"}
+    {"target_name": "Manuel entreprise", "target_path": "enterprise feature (cross-module)", "files_analyzed": 8, "output_file": "deep-dive-manuel-entreprise.md", "timestamp": "2026-03-01T23:00:00Z"},
+    {"target_name": "Manuel client", "target_path": "buyer feature (cross-module)", "files_analyzed": 30, "output_file": "deep-dive-manuel-client.md", "timestamp": "2026-03-01T23:30:00Z"}
   ],
-  "resume_instructions": "Workflow completed. 6 deep-dives generated."
+  "resume_instructions": "Workflow completed. 7 deep-dives generated."
 }

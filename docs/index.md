@@ -78,6 +78,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 - [Manuel d'utilisation livreur](./deep-dive-manuel-livreur.md) — Guide complet pour les livreurs (assignations, ramassage, transit, livraison, COD, client absent, GPS, avis) — Généré 2026-03-01
 - [Manuel d'utilisation propriétaire](./deep-dive-manuel-proprietaire.md) — Guide complet pour les propriétaires de véhicules (lien de paiement, mobile money, COD, escrow, suivi commande) — Généré 2026-03-01
 - [Manuel d'utilisation entreprise](./deep-dive-manuel-entreprise.md) — Guide complet pour les gestionnaires de flotte (stub v1, vision Phase 2 : dashboard flotte, gestion membres tenant, workflow approbation, facturation consolidée) — Généré 2026-03-01
+- [Manuel d'utilisation client](./deep-dive-manuel-client.md) — Guide complet pour les acheteurs particuliers (recherche texte/photo IA/VIN, garage, commande directe, paiement mobile/COD, escrow, livraison, évaluations, litiges) — Généré 2026-03-01
 
 ---
 
