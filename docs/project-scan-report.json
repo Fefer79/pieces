@@ -58,7 +58,8 @@
     "deep-dive-manuel-client.md",
     "deep-dive-manuel-visiteur.md",
     "deep-dive-manuel-bot-whatsapp.md",
-    "deep-dive-manuel-paiement-escrow.md"
+    "deep-dive-manuel-paiement-escrow.md",
+    "deep-dive-manuel-vision-ia.md"
   ],
   "deep_dive_targets": [
     {"target_name": "Manuel administrateur", "target_path": "admin feature (cross-module)", "files_analyzed": 16, "output_file": "deep-dive-manuel-administrateur.md", "timestamp": "2026-03-01T13:00:00Z"},
@@ -70,7 +71,8 @@
     {"target_name": "Manuel client", "target_path": "buyer feature (cross-module)", "files_analyzed": 30, "output_file": "deep-dive-manuel-client.md", "timestamp": "2026-03-01T23:30:00Z"},
     {"target_name": "Manuel visiteur", "target_path": "public/visitor feature (cross-module)", "files_analyzed": 15, "output_file": "deep-dive-manuel-visiteur.md", "timestamp": "2026-03-02T00:00:00Z"},
     {"target_name": "Manuel bot WhatsApp", "target_path": "whatsapp/notification feature (cross-module)", "files_analyzed": 12, "output_file": "deep-dive-manuel-bot-whatsapp.md", "timestamp": "2026-03-02T00:30:00Z"},
-    {"target_name": "Manuel paiement et escrow", "target_path": "payment/escrow feature (cross-module)", "files_analyzed": 18, "output_file": "deep-dive-manuel-paiement-escrow.md", "timestamp": "2026-03-02T01:00:00Z"}
+    {"target_name": "Manuel paiement et escrow", "target_path": "payment/escrow feature (cross-module)", "files_analyzed": 18, "output_file": "deep-dive-manuel-paiement-escrow.md", "timestamp": "2026-03-02T01:00:00Z"},
+    {"target_name": "Manuel vision IA", "target_path": "vision/ai-identify feature (cross-module)", "files_analyzed": 22, "output_file": "deep-dive-manuel-vision-ia.md", "timestamp": "2026-03-02T01:30:00Z"}
   ],
-  "resume_instructions": "Workflow completed. 10 deep-dives generated."
+  "resume_instructions": "Workflow completed. 11 deep-dives generated."
 }

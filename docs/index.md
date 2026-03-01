@@ -82,6 +82,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 - [Manuel d'utilisation visiteur](./deep-dive-manuel-visiteur.md) — Guide complet pour les visiteurs non connectés (pages publiques, lien de paiement partagé, API publiques catalogue/photo IA/VIN, PWA, suivi livraison) — Généré 2026-03-01
 - [Manuel technique bot WhatsApp](./deep-dive-manuel-bot-whatsapp.md) — Guide complet du bot WhatsApp (webhook Meta Cloud API, HMAC, commandes bot, 5 templates, notifications, multi-canal, intégration commandes/livraisons) — Généré 2026-03-01
 - [Manuel technique paiement et escrow](./deep-dive-manuel-paiement-escrow.md) — Guide complet du système de paiement (CinetPay, Orange/MTN/Wave/COD, escrow HELD→RELEASED→REFUNDED, price snapshot, machine à états, auto-libération 48h) — Généré 2026-03-01
+- [Manuel technique vision IA](./deep-dive-manuel-vision-ia.md) — Guide complet du système d'identification IA (Gemini 2.0 Flash, seuils de confiance, désambiguïsation, VIN decode NHTSA, synonymes recherche, traitement images Sharp/R2, navigation marque/modèle/année) — Généré 2026-03-01
 
 ---
 
