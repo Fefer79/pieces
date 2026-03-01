@@ -86,10 +86,7 @@ export default function VendorGuaranteesPage() {
 
       const res = await fetch('/api/v1/vendors/me/signature', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       const body = await res.json()

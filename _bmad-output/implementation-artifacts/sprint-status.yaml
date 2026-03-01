@@ -52,7 +52,7 @@ development_status:
   # Epic 2 : Catalogue Vendeur & Onboarding
   epic-2: in-progress
   2-1-onboarding-vendeur-kyc-agent-terrain: done
-  2-2-signature-garanties-obligatoires-activation-profil: review
+  2-2-signature-garanties-obligatoires-activation-profil: done
   2-3-pipeline-images-generation-catalogue-ia: backlog
   2-4-validation-ajustement-catalogue-vendeur: backlog
   2-5-configuration-zones-livraison-vendeur: backlog

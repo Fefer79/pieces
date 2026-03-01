@@ -307,6 +307,21 @@ describe('Vendor Routes', () => {
       expect(body.data.guarantees).toHaveLength(2)
     })
 
+    it('returns 404 when no vendor exists', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/guarantees',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(404)
+      expect(response.json().error.code).toBe('VENDOR_NOT_FOUND')
+    })
+
     it('returns 401 without auth token', async () => {
       const app = buildApp()
       const response = await app.inject({

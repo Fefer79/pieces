@@ -1,6 +1,6 @@
 # Story 2.2: Signature Garanties Obligatoires & Activation Profil
 
-Status: review
+Status: done
 
 ## Story
 
