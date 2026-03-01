@@ -1,5 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { zodToFastify } from '../../lib/zodSchema.js'
+import { createSellerReviewSchema, createDeliveryReviewSchema, openDisputeSchema, resolveDisputeSchema } from 'shared/validators'
 import {
   createSellerReview,
   createDeliveryReview,
@@ -16,10 +18,15 @@ export async function reviewRoutes(fastify: FastifyInstance) {
     '/seller',
     {
       preHandler: [requireAuth],
-      schema: { tags: ['Reviews'], description: 'Évaluer un vendeur', security: [{ BearerAuth: [] }] },
+      schema: {
+        tags: ['Reviews'],
+        description: 'Évaluer un vendeur',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(createSellerReviewSchema),
+      },
     },
     async (request, reply) => {
-      const body = request.body as { orderId: string; vendorId: string; rating: number; comment?: string }
+      const body = createSellerReviewSchema.parse(request.body)
       const review = await createSellerReview(request.user.id, body)
       return reply.status(201).send({ data: review })
     },
@@ -30,16 +37,21 @@ export async function reviewRoutes(fastify: FastifyInstance) {
     '/delivery',
     {
       preHandler: [requireAuth],
-      schema: { tags: ['Reviews'], description: 'Évaluer une livraison', security: [{ BearerAuth: [] }] },
+      schema: {
+        tags: ['Reviews'],
+        description: 'Évaluer une livraison',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(createDeliveryReviewSchema),
+      },
     },
     async (request, reply) => {
-      const body = request.body as { deliveryId: string; riderId: string; rating: number; comment?: string }
+      const body = createDeliveryReviewSchema.parse(request.body)
       const review = await createDeliveryReview(request.user.id, body)
       return reply.status(201).send({ data: review })
     },
   )
 
-  // Get vendor reviews
+  // Get vendor reviews (public)
   fastify.get(
     '/vendor/:vendorId',
     {
@@ -52,7 +64,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
     },
   )
 
-  // Get rider reviews
+  // Get rider reviews (public)
   fastify.get(
     '/rider/:riderId',
     {
@@ -70,16 +82,21 @@ export async function reviewRoutes(fastify: FastifyInstance) {
     '/disputes',
     {
       preHandler: [requireAuth],
-      schema: { tags: ['Disputes'], description: 'Ouvrir un litige', security: [{ BearerAuth: [] }] },
+      schema: {
+        tags: ['Disputes'],
+        description: 'Ouvrir un litige',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(openDisputeSchema),
+      },
     },
     async (request, reply) => {
-      const body = request.body as { orderId: string; reason: string }
+      const body = openDisputeSchema.parse(request.body)
       const dispute = await openDispute(request.user.id, body.orderId, body.reason)
       return reply.status(201).send({ data: dispute })
     },
   )
 
-  // Get disputes for an order
+  // Get disputes for an order (H4 fix: auth + ownership check moved to service)
   fastify.get(
     '/disputes/order/:orderId',
     {
@@ -88,7 +105,7 @@ export async function reviewRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { orderId } = request.params as { orderId: string }
-      const disputes = await getDisputesByOrder(orderId)
+      const disputes = await getDisputesByOrder(orderId, request.user.id)
       return reply.status(200).send({ data: disputes })
     },
   )
@@ -98,11 +115,16 @@ export async function reviewRoutes(fastify: FastifyInstance) {
     '/disputes/:disputeId/resolve',
     {
       preHandler: [requireAuth, requireRole('ADMIN')],
-      schema: { tags: ['Disputes'], description: 'Résoudre un litige (admin)', security: [{ BearerAuth: [] }] },
+      schema: {
+        tags: ['Disputes'],
+        description: 'Résoudre un litige (admin)',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(resolveDisputeSchema),
+      },
     },
     async (request, reply) => {
       const { disputeId } = request.params as { disputeId: string }
-      const body = request.body as { resolution: string; inFavorOf: 'buyer' | 'seller' }
+      const body = resolveDisputeSchema.parse(request.body)
       const dispute = await resolveDispute(disputeId, body.resolution, body.inFavorOf)
       return reply.status(200).send({ data: dispute })
     },

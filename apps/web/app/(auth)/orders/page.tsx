@@ -27,7 +27,7 @@ export default function OrderHistoryPage() {
     setLoading(true)
     try {
       const token = localStorage.getItem('access_token')
-      const res = await fetch(`/api/v1/admin/orders/history?page=${page}`, {
+      const res = await fetch(`/api/v1/orders/history?page=${page}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (res.ok) {

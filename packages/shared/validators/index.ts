@@ -5,3 +5,5 @@ export { createVendorSchema, vendorTypeSchema, kycTypeSchema, guaranteeTypeSchem
 export { catalogItemStatusSchema, catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema } from './catalog'
 export { vinDecodeSchema, createVehicleSchema } from './browse'
 export { createOrderSchema, confirmOrderSchema, cancelOrderSchema } from './order'
+export { createSellerReviewSchema, createDeliveryReviewSchema, openDisputeSchema, resolveDisputeSchema } from './review'
+export { updatePreferencesSchema, sendNotificationSchema } from './notification'

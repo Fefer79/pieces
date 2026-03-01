@@ -1,7 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
 import {
-  getUserOrderHistory,
   getAdminDashboardStats,
   getAdminUsers,
   getAdminOrders,
@@ -10,24 +9,6 @@ import {
 } from './admin.service.js'
 
 export async function adminRoutes(fastify: FastifyInstance) {
-  // Story 9.1: User order history
-  fastify.get(
-    '/orders/history',
-    {
-      preHandler: [requireAuth],
-      schema: { tags: ['History'], description: 'Historique des commandes utilisateur', security: [{ BearerAuth: [] }] },
-    },
-    async (request, reply) => {
-      const query = request.query as { page?: string; limit?: string }
-      const result = await getUserOrderHistory(
-        request.user.id,
-        Number(query.page) || 1,
-        Number(query.limit) || 20,
-      )
-      return reply.status(200).send({ data: result })
-    },
-  )
-
   // Story 9.2: Admin dashboard stats
   fastify.get(
     '/dashboard',

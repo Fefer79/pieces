@@ -26,19 +26,20 @@ vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     user: {
       upsert: (...args: unknown[]) => mockUserUpsert(...args),
-      findUnique: vi.fn(),
+      findUnique: vi.fn().mockResolvedValue({ roles: ['MECHANIC'] }),
       update: vi.fn(),
     },
     vendor: { findUnique: vi.fn() },
     catalogItem: { findMany: vi.fn(), count: vi.fn() },
     searchSynonym: { findMany: vi.fn() },
     userVehicle: { findMany: vi.fn(), count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), delete: vi.fn() },
-    order: { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() },
+    order: { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn(), count: vi.fn() },
     escrowTransaction: { create: vi.fn(), findUnique: vi.fn() },
     delivery: { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() },
-    sellerReview: { create: vi.fn(), findMany: vi.fn() },
-    deliveryReview: { create: vi.fn(), findMany: vi.fn() },
+    sellerReview: { create: vi.fn(), findMany: vi.fn(), aggregate: vi.fn() },
+    deliveryReview: { create: vi.fn(), findMany: vi.fn(), aggregate: vi.fn() },
     dispute: { create: vi.fn(), findMany: vi.fn(), update: vi.fn() },
+    notificationPreference: { findUnique: vi.fn(), upsert: vi.fn() },
   },
 }))
 
@@ -51,19 +52,21 @@ vi.mock('../../lib/gemini.js', () => ({
 }))
 
 const mockSendMessage = vi.fn().mockResolvedValue({ success: true })
+const mockVerifySignature = vi.fn().mockReturnValue(true)
 
 vi.mock('./whatsapp.service.js', async (importOriginal) => {
   const original = await importOriginal() as Record<string, unknown>
   return {
     ...original,
     sendWhatsAppMessage: (...args: unknown[]) => mockSendMessage(...args),
+    verifyWebhookSignature: (...args: unknown[]) => mockVerifySignature(...args),
   }
 })
 
 const { buildApp } = await import('../../server.js')
 
 describe('WhatsApp Routes', () => {
-  beforeEach(() => { vi.clearAllMocks() })
+  beforeEach(() => { vi.clearAllMocks(); mockVerifySignature.mockReturnValue(true) })
 
   describe('GET /api/v1/whatsapp/webhook', () => {
     it('returns challenge on valid verification', async () => {
@@ -99,7 +102,7 @@ describe('WhatsApp Routes', () => {
   })
 
   describe('POST /api/v1/whatsapp/webhook', () => {
-    it('returns 200 and processes text message', async () => {
+    it('processes text "aide" command', async () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'POST',
@@ -117,6 +120,49 @@ describe('WhatsApp Routes', () => {
 
       expect(response.statusCode).toBe(200)
       expect(mockSendMessage).toHaveBeenCalledOnce()
+      expect(mockSendMessage.mock.calls[0][1]).toContain('Bienvenue')
+    })
+
+    it('processes "recherche" command', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/whatsapp/webhook',
+        payload: {
+          entry: [{
+            changes: [{
+              value: {
+                messages: [{ from: '2250700000000', type: 'text', text: { body: 'recherche plaquettes' } }],
+              },
+            }],
+          }],
+        },
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(mockSendMessage).toHaveBeenCalledOnce()
+      expect(mockSendMessage.mock.calls[0][1]).toContain('plaquettes')
+    })
+
+    it('processes image message', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/whatsapp/webhook',
+        payload: {
+          entry: [{
+            changes: [{
+              value: {
+                messages: [{ from: '2250700000000', type: 'image', image: { id: 'img-123' } }],
+              },
+            }],
+          }],
+        },
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(mockSendMessage).toHaveBeenCalledOnce()
+      expect(mockSendMessage.mock.calls[0][1]).toContain('Photo reçue')
     })
 
     it('returns 200 and ignores empty message', async () => {
@@ -129,6 +175,19 @@ describe('WhatsApp Routes', () => {
 
       expect(response.statusCode).toBe(200)
       expect(response.json().status).toBe('ignored')
+    })
+
+    it('rejects invalid HMAC signature', async () => {
+      mockVerifySignature.mockReturnValue(false)
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/whatsapp/webhook',
+        payload: { entry: [] },
+      })
+
+      expect(response.statusCode).toBe(401)
     })
   })
 })

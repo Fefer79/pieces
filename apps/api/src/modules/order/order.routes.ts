@@ -11,6 +11,7 @@ import {
   cancelOrder,
   transitionOrder,
 } from './order.service.js'
+import { getUserOrderHistory } from '../admin/admin.service.js'
 
 export async function orderRoutes(fastify: FastifyInstance) {
   // Create order (mechanic initiates)
@@ -49,6 +50,28 @@ export async function orderRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const orders = await getUserOrders(request.user.id)
       return reply.status(200).send({ data: orders })
+    },
+  )
+
+  // M4 fix: User order history with pagination (under /orders prefix, not /admin)
+  fastify.get(
+    '/history',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Orders'],
+        description: 'Historique paginé des commandes utilisateur',
+        security: [{ BearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const query = request.query as { page?: string; limit?: string }
+      const result = await getUserOrderHistory(
+        request.user.id,
+        Number(query.page) || 1,
+        Number(query.limit) || 20,
+      )
+      return reply.status(200).send({ data: result })
     },
   )
 

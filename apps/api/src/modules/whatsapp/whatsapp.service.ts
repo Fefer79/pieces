@@ -1,9 +1,25 @@
+import crypto from 'node:crypto'
+
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID
 const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN ?? 'pieces-verify-token'
+const WHATSAPP_APP_SECRET = process.env.WHATSAPP_APP_SECRET
+const GRAPH_API_VERSION = 'v18.0'
 
 export function getVerifyToken() {
   return WHATSAPP_VERIFY_TOKEN
+}
+
+export function verifyWebhookSignature(rawBody: string, signature: string | undefined): boolean {
+  if (!WHATSAPP_APP_SECRET) return true // Skip in dev when not configured
+  if (!signature) return false
+
+  const expectedSig = crypto
+    .createHmac('sha256', WHATSAPP_APP_SECRET)
+    .update(rawBody)
+    .digest('hex')
+
+  return signature === `sha256=${expectedSig}`
 }
 
 export async function sendWhatsAppMessage(to: string, text: string) {
@@ -13,7 +29,7 @@ export async function sendWhatsAppMessage(to: string, text: string) {
 
   try {
     const res = await fetch(
-      `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`,
+      `https://graph.facebook.com/${GRAPH_API_VERSION}/${WHATSAPP_PHONE_ID}/messages`,
       {
         method: 'POST',
         headers: {
@@ -46,7 +62,7 @@ export async function sendWhatsAppTemplate(to: string, templateName: string, par
 
   try {
     const res = await fetch(
-      `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`,
+      `https://graph.facebook.com/${GRAPH_API_VERSION}/${WHATSAPP_PHONE_ID}/messages`,
       {
         method: 'POST',
         headers: {
@@ -75,14 +91,24 @@ export async function sendWhatsAppTemplate(to: string, templateName: string, par
   }
 }
 
+interface WhatsAppMessage {
+  from?: string
+  type?: string
+  text?: { body?: string }
+  image?: { id?: string }
+}
+
+interface WhatsAppWebhookEntry {
+  changes?: Array<{ value?: { messages?: WhatsAppMessage[] } }>
+}
+
 export function parseIncomingMessage(body: Record<string, unknown>): {
   from: string | null
   text: string | null
   imageId: string | null
 } {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const entries = body.entry as any[]
+    const entries = body.entry as WhatsAppWebhookEntry[] | undefined
     const entry = entries?.[0]
     const change = entry?.changes?.[0]
     const message = change?.value?.messages?.[0]

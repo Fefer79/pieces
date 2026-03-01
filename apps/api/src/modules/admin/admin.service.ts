@@ -64,9 +64,17 @@ export async function getAdminUsers(page = 1, limit = 50) {
   return { users, total, page, totalPages: Math.ceil(total / limit) }
 }
 
+const VALID_ORDER_STATUSES = [
+  'DRAFT', 'PENDING_PAYMENT', 'PAID', 'VENDOR_CONFIRMED',
+  'DISPATCHED', 'IN_TRANSIT', 'DELIVERED', 'CONFIRMED', 'COMPLETED', 'CANCELLED',
+] as const
+
 export async function getAdminOrders(page = 1, limit = 50, status?: string) {
   const skip = (page - 1) * limit
-  const where = status ? { status: status as never } : {}
+  const validStatus = status && VALID_ORDER_STATUSES.includes(status as typeof VALID_ORDER_STATUSES[number])
+    ? { status: status as typeof VALID_ORDER_STATUSES[number] }
+    : {}
+  const where = validStatus
 
   const [orders, total] = await Promise.all([
     prisma.order.findMany({

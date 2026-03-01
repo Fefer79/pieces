@@ -1,7 +1,9 @@
 import type { FastifyInstance } from 'fastify'
-import { requireAuth } from '../../plugins/auth.js'
+import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { zodToFastify } from '../../lib/zodSchema.js'
+import { updatePreferencesSchema, sendNotificationSchema } from 'shared/validators'
 import { prisma } from '../../lib/prisma.js'
-import { sendNotification, type NotificationChannel } from './notification.service.js'
+import { sendNotification } from './notification.service.js'
 
 export async function notificationRoutes(fastify: FastifyInstance) {
   // Get user notification preferences
@@ -16,7 +18,6 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         where: { userId: request.user.id },
       })
 
-      // Default preferences if none exist
       const defaults = {
         userId: request.user.id,
         whatsapp: true,
@@ -33,10 +34,15 @@ export async function notificationRoutes(fastify: FastifyInstance) {
     '/preferences',
     {
       preHandler: [requireAuth],
-      schema: { tags: ['Notifications'], description: 'Mettre à jour les préférences', security: [{ BearerAuth: [] }] },
+      schema: {
+        tags: ['Notifications'],
+        description: 'Mettre à jour les préférences',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(updatePreferencesSchema),
+      },
     },
     async (request, reply) => {
-      const body = request.body as { whatsapp?: boolean; sms?: boolean; push?: boolean }
+      const body = updatePreferencesSchema.parse(request.body)
 
       const prefs = await prisma.notificationPreference.upsert({
         where: { userId: request.user.id },
@@ -61,12 +67,17 @@ export async function notificationRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/send',
     {
-      preHandler: [requireAuth],
-      schema: { tags: ['Notifications'], description: 'Envoyer une notification (admin)', security: [{ BearerAuth: [] }] },
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Notifications'],
+        description: 'Envoyer une notification (admin)',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(sendNotificationSchema),
+      },
     },
     async (request, reply) => {
-      const body = request.body as { to: string; channel: NotificationChannel; message: string }
-      const result = await sendNotification(body)
+      const body = sendNotificationSchema.parse(request.body)
+      const result = await sendNotification({ ...body, channel: body.channel })
       return reply.status(200).send({ data: result })
     },
   )

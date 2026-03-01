@@ -8,8 +8,6 @@ vi.stubEnv('PORT', '3001')
 
 const mockGetUser = vi.fn()
 const mockUserUpsert = vi.fn()
-const mockOrderFindMany = vi.fn()
-const mockOrderCount = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -37,14 +35,14 @@ vi.mock('../../lib/prisma.js', () => ({
     order: {
       create: vi.fn(),
       findUnique: vi.fn(),
-      findMany: (...args: unknown[]) => mockOrderFindMany(...args),
+      findMany: vi.fn().mockResolvedValue([]),
       update: vi.fn(),
-      count: (...args: unknown[]) => mockOrderCount(...args),
+      count: vi.fn().mockResolvedValue(0),
     },
     escrowTransaction: { create: vi.fn(), findUnique: vi.fn() },
     delivery: { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() },
-    sellerReview: { create: vi.fn(), findMany: vi.fn() },
-    deliveryReview: { create: vi.fn(), findMany: vi.fn() },
+    sellerReview: { create: vi.fn(), findMany: vi.fn(), aggregate: vi.fn() },
+    deliveryReview: { create: vi.fn(), findMany: vi.fn(), aggregate: vi.fn() },
     dispute: { create: vi.fn(), findMany: vi.fn(), update: vi.fn(), count: vi.fn().mockResolvedValue(0) },
     notificationPreference: { findUnique: vi.fn(), upsert: vi.fn() },
   },
@@ -63,6 +61,7 @@ vi.mock('../whatsapp/whatsapp.service.js', () => ({
   sendWhatsAppTemplate: vi.fn().mockResolvedValue({ success: true }),
   getVerifyToken: vi.fn().mockReturnValue('test'),
   parseIncomingMessage: vi.fn().mockReturnValue({ from: null, text: null, imageId: null }),
+  verifyWebhookSignature: vi.fn().mockReturnValue(true),
 }))
 
 const { buildApp } = await import('../../server.js')
@@ -84,35 +83,6 @@ function mockAuth(role = 'ADMIN') {
 
 describe('Admin Routes', () => {
   beforeEach(() => { vi.clearAllMocks() })
-
-  describe('GET /api/v1/admin/orders/history', () => {
-    it('returns 200 with user order history', async () => {
-      mockOrderFindMany.mockResolvedValueOnce([
-        { id: 'o1', status: 'COMPLETED', items: [], delivery: null },
-      ])
-      mockOrderCount.mockResolvedValueOnce(1)
-
-      const app = buildApp()
-      const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/admin/orders/history',
-        headers: mockAuth('MECHANIC'),
-      })
-
-      expect(response.statusCode).toBe(200)
-      expect(response.json().data.orders).toHaveLength(1)
-    })
-
-    it('returns 401 without auth', async () => {
-      const app = buildApp()
-      const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/admin/orders/history',
-      })
-
-      expect(response.statusCode).toBe(401)
-    })
-  })
 
   describe('GET /api/v1/admin/dashboard', () => {
     it('returns 200 with stats for admin', async () => {
@@ -149,6 +119,30 @@ describe('Admin Routes', () => {
       })
 
       expect(response.statusCode).toBe(200)
+    })
+  })
+
+  describe('GET /api/v1/orders/history (M4: moved from admin)', () => {
+    it('returns 200 with user order history', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/orders/history',
+        headers: mockAuth('MECHANIC'),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data).toHaveProperty('orders')
+    })
+
+    it('returns 401 without auth', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/orders/history',
+      })
+
+      expect(response.statusCode).toBe(401)
     })
   })
 })

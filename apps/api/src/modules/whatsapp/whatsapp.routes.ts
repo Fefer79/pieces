@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify'
-import { getVerifyToken, parseIncomingMessage, sendWhatsAppMessage } from './whatsapp.service.js'
+import { getVerifyToken, parseIncomingMessage, sendWhatsAppMessage, verifyWebhookSignature } from './whatsapp.service.js'
+import { AppError } from '../../lib/appError.js'
 
 export async function whatsappRoutes(fastify: FastifyInstance) {
   // Webhook verification (GET)
@@ -22,7 +23,7 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
     },
   )
 
-  // Webhook incoming messages (POST)
+  // Webhook incoming messages (POST) — HMAC verified
   fastify.post(
     '/webhook',
     {
@@ -32,6 +33,13 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
+      // H1 fix: Verify HMAC signature from Meta
+      const signature = request.headers['x-hub-signature-256'] as string | undefined
+      const rawBody = JSON.stringify(request.body)
+      if (!verifyWebhookSignature(rawBody, signature)) {
+        throw new AppError('WHATSAPP_INVALID_SIGNATURE', 401, { message: 'Invalid webhook signature' })
+      }
+
       const body = request.body as Record<string, unknown>
       const { from, text, imageId } = parseIncomingMessage(body)
 
@@ -39,7 +47,6 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
         return reply.status(200).send({ status: 'ignored' })
       }
 
-      // Simple command handling for MVP
       if (text) {
         const command = text.trim().toLowerCase()
 
@@ -55,7 +62,6 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
 
       if (imageId) {
         await sendWhatsAppMessage(from, 'Photo reçue! Identification en cours... Vous recevrez les résultats sous peu.')
-        // In production: download image via Graph API, call identifyPart, respond with results
       }
 
       return reply.status(200).send({ status: 'ok' })

@@ -254,6 +254,7 @@ enum DisputeStatus {
 model SellerReview {
   id        String   @id @default(uuid())
   orderId   String   @map("order_id")
+  order     Order    @relation(fields: [orderId], references: [id])
   vendorId  String   @map("vendor_id")
   reviewerId String  @map("reviewer_id")
   reviewer  User     @relation("SellerReviewer", fields: [reviewerId], references: [id])
@@ -269,6 +270,7 @@ model SellerReview {
 model DeliveryReview {
   id         String   @id @default(uuid())
   deliveryId String   @map("delivery_id")
+  delivery   Delivery @relation(fields: [deliveryId], references: [id])
   riderId    String   @map("rider_id")
   reviewerId String   @map("reviewer_id")
   reviewer   User     @relation("DeliveryReviewer", fields: [reviewerId], references: [id])
@@ -284,6 +286,7 @@ model DeliveryReview {
 model Dispute {
   id          String        @id @default(uuid())
   orderId     String        @map("order_id")
+  order       Order         @relation(fields: [orderId], references: [id])
   openedBy    String        @map("opened_by")
   opener      User          @relation("DisputeOpener", fields: [openedBy], references: [id])
   status      DisputeStatus @default(OPEN)
@@ -327,6 +330,8 @@ model Order {
   events          OrderEvent[]
   escrow          EscrowTransaction?
   delivery        Delivery?
+  sellerReviews   SellerReview[]
+  disputes        Dispute[]
 
   @@map("orders")
   @@index([initiatorId], name: "idx_orders_initiator")
@@ -390,6 +395,8 @@ model Delivery {
   receiptPhotoUrl String?        @map("receipt_photo_url")
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  deliveryReviews DeliveryReview[]
 
   @@map("deliveries")
   @@index([riderId], name: "idx_deliveries_rider")
