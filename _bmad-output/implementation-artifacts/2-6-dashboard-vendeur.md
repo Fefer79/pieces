@@ -1,6 +1,6 @@
 # Story 2.6: Dashboard Vendeur
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -33,21 +33,21 @@ So que j'aie une visibilité complète sur mon activité commerciale sur Pièces
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: API — endpoint stats vendeur** (AC: #1, #2)
-  - [ ] 1.1 Service `getVendorDashboard(userId)` — retourne stats catalogue (published, draft, outOfStock counts)
-  - [ ] 1.2 Route `GET /vendors/me/dashboard`
+- [x] **Task 1: API — endpoint stats vendeur** (AC: #1, #2)
+  - [x] 1.1 Service `getVendorDashboard(userId)` — retourne stats catalogue (published, draft, outOfStock counts)
+  - [x] 1.2 Route `GET /vendors/me/dashboard`
 
-- [ ] **Task 2: Page PWA — /vendors/dashboard** (AC: #1, #2, #3)
-  - [ ] 2.1 Affichage stats catalogue en cartes résumé
-  - [ ] 2.2 Liens rapides vers catalogue, zones livraison, garanties
-  - [ ] 2.3 Section "Commandes" en placeholder (à venir Epic 4)
+- [x] **Task 2: Page PWA — /vendors/dashboard** (AC: #1, #2, #3)
+  - [x] 2.1 Affichage stats catalogue en cartes résumé
+  - [x] 2.2 Liens rapides vers catalogue, zones livraison, garanties
+  - [x] 2.3 Section "Commandes" en placeholder (à venir Epic 4)
 
-- [ ] **Task 3: Tests unitaires** (AC: #1)
-  - [ ] 3.1 Tests service: stats correctes, vendor not found
-  - [ ] 3.2 Tests routes: 200/401/404
+- [x] **Task 3: Tests unitaires** (AC: #1)
+  - [x] 3.1 Tests service: stats correctes, vendor not found
+  - [x] 3.2 Tests routes: 200/401/404
 
-- [ ] **Task 4: Régression complète** (AC: all)
-  - [ ] 4.1 lint + test + build
+- [x] **Task 4: Régression complète** (AC: all)
+  - [x] 4.1 lint + test + build
 
 ## Dev Notes
 
@@ -75,4 +75,14 @@ Claude Opus 4.6
 
 ### Completion Notes List
 
+- 167 tests pass (153 API + 10 shared + 4 web)
+- Lint clean, build clean
+- Code review: PASS
+
 ### File List
+
+- `apps/api/src/modules/vendor/vendor.service.ts` — added `getVendorDashboard`
+- `apps/api/src/modules/vendor/vendor.routes.ts` — added GET `/me/dashboard`
+- `apps/api/src/modules/vendor/vendor.service.test.ts` — 2 new tests
+- `apps/api/src/modules/vendor/vendor.routes.test.ts` — 3 new tests
+- `apps/web/app/(auth)/vendors/dashboard/page.tsx` — PWA dashboard page

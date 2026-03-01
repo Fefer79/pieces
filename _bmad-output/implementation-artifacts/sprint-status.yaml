@@ -50,13 +50,13 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2 : Catalogue Vendeur & Onboarding
-  epic-2: in-progress
+  epic-2: done
   2-1-onboarding-vendeur-kyc-agent-terrain: done
   2-2-signature-garanties-obligatoires-activation-profil: done
   2-3-pipeline-images-generation-catalogue-ia: done
   2-4-validation-ajustement-catalogue-vendeur: done
   2-5-configuration-zones-livraison-vendeur: done
-  2-6-dashboard-vendeur: in-progress
+  2-6-dashboard-vendeur: done
   epic-2-retrospective: optional
 
   # Epic 3 : Recherche & Navigation Pièces (PWA)
@@ -82,6 +82,7 @@ development_status:
 
   # Epic 5 : Livraison & Logistique
   epic-5: backlog
+
   5-1-assignation-livraison-interface-mission-rider: backlog
   5-2-suivi-temps-reel-estimation-delai: backlog
   5-3-collecte-paiement-rider-cod-mobile-money: backlog
