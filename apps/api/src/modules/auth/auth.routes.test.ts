@@ -49,7 +49,7 @@ describe('Auth Routes', () => {
       expect(response.json()).toEqual({ data: { sent: true } })
     })
 
-    it('returns 400 for invalid phone', async () => {
+    it('returns 422 for invalid phone', async () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'POST',
@@ -57,12 +57,12 @@ describe('Auth Routes', () => {
         payload: { phone: 'invalid' },
       })
 
-      expect(response.statusCode).toBe(400)
+      expect(response.statusCode).toBe(422)
       const body = response.json()
-      expect(body.error.code).toBe('AUTH_INVALID_PHONE')
+      expect(body.error.code).toBe('VALIDATION_ERROR')
     })
 
-    it('returns 400 when phone field is missing', async () => {
+    it('returns 422 when phone field is missing', async () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'POST',
@@ -70,7 +70,7 @@ describe('Auth Routes', () => {
         payload: {},
       })
 
-      expect(response.statusCode).toBe(400)
+      expect(response.statusCode).toBe(422)
     })
 
     it('returns 429 after exceeding rate limit', async () => {
@@ -135,7 +135,7 @@ describe('Auth Routes', () => {
       expect(body.data.user.id).toBe('prisma-user-123')
     })
 
-    it('returns 400 for invalid OTP format', async () => {
+    it('returns 422 for invalid OTP format', async () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'POST',
@@ -143,9 +143,9 @@ describe('Auth Routes', () => {
         payload: { phone: '+2250700000000', token: '12345' },
       })
 
-      expect(response.statusCode).toBe(400)
+      expect(response.statusCode).toBe(422)
       const body = response.json()
-      expect(body.error.code).toBe('AUTH_INVALID_OTP')
+      expect(body.error.code).toBe('VALIDATION_ERROR')
     })
   })
 })

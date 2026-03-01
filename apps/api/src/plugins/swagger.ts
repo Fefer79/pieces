@@ -13,6 +13,20 @@ export async function swagger(fastify: FastifyInstance) {
       servers: [
         { url: 'http://localhost:3001', description: 'Development' },
       ],
+      components: {
+        securitySchemes: {
+          BearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+      tags: [
+        { name: 'Auth', description: 'Authentification OTP par SMS' },
+        { name: 'Users', description: 'Gestion du profil et des rôles' },
+        { name: 'Consent', description: 'Consentement ARTCI et données personnelles' },
+      ],
     },
   })
 

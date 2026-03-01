@@ -78,19 +78,17 @@ describe('Consent Routes', () => {
       expect(response.json().data.consentedAt).toBeDefined()
     })
 
-    it('returns 400 when accepted is false', async () => {
-      mockAuthUser()
-
+    it('returns 422 when accepted is false', async () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'POST',
         url: '/api/v1/users/me/consent',
-        headers: { authorization: 'Bearer valid-token' },
         payload: { accepted: false },
+        headers: { authorization: 'Bearer valid-token' },
       })
 
-      expect(response.statusCode).toBe(400)
-      expect(response.json().error.code).toBe('CONSENT_MUST_ACCEPT')
+      expect(response.statusCode).toBe(422)
+      expect(response.json().error.code).toBe('VALIDATION_ERROR')
     })
 
     it('returns 401 without auth token', async () => {

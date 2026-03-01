@@ -1,28 +1,21 @@
 import type { FastifyInstance } from 'fastify'
+import { z } from 'zod'
+import { phoneSchema, otpSchema } from 'shared/validators'
+import { zodToFastify } from '../../lib/zodSchema.js'
 import { sendOtp, verifyOtp } from './auth.service.js'
 
-const otpBodySchema = {
-  type: 'object',
-  required: ['phone'],
-  properties: {
-    phone: { type: 'string' },
-  },
-} as const
-
-const verifyBodySchema = {
-  type: 'object',
-  required: ['phone', 'token'],
-  properties: {
-    phone: { type: 'string' },
-    token: { type: 'string' },
-  },
-} as const
+const otpBodySchema = z.object({ phone: phoneSchema })
+const verifyBodySchema = z.object({ phone: phoneSchema, token: otpSchema })
 
 export async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/otp',
     {
-      schema: { body: otpBodySchema },
+      schema: {
+        body: zodToFastify(otpBodySchema),
+        tags: ['Auth'],
+        description: 'Envoyer un code OTP par SMS',
+      },
       config: {
         rateLimit: {
           max: 5,
@@ -40,7 +33,11 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/verify',
     {
-      schema: { body: verifyBodySchema },
+      schema: {
+        body: zodToFastify(verifyBodySchema),
+        tags: ['Auth'],
+        description: 'Vérifier le code OTP et obtenir un token JWT',
+      },
     },
     async (request, reply) => {
       const { phone, token } = request.body as { phone: string; token: string }

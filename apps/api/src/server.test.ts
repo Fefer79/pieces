@@ -42,6 +42,21 @@ describe('API Server', () => {
     expect(body.error.details).toEqual({ id: '123' })
   })
 
+  it('error handler returns 422 for schema validation errors', async () => {
+    const app = buildApp()
+    // POST /api/v1/auth/otp with empty body triggers Fastify schema validation
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/otp',
+      payload: {},
+    })
+    expect(response.statusCode).toBe(422)
+    const body = response.json()
+    expect(body.error.code).toBe('VALIDATION_ERROR')
+    expect(body.error.details).toBeDefined()
+    expect(Array.isArray(body.error.details)).toBe(true)
+  })
+
   it('error handler returns 500 for unknown errors', async () => {
     const app = buildApp()
     app.get('/test-crash', async () => {

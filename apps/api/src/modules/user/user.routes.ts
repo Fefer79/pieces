@@ -1,27 +1,20 @@
 import type { FastifyInstance } from 'fastify'
+import { switchContextSchema, updateRolesSchema } from 'shared/validators'
+import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
 import { getProfile, switchContext, updateRoles } from './user.service.js'
-
-const switchContextBodySchema = {
-  type: 'object',
-  required: ['role'],
-  properties: {
-    role: { type: 'string' },
-  },
-} as const
-
-const updateRolesBodySchema = {
-  type: 'object',
-  required: ['roles'],
-  properties: {
-    roles: { type: 'array', items: { type: 'string' } },
-  },
-} as const
 
 export async function userRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/me',
-    { preHandler: [requireAuth] },
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Users'],
+        description: 'Obtenir le profil de l\'utilisateur connecté',
+        security: [{ BearerAuth: [] }],
+      },
+    },
     async (request, reply) => {
       const result = await getProfile(request.user.id)
       return reply.status(200).send({ data: result })
@@ -31,7 +24,12 @@ export async function userRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/me/context',
     {
-      schema: { body: switchContextBodySchema },
+      schema: {
+        body: zodToFastify(switchContextSchema),
+        tags: ['Users'],
+        description: 'Changer le contexte actif (rôle) de l\'utilisateur',
+        security: [{ BearerAuth: [] }],
+      },
       preHandler: [requireAuth],
     },
     async (request, reply) => {
@@ -44,7 +42,12 @@ export async function userRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/:userId/roles',
     {
-      schema: { body: updateRolesBodySchema },
+      schema: {
+        body: zodToFastify(updateRolesSchema),
+        tags: ['Users'],
+        description: 'Mettre à jour les rôles d\'un utilisateur (admin only)',
+        security: [{ BearerAuth: [] }],
+      },
       preHandler: [requireAuth, requireRole('ADMIN')],
     },
     async (request, reply) => {
