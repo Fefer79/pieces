@@ -50,11 +50,13 @@
     "integration-architecture.md",
     "index.md",
     "deep-dive-manuel-administrateur.md",
-    "deep-dive-manuel-vendeur.md"
+    "deep-dive-manuel-vendeur.md",
+    "deep-dive-manuel-mecanicien.md"
   ],
   "deep_dive_targets": [
     {"target_name": "Manuel administrateur", "target_path": "admin feature (cross-module)", "files_analyzed": 16, "output_file": "deep-dive-manuel-administrateur.md", "timestamp": "2026-03-01T13:00:00Z"},
-    {"target_name": "Manuel vendeur", "target_path": "vendor feature (cross-module)", "files_analyzed": 20, "output_file": "deep-dive-manuel-vendeur.md", "timestamp": "2026-03-01T19:00:00Z"}
+    {"target_name": "Manuel vendeur", "target_path": "vendor feature (cross-module)", "files_analyzed": 20, "output_file": "deep-dive-manuel-vendeur.md", "timestamp": "2026-03-01T19:00:00Z"},
+    {"target_name": "Manuel mécanicien", "target_path": "mechanic feature (cross-module)", "files_analyzed": 25, "output_file": "deep-dive-manuel-mecanicien.md", "timestamp": "2026-03-01T20:00:00Z"}
   ],
-  "resume_instructions": "Workflow completed. 2 deep-dives generated."
+  "resume_instructions": "Workflow completed. 3 deep-dives generated."
 }
