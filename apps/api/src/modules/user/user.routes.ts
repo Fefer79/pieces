@@ -51,6 +51,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       const { userId } = request.params as { userId: string }
       const { roles } = request.body as { roles: string[] }
       const result = await updateRoles(userId, roles as Parameters<typeof updateRoles>[1])
+      request.log.info({ event: 'ADMIN_UPDATE_ROLES', adminId: request.user.id, targetUserId: userId, roles })
       return reply.status(200).send({ data: result })
     },
   )

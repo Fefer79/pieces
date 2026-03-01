@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+
+type SupabaseClient = ReturnType<typeof createClient>
 
 interface UserProfile {
   id: string
@@ -21,16 +23,21 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 function maskPhone(phone: string): string {
-  // +225 07 XX XX XX XX → +225 07 ** ** XX XX
-  if (phone.length < 8) return phone
-  const prefix = phone.slice(0, 7) // +225 07
-  const last4 = phone.slice(-4)
-  const maskedMiddle = phone.slice(7, -4).replace(/\d/g, '*')
-  return `${prefix}${maskedMiddle}${last4}`
+  // +2250700000000 → +225 07 ** ** 00 00
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length < 12) return phone
+  const country = digits.slice(0, 3) // 225
+  const d = digits.slice(3) // 0700000000
+  return `+${country} ${d.slice(0, 2)} ** ** ${d.slice(6, 8)} ${d.slice(8, 10)}`
 }
 
 export default function ProfilePage() {
   const router = useRouter()
+  const supabaseRef = useRef<SupabaseClient | null>(null)
+  function getSupabase() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    return supabaseRef.current
+  }
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [switching, setSwitching] = useState(false)
@@ -38,16 +45,15 @@ export default function ProfilePage() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const supabase = createClient()
       const {
         data: { session },
-      } = await supabase.auth.getSession()
+      } = await getSupabase().auth.getSession()
       if (!session) {
         router.push('/login')
         return
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1/users/me`, {
+      const res = await fetch(`/api/v1/users/me`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
 
@@ -75,13 +81,12 @@ export default function ProfilePage() {
     setError('')
 
     try {
-      const supabase = createClient()
       const {
         data: { session },
-      } = await supabase.auth.getSession()
+      } = await getSupabase().auth.getSession()
       if (!session) return
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1/users/me/context`, {
+      const res = await fetch(`/api/v1/users/me/context`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -106,8 +111,7 @@ export default function ProfilePage() {
   }
 
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    await getSupabase().auth.signOut()
     router.push('/login')
   }
 

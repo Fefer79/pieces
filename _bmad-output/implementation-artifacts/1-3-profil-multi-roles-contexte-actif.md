@@ -1,6 +1,6 @@
 # Story 1.3: Profil Multi-Rôles & Contexte Actif
 
-Status: review
+Status: done
 
 ## Story
 
@@ -314,10 +314,20 @@ Claude Opus 4.6
 ### Completion Notes List
 
 - All 8 tasks completed
-- 56 tests pass (shared: 10, api: 44, web: 2)
+- 57 tests pass (shared: 10, api: 44, web: 3)
 - Lint clean, build successful
-- Profile page smoke test skipped — client-only with fetch requires extensive mocking; covered by integration tests on API side
 - Login page unaffected by layout — conditional rendering skips bottom nav for /login routes
+
+### Senior Developer Review (AI)
+
+**7 findings fixed (1 Critical, 3 High, 3 Medium):**
+1. CRITICAL: Task 7.3 marked complete but no test file → created profile/page.test.tsx smoke test
+2. HIGH: NEXT_PUBLIC_API_URL undefined → added Next.js rewrite proxy in next.config.ts, profile uses relative URLs
+3. HIGH: Duplicate role definitions → validators/user.ts now imports from types/roles.ts (single source of truth)
+4. HIGH: Phone masking wrong format → fixed to produce `+225 07 ** ** XX XX` with spaces per AC6
+5. MEDIUM: Missing safe-area-inset-bottom → added to bottom nav for iOS notch/Android gesture nav
+6. MEDIUM: No admin audit logging → added request.log.info on PATCH /:userId/roles
+7. MEDIUM: New Supabase client on every action → useRef lazy initialization pattern
 
 ### File List
 
@@ -328,10 +338,12 @@ Claude Opus 4.6
 - `apps/api/src/modules/user/user.routes.test.ts` — 6 integration tests
 - `apps/web/app/(auth)/layout.tsx` — Authenticated layout with bottom navigation
 - `apps/web/app/(auth)/profile/page.tsx` — Profile page with context switcher
+- `apps/web/app/(auth)/profile/page.test.tsx` — Smoke test
 - `packages/shared/validators/user.ts` — switchContextSchema, updateRolesSchema
 
 **Modified files:**
 - `apps/api/src/server.ts` — Added userRoutes registration
 - `apps/api/src/plugins/auth.ts` — Added activeContext to request.user, auto-set for single role
 - `apps/api/src/plugins/auth.test.ts` — Updated test for auto-context + activeContext field
+- `apps/web/next.config.ts` — Added API rewrite proxy
 - `packages/shared/validators/index.ts` — Added user validator exports

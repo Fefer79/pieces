@@ -1,6 +1,8 @@
 import { z } from 'zod'
+import { Role } from '../types/roles'
 
-const validRoles = ['MECHANIC', 'OWNER', 'SELLER', 'RIDER', 'ADMIN', 'ENTERPRISE'] as const
+type RoleValue = (typeof Role)[keyof typeof Role]
+const validRoles = Object.values(Role) as [RoleValue, ...RoleValue[]]
 
 export const switchContextSchema = z.object({
   role: z.enum(validRoles, { message: 'Rôle invalide' }),

@@ -21,7 +21,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="flex min-h-dvh flex-col">
       <div className="flex-1 pb-16">{children}</div>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         <div className="mx-auto flex max-w-md items-center justify-around">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href || (href !== '/' && pathname.startsWith(href))
