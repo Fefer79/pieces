@@ -25,6 +25,15 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...args: unknown[]) => mockJobFindUnique(...args),
     },
     $queryRawUnsafe: (...args: unknown[]) => mockQueryRawUnsafe(...args),
+    $transaction: (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        $queryRawUnsafe: (...args: unknown[]) => mockQueryRawUnsafe(...args),
+        job: {
+          update: (...args: unknown[]) => mockJobUpdate(...args),
+        },
+      }
+      return fn(tx)
+    },
   },
 }))
 

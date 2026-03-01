@@ -1,6 +1,6 @@
 # Story 2.3: Pipeline Images & Génération Catalogue IA
 
-Status: review
+Status: done
 
 ## Story
 

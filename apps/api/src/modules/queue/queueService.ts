@@ -22,31 +22,33 @@ export async function enqueue(
 }
 
 export async function dequeue(types: JobType[]) {
-  // SELECT FOR UPDATE SKIP LOCKED pattern
-  const jobs = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
-    `SELECT id FROM jobs
-     WHERE status = 'PENDING'
-     AND type = ANY($1::"JobType"[])
-     AND (scheduled_at IS NULL OR scheduled_at <= NOW())
-     AND attempts < max_attempts
-     ORDER BY created_at ASC
-     LIMIT 1
-     FOR UPDATE SKIP LOCKED`,
-    types,
-  )
+  // SELECT FOR UPDATE SKIP LOCKED + UPDATE in same transaction
+  return prisma.$transaction(async (tx) => {
+    const jobs = await tx.$queryRawUnsafe<Array<{ id: string }>>(
+      `SELECT id FROM jobs
+       WHERE status = 'PENDING'
+       AND type = ANY($1::"JobType"[])
+       AND (scheduled_at IS NULL OR scheduled_at <= NOW())
+       AND attempts < max_attempts
+       ORDER BY created_at ASC
+       LIMIT 1
+       FOR UPDATE SKIP LOCKED`,
+      types,
+    )
 
-  const firstJob = jobs[0]
-  if (!firstJob) return null
+    const firstJob = jobs[0]
+    if (!firstJob) return null
 
-  const job = await prisma.job.update({
-    where: { id: firstJob.id },
-    data: {
-      status: 'PROCESSING',
-      attempts: { increment: 1 },
-    },
+    const job = await tx.job.update({
+      where: { id: firstJob.id },
+      data: {
+        status: 'PROCESSING',
+        attempts: { increment: 1 },
+      },
+    })
+
+    return job
   })
-
-  return job
 }
 
 export async function markCompleted(jobId: string) {

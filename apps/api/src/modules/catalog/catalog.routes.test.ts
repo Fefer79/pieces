@@ -176,7 +176,7 @@ describe('Catalog Routes', () => {
       mockAuthUser()
       mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
       mockCatalogItemFindFirst.mockResolvedValueOnce({
-        id: 'item-1',
+        id: '00000000-0000-0000-0000-000000000001',
         vendorId: 'vendor-1',
         name: 'Plaquette de frein',
         status: 'DRAFT',
@@ -185,7 +185,7 @@ describe('Catalog Routes', () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/catalog/items/item-1',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001',
         headers: { authorization: 'Bearer valid-token' },
       })
 
@@ -201,7 +201,7 @@ describe('Catalog Routes', () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/catalog/items/nonexistent',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000099',
         headers: { authorization: 'Bearer valid-token' },
       })
 
@@ -213,10 +213,22 @@ describe('Catalog Routes', () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'GET',
-        url: '/api/v1/catalog/items/item-1',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001',
       })
 
       expect(response.statusCode).toBe(401)
+    })
+
+    it('returns 422 for invalid UUID param', async () => {
+      mockAuthUser()
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/catalog/items/not-a-uuid',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(422)
     })
   })
 })

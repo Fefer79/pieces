@@ -12,6 +12,7 @@ export interface PartIdentification {
 const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.0-flash'
 const QUOTA_ALERT_THRESHOLD = parseFloat(process.env.GEMINI_QUOTA_ALERT_THRESHOLD ?? '0.8')
 
+let genAIInstance: GoogleGenerativeAI | null = null
 let callCount = 0
 let quotaAlerted = false
 
@@ -50,8 +51,8 @@ export async function identifyPart(
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODEL })
+    if (!genAIInstance) genAIInstance = new GoogleGenerativeAI(apiKey)
+    const model = genAIInstance.getGenerativeModel({ model: GEMINI_MODEL })
 
     const result = await model.generateContent([
       PROMPT,

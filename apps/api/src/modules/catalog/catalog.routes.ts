@@ -3,7 +3,7 @@ import { requireAuth, requireRole } from '../../plugins/auth.js'
 import { uploadPartImage, getMyItems, getItem } from './catalog.service.js'
 import { AppError } from '../../lib/appError.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { catalogItemFilterSchema } from 'shared/validators'
+import { catalogItemFilterSchema, catalogItemParamsSchema } from 'shared/validators'
 
 export async function catalogRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -72,6 +72,7 @@ export async function catalogRoutes(fastify: FastifyInstance) {
         tags: ['Catalog'],
         description: 'Détail d\'une fiche catalogue',
         security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
       },
       preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
     },
