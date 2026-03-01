@@ -17,6 +17,8 @@ interface CatalogItem {
   qualityScore: number | null
   qualityIssue: string | null
   aiGenerated: boolean
+  inStock: boolean
+  priceAlertFlag: boolean
   createdAt: string
 }
 
@@ -159,6 +161,12 @@ export default function VendorCatalogPage() {
                   }`}>
                     {item.status === 'DRAFT' ? 'Brouillon' : item.status === 'PUBLISHED' ? 'Publié' : 'Archivé'}
                   </span>
+                  {item.status === 'PUBLISHED' && !item.inStock && (
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">Épuisée</span>
+                  )}
+                  {item.priceAlertFlag && (
+                    <span className="text-xs text-amber-600" title="Alerte prix">🚨</span>
+                  )}
                   {item.qualityIssue && (
                     <span className="text-xs text-amber-600">⚠️</span>
                   )}

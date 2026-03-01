@@ -11,6 +11,7 @@ const mockCatalogItemCreate = vi.fn()
 const mockCatalogItemFindMany = vi.fn()
 const mockCatalogItemCount = vi.fn()
 const mockCatalogItemFindFirst = vi.fn()
+const mockCatalogItemUpdate = vi.fn()
 const mockJobCreate = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
@@ -29,6 +30,7 @@ vi.mock('../../lib/prisma.js', () => ({
       findMany: (...args: unknown[]) => mockCatalogItemFindMany(...args),
       count: (...args: unknown[]) => mockCatalogItemCount(...args),
       findFirst: (...args: unknown[]) => mockCatalogItemFindFirst(...args),
+      update: (...args: unknown[]) => mockCatalogItemUpdate(...args),
     },
     job: {
       create: (...args: unknown[]) => mockJobCreate(...args),
@@ -40,7 +42,7 @@ vi.mock('../../lib/r2.js', () => ({
   uploadToR2: vi.fn().mockResolvedValue('https://r2.dev/catalog/vendor-1/image.jpg'),
 }))
 
-const { uploadPartImage, getMyItems, getItem } = await import('./catalog.service.js')
+const { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock } = await import('./catalog.service.js')
 
 describe('catalog.service', () => {
   beforeEach(() => {
@@ -156,6 +158,125 @@ describe('catalog.service', () => {
 
       await expect(getItem('user-1', 'item-1'))
         .rejects.toMatchObject({ code: 'VENDOR_NOT_FOUND', statusCode: 404 })
+    })
+  })
+
+  describe('updateItem', () => {
+    it('updates item fields partially', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'DRAFT', price: null, priceUpdatedAt: null,
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({
+        id: 'item-1', name: 'Filtre à huile', price: 5000,
+      })
+
+      const result = await updateItem('user-1', 'item-1', { name: 'Filtre à huile', price: 5000 })
+
+      expect(result.name).toBe('Filtre à huile')
+      expect(mockCatalogItemUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'item-1' },
+          data: expect.objectContaining({ name: 'Filtre à huile', price: 5000 }),
+        }),
+      )
+    })
+
+    it('throws VENDOR_NOT_FOUND when no vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(updateItem('user-1', 'item-1', { name: 'Test' }))
+        .rejects.toMatchObject({ code: 'VENDOR_NOT_FOUND', statusCode: 404 })
+    })
+
+    it('throws CATALOG_ITEM_NOT_FOUND when item not found', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce(null)
+
+      await expect(updateItem('user-1', 'item-1', { name: 'Test' }))
+        .rejects.toMatchObject({ code: 'CATALOG_ITEM_NOT_FOUND', statusCode: 404 })
+    })
+
+    it('detects bait-and-switch price variation >50% in <1h', async () => {
+      const recentTime = new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'PUBLISHED', price: 10000, priceUpdatedAt: recentTime,
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({
+        id: 'item-1', price: 25000, priceAlertFlag: true,
+      })
+
+      const mockLogger = { warn: vi.fn() }
+      const result = await updateItem('user-1', 'item-1', { price: 25000 }, mockLogger)
+
+      expect(result.priceAlertFlag).toBe(true)
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.objectContaining({ event: 'PRICE_ALERT_BAIT_SWITCH' }),
+        expect.any(String),
+      )
+    })
+  })
+
+  describe('publishItem', () => {
+    it('publishes a draft item with price', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'DRAFT', price: 5000,
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({
+        id: 'item-1', status: 'PUBLISHED',
+      })
+
+      const result = await publishItem('user-1', 'item-1')
+
+      expect(result.status).toBe('PUBLISHED')
+    })
+
+    it('throws CATALOG_PRICE_REQUIRED when price is null', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'DRAFT', price: null,
+      })
+
+      await expect(publishItem('user-1', 'item-1'))
+        .rejects.toMatchObject({ code: 'CATALOG_PRICE_REQUIRED', statusCode: 422 })
+    })
+
+    it('throws CATALOG_ITEM_NOT_DRAFT when already published', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'PUBLISHED', price: 5000,
+      })
+
+      await expect(publishItem('user-1', 'item-1'))
+        .rejects.toMatchObject({ code: 'CATALOG_ITEM_NOT_DRAFT', statusCode: 422 })
+    })
+  })
+
+  describe('toggleStock', () => {
+    it('toggles stock on published item', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'PUBLISHED',
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({
+        id: 'item-1', inStock: false,
+      })
+
+      const result = await toggleStock('user-1', 'item-1', false)
+
+      expect(result.inStock).toBe(false)
+    })
+
+    it('throws CATALOG_ITEM_NOT_PUBLISHED when item is draft', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'DRAFT',
+      })
+
+      await expect(toggleStock('user-1', 'item-1', false))
+        .rejects.toMatchObject({ code: 'CATALOG_ITEM_NOT_PUBLISHED', statusCode: 422 })
     })
   })
 })

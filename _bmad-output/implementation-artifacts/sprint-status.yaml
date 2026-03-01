@@ -54,7 +54,7 @@ development_status:
   2-1-onboarding-vendeur-kyc-agent-terrain: done
   2-2-signature-garanties-obligatoires-activation-profil: done
   2-3-pipeline-images-generation-catalogue-ia: done
-  2-4-validation-ajustement-catalogue-vendeur: backlog
+  2-4-validation-ajustement-catalogue-vendeur: review
   2-5-configuration-zones-livraison-vendeur: backlog
   2-6-dashboard-vendeur: backlog
   epic-2-retrospective: optional

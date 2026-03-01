@@ -13,6 +13,7 @@ const mockCatalogItemCreate = vi.fn()
 const mockCatalogItemFindMany = vi.fn()
 const mockCatalogItemCount = vi.fn()
 const mockCatalogItemFindFirst = vi.fn()
+const mockCatalogItemUpdate = vi.fn()
 const mockJobCreate = vi.fn()
 const mockTransaction = vi.fn()
 
@@ -41,6 +42,7 @@ vi.mock('../../lib/prisma.js', () => ({
       findMany: (...args: unknown[]) => mockCatalogItemFindMany(...args),
       count: (...args: unknown[]) => mockCatalogItemCount(...args),
       findFirst: (...args: unknown[]) => mockCatalogItemFindFirst(...args),
+      update: (...args: unknown[]) => mockCatalogItemUpdate(...args),
     },
     job: {
       create: (...args: unknown[]) => mockJobCreate(...args),
@@ -229,6 +231,148 @@ describe('Catalog Routes', () => {
       })
 
       expect(response.statusCode).toBe(422)
+    })
+  })
+
+  describe('PATCH /api/v1/catalog/items/:id', () => {
+    it('returns 200 when item updated', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: '00000000-0000-0000-0000-000000000001', vendorId: 'vendor-1', status: 'DRAFT', price: null, priceUpdatedAt: null,
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({
+        id: '00000000-0000-0000-0000-000000000001', name: 'Filtre à huile', price: 5000,
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PATCH',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001',
+        headers: { authorization: 'Bearer valid-token', 'content-type': 'application/json' },
+        payload: JSON.stringify({ name: 'Filtre à huile', price: 5000 }),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data.name).toBe('Filtre à huile')
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PATCH',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ name: 'Test' }),
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('POST /api/v1/catalog/items/:id/publish', () => {
+    it('returns 200 when item published', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: '00000000-0000-0000-0000-000000000001', vendorId: 'vendor-1', status: 'DRAFT', price: 5000,
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({
+        id: '00000000-0000-0000-0000-000000000001', status: 'PUBLISHED',
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001/publish',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data.status).toBe('PUBLISHED')
+    })
+
+    it('returns 422 when no price set', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: '00000000-0000-0000-0000-000000000001', vendorId: 'vendor-1', status: 'DRAFT', price: null,
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001/publish',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(422)
+      expect(response.json().error.code).toBe('CATALOG_PRICE_REQUIRED')
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001/publish',
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('PATCH /api/v1/catalog/items/:id/stock', () => {
+    it('returns 200 when stock toggled', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: '00000000-0000-0000-0000-000000000001', vendorId: 'vendor-1', status: 'PUBLISHED',
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({
+        id: '00000000-0000-0000-0000-000000000001', inStock: false,
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PATCH',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001/stock',
+        headers: { authorization: 'Bearer valid-token', 'content-type': 'application/json' },
+        payload: JSON.stringify({ inStock: false }),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data.inStock).toBe(false)
+    })
+
+    it('returns 422 when item not published', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: '00000000-0000-0000-0000-000000000001', vendorId: 'vendor-1', status: 'DRAFT',
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PATCH',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001/stock',
+        headers: { authorization: 'Bearer valid-token', 'content-type': 'application/json' },
+        payload: JSON.stringify({ inStock: false }),
+      })
+
+      expect(response.statusCode).toBe(422)
+      expect(response.json().error.code).toBe('CATALOG_ITEM_NOT_PUBLISHED')
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PATCH',
+        url: '/api/v1/catalog/items/00000000-0000-0000-0000-000000000001/stock',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ inStock: false }),
+      })
+
+      expect(response.statusCode).toBe(401)
     })
   })
 })

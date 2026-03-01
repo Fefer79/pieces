@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { uploadPartImage, getMyItems, getItem } from './catalog.service.js'
+import { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock } from './catalog.service.js'
 import { AppError } from '../../lib/appError.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { catalogItemFilterSchema, catalogItemParamsSchema } from 'shared/validators'
+import { catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema } from 'shared/validators'
 
 export async function catalogRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -79,6 +79,73 @@ export async function catalogRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const result = await getItem(request.user.id, id)
+
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.patch(
+    '/items/:id',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Mise à jour partielle d\'une fiche catalogue',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+        body: zodToFastify(updateCatalogItemSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const body = request.body as { name?: string; category?: string; oemReference?: string | null; vehicleCompatibility?: string | null; price?: number }
+      const result = await updateItem(request.user.id, id, body, request.log)
+
+      request.log.info({ event: 'CATALOG_ITEM_UPDATED', userId: request.user.id, itemId: id })
+
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/items/:id/publish',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Publier une fiche catalogue (DRAFT → PUBLISHED)',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const result = await publishItem(request.user.id, id)
+
+      request.log.info({ event: 'CATALOG_ITEM_PUBLISHED', userId: request.user.id, itemId: id })
+
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.patch(
+    '/items/:id/stock',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Toggle stock d\'une fiche catalogue (en stock / épuisée)',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+        body: zodToFastify(toggleStockSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const { inStock } = request.body as { inStock: boolean }
+      const result = await toggleStock(request.user.id, id, inStock)
+
+      request.log.info({ event: 'CATALOG_STOCK_TOGGLED', userId: request.user.id, itemId: id, inStock })
 
       return reply.status(200).send({ data: result })
     },

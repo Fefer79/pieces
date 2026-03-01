@@ -135,3 +135,125 @@ export async function getItem(userId: string, itemId: string) {
 
   return item
 }
+
+export interface UpdateCatalogItemData {
+  name?: string
+  category?: string
+  oemReference?: string | null
+  vehicleCompatibility?: string | null
+  price?: number
+}
+
+export async function updateItem(
+  userId: string,
+  itemId: string,
+  data: UpdateCatalogItemData,
+  logger?: { warn: (obj: Record<string, unknown>, msg: string) => void },
+) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Profil vendeur introuvable' })
+  }
+
+  const item = await prisma.catalogItem.findFirst({
+    where: { id: itemId, vendorId: vendor.id },
+  })
+
+  if (!item) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Fiche catalogue introuvable' })
+  }
+
+  const updateData: Record<string, unknown> = {}
+
+  if (data.name !== undefined) updateData.name = data.name
+  if (data.category !== undefined) updateData.category = data.category
+  if (data.oemReference !== undefined) updateData.oemReference = data.oemReference
+  if (data.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = data.vehicleCompatibility
+
+  if (data.price !== undefined) {
+    updateData.price = data.price
+    updateData.priceUpdatedAt = new Date()
+
+    // Bait-and-switch detection: >50% variation within 1 hour on published items
+    if (item.status === 'PUBLISHED' && item.price !== null && item.price > 0) {
+      const variation = Math.abs(data.price - item.price) / item.price
+      const hourAgo = new Date(Date.now() - 60 * 60 * 1000)
+      if (variation > 0.5 && item.priceUpdatedAt && item.priceUpdatedAt > hourAgo) {
+        updateData.priceAlertFlag = true
+        logger?.warn(
+          { event: 'PRICE_ALERT_BAIT_SWITCH', itemId, oldPrice: item.price, newPrice: data.price, variation: Math.round(variation * 100) },
+          `Price variation ${Math.round(variation * 100)}% detected in <1h`,
+        )
+      }
+    }
+  }
+
+  return prisma.catalogItem.update({
+    where: { id: itemId },
+    data: updateData,
+  })
+}
+
+export async function publishItem(userId: string, itemId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Profil vendeur introuvable' })
+  }
+
+  const item = await prisma.catalogItem.findFirst({
+    where: { id: itemId, vendorId: vendor.id },
+  })
+
+  if (!item) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Fiche catalogue introuvable' })
+  }
+
+  if (item.status !== 'DRAFT') {
+    throw new AppError('CATALOG_ITEM_NOT_DRAFT', 422, { message: 'Seules les fiches en brouillon peuvent être publiées' })
+  }
+
+  if (item.price === null || item.price === undefined) {
+    throw new AppError('CATALOG_PRICE_REQUIRED', 422, { message: 'Un prix est obligatoire pour publier la fiche' })
+  }
+
+  return prisma.catalogItem.update({
+    where: { id: itemId },
+    data: { status: 'PUBLISHED' },
+  })
+}
+
+export async function toggleStock(userId: string, itemId: string, inStock: boolean) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Profil vendeur introuvable' })
+  }
+
+  const item = await prisma.catalogItem.findFirst({
+    where: { id: itemId, vendorId: vendor.id },
+  })
+
+  if (!item) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Fiche catalogue introuvable' })
+  }
+
+  if (item.status !== 'PUBLISHED') {
+    throw new AppError('CATALOG_ITEM_NOT_PUBLISHED', 422, { message: 'Le stock ne peut être modifié que sur les fiches publiées' })
+  }
+
+  return prisma.catalogItem.update({
+    where: { id: itemId },
+    data: { inStock },
+  })
+}
