@@ -73,6 +73,7 @@
 Analyses détaillées exhaustives de zones spécifiques :
 
 - [Manuel d'utilisation administrateur](./deep-dive-manuel-administrateur.md) — Guide complet pour les administrateurs de la plateforme (dashboard, utilisateurs, vendeurs, commandes, livraisons, litiges, notifications, paiements) — Généré 2026-03-01
+- [Manuel d'utilisation vendeur](./deep-dive-manuel-vendeur.md) — Guide complet pour les vendeurs (onboarding KYC, garanties, catalogue IA, commandes, livraisons, escrow, avis, zones de livraison) — Généré 2026-03-01
 
 ---
 
