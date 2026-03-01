@@ -31,6 +31,9 @@ model User {
   vehicles             UserVehicle[]
   initiatedOrders      Order[]  @relation("OrderInitiator")
   riderDeliveries      Delivery[] @relation("DeliveryRider")
+  sellerReviews        SellerReview[] @relation("SellerReviewer")
+  deliveryReviews      DeliveryReview[] @relation("DeliveryReviewer")
+  disputes             Dispute[] @relation("DisputeOpener")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -237,6 +240,61 @@ model UserVehicle {
 
   @@map("user_vehicles")
   @@index([userId], name: "idx_user_vehicles_user")
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_BUYER
+  RESOLVED_SELLER
+  CLOSED
+}
+
+model SellerReview {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  vendorId  String   @map("vendor_id")
+  reviewerId String  @map("reviewer_id")
+  reviewer  User     @relation("SellerReviewer", fields: [reviewerId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("seller_reviews")
+  @@unique([orderId, reviewerId], name: "uq_seller_review_order_user")
+  @@index([vendorId], name: "idx_seller_reviews_vendor")
+}
+
+model DeliveryReview {
+  id         String   @id @default(uuid())
+  deliveryId String   @map("delivery_id")
+  riderId    String   @map("rider_id")
+  reviewerId String   @map("reviewer_id")
+  reviewer   User     @relation("DeliveryReviewer", fields: [reviewerId], references: [id])
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("delivery_reviews")
+  @@unique([deliveryId, reviewerId], name: "uq_delivery_review_delivery_user")
+  @@index([riderId], name: "idx_delivery_reviews_rider")
+}
+
+model Dispute {
+  id          String        @id @default(uuid())
+  orderId     String        @map("order_id")
+  openedBy    String        @map("opened_by")
+  opener      User          @relation("DisputeOpener", fields: [openedBy], references: [id])
+  status      DisputeStatus @default(OPEN)
+  reason      String
+  evidence    String[]      @default([])
+  resolution  String?
+  resolvedAt  DateTime?     @map("resolved_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("disputes")
+  @@index([orderId], name: "idx_disputes_order")
 }
 
 model SearchSynonym {
