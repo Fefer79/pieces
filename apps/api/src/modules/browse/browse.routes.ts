@@ -1,5 +1,7 @@
 import type { FastifyInstance } from 'fastify'
-import { getBrands, getModels, getYears, getCategories, browseParts, searchParts } from './browse.service.js'
+import { getBrands, getModels, getYears, getCategories, browseParts, searchParts, decodeVin } from './browse.service.js'
+import { zodToFastify } from '../../lib/zodSchema.js'
+import { vinDecodeSchema } from 'shared/validators'
 
 export async function browseRoutes(fastify: FastifyInstance) {
   // All browse routes are PUBLIC — no auth required
@@ -102,6 +104,22 @@ export async function browseRoutes(fastify: FastifyInstance) {
         page: query.page ? parseInt(query.page, 10) : undefined,
         limit: query.limit ? parseInt(query.limit, 10) : undefined,
       })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/vin-decode',
+    {
+      schema: {
+        tags: ['Browse'],
+        description: 'Décoder un VIN pour identifier le véhicule (NHTSA VPIC)',
+        body: zodToFastify(vinDecodeSchema),
+      },
+    },
+    async (request, reply) => {
+      const { vin } = request.body as { vin: string }
+      const result = await decodeVin(vin)
       return reply.status(200).send({ data: result })
     },
   )

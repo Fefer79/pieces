@@ -2,6 +2,39 @@ import { prisma } from '../../lib/prisma.js'
 import { VEHICLE_BRANDS, BRAND_NAMES, PART_CATEGORIES } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
 
+export interface VinDecodeResult {
+  vin: string
+  make: string | null
+  model: string | null
+  year: number | null
+  decoded: boolean
+}
+
+export async function decodeVin(vin: string): Promise<VinDecodeResult> {
+  const upperVin = vin.toUpperCase()
+  try {
+    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/${upperVin}?format=json`)
+    if (!res.ok) {
+      return { vin: upperVin, make: null, model: null, year: null, decoded: false }
+    }
+    const data = (await res.json()) as { Results?: Array<{ Make?: string; Model?: string; ModelYear?: string }> }
+    const result = data.Results?.[0]
+    if (!result || !result.Make) {
+      return { vin: upperVin, make: null, model: null, year: null, decoded: false }
+    }
+
+    return {
+      vin: upperVin,
+      make: result.Make || null,
+      model: result.Model || null,
+      year: result.ModelYear ? parseInt(result.ModelYear, 10) : null,
+      decoded: true,
+    }
+  } catch {
+    return { vin: upperVin, make: null, model: null, year: null, decoded: false }
+  }
+}
+
 export function getBrands() {
   return BRAND_NAMES
 }

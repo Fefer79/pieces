@@ -28,7 +28,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { getBrands, getModels, getYears, getCategories, browseParts, searchParts } = await import('./browse.service.js')
+const { getBrands, getModels, getYears, getCategories, browseParts, searchParts, decodeVin } = await import('./browse.service.js')
 
 describe('browse.service', () => {
   beforeEach(() => {
@@ -119,6 +119,50 @@ describe('browse.service', () => {
 
       expect(result.items).toHaveLength(0)
       expect(result.pagination.total).toBe(0)
+    })
+  })
+
+  describe('decodeVin', () => {
+    it('returns decoded=false when NHTSA fetch fails', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('network'))
+
+      const result = await decodeVin('JTDKN3DU5A0123456')
+
+      expect(result.decoded).toBe(false)
+      expect(result.vin).toBe('JTDKN3DU5A0123456')
+      globalThis.fetch = originalFetch
+    })
+
+    it('returns decoded=false when NHTSA returns no results', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Results: [{}] }),
+      })
+
+      const result = await decodeVin('JTDKN3DU5A0123456')
+
+      expect(result.decoded).toBe(false)
+      globalThis.fetch = originalFetch
+    })
+
+    it('returns decoded vehicle when NHTSA returns data', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          Results: [{ Make: 'TOYOTA', Model: 'Corolla', ModelYear: '2010' }],
+        }),
+      })
+
+      const result = await decodeVin('JTDKN3DU5A0123456')
+
+      expect(result.decoded).toBe(true)
+      expect(result.make).toBe('TOYOTA')
+      expect(result.model).toBe('Corolla')
+      expect(result.year).toBe(2010)
+      globalThis.fetch = originalFetch
     })
   })
 })

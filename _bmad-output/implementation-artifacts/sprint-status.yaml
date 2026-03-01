@@ -61,9 +61,9 @@ development_status:
 
   # Epic 3 : Recherche & Navigation Pièces (PWA)
   epic-3: in-progress
-  3-1-navigation-catalogue-visuelle: in-progress
-  3-2-recherche-reference-oem-meilisearch: backlog
-  3-3-decodage-vin-identification-vehicule: backlog
+  3-1-navigation-catalogue-visuelle: done
+  3-2-recherche-reference-oem-meilisearch: done
+  3-3-decodage-vin-identification-vehicule: in-progress
   3-4-profils-vehicules-pre-remplissage: backlog
   3-5-identification-piece-photo-ia-desambiguation-pwa: backlog
   3-6-pwa-offline-first-service-worker: backlog

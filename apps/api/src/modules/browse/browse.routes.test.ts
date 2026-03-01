@@ -154,4 +154,46 @@ describe('Browse Routes', () => {
       expect(response.json().data.items).toHaveLength(0)
     })
   })
+
+  describe('POST /api/v1/browse/vin-decode', () => {
+    it('returns 200 with decoded VIN', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (typeof url === 'string' && url.includes('nhtsa')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              Results: [{ Make: 'TOYOTA', Model: 'Corolla', ModelYear: '2010' }],
+            }),
+          })
+        }
+        return originalFetch(url)
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/browse/vin-decode',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ vin: 'JTDKN3DU5A0123456' }),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data.decoded).toBe(true)
+      expect(response.json().data.make).toBe('TOYOTA')
+      globalThis.fetch = originalFetch
+    })
+
+    it('returns 422 for invalid VIN format', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/browse/vin-decode',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ vin: 'short' }),
+      })
+
+      expect(response.statusCode).toBe(422)
+    })
+  })
 })
