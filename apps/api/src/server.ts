@@ -20,6 +20,7 @@ import { deliveryRoutes } from './modules/delivery/delivery.routes.js'
 import { whatsappRoutes } from './modules/whatsapp/whatsapp.routes.js'
 import { reviewRoutes } from './modules/review/review.routes.js'
 import { notificationRoutes } from './modules/notification/notification.routes.js'
+import { adminRoutes } from './modules/admin/admin.routes.js'
 import multipart from '@fastify/multipart'
 
 // Fail-fast: validate environment variables at startup
@@ -63,6 +64,7 @@ export function buildApp() {
   fastify.register(whatsappRoutes, { prefix: '/api/v1/whatsapp' })
   fastify.register(reviewRoutes, { prefix: '/api/v1/reviews' })
   fastify.register(notificationRoutes, { prefix: '/api/v1/notifications' })
+  fastify.register(adminRoutes, { prefix: '/api/v1/admin' })
 
   return fastify
 }
