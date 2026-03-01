@@ -2,7 +2,7 @@
   "workflow_version": "1.2.0",
   "timestamps": {
     "started": "2026-03-01T12:00:00Z",
-    "last_updated": "2026-03-01T12:45:00Z",
+    "last_updated": "2026-03-01T13:00:00Z",
     "completed": "2026-03-01T12:45:00Z"
   },
   "mode": "initial_scan",
@@ -48,7 +48,11 @@
     "source-tree-analysis.md",
     "development-guide.md",
     "integration-architecture.md",
-    "index.md"
+    "index.md",
+    "deep-dive-manuel-administrateur.md"
   ],
-  "resume_instructions": "Workflow completed successfully"
+  "deep_dive_targets": [
+    {"target_name": "Manuel administrateur", "target_path": "admin feature (cross-module)", "files_analyzed": 16, "output_file": "deep-dive-manuel-administrateur.md", "timestamp": "2026-03-01T13:00:00Z"}
+  ],
+  "resume_instructions": "Workflow completed. 1 deep-dive generated."
 }

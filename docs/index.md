@@ -68,6 +68,12 @@
 - [Arbre source annoté](./source-tree-analysis.md) — Structure complète du code avec annotations
 - [Guide de développement](./development-guide.md) — Installation, commandes, tests, conventions, CI/CD
 
+### Deep-Dive Documentation
+
+Analyses détaillées exhaustives de zones spécifiques :
+
+- [Manuel d'utilisation administrateur](./deep-dive-manuel-administrateur.md) — Guide complet pour les administrateurs de la plateforme (dashboard, utilisateurs, vendeurs, commandes, livraisons, litiges, notifications, paiements) — Généré 2026-03-01
+
 ---
 
 ## Documentation existante
