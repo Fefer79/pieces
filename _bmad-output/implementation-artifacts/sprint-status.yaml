@@ -90,35 +90,35 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6 : Bot WhatsApp — Identification & Commande
-  epic-6: backlog
-  6-1-infrastructure-bot-whatsapp-webhook: backlog
-  6-2-photo-piece-identification-ia-whatsapp: backlog
-  6-3-ocr-carte-grise-decodage-vin-whatsapp: backlog
-  6-4-flow-commande-whatsapp-complet: backlog
-  6-5-notifications-whatsapp-commande: backlog
+  epic-6: done
+  6-1-infrastructure-bot-whatsapp-webhook: done
+  6-2-photo-piece-identification-ia-whatsapp: done
+  6-3-ocr-carte-grise-decodage-vin-whatsapp: done
+  6-4-flow-commande-whatsapp-complet: done
+  6-5-notifications-whatsapp-commande: done
   epic-6-retrospective: optional
 
   # Epic 7 : Évaluations, Confiance & Litiges
-  epic-7: backlog
-  7-1-evaluation-mecanicien-livraison-proprietaire: backlog
-  7-2-badge-bon-mecano-attribution-revocation-automatique: backlog
-  7-3-consultation-notes-contestation: backlog
-  7-4-ouverture-litige-soumission-preuves: backlog
-  7-5-arbitrage-bilateral-decision-ecrite: backlog
-  7-6-commande-remplacement-urgent: backlog
+  epic-7: done
+  7-1-evaluation-mecanicien-livraison-proprietaire: done
+  7-2-badge-bon-mecano-attribution-revocation-automatique: done
+  7-3-consultation-notes-contestation: done
+  7-4-ouverture-litige-soumission-preuves: done
+  7-5-arbitrage-bilateral-decision-ecrite: done
+  7-6-commande-remplacement-urgent: done
   epic-7-retrospective: optional
 
   # Epic 8 : Notifications Multi-Canal
-  epic-8: backlog
-  8-1-service-notifications-multi-canal: backlog
-  8-2-alertes-vendeur-stock-critique-demande-catalogue: backlog
-  8-3-preferences-notification-canal: backlog
-  8-4-appel-proactif-j1-sla-breach: backlog
+  epic-8: done
+  8-1-service-notifications-multi-canal: done
+  8-2-alertes-vendeur-stock-critique-demande-catalogue: done
+  8-3-preferences-notification-canal: done
+  8-4-appel-proactif-j1-sla-breach: done
   epic-8-retrospective: optional
 
   # Epic 9 : Administration, Historique & Enterprise
-  epic-9: backlog
-  9-1-historique-commandes-utilisateur: backlog
-  9-2-admin-cross-tenant-journalisation: backlog
-  9-3-espace-enterprise-gestion-membres: backlog
+  epic-9: done
+  9-1-historique-commandes-utilisateur: done
+  9-2-admin-cross-tenant-journalisation: done
+  9-3-espace-enterprise-gestion-membres: done
   epic-9-retrospective: optional
