@@ -5,6 +5,8 @@ import { cors } from './plugins/cors.js'
 import { rateLimit } from './plugins/rateLimit.js'
 import { swagger } from './plugins/swagger.js'
 import { setupErrorHandler } from './plugins/errorHandler.js'
+import { auth } from './plugins/auth.js'
+import { authRoutes } from './modules/auth/auth.routes.js'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -25,10 +27,14 @@ export function buildApp() {
   fastify.register(cors)
   fastify.register(rateLimit)
   fastify.register(swagger)
+  fastify.register(auth)
   setupErrorHandler(fastify)
 
   // Health check
   fastify.get('/healthz', async () => ({ status: 'ok' }))
+
+  // Routes
+  fastify.register(authRoutes, { prefix: '/api/v1/auth' })
 
   return fastify
 }
@@ -45,4 +51,6 @@ const start = async () => {
   }
 }
 
-start()
+if (process.env.NODE_ENV !== 'test') {
+  start()
+}

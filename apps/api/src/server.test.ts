@@ -3,8 +3,20 @@ import { AppError } from './lib/appError.js'
 
 // Mock environment variables before importing server
 vi.stubEnv('DATABASE_URL', 'postgresql://localhost:5432/pieces')
+vi.stubEnv('SUPABASE_URL', 'https://test.supabase.co')
+vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-role-key')
 vi.stubEnv('PINO_LOG_LEVEL', 'error')
 vi.stubEnv('PORT', '3001')
+
+vi.mock('./lib/supabase.js', () => ({
+  supabaseAdmin: {
+    auth: { getUser: vi.fn(), signInWithOtp: vi.fn(), verifyOtp: vi.fn() },
+  },
+}))
+
+vi.mock('./lib/prisma.js', () => ({
+  prisma: { user: { upsert: vi.fn() } },
+}))
 
 const { buildApp } = await import('./server.js')
 

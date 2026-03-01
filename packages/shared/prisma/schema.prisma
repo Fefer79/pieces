@@ -7,4 +7,24 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Models will be added in subsequent stories
+enum Role {
+  MECHANIC
+  OWNER
+  SELLER
+  RIDER
+  ADMIN
+  ENTERPRISE
+}
+
+model User {
+  id            String   @id @default(uuid())
+  supabaseId    String   @unique @map("supabase_id")
+  phone         String   @unique
+  roles         Role[]
+  activeContext  Role?    @map("active_context")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+  @@index([phone], name: "idx_users_phone")
+}
