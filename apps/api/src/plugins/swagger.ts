@@ -26,6 +26,7 @@ export async function swagger(fastify: FastifyInstance) {
         { name: 'Auth', description: 'Authentification OTP par SMS' },
         { name: 'Users', description: 'Gestion du profil et des rôles' },
         { name: 'Consent', description: 'Consentement ARTCI et données personnelles' },
+        { name: 'Vendors', description: 'Onboarding vendeur et gestion KYC' },
       ],
     },
   })

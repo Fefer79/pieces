@@ -50,8 +50,8 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2 : Catalogue Vendeur & Onboarding
-  epic-2: backlog
-  2-1-onboarding-vendeur-kyc-agent-terrain: backlog
+  epic-2: in-progress
+  2-1-onboarding-vendeur-kyc-agent-terrain: review
   2-2-signature-garanties-obligatoires-activation-profil: backlog
   2-3-pipeline-images-generation-catalogue-ia: backlog
   2-4-validation-ajustement-catalogue-vendeur: backlog

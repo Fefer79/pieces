@@ -27,6 +27,7 @@ model User {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   dataDeletionRequests DataDeletionRequest[]
+  vendor               Vendor?
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -36,6 +37,54 @@ enum DeletionRequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum VendorStatus {
+  PENDING_ACTIVATION
+  ACTIVE
+  PAUSED
+}
+
+enum VendorType {
+  FORMAL
+  INFORMAL
+}
+
+enum KycType {
+  RCCM
+  CNI
+}
+
+model Vendor {
+  id          String       @id @default(uuid())
+  userId      String       @unique @map("user_id")
+  user        User         @relation(fields: [userId], references: [id])
+  shopName    String       @map("shop_name")
+  contactName String       @map("contact_name")
+  phone       String
+  vendorType  VendorType   @map("vendor_type")
+  status      VendorStatus @default(PENDING_ACTIVATION)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  kyc VendorKyc?
+
+  @@map("vendors")
+  @@index([userId], name: "idx_vendors_user_id")
+  @@index([phone], name: "idx_vendors_phone")
+}
+
+model VendorKyc {
+  id             String   @id @default(uuid())
+  vendorId       String   @unique @map("vendor_id")
+  vendor         Vendor   @relation(fields: [vendorId], references: [id])
+  kycType        KycType  @map("kyc_type")
+  documentNumber String   @map("document_number")
+  isPublic       Boolean  @default(false) @map("is_public")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("vendor_kyc")
+  @@index([vendorId], name: "idx_vendor_kyc_vendor_id")
 }
 
 model DataDeletionRequest {
