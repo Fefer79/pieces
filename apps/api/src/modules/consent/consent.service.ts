@@ -10,6 +10,11 @@ export async function recordConsent(userId: string, body: unknown) {
     })
   }
 
+  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+  if (!existing) {
+    throw new AppError('USER_NOT_FOUND', 404)
+  }
+
   const user = await prisma.user.update({
     where: { id: userId },
     data: { consentedAt: new Date() },
@@ -39,6 +44,15 @@ export async function getUserData(userId: string) {
 }
 
 export async function requestDeletion(userId: string) {
+  const existing = await prisma.dataDeletionRequest.findFirst({
+    where: { userId, status: 'PENDING' },
+    select: { id: true, status: true, requestedAt: true },
+  })
+
+  if (existing) {
+    return existing
+  }
+
   const request = await prisma.dataDeletionRequest.create({
     data: { userId },
     select: { id: true, status: true, requestedAt: true },

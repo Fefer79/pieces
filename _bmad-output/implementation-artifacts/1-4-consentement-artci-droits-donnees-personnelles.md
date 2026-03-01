@@ -1,6 +1,6 @@
 # Story 1.4: Consentement ARTCI & Droits sur les Données Personnelles
 
-Status: in-progress
+Status: done
 
 ## Story
 
@@ -315,12 +315,26 @@ Claude Opus 4.6
 ### Completion Notes List
 
 - All 8 tasks completed successfully
-- 70 tests pass (56 API + 4 web + 10 shared)
+- 75 tests pass (61 API + 4 web + 10 shared)
 - Lint and build clean
 - Consent modal integrated in auth layout with useRef lazy Supabase pattern
 - `requireConsent` middleware created but not yet applied to any routes (ready for future stories)
 - Profile `/me` endpoint now returns `consentedAt` field
 - Existing test mocks updated to include `consentedAt` field
+
+### Senior Developer Review
+
+**7 findings (1 HIGH, 3 MEDIUM, 3 LOW) — 5 fixed, 2 LOW accepted:**
+
+| # | Severity | Finding | Fix |
+|---|----------|---------|-----|
+| 1 | HIGH | `recordConsent` crashes with P2025 if user deleted | Added `findUnique` check before update |
+| 2 | MEDIUM | `requireConsent` has zero tests | Added 3 unit tests (pass/fail/no-user) |
+| 3 | MEDIUM | `ROLE_LABELS` duplicated in 2 files | Extracted to `apps/web/lib/role-labels.ts` |
+| 4 | MEDIUM | Unlimited deletion requests (spam) | Added `findFirst` check for existing PENDING |
+| 5 | LOW | `deletionRequestSchema` defined but unused | Accepted — kept for future use |
+| 6 | LOW | Data page shows phone unmasked | Accepted — transparent data access right |
+| 7 | LOW | Consent modal missing ARIA attributes | Fixed — added `role="dialog"`, `aria-modal`, `aria-labelledby` |
 
 ### File List
 
@@ -329,16 +343,17 @@ Claude Opus 4.6
 - `packages/shared/validators/consent.ts` — NEW: consentSchema, deletionRequestSchema
 - `packages/shared/validators/index.ts` — UPDATED: export consent validators
 - `apps/api/src/plugins/auth.ts` — UPDATED: consentedAt in select/types, requireConsent
-- `apps/api/src/plugins/auth.test.ts` — UPDATED: consentedAt in mocks/assertions
-- `apps/api/src/modules/consent/consent.service.ts` — NEW
-- `apps/api/src/modules/consent/consent.service.test.ts` — NEW: 7 tests
+- `apps/api/src/plugins/auth.test.ts` — UPDATED: consentedAt in mocks/assertions + requireConsent tests
+- `apps/api/src/modules/consent/consent.service.ts` — NEW (with user-existence check + duplicate prevention)
+- `apps/api/src/modules/consent/consent.service.test.ts` — NEW: 9 tests
 - `apps/api/src/modules/consent/consent.routes.ts` — NEW
 - `apps/api/src/modules/consent/consent.routes.test.ts` — NEW: 5 tests
 - `apps/api/src/modules/user/user.service.ts` — UPDATED: consentedAt in getProfile select
 - `apps/api/src/modules/user/user.routes.test.ts` — UPDATED: consentedAt in mockAuthUser
 - `apps/api/src/server.ts` — UPDATED: register consentRoutes
-- `apps/web/app/(auth)/consent-modal.tsx` — NEW: blocking ARTCI consent modal
+- `apps/web/app/(auth)/consent-modal.tsx` — NEW: blocking ARTCI consent modal (with ARIA)
 - `apps/web/app/(auth)/layout.tsx` — UPDATED: consent check + modal integration
-- `apps/web/app/(auth)/profile/page.tsx` — UPDATED: Link to "Mes données"
-- `apps/web/app/(auth)/profile/data/page.tsx` — NEW: personal data page
+- `apps/web/app/(auth)/profile/page.tsx` — UPDATED: Link to "Mes données", shared ROLE_LABELS
+- `apps/web/app/(auth)/profile/data/page.tsx` — NEW: personal data page, shared ROLE_LABELS
 - `apps/web/app/(auth)/profile/data/page.test.tsx` — NEW: smoke test
+- `apps/web/lib/role-labels.ts` — NEW: shared role label dictionary

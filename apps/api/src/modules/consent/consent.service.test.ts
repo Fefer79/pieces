@@ -9,6 +9,7 @@ vi.stubEnv('PORT', '3001')
 const mockFindUnique = vi.fn()
 const mockUserUpdate = vi.fn()
 const mockDeletionCreate = vi.fn()
+const mockDeletionFindFirst = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: { auth: { getUser: vi.fn() } },
@@ -23,6 +24,7 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     dataDeletionRequest: {
       create: (...args: unknown[]) => mockDeletionCreate(...args),
+      findFirst: (...args: unknown[]) => mockDeletionFindFirst(...args),
     },
   },
 }))
@@ -35,6 +37,7 @@ describe('recordConsent', () => {
   })
 
   it('records consent with accepted: true', async () => {
+    mockFindUnique.mockResolvedValueOnce({ id: 'user-1' })
     const consentDate = new Date('2026-03-01T12:00:00Z')
     mockUserUpdate.mockResolvedValueOnce({ consentedAt: consentDate })
 
@@ -55,6 +58,15 @@ describe('recordConsent', () => {
     })
   })
 
+  it('throws USER_NOT_FOUND when user does not exist', async () => {
+    mockFindUnique.mockResolvedValueOnce(null)
+
+    await expect(recordConsent('nonexistent', { accepted: true })).rejects.toMatchObject({
+      code: 'USER_NOT_FOUND',
+      statusCode: 404,
+    })
+  })
+
   it('throws CONSENT_MUST_ACCEPT when accepted is missing', async () => {
     await expect(recordConsent('user-1', {})).rejects.toMatchObject({
       code: 'CONSENT_MUST_ACCEPT',
@@ -63,6 +75,7 @@ describe('recordConsent', () => {
   })
 
   it('is idempotent — overwrites previous consentedAt', async () => {
+    mockFindUnique.mockResolvedValueOnce({ id: 'user-1' })
     const newDate = new Date('2026-03-02T12:00:00Z')
     mockUserUpdate.mockResolvedValueOnce({ consentedAt: newDate })
 
@@ -106,6 +119,7 @@ describe('requestDeletion', () => {
   })
 
   it('creates a deletion request with PENDING status', async () => {
+    mockDeletionFindFirst.mockResolvedValueOnce(null)
     const deletionData = {
       id: 'del-1',
       status: 'PENDING',
@@ -120,5 +134,18 @@ describe('requestDeletion', () => {
         data: { userId: 'user-1' },
       }),
     )
+  })
+
+  it('returns existing PENDING request instead of creating duplicate', async () => {
+    const existingData = {
+      id: 'del-existing',
+      status: 'PENDING',
+      requestedAt: new Date('2026-02-28T12:00:00Z'),
+    }
+    mockDeletionFindFirst.mockResolvedValueOnce(existingData)
+
+    const result = await requestDeletion('user-1')
+    expect(result).toEqual(existingData)
+    expect(mockDeletionCreate).not.toHaveBeenCalled()
   })
 })

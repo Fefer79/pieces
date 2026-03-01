@@ -11,6 +11,7 @@ const mockFindUnique = vi.fn()
 const mockUpdate = vi.fn()
 const mockUpsert = vi.fn()
 const mockDeletionCreate = vi.fn()
+const mockDeletionFindFirst = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -31,6 +32,7 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     dataDeletionRequest: {
       create: (...args: unknown[]) => mockDeletionCreate(...args),
+      findFirst: (...args: unknown[]) => mockDeletionFindFirst(...args),
     },
   },
 }))
@@ -60,6 +62,7 @@ describe('Consent Routes', () => {
   describe('POST /api/v1/users/me/consent', () => {
     it('returns 200 when consent accepted', async () => {
       mockAuthUser()
+      mockFindUnique.mockResolvedValueOnce({ id: 'prisma-user-123' })
       const consentDate = new Date('2026-03-01T12:00:00Z')
       mockUpdate.mockResolvedValueOnce({ consentedAt: consentDate })
 
@@ -130,6 +133,7 @@ describe('Consent Routes', () => {
   describe('POST /api/v1/users/me/data/deletion-request', () => {
     it('returns 200 with deletion request', async () => {
       mockAuthUser({ consentedAt: new Date('2026-03-01T12:00:00Z') })
+      mockDeletionFindFirst.mockResolvedValueOnce(null)
       mockDeletionCreate.mockResolvedValueOnce({
         id: 'del-1',
         status: 'PENDING',

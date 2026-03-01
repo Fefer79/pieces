@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
+import { ROLE_LABELS } from '@/lib/role-labels'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -13,15 +14,6 @@ interface UserData {
   activeContext: string | null
   consentedAt: string | null
   createdAt: string
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  MECHANIC: 'Mécanicien',
-  OWNER: 'Propriétaire',
-  SELLER: 'Vendeur',
-  RIDER: 'Livreur',
-  ADMIN: 'Administrateur',
-  ENTERPRISE: 'Entreprise',
 }
 
 export default function DataPage() {

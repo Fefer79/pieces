@@ -44,8 +44,8 @@ export function ConsentModal({ onConsented, getAccessToken }: ConsentModalProps)
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-lg font-bold text-gray-900">
+      <div role="dialog" aria-modal="true" aria-labelledby="consent-title" className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+        <h2 id="consent-title" className="mb-4 text-lg font-bold text-gray-900">
           Protection de vos données
         </h2>
 

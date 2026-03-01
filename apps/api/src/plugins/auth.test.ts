@@ -27,7 +27,7 @@ vi.mock('../lib/prisma.js', () => ({
   },
 }))
 
-const { requireAuth, requireRole } = await import('./auth.js')
+const { requireAuth, requireRole, requireConsent } = await import('./auth.js')
 
 function createMockRequest(headers: Record<string, string> = {}, user?: unknown) {
   return {
@@ -131,6 +131,29 @@ describe('requireRole', () => {
     const request = createMockRequest({}, null)
     const handler = requireRole('MECHANIC')
     await expect(handler(request, mockReply)).rejects.toMatchObject({
+      code: 'AUTH_MISSING_TOKEN',
+      statusCode: 401,
+    })
+  })
+})
+
+describe('requireConsent', () => {
+  it('passes when user has consentedAt', async () => {
+    const request = createMockRequest({}, { id: 'user-123', consentedAt: '2026-03-01T12:00:00Z' })
+    await expect(requireConsent(request, mockReply)).resolves.toBeUndefined()
+  })
+
+  it('throws 403 when consentedAt is null', async () => {
+    const request = createMockRequest({}, { id: 'user-123', consentedAt: null })
+    await expect(requireConsent(request, mockReply)).rejects.toMatchObject({
+      code: 'CONSENT_REQUIRED',
+      statusCode: 403,
+    })
+  })
+
+  it('throws 401 when no user on request', async () => {
+    const request = createMockRequest({}, null)
+    await expect(requireConsent(request, mockReply)).rejects.toMatchObject({
       code: 'AUTH_MISSING_TOKEN',
       statusCode: 401,
     })
