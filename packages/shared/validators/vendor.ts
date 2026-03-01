@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { phoneSchema } from './auth'
+import { ABIDJAN_COMMUNES } from '../constants/communes'
 
 export const vendorTypeSchema = z.enum(['FORMAL', 'INFORMAL'])
 export const kycTypeSchema = z.enum(['RCCM', 'CNI'])
@@ -24,3 +25,7 @@ export const createVendorSchema = z
       path: ['kycType'],
     },
   )
+
+export const updateDeliveryZonesSchema = z.object({
+  zones: z.array(z.enum(ABIDJAN_COMMUNES)).min(1, 'Au moins une commune est requise'),
+})

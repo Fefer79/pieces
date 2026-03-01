@@ -1,2 +1,2 @@
-// Constants will be added as stories require them
-export {}
+export { ABIDJAN_COMMUNES } from './communes'
+export type { AbidjanCommune } from './communes'

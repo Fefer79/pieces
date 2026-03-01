@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
-import { createVendorSchema } from 'shared/validators'
+import { createVendorSchema, updateDeliveryZonesSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus } from './vendor.service.js'
+import { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones } from './vendor.service.js'
 
 export async function vendorRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -68,6 +68,43 @@ export async function vendorRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const result = await getGuaranteeStatus(request.user.id)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/me/delivery-zones',
+    {
+      schema: {
+        tags: ['Vendors'],
+        description: 'Obtenir les zones de livraison configurées par le vendeur',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const result = await getDeliveryZones(request.user.id)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.put(
+    '/me/delivery-zones',
+    {
+      schema: {
+        tags: ['Vendors'],
+        description: 'Configurer les zones de livraison du vendeur',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(updateDeliveryZonesSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { zones } = request.body as { zones: string[] }
+      const result = await updateDeliveryZones(request.user.id, zones)
+
+      request.log.info({ event: 'VENDOR_DELIVERY_ZONES_UPDATED', userId: request.user.id, zones })
+
       return reply.status(200).send({ data: result })
     },
   )

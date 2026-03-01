@@ -24,12 +24,13 @@ vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     vendor: {
       findUnique: (...args: unknown[]) => mockVendorFindUnique(...args),
+      update: (...args: unknown[]) => mockVendorUpdate(...args),
     },
     $transaction: (fn: (tx: unknown) => Promise<unknown>) => mockTransaction(fn),
   },
 }))
 
-const { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus } = await import('./vendor.service.js')
+const { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones } = await import('./vendor.service.js')
 
 describe('vendor.service', () => {
   beforeEach(() => {
@@ -292,6 +293,68 @@ describe('vendor.service', () => {
       mockVendorFindUnique.mockResolvedValueOnce(null)
 
       await expect(getGuaranteeStatus('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_NOT_FOUND',
+        statusCode: 404,
+      })
+    })
+  })
+
+  describe('getDeliveryZones', () => {
+    it('returns delivery zones', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        deliveryZones: ['Cocody', 'Plateau'],
+      })
+
+      const result = await getDeliveryZones('user-1')
+
+      expect(result.zones).toEqual(['Cocody', 'Plateau'])
+      expect(result.allAbidjan).toBe(false)
+    })
+
+    it('returns allAbidjan true when all communes selected', async () => {
+      const allCommunes = ['Abobo', 'Adjamé', 'Anyama', 'Attécoubé', 'Bingerville', 'Cocody', 'Koumassi', 'Marcory', 'Plateau', 'Port-Bouët', 'Songon', 'Treichville', 'Yopougon']
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        deliveryZones: allCommunes,
+      })
+
+      const result = await getDeliveryZones('user-1')
+
+      expect(result.allAbidjan).toBe(true)
+    })
+
+    it('throws VENDOR_NOT_FOUND when no vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(getDeliveryZones('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_NOT_FOUND',
+        statusCode: 404,
+      })
+    })
+  })
+
+  describe('updateDeliveryZones', () => {
+    it('updates delivery zones', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockVendorUpdate.mockResolvedValueOnce({ deliveryZones: ['Cocody', 'Yopougon'] })
+
+      const result = await updateDeliveryZones('user-1', ['Cocody', 'Yopougon'])
+
+      expect(result.zones).toEqual(['Cocody', 'Yopougon'])
+      expect(result.allAbidjan).toBe(false)
+      expect(mockVendorUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'vendor-1' },
+          data: { deliveryZones: ['Cocody', 'Yopougon'] },
+        }),
+      )
+    })
+
+    it('throws VENDOR_NOT_FOUND when no vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(updateDeliveryZones('user-1', ['Cocody'])).rejects.toMatchObject({
         code: 'VENDOR_NOT_FOUND',
         statusCode: 404,
       })

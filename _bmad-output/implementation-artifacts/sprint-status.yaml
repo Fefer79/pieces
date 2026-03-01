@@ -55,7 +55,7 @@ development_status:
   2-2-signature-garanties-obligatoires-activation-profil: done
   2-3-pipeline-images-generation-catalogue-ia: done
   2-4-validation-ajustement-catalogue-vendeur: done
-  2-5-configuration-zones-livraison-vendeur: backlog
+  2-5-configuration-zones-livraison-vendeur: in-progress
   2-6-dashboard-vendeur: backlog
   epic-2-retrospective: optional
 

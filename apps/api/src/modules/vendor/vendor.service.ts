@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { createVendorSchema } from 'shared/validators'
+import { ABIDJAN_COMMUNES } from 'shared/constants'
 
 export async function createVendor(userId: string, body: unknown) {
   const parsed = createVendorSchema.safeParse(body)
@@ -210,4 +211,54 @@ export async function getMyVendor(userId: string) {
   }
 
   return vendor
+}
+
+export async function getDeliveryZones(userId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true, deliveryZones: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur trouvé pour cet utilisateur',
+    })
+  }
+
+  const allCommunes = [...ABIDJAN_COMMUNES]
+  const allAbidjan = allCommunes.length === vendor.deliveryZones.length &&
+    allCommunes.every((c) => vendor.deliveryZones.includes(c))
+
+  return {
+    zones: vendor.deliveryZones,
+    allAbidjan,
+  }
+}
+
+export async function updateDeliveryZones(userId: string, zones: string[]) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur trouvé pour cet utilisateur',
+    })
+  }
+
+  const updated = await prisma.vendor.update({
+    where: { id: vendor.id },
+    data: { deliveryZones: zones },
+    select: { deliveryZones: true },
+  })
+
+  const allCommunes = [...ABIDJAN_COMMUNES]
+  const allAbidjan = allCommunes.length === updated.deliveryZones.length &&
+    allCommunes.every((c) => updated.deliveryZones.includes(c))
+
+  return {
+    zones: updated.deliveryZones,
+    allAbidjan,
+  }
 }

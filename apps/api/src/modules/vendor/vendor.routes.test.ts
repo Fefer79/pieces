@@ -35,6 +35,7 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     vendor: {
       findUnique: (...args: unknown[]) => mockVendorFindUnique(...args),
+      update: (...args: unknown[]) => mockVendorUpdate(...args),
     },
     vendorKyc: {
       create: (...args: unknown[]) => mockKycCreate(...args),
@@ -327,6 +328,113 @@ describe('Vendor Routes', () => {
       const response = await app.inject({
         method: 'GET',
         url: '/api/v1/vendors/me/guarantees',
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('GET /api/v1/vendors/me/delivery-zones', () => {
+    it('returns 200 with delivery zones', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        deliveryZones: ['Cocody', 'Plateau'],
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/delivery-zones',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = response.json()
+      expect(body.data.zones).toEqual(['Cocody', 'Plateau'])
+      expect(body.data.allAbidjan).toBe(false)
+    })
+
+    it('returns 404 when no vendor', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/delivery-zones',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(404)
+      expect(response.json().error.code).toBe('VENDOR_NOT_FOUND')
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/delivery-zones',
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('PUT /api/v1/vendors/me/delivery-zones', () => {
+    it('returns 200 when zones updated', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockVendorUpdate.mockResolvedValueOnce({ deliveryZones: ['Cocody', 'Yopougon'] })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PUT',
+        url: '/api/v1/vendors/me/delivery-zones',
+        headers: { authorization: 'Bearer valid-token', 'content-type': 'application/json' },
+        payload: JSON.stringify({ zones: ['Cocody', 'Yopougon'] }),
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = response.json()
+      expect(body.data.zones).toEqual(['Cocody', 'Yopougon'])
+    })
+
+    it('returns 422 for invalid commune name', async () => {
+      mockAuthUser()
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PUT',
+        url: '/api/v1/vendors/me/delivery-zones',
+        headers: { authorization: 'Bearer valid-token', 'content-type': 'application/json' },
+        payload: JSON.stringify({ zones: ['InvalidCommune'] }),
+      })
+
+      expect(response.statusCode).toBe(422)
+    })
+
+    it('returns 422 for empty zones array', async () => {
+      mockAuthUser()
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PUT',
+        url: '/api/v1/vendors/me/delivery-zones',
+        headers: { authorization: 'Bearer valid-token', 'content-type': 'application/json' },
+        payload: JSON.stringify({ zones: [] }),
+      })
+
+      expect(response.statusCode).toBe(422)
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'PUT',
+        url: '/api/v1/vendors/me/delivery-zones',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ zones: ['Cocody'] }),
       })
 
       expect(response.statusCode).toBe(401)
