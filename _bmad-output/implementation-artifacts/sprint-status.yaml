@@ -60,13 +60,13 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3 : Recherche & Navigation Pièces (PWA)
-  epic-3: in-progress
+  epic-3: done
   3-1-navigation-catalogue-visuelle: done
   3-2-recherche-reference-oem-meilisearch: done
   3-3-decodage-vin-identification-vehicule: done
   3-4-profils-vehicules-pre-remplissage: done
   3-5-identification-piece-photo-ia-desambiguation-pwa: done
-  3-6-pwa-offline-first-service-worker: in-progress
+  3-6-pwa-offline-first-service-worker: done
   epic-3-retrospective: optional
 
   # Epic 4 : Commande Tripartite & Paiement
