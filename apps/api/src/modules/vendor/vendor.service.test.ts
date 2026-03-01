@@ -146,14 +146,14 @@ describe('vendor.service', () => {
 
       await expect(createVendor('user-1', invalidBody)).rejects.toMatchObject({
         code: 'VENDOR_INVALID_DATA',
-        statusCode: 400,
+        statusCode: 422,
       })
     })
 
     it('throws VENDOR_INVALID_DATA for missing required fields', async () => {
       await expect(createVendor('user-1', { shopName: 'A' })).rejects.toMatchObject({
         code: 'VENDOR_INVALID_DATA',
-        statusCode: 400,
+        statusCode: 422,
       })
     })
   })

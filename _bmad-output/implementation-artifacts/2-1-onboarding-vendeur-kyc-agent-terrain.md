@@ -1,6 +1,6 @@
 # Story 2.1: Onboarding Vendeur & KYC par Agent Terrain
 
-Status: review
+Status: done
 
 ## Story
 
@@ -361,4 +361,5 @@ Claude Opus 4.6 (claude-opus-4-6)
 - `apps/api/src/modules/vendor/vendor.service.test.ts` — 7 unit tests
 - `apps/api/src/modules/vendor/vendor.routes.test.ts` — 6 integration tests
 - `apps/api/src/server.ts` — Register vendorRoutes under /api/v1/vendors
+- `apps/api/src/plugins/swagger.ts` — Added Vendors tag to Swagger documentation
 - `apps/web/app/(auth)/onboarding/new/page.tsx` — Onboarding form page

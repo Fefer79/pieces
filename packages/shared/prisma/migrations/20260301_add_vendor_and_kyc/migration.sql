@@ -34,20 +34,14 @@ CREATE TABLE "vendor_kyc" (
     CONSTRAINT "vendor_kyc_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
+-- CreateIndex (unique constraint also serves as index)
 CREATE UNIQUE INDEX "vendors_user_id_key" ON "vendors"("user_id");
-
--- CreateIndex
-CREATE INDEX "idx_vendors_user_id" ON "vendors"("user_id");
 
 -- CreateIndex
 CREATE INDEX "idx_vendors_phone" ON "vendors"("phone");
 
--- CreateIndex
+-- CreateIndex (unique constraint also serves as index)
 CREATE UNIQUE INDEX "vendor_kyc_vendor_id_key" ON "vendor_kyc"("vendor_id");
-
--- CreateIndex
-CREATE INDEX "idx_vendor_kyc_vendor_id" ON "vendor_kyc"("vendor_id");
 
 -- AddForeignKey
 ALTER TABLE "vendors" ADD CONSTRAINT "vendors_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

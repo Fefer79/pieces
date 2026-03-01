@@ -5,7 +5,7 @@ import { createVendorSchema } from 'shared/validators'
 export async function createVendor(userId: string, body: unknown) {
   const parsed = createVendorSchema.safeParse(body)
   if (!parsed.success) {
-    throw new AppError('VENDOR_INVALID_DATA', 400, {
+    throw new AppError('VENDOR_INVALID_DATA', 422, {
       message: parsed.error.issues[0]?.message,
     })
   }

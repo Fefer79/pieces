@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { createVendorSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { requireAuth } from '../../plugins/auth.js'
+import { requireAuth, requireRole } from '../../plugins/auth.js'
 import { createVendor, getMyVendor } from './vendor.service.js'
 
 export async function vendorRoutes(fastify: FastifyInstance) {
@@ -14,7 +14,7 @@ export async function vendorRoutes(fastify: FastifyInstance) {
         description: 'Créer un profil vendeur avec KYC (onboarding agent terrain)',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth],
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
     },
     async (request, reply) => {
       const result = await createVendor(request.user.id, request.body)
@@ -31,7 +31,7 @@ export async function vendorRoutes(fastify: FastifyInstance) {
         description: 'Obtenir le profil vendeur de l\'utilisateur connecté',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth],
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
     },
     async (request, reply) => {
       const result = await getMyVendor(request.user.id)

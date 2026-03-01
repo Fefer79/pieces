@@ -70,7 +70,6 @@ model Vendor {
   kyc VendorKyc?
 
   @@map("vendors")
-  @@index([userId], name: "idx_vendors_user_id")
   @@index([phone], name: "idx_vendors_phone")
 }
 
@@ -84,7 +83,6 @@ model VendorKyc {
   createdAt      DateTime @default(now()) @map("created_at")
 
   @@map("vendor_kyc")
-  @@index([vendorId], name: "idx_vendor_kyc_vendor_id")
 }
 
 model DataDeletionRequest {

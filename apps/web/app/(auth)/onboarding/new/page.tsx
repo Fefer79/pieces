@@ -28,6 +28,12 @@ export default function OnboardingNewPage() {
   const [documentNumber, setDocumentNumber] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+
+  const PHONE_REGEX = /^\+225(01|05|07)\d{8}$/
+  const phoneError = touched.phone && !PHONE_REGEX.test(phone)
+    ? 'Format invalide (ex: +2250700000000)'
+    : null
 
   const kycType = vendorType === 'FORMAL' ? 'RCCM' : 'CNI'
   const kycLabel = VENDOR_TYPES.find((t) => t.value === vendorType)?.kycLabel ?? ''
@@ -126,11 +132,14 @@ export default function OnboardingNewPage() {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
             required
             inputMode="tel"
+            pattern="^\+225(01|05|07)\d{8}$"
             placeholder="+2250700000000"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none ${phoneError ? 'border-[#D32F2F] focus:border-[#D32F2F]' : 'border-gray-300 focus:border-[#1976D2]'}`}
           />
+          {phoneError && <p className="mt-1 text-xs text-[#D32F2F]">{phoneError}</p>}
         </div>
 
         <fieldset>
