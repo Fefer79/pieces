@@ -60,6 +60,24 @@ enum GuaranteeType {
   WARRANTY_30D
 }
 
+enum CatalogItemStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum JobType {
+  IMAGE_PROCESS_VARIANTS
+  CATALOG_AI_IDENTIFY
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model Vendor {
   id          String       @id @default(uuid())
   userId      String       @unique @map("user_id")
@@ -74,6 +92,7 @@ model Vendor {
 
   kyc                 VendorKyc?
   guaranteeSignatures VendorGuaranteeSignature[]
+  catalogItems        CatalogItem[]
 
   @@map("vendors")
   @@index([phone], name: "idx_vendors_phone")
@@ -112,4 +131,47 @@ model DataDeletionRequest {
 
   @@map("data_deletion_requests")
   @@index([userId], name: "idx_data_deletion_requests_user")
+}
+
+model CatalogItem {
+  id                   String            @id @default(uuid())
+  vendorId             String            @map("vendor_id")
+  vendor               Vendor            @relation(fields: [vendorId], references: [id])
+  name                 String?
+  category             String?
+  oemReference         String?           @map("oem_reference")
+  vehicleCompatibility String?           @map("vehicle_compatibility")
+  suggestedPrice       Int?              @map("suggested_price")
+  price                Int?
+  status               CatalogItemStatus @default(DRAFT)
+  imageOriginalUrl     String?           @map("image_original_url")
+  imageThumbUrl        String?           @map("image_thumb_url")
+  imageSmallUrl        String?           @map("image_small_url")
+  imageMediumUrl       String?           @map("image_medium_url")
+  imageLargeUrl        String?           @map("image_large_url")
+  aiConfidence         Float?            @map("ai_confidence")
+  aiGenerated          Boolean           @default(true) @map("ai_generated")
+  qualityScore         Float?            @map("quality_score")
+  qualityIssue         String?           @map("quality_issue")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+
+  @@map("catalog_items")
+  @@index([vendorId, status], name: "idx_catalog_items_vendor_status")
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  type        JobType
+  status      JobStatus @default(PENDING)
+  payload     Json
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3) @map("max_attempts")
+  error       String?
+  scheduledAt DateTime? @map("scheduled_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("jobs")
+  @@index([status, type], name: "idx_jobs_status_type")
 }

@@ -10,6 +10,8 @@ import { authRoutes } from './modules/auth/auth.routes.js'
 import { userRoutes } from './modules/user/user.routes.js'
 import { consentRoutes } from './modules/consent/consent.routes.js'
 import { vendorRoutes } from './modules/vendor/vendor.routes.js'
+import { catalogRoutes } from './modules/catalog/catalog.routes.js'
+import multipart from '@fastify/multipart'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -31,6 +33,7 @@ export function buildApp() {
   fastify.register(rateLimit)
   fastify.register(swagger)
   fastify.register(auth)
+  fastify.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } })
   setupErrorHandler(fastify)
 
   // Health check
@@ -41,6 +44,7 @@ export function buildApp() {
   fastify.register(userRoutes, { prefix: '/api/v1/users' })
   fastify.register(consentRoutes, { prefix: '/api/v1/users' })
   fastify.register(vendorRoutes, { prefix: '/api/v1/vendors' })
+  fastify.register(catalogRoutes, { prefix: '/api/v1/catalog' })
 
   return fastify
 }
