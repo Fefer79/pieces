@@ -1,6 +1,6 @@
 # Story 2.4: Validation et Ajustement Catalogue Vendeur
 
-Status: review
+Status: done
 
 ## Story
 
