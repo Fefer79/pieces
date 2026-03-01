@@ -7,9 +7,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
  * the derived JSON schema validates in Fastify routes + feeds Swagger.
  */
 export function zodToFastify(schema: ZodType) {
-  const jsonSchema = zodToJsonSchema(schema, { target: 'openApi3' })
-  // Remove $schema key that Fastify doesn't accept
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { $schema: _schema, ...rest } = jsonSchema as Record<string, unknown>
-  return rest
+  const jsonSchema = zodToJsonSchema(schema, { target: 'openApi3' }) as Record<string, unknown>
+  delete jsonSchema.$schema
+  return jsonSchema
 }
