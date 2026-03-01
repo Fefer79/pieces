@@ -122,3 +122,7 @@ development_status:
   9-2-admin-cross-tenant-journalisation: done
   9-3-espace-enterprise-gestion-membres: done
   epic-9-retrospective: done
+
+  # Epic 10 : Améliorations Post-MVP
+  epic-10: in-progress
+  10-1-recherche-autonome-proprietaire-whatsapp: done
