@@ -13,6 +13,8 @@ const mockVendorFindUniqueOrThrow = vi.fn()
 const mockKycCreate = vi.fn()
 const mockGuaranteeCreateMany = vi.fn()
 const mockTransaction = vi.fn()
+const mockCatalogItemGroupBy = vi.fn()
+const mockCatalogItemCount = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -26,11 +28,15 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...args: unknown[]) => mockVendorFindUnique(...args),
       update: (...args: unknown[]) => mockVendorUpdate(...args),
     },
+    catalogItem: {
+      groupBy: (...args: unknown[]) => mockCatalogItemGroupBy(...args),
+      count: (...args: unknown[]) => mockCatalogItemCount(...args),
+    },
     $transaction: (fn: (tx: unknown) => Promise<unknown>) => mockTransaction(fn),
   },
 }))
 
-const { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones } = await import('./vendor.service.js')
+const { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones, getVendorDashboard } = await import('./vendor.service.js')
 
 describe('vendor.service', () => {
   beforeEach(() => {
@@ -355,6 +361,40 @@ describe('vendor.service', () => {
       mockVendorFindUnique.mockResolvedValueOnce(null)
 
       await expect(updateDeliveryZones('user-1', ['Cocody'])).rejects.toMatchObject({
+        code: 'VENDOR_NOT_FOUND',
+        statusCode: 404,
+      })
+    })
+  })
+
+  describe('getVendorDashboard', () => {
+    it('returns dashboard with catalog stats', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        shopName: 'Test Shop',
+        status: 'ACTIVE',
+        deliveryZones: ['Cocody', 'Plateau'],
+      })
+      mockCatalogItemGroupBy.mockResolvedValueOnce([
+        { status: 'PUBLISHED', _count: { status: 5 } },
+        { status: 'DRAFT', _count: { status: 3 } },
+      ])
+      mockCatalogItemCount.mockResolvedValueOnce(2) // outOfStock
+
+      const result = await getVendorDashboard('user-1')
+
+      expect(result.vendor.shopName).toBe('Test Shop')
+      expect(result.vendor.deliveryZonesCount).toBe(2)
+      expect(result.catalog.published).toBe(5)
+      expect(result.catalog.draft).toBe(3)
+      expect(result.catalog.archived).toBe(0)
+      expect(result.catalog.outOfStock).toBe(2)
+    })
+
+    it('throws VENDOR_NOT_FOUND when no vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(getVendorDashboard('user-1')).rejects.toMatchObject({
         code: 'VENDOR_NOT_FOUND',
         statusCode: 404,
       })

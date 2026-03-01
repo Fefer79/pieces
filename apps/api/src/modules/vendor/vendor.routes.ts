@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { createVendorSchema, updateDeliveryZonesSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones } from './vendor.service.js'
+import { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones, getVendorDashboard } from './vendor.service.js'
 
 export async function vendorRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -105,6 +105,22 @@ export async function vendorRoutes(fastify: FastifyInstance) {
 
       request.log.info({ event: 'VENDOR_DELIVERY_ZONES_UPDATED', userId: request.user.id, zones })
 
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/me/dashboard',
+    {
+      schema: {
+        tags: ['Vendors'],
+        description: 'Tableau de bord vendeur avec statistiques catalogue',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const result = await getVendorDashboard(request.user.id)
       return reply.status(200).send({ data: result })
     },
   )

@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { createVendorSchema } from 'shared/validators'
 import { ABIDJAN_COMMUNES } from 'shared/constants'
+import type { CatalogItemStatus } from '@prisma/client'
 
 export async function createVendor(userId: string, body: unknown) {
   const parsed = createVendorSchema.safeParse(body)
@@ -260,5 +261,46 @@ export async function updateDeliveryZones(userId: string, zones: string[]) {
   return {
     zones: updated.deliveryZones,
     allAbidjan,
+  }
+}
+
+export async function getVendorDashboard(userId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true, shopName: true, status: true, deliveryZones: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur trouvé pour cet utilisateur',
+    })
+  }
+
+  const statusCounts = await prisma.catalogItem.groupBy({
+    by: ['status'],
+    where: { vendorId: vendor.id },
+    _count: { status: true },
+  })
+
+  const outOfStockCount = await prisma.catalogItem.count({
+    where: { vendorId: vendor.id, status: 'PUBLISHED', inStock: false },
+  })
+
+  const countByStatus = (s: CatalogItemStatus) =>
+    statusCounts.find((c) => c.status === s)?._count.status ?? 0
+
+  return {
+    vendor: {
+      id: vendor.id,
+      shopName: vendor.shopName,
+      status: vendor.status,
+      deliveryZonesCount: vendor.deliveryZones.length,
+    },
+    catalog: {
+      published: countByStatus('PUBLISHED'),
+      draft: countByStatus('DRAFT'),
+      archived: countByStatus('ARCHIVED'),
+      outOfStock: outOfStockCount,
+    },
   }
 }

@@ -15,6 +15,8 @@ const mockVendorFindUniqueOrThrow = vi.fn()
 const mockKycCreate = vi.fn()
 const mockGuaranteeCreateMany = vi.fn()
 const mockTransaction = vi.fn()
+const mockCatalogItemGroupBy = vi.fn()
+const mockCatalogItemCount = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -36,6 +38,10 @@ vi.mock('../../lib/prisma.js', () => ({
     vendor: {
       findUnique: (...args: unknown[]) => mockVendorFindUnique(...args),
       update: (...args: unknown[]) => mockVendorUpdate(...args),
+    },
+    catalogItem: {
+      groupBy: (...args: unknown[]) => mockCatalogItemGroupBy(...args),
+      count: (...args: unknown[]) => mockCatalogItemCount(...args),
     },
     vendorKyc: {
       create: (...args: unknown[]) => mockKycCreate(...args),
@@ -435,6 +441,62 @@ describe('Vendor Routes', () => {
         url: '/api/v1/vendors/me/delivery-zones',
         headers: { 'content-type': 'application/json' },
         payload: JSON.stringify({ zones: ['Cocody'] }),
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('GET /api/v1/vendors/me/dashboard', () => {
+    it('returns 200 with dashboard data', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        shopName: 'Test Shop',
+        status: 'ACTIVE',
+        deliveryZones: ['Cocody'],
+      })
+      mockCatalogItemGroupBy.mockResolvedValueOnce([
+        { status: 'PUBLISHED', _count: { status: 3 } },
+        { status: 'DRAFT', _count: { status: 1 } },
+      ])
+      mockCatalogItemCount.mockResolvedValueOnce(1)
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/dashboard',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = response.json()
+      expect(body.data.vendor.shopName).toBe('Test Shop')
+      expect(body.data.catalog.published).toBe(3)
+      expect(body.data.catalog.draft).toBe(1)
+      expect(body.data.catalog.outOfStock).toBe(1)
+    })
+
+    it('returns 404 when no vendor', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/dashboard',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(404)
+      expect(response.json().error.code).toBe('VENDOR_NOT_FOUND')
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/dashboard',
       })
 
       expect(response.statusCode).toBe(401)

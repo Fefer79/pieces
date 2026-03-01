@@ -56,7 +56,7 @@ development_status:
   2-3-pipeline-images-generation-catalogue-ia: done
   2-4-validation-ajustement-catalogue-vendeur: done
   2-5-configuration-zones-livraison-vendeur: done
-  2-6-dashboard-vendeur: backlog
+  2-6-dashboard-vendeur: in-progress
   epic-2-retrospective: optional
 
   # Epic 3 : Recherche & Navigation Pièces (PWA)
