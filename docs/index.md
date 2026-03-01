@@ -81,6 +81,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 - [Manuel d'utilisation client](./deep-dive-manuel-client.md) — Guide complet pour les acheteurs particuliers (recherche texte/photo IA/VIN, garage, commande directe, paiement mobile/COD, escrow, livraison, évaluations, litiges) — Généré 2026-03-01
 - [Manuel d'utilisation visiteur](./deep-dive-manuel-visiteur.md) — Guide complet pour les visiteurs non connectés (pages publiques, lien de paiement partagé, API publiques catalogue/photo IA/VIN, PWA, suivi livraison) — Généré 2026-03-01
 - [Manuel technique bot WhatsApp](./deep-dive-manuel-bot-whatsapp.md) — Guide complet du bot WhatsApp (webhook Meta Cloud API, HMAC, commandes bot, 5 templates, notifications, multi-canal, intégration commandes/livraisons) — Généré 2026-03-01
+- [Manuel technique paiement et escrow](./deep-dive-manuel-paiement-escrow.md) — Guide complet du système de paiement (CinetPay, Orange/MTN/Wave/COD, escrow HELD→RELEASED→REFUNDED, price snapshot, machine à états, auto-libération 48h) — Généré 2026-03-01
 
 ---
 
