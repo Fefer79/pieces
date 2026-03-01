@@ -81,13 +81,12 @@ development_status:
   epic-4-retrospective: optional
 
   # Epic 5 : Livraison & Logistique
-  epic-5: backlog
-
-  5-1-assignation-livraison-interface-mission-rider: backlog
-  5-2-suivi-temps-reel-estimation-delai: backlog
-  5-3-collecte-paiement-rider-cod-mobile-money: backlog
-  5-4-confirmation-livraison-active-gestion-sla: backlog
-  5-5-protocole-client-absent: backlog
+  epic-5: done
+  5-1-assignation-livraison-interface-mission-rider: done
+  5-2-suivi-temps-reel-estimation-delai: done
+  5-3-collecte-paiement-rider-cod-mobile-money: done
+  5-4-confirmation-livraison-active-gestion-sla: done
+  5-5-protocole-client-absent: done
   epic-5-retrospective: optional
 
   # Epic 6 : Bot WhatsApp — Identification & Commande

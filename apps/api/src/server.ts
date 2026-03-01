@@ -16,6 +16,7 @@ import { vehicleRoutes } from './modules/vehicle/vehicle.routes.js'
 import { visionRoutes } from './modules/vision/vision.routes.js'
 import { orderRoutes } from './modules/order/order.routes.js'
 import { paymentRoutes } from './modules/payment/payment.routes.js'
+import { deliveryRoutes } from './modules/delivery/delivery.routes.js'
 import multipart from '@fastify/multipart'
 
 // Fail-fast: validate environment variables at startup
@@ -55,6 +56,7 @@ export function buildApp() {
   fastify.register(visionRoutes, { prefix: '/api/v1/vision' })
   fastify.register(orderRoutes, { prefix: '/api/v1/orders' })
   fastify.register(paymentRoutes, { prefix: '/api/v1' })
+  fastify.register(deliveryRoutes, { prefix: '/api/v1/deliveries' })
 
   return fastify
 }

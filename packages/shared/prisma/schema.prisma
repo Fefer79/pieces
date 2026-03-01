@@ -30,6 +30,7 @@ model User {
   vendor               Vendor?
   vehicles             UserVehicle[]
   initiatedOrders      Order[]  @relation("OrderInitiator")
+  riderDeliveries      Delivery[] @relation("DeliveryRider")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -92,6 +93,21 @@ enum EscrowStatus {
   HELD
   RELEASED
   REFUNDED
+}
+
+enum DeliveryStatus {
+  PENDING_ASSIGNMENT
+  ASSIGNED
+  PICKUP_IN_PROGRESS
+  IN_TRANSIT
+  DELIVERED
+  CONFIRMED
+  RETURNED
+}
+
+enum DeliveryMode {
+  EXPRESS
+  STANDARD
 }
 
 enum JobType {
@@ -251,6 +267,7 @@ model Order {
   items           OrderItem[]
   events          OrderEvent[]
   escrow          EscrowTransaction?
+  delivery        Delivery?
 
   @@map("orders")
   @@index([initiatorId], name: "idx_orders_initiator")
@@ -287,6 +304,37 @@ model OrderEvent {
 
   @@map("order_events")
   @@index([orderId], name: "idx_order_events_order")
+}
+
+model Delivery {
+  id              String         @id @default(uuid())
+  orderId         String         @unique @map("order_id")
+  order           Order          @relation(fields: [orderId], references: [id])
+  riderId         String?        @map("rider_id")
+  rider           User?          @relation("DeliveryRider", fields: [riderId], references: [id])
+  status          DeliveryStatus @default(PENDING_ASSIGNMENT)
+  mode            DeliveryMode   @default(STANDARD)
+  pickupAddress   String?        @map("pickup_address")
+  pickupLat       Float?         @map("pickup_lat")
+  pickupLng       Float?         @map("pickup_lng")
+  deliveryAddress String?        @map("delivery_address")
+  deliveryLat     Float?         @map("delivery_lat")
+  deliveryLng     Float?         @map("delivery_lng")
+  riderLat        Float?         @map("rider_lat")
+  riderLng        Float?         @map("rider_lng")
+  estimatedAt     DateTime?      @map("estimated_at")
+  pickedUpAt      DateTime?      @map("picked_up_at")
+  deliveredAt     DateTime?      @map("delivered_at")
+  confirmedAt     DateTime?      @map("confirmed_at")
+  clientAbsent    Boolean        @default(false) @map("client_absent")
+  codAmount       Int?           @map("cod_amount")
+  receiptPhotoUrl String?        @map("receipt_photo_url")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@map("deliveries")
+  @@index([riderId], name: "idx_deliveries_rider")
+  @@index([status], name: "idx_deliveries_status")
 }
 
 model EscrowTransaction {
