@@ -4,9 +4,12 @@ import { type NextRequest, NextResponse } from 'next/server'
 export function createSupabaseMiddlewareClient(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+  const anonKey = process.env.SUPABASE_ANON_KEY ?? ''
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    anonKey,
     {
       cookies: {
         getAll() {

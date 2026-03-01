@@ -61,6 +61,50 @@ describe('Auth Routes', () => {
       const body = response.json()
       expect(body.error.code).toBe('AUTH_INVALID_PHONE')
     })
+
+    it('returns 400 when phone field is missing', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/otp',
+        payload: {},
+      })
+
+      expect(response.statusCode).toBe(400)
+    })
+
+    it('returns 429 after exceeding rate limit', async () => {
+      mockSignInWithOtp.mockResolvedValue({ error: null })
+
+      const app = buildApp()
+      await app.ready()
+
+      // First request — check rate limit headers are present
+      const first = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/otp',
+        payload: { phone: '+2250700000000' },
+      })
+      const limit = Number(first.headers['x-ratelimit-limit'])
+
+      // Send remaining requests up to the limit
+      for (let i = 1; i < limit; i++) {
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/auth/otp',
+          payload: { phone: '+2250700000000' },
+        })
+      }
+
+      // Next request should be rate limited
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/otp',
+        payload: { phone: '+2250700000000' },
+      })
+
+      expect(response.statusCode).toBe(429)
+    })
   })
 
   describe('POST /api/v1/auth/verify', () => {

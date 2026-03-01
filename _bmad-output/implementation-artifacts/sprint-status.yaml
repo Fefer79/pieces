@@ -43,7 +43,7 @@ development_status:
   # Epic 1 : Fondation Projet & Authentification
   epic-1: in-progress
   1-1-initialisation-monorepo-ci-cd: done
-  1-2-inscription-authentification-otp-sms: review
+  1-2-inscription-authentification-otp-sms: done
   1-3-profil-multi-roles-contexte-actif: backlog
   1-4-consentement-artci-droits-donnees-personnelles: backlog
   1-5-conventions-rest-format-erreur-documentation-api: backlog

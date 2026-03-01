@@ -1,6 +1,6 @@
 # Story 1.2: Inscription & Authentification OTP SMS
 
-Status: review
+Status: done
 
 ## Story
 
@@ -345,7 +345,7 @@ Claude Opus 4.6
 - **Task 5**: POST /api/v1/auth/otp sends OTP via Supabase, POST /api/v1/auth/verify verifies OTP + upserts Prisma User. Rate limit 5/min on /otp. 9 service tests + 4 route integration tests.
 - **Task 6**: Login page with +225 prefix, tel inputmode, inline Zod validation, blue CTA 48px. OTP page with 6 individual inputs, auto-focus, auto-submit, paste support, 60s resend countdown. Suspense wrapper for SSG compatibility.
 - **Task 7**: Next.js middleware checks Supabase session, redirects unauthenticated users to /login. Excludes /, /login, _next, static assets. Uses @supabase/ssr createServerClient.
-- **Task 8**: 38/38 tests pass, lint clean, build successful.
+- **Task 8**: 40/40 tests pass, lint clean, build successful.
 
 ### File List
 
@@ -377,4 +377,26 @@ Claude Opus 4.6
 - apps/web/lib/supabase-middleware.ts (NEW — SSR Supabase helper)
 - apps/web/package.json (UPDATED — @supabase/supabase-js, @supabase/ssr)
 - .env.example (UPDATED — Supabase vars)
+- apps/api/src/plugins/rateLimit.ts (UPDATED — wrapped with fp() for global scope)
+- apps/api/src/plugins/errorHandler.ts (UPDATED — handle Fastify validation/rate limit errors with proper status codes)
+
+## Senior Developer Review (AI)
+
+### Review Date: 2026-03-01
+
+### Findings Fixed (6):
+
+1. **CRITICAL — requireAuth never populated roles from Prisma**: `request.user.roles` was always `undefined`, breaking the entire RBAC system (`requireRole` always 403). **Fixed**: requireAuth now upserts/fetches Prisma user with roles on every authenticated request.
+
+2. **CRITICAL — Web auth flow didn't create Prisma User record**: Frontend called Supabase SDK directly, bypassing API routes. Users had Supabase Auth accounts but no `users` table record. **Fixed**: requireAuth's Prisma upsert ensures user record is created on first authenticated API call regardless of auth flow.
+
+3. **HIGH — No Fastify body schema validation on auth routes**: Routes used unsafe `request.body as { ... }` casts. **Fixed**: Added JSON schema objects for both `/otp` and `/verify` endpoints.
+
+4. **HIGH — Rate limit 429 test was missing (task 5.6 claimed complete)**: **Fixed**: Added integration test that sends 5+1 requests and verifies 429 response.
+
+5. **HIGH — Rate limit plugin was scoped, not applying to auth routes**: `rateLimit.ts` wasn't wrapped with `fp()`, so `@fastify/rate-limit` hooks only applied within its own plugin scope. Auth route `config.rateLimit` was silently ignored. **Fixed**: Wrapped with `fp()` for global scope.
+
+6. **MEDIUM — Error handler converted all non-AppError errors to 500**: Fastify validation errors (400) and rate limit errors (429) were caught and returned as 500. **Fixed**: Added status code passthrough for errors with statusCode < 500.
+
+### Outcome: Approved (after fixes)
 - pnpm-lock.yaml (UPDATED)

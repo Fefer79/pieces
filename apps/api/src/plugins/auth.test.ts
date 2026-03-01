@@ -7,10 +7,20 @@ vi.stubEnv('PINO_LOG_LEVEL', 'error')
 vi.stubEnv('PORT', '3001')
 
 const mockGetUser = vi.fn()
+const mockUpsert = vi.fn()
+
 vi.mock('../lib/supabase.js', () => ({
   supabaseAdmin: {
     auth: {
       getUser: (...args: unknown[]) => mockGetUser(...args),
+    },
+  },
+}))
+
+vi.mock('../lib/prisma.js', () => ({
+  prisma: {
+    user: {
+      upsert: (...args: unknown[]) => mockUpsert(...args),
     },
   },
 }))
@@ -31,17 +41,32 @@ describe('requireAuth', () => {
     vi.clearAllMocks()
   })
 
-  it('attaches user when valid token provided', async () => {
+  it('attaches user with roles when valid token provided', async () => {
     mockGetUser.mockResolvedValueOnce({
-      data: { user: { id: 'user-123', phone: '+2250700000000' } },
+      data: { user: { id: 'supabase-123', phone: '+2250700000000' } },
       error: null,
+    })
+    mockUpsert.mockResolvedValueOnce({
+      id: 'prisma-user-123',
+      phone: '+2250700000000',
+      roles: ['MECHANIC'],
     })
 
     const request = createMockRequest({ authorization: 'Bearer valid-token' })
     await requireAuth(request, mockReply)
 
-    expect(request.user).toEqual({ id: 'user-123', phone: '+2250700000000' })
+    expect(request.user).toEqual({
+      id: 'prisma-user-123',
+      phone: '+2250700000000',
+      roles: ['MECHANIC'],
+    })
     expect(mockGetUser).toHaveBeenCalledWith('valid-token')
+    expect(mockUpsert).toHaveBeenCalledWith({
+      where: { supabaseId: 'supabase-123' },
+      update: {},
+      create: { supabaseId: 'supabase-123', phone: '+2250700000000', roles: ['MECHANIC'] },
+      select: { id: true, phone: true, roles: true },
+    })
   })
 
   it('throws 401 when no authorization header', async () => {
