@@ -3,6 +3,9 @@ import nextConfig from 'eslint-config-next'
 const eslintConfig = [
   ...nextConfig,
   {
+    ignores: ['public/sw.js', 'public/swe-worker-*.js'],
+  },
+  {
     rules: {
       'no-console': 'error',
       'no-restricted-syntax': [

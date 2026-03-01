@@ -29,6 +29,7 @@ model User {
   dataDeletionRequests DataDeletionRequest[]
   vendor               Vendor?
   vehicles             UserVehicle[]
+  initiatedOrders      Order[]  @relation("OrderInitiator")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -65,6 +66,32 @@ enum CatalogItemStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  VENDOR_CONFIRMED
+  DISPATCHED
+  IN_TRANSIT
+  DELIVERED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  ORANGE_MONEY
+  MTN_MOMO
+  WAVE
+  COD
+}
+
+enum EscrowStatus {
+  HELD
+  RELEASED
+  REFUNDED
 }
 
 enum JobType {
@@ -202,4 +229,75 @@ model SearchSynonym {
   correction String
 
   @@map("search_synonyms")
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  initiatorId     String        @map("initiator_id")
+  initiator       User          @relation("OrderInitiator", fields: [initiatorId], references: [id])
+  ownerPhone      String?       @map("owner_phone")
+  status          OrderStatus   @default(DRAFT)
+  paymentMethod   PaymentMethod? @map("payment_method")
+  shareToken      String        @unique @map("share_token")
+  totalAmount     Int           @default(0) @map("total_amount")
+  deliveryFee     Int           @default(0) @map("delivery_fee")
+  laborCost       Int?          @map("labor_cost")
+  vendorConfirmedAt DateTime?   @map("vendor_confirmed_at")
+  paidAt          DateTime?     @map("paid_at")
+  cancelledAt     DateTime?     @map("cancelled_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  items           OrderItem[]
+  events          OrderEvent[]
+  escrow          EscrowTransaction?
+
+  @@map("orders")
+  @@index([initiatorId], name: "idx_orders_initiator")
+  @@index([status], name: "idx_orders_status")
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  orderId         String   @map("order_id")
+  order           Order    @relation(fields: [orderId], references: [id])
+  catalogItemId   String   @map("catalog_item_id")
+  vendorId        String   @map("vendor_id")
+  vendorShopName  String   @map("vendor_shop_name")
+  name            String
+  category        String?
+  priceSnapshot   Int      @map("price_snapshot")
+  quantity        Int      @default(1)
+  imageThumbUrl   String?  @map("image_thumb_url")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("order_items")
+  @@index([orderId], name: "idx_order_items_order")
+}
+
+model OrderEvent {
+  id        String      @id @default(uuid())
+  orderId   String      @map("order_id")
+  order     Order       @relation(fields: [orderId], references: [id])
+  fromStatus OrderStatus? @map("from_status")
+  toStatus  OrderStatus @map("to_status")
+  actor     String?
+  note      String?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@map("order_events")
+  @@index([orderId], name: "idx_order_events_order")
+}
+
+model EscrowTransaction {
+  id        String       @id @default(uuid())
+  orderId   String       @unique @map("order_id")
+  order     Order        @relation(fields: [orderId], references: [id])
+  amount    Int
+  status    EscrowStatus @default(HELD)
+  heldAt    DateTime     @default(now()) @map("held_at")
+  releasedAt DateTime?   @map("released_at")
+  refundedAt DateTime?   @map("refunded_at")
+
+  @@map("escrow_transactions")
 }
