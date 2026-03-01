@@ -28,6 +28,7 @@ model User {
 
   dataDeletionRequests DataDeletionRequest[]
   vendor               Vendor?
+  vehicles             UserVehicle[]
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -179,6 +180,20 @@ model Job {
 
   @@map("jobs")
   @@index([status, type], name: "idx_jobs_status_type")
+}
+
+model UserVehicle {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  brand     String
+  model     String
+  year      Int
+  vin       String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user_vehicles")
+  @@index([userId], name: "idx_user_vehicles_user")
 }
 
 model SearchSynonym {

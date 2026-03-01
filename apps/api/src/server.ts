@@ -12,6 +12,7 @@ import { consentRoutes } from './modules/consent/consent.routes.js'
 import { vendorRoutes } from './modules/vendor/vendor.routes.js'
 import { catalogRoutes } from './modules/catalog/catalog.routes.js'
 import { browseRoutes } from './modules/browse/browse.routes.js'
+import { vehicleRoutes } from './modules/vehicle/vehicle.routes.js'
 import multipart from '@fastify/multipart'
 
 // Fail-fast: validate environment variables at startup
@@ -47,6 +48,7 @@ export function buildApp() {
   fastify.register(vendorRoutes, { prefix: '/api/v1/vendors' })
   fastify.register(catalogRoutes, { prefix: '/api/v1/catalog' })
   fastify.register(browseRoutes, { prefix: '/api/v1/browse' })
+  fastify.register(vehicleRoutes, { prefix: '/api/v1/users' })
 
   return fastify
 }
