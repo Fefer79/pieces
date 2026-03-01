@@ -11,6 +11,7 @@ declare module 'fastify' {
       id: string
       phone: string
       roles: Role[]
+      activeContext: Role | null
     }
   }
 }
@@ -42,13 +43,23 @@ export async function requireAuth(request: FastifyRequest) {
       phone: data.user.phone ?? '',
       roles: ['MECHANIC'],
     },
-    select: { id: true, phone: true, roles: true },
+    select: { id: true, phone: true, roles: true, activeContext: true },
   })
+
+  // Auto-set activeContext if single role and not yet set
+  if (user.roles.length === 1 && !user.activeContext) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { activeContext: user.roles[0] },
+    })
+    user.activeContext = user.roles[0] ?? null
+  }
 
   request.user = {
     id: user.id,
     phone: user.phone,
     roles: user.roles as Role[],
+    activeContext: (user.activeContext as Role) ?? null,
   }
 }
 

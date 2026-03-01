@@ -8,6 +8,7 @@ vi.stubEnv('PORT', '3001')
 
 const mockGetUser = vi.fn()
 const mockUpsert = vi.fn()
+const mockUpdate = vi.fn()
 
 vi.mock('../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -21,6 +22,7 @@ vi.mock('../lib/prisma.js', () => ({
   prisma: {
     user: {
       upsert: (...args: unknown[]) => mockUpsert(...args),
+      update: (...args: unknown[]) => mockUpdate(...args),
     },
   },
 }))
@@ -50,7 +52,9 @@ describe('requireAuth', () => {
       id: 'prisma-user-123',
       phone: '+2250700000000',
       roles: ['MECHANIC'],
+      activeContext: null,
     })
+    mockUpdate.mockResolvedValueOnce({})
 
     const request = createMockRequest({ authorization: 'Bearer valid-token' })
     await requireAuth(request, mockReply)
@@ -59,13 +63,19 @@ describe('requireAuth', () => {
       id: 'prisma-user-123',
       phone: '+2250700000000',
       roles: ['MECHANIC'],
+      activeContext: 'MECHANIC',
     })
     expect(mockGetUser).toHaveBeenCalledWith('valid-token')
     expect(mockUpsert).toHaveBeenCalledWith({
       where: { supabaseId: 'supabase-123' },
       update: {},
       create: { supabaseId: 'supabase-123', phone: '+2250700000000', roles: ['MECHANIC'] },
-      select: { id: true, phone: true, roles: true },
+      select: { id: true, phone: true, roles: true, activeContext: true },
+    })
+    // Auto-set activeContext for single role user
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: 'prisma-user-123' },
+      data: { activeContext: 'MECHANIC' },
     })
   })
 
