@@ -76,6 +76,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 - [Manuel d'utilisation vendeur](./deep-dive-manuel-vendeur.md) — Guide complet pour les vendeurs (onboarding KYC, garanties, catalogue IA, commandes, livraisons, escrow, avis, zones de livraison) — Généré 2026-03-01
 - [Manuel d'utilisation mécanicien](./deep-dive-manuel-mecanicien.md) — Guide complet pour les mécaniciens (recherche, photo IA, VIN, garage, commande tripartite, livraison, évaluations, litiges) — Généré 2026-03-01
 - [Manuel d'utilisation livreur](./deep-dive-manuel-livreur.md) — Guide complet pour les livreurs (assignations, ramassage, transit, livraison, COD, client absent, GPS, avis) — Généré 2026-03-01
+- [Manuel d'utilisation propriétaire](./deep-dive-manuel-proprietaire.md) — Guide complet pour les propriétaires de véhicules (lien de paiement, mobile money, COD, escrow, suivi commande) — Généré 2026-03-01
 
 ---
 
