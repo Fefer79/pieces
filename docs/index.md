@@ -80,6 +80,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 - [Manuel d'utilisation entreprise](./deep-dive-manuel-entreprise.md) — Guide complet pour les gestionnaires de flotte (stub v1, vision Phase 2 : dashboard flotte, gestion membres tenant, workflow approbation, facturation consolidée) — Généré 2026-03-01
 - [Manuel d'utilisation client](./deep-dive-manuel-client.md) — Guide complet pour les acheteurs particuliers (recherche texte/photo IA/VIN, garage, commande directe, paiement mobile/COD, escrow, livraison, évaluations, litiges) — Généré 2026-03-01
 - [Manuel d'utilisation visiteur](./deep-dive-manuel-visiteur.md) — Guide complet pour les visiteurs non connectés (pages publiques, lien de paiement partagé, API publiques catalogue/photo IA/VIN, PWA, suivi livraison) — Généré 2026-03-01
+- [Manuel technique bot WhatsApp](./deep-dive-manuel-bot-whatsapp.md) — Guide complet du bot WhatsApp (webhook Meta Cloud API, HMAC, commandes bot, 5 templates, notifications, multi-canal, intégration commandes/livraisons) — Généré 2026-03-01
 
 ---
 
