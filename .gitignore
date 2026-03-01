@@ -29,3 +29,7 @@ coverage/
 
 # Prisma
 packages/shared/prisma/*.db
+
+# Serwist (generated service worker)
+apps/web/public/sw.js
+apps/web/public/swe-worker-*.js
