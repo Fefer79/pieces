@@ -64,8 +64,8 @@ development_status:
   3-1-navigation-catalogue-visuelle: done
   3-2-recherche-reference-oem-meilisearch: done
   3-3-decodage-vin-identification-vehicule: done
-  3-4-profils-vehicules-pre-remplissage: in-progress
-  3-5-identification-piece-photo-ia-desambiguation-pwa: backlog
+  3-4-profils-vehicules-pre-remplissage: done
+  3-5-identification-piece-photo-ia-desambiguation-pwa: in-progress
   3-6-pwa-offline-first-service-worker: backlog
   epic-3-retrospective: optional
 
