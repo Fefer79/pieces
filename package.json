@@ -1,0 +1,19 @@
+{
+  "name": "pieces",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "turbo": "^2.6.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "prisma", "@prisma/client", "@prisma/engines"]
+  }
+}

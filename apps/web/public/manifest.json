@@ -1,0 +1,21 @@
+{
+  "name": "Pièces — Marketplace Pièces Auto",
+  "short_name": "Pièces",
+  "description": "Trouvez et commandez vos pièces auto en Côte d'Ivoire",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#1976D2",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
