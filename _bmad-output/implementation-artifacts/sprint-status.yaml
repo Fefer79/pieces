@@ -70,14 +70,14 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4 : Commande Tripartite & Paiement
-  epic-4: in-progress
-  4-1-state-machine-commande-initiation-mecanicien: in-progress
-  4-2-page-choix-proprietaire-mode-guest: backlog
-  4-3-selection-piece-paiement-cinetpay: backlog
-  4-4-sequestre-fonds-virement-vendeur: backlog
-  4-5-confirmation-vendeur-annulation-auto-45-min: backlog
-  4-6-annulation-commande-acheteur: backlog
-  4-7-panier-multi-references-livraison-consolidee: backlog
+  epic-4: done
+  4-1-state-machine-commande-initiation-mecanicien: done
+  4-2-page-choix-proprietaire-mode-guest: done
+  4-3-selection-piece-paiement-cinetpay: done
+  4-4-sequestre-fonds-virement-vendeur: done
+  4-5-confirmation-vendeur-annulation-auto-45-min: done
+  4-6-annulation-commande-acheteur: done
+  4-7-panier-multi-references-livraison-consolidee: done
   epic-4-retrospective: optional
 
   # Epic 5 : Livraison & Logistique
