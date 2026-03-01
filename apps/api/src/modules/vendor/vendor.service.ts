@@ -67,6 +67,120 @@ export async function createVendor(userId: string, body: unknown) {
   })
 }
 
+export async function signGuarantees(userId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true, status: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur trouvé pour cet utilisateur',
+    })
+  }
+
+  if (vendor.status === 'ACTIVE') {
+    throw new AppError('VENDOR_ALREADY_ACTIVE', 409, {
+      message: 'Le profil vendeur est déjà activé',
+    })
+  }
+
+  if (vendor.status !== 'PENDING_ACTIVATION') {
+    throw new AppError('VENDOR_INVALID_STATUS', 422, {
+      message: 'Le profil vendeur doit être en attente d\'activation pour signer les garanties',
+    })
+  }
+
+  return prisma.$transaction(async (tx) => {
+    await tx.vendorGuaranteeSignature.createMany({
+      data: [
+        { vendorId: vendor.id, guaranteeType: 'RETURN_48H' },
+        { vendorId: vendor.id, guaranteeType: 'WARRANTY_30D' },
+      ],
+    })
+
+    await tx.vendor.update({
+      where: { id: vendor.id },
+      data: { status: 'ACTIVE' },
+    })
+
+    return tx.vendor.findUniqueOrThrow({
+      where: { id: vendor.id },
+      select: {
+        id: true,
+        shopName: true,
+        contactName: true,
+        phone: true,
+        vendorType: true,
+        status: true,
+        createdAt: true,
+        kyc: {
+          select: {
+            id: true,
+            kycType: true,
+            documentNumber: true,
+            isPublic: true,
+          },
+        },
+        guaranteeSignatures: {
+          select: {
+            id: true,
+            guaranteeType: true,
+            signedAt: true,
+          },
+        },
+      },
+    })
+  })
+}
+
+export async function getGuaranteeStatus(userId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: {
+      id: true,
+      shopName: true,
+      vendorType: true,
+      status: true,
+      guaranteeSignatures: {
+        select: {
+          id: true,
+          guaranteeType: true,
+          signedAt: true,
+        },
+      },
+    },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur trouvé pour cet utilisateur',
+    })
+  }
+
+  return {
+    vendorId: vendor.id,
+    shopName: vendor.shopName,
+    vendorType: vendor.vendorType,
+    status: vendor.status,
+    guarantees: [
+      {
+        type: 'RETURN_48H',
+        label: 'Garantie retour pièce incorrecte : reprise sous 48h, remboursement intégral',
+        signed: vendor.guaranteeSignatures.some((s) => s.guaranteeType === 'RETURN_48H'),
+        signedAt: vendor.guaranteeSignatures.find((s) => s.guaranteeType === 'RETURN_48H')?.signedAt ?? null,
+      },
+      {
+        type: 'WARRANTY_30D',
+        label: 'Garantie pièces d\'occasion : fonctionnement minimum 30 jours',
+        signed: vendor.guaranteeSignatures.some((s) => s.guaranteeType === 'WARRANTY_30D'),
+        signedAt: vendor.guaranteeSignatures.find((s) => s.guaranteeType === 'WARRANTY_30D')?.signedAt ?? null,
+      },
+    ],
+    allSigned: vendor.guaranteeSignatures.length >= 2,
+  }
+}
+
 export async function getMyVendor(userId: string) {
   const vendor = await prisma.vendor.findUnique({
     where: { userId },

@@ -8,8 +8,10 @@ vi.stubEnv('PORT', '3001')
 
 const mockVendorFindUnique = vi.fn()
 const mockVendorCreate = vi.fn()
+const mockVendorUpdate = vi.fn()
 const mockVendorFindUniqueOrThrow = vi.fn()
 const mockKycCreate = vi.fn()
+const mockGuaranteeCreateMany = vi.fn()
 const mockTransaction = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
@@ -27,7 +29,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { createVendor, getMyVendor } = await import('./vendor.service.js')
+const { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus } = await import('./vendor.service.js')
 
 describe('vendor.service', () => {
   beforeEach(() => {
@@ -38,10 +40,14 @@ describe('vendor.service', () => {
       const tx = {
         vendor: {
           create: (...args: unknown[]) => mockVendorCreate(...args),
+          update: (...args: unknown[]) => mockVendorUpdate(...args),
           findUniqueOrThrow: (...args: unknown[]) => mockVendorFindUniqueOrThrow(...args),
         },
         vendorKyc: {
           create: (...args: unknown[]) => mockKycCreate(...args),
+        },
+        vendorGuaranteeSignature: {
+          createMany: (...args: unknown[]) => mockGuaranteeCreateMany(...args),
         },
       }
       return fn(tx)
@@ -176,6 +182,116 @@ describe('vendor.service', () => {
       mockVendorFindUnique.mockResolvedValueOnce(null)
 
       await expect(getMyVendor('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_NOT_FOUND',
+        statusCode: 404,
+      })
+    })
+  })
+
+  describe('signGuarantees', () => {
+    it('signs guarantees and activates vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'PENDING_ACTIVATION' })
+      mockGuaranteeCreateMany.mockResolvedValueOnce({ count: 2 })
+      mockVendorUpdate.mockResolvedValueOnce({})
+      mockVendorFindUniqueOrThrow.mockResolvedValueOnce({
+        id: 'vendor-1',
+        shopName: 'Test Shop',
+        status: 'ACTIVE',
+        guaranteeSignatures: [
+          { id: 'sig-1', guaranteeType: 'RETURN_48H', signedAt: new Date() },
+          { id: 'sig-2', guaranteeType: 'WARRANTY_30D', signedAt: new Date() },
+        ],
+      })
+
+      const result = await signGuarantees('user-1')
+
+      expect(result.status).toBe('ACTIVE')
+      expect(result.guaranteeSignatures).toHaveLength(2)
+      expect(mockGuaranteeCreateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.arrayContaining([
+            expect.objectContaining({ guaranteeType: 'RETURN_48H' }),
+            expect.objectContaining({ guaranteeType: 'WARRANTY_30D' }),
+          ]),
+        }),
+      )
+      expect(mockVendorUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: 'ACTIVE' },
+        }),
+      )
+    })
+
+    it('throws VENDOR_NOT_FOUND when no vendor exists', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(signGuarantees('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_NOT_FOUND',
+        statusCode: 404,
+      })
+    })
+
+    it('throws VENDOR_ALREADY_ACTIVE when vendor is already active', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+
+      await expect(signGuarantees('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_ALREADY_ACTIVE',
+        statusCode: 409,
+      })
+    })
+
+    it('throws VENDOR_INVALID_STATUS when vendor is PAUSED', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'PAUSED' })
+
+      await expect(signGuarantees('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_INVALID_STATUS',
+        statusCode: 422,
+      })
+    })
+  })
+
+  describe('getGuaranteeStatus', () => {
+    it('returns guarantee status with signed guarantees', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        shopName: 'Test Shop',
+        vendorType: 'FORMAL',
+        status: 'ACTIVE',
+        guaranteeSignatures: [
+          { id: 'sig-1', guaranteeType: 'RETURN_48H', signedAt: new Date() },
+          { id: 'sig-2', guaranteeType: 'WARRANTY_30D', signedAt: new Date() },
+        ],
+      })
+
+      const result = await getGuaranteeStatus('user-1')
+
+      expect(result.vendorId).toBe('vendor-1')
+      expect(result.allSigned).toBe(true)
+      expect(result.guarantees).toHaveLength(2)
+      expect(result.guarantees[0].signed).toBe(true)
+      expect(result.guarantees[1].signed).toBe(true)
+    })
+
+    it('returns guarantee status with unsigned guarantees', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        shopName: 'Test Shop',
+        vendorType: 'FORMAL',
+        status: 'PENDING_ACTIVATION',
+        guaranteeSignatures: [],
+      })
+
+      const result = await getGuaranteeStatus('user-1')
+
+      expect(result.allSigned).toBe(false)
+      expect(result.guarantees[0].signed).toBe(false)
+      expect(result.guarantees[1].signed).toBe(false)
+    })
+
+    it('throws VENDOR_NOT_FOUND when no vendor exists', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(getGuaranteeStatus('user-1')).rejects.toMatchObject({
         code: 'VENDOR_NOT_FOUND',
         statusCode: 404,
       })

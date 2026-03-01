@@ -55,6 +55,11 @@ enum KycType {
   CNI
 }
 
+enum GuaranteeType {
+  RETURN_48H
+  WARRANTY_30D
+}
+
 model Vendor {
   id          String       @id @default(uuid())
   userId      String       @unique @map("user_id")
@@ -67,10 +72,22 @@ model Vendor {
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
-  kyc VendorKyc?
+  kyc                 VendorKyc?
+  guaranteeSignatures VendorGuaranteeSignature[]
 
   @@map("vendors")
   @@index([phone], name: "idx_vendors_phone")
+}
+
+model VendorGuaranteeSignature {
+  id            String        @id @default(uuid())
+  vendorId      String        @map("vendor_id")
+  vendor        Vendor        @relation(fields: [vendorId], references: [id])
+  guaranteeType GuaranteeType @map("guarantee_type")
+  signedAt      DateTime      @default(now()) @map("signed_at")
+
+  @@map("vendor_guarantee_signatures")
+  @@unique([vendorId, guaranteeType], name: "uq_vendor_guarantee_type")
 }
 
 model VendorKyc {

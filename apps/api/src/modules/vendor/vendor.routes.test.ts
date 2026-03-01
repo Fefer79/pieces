@@ -10,8 +10,10 @@ const mockGetUser = vi.fn()
 const mockUserUpsert = vi.fn()
 const mockVendorFindUnique = vi.fn()
 const mockVendorCreate = vi.fn()
+const mockVendorUpdate = vi.fn()
 const mockVendorFindUniqueOrThrow = vi.fn()
 const mockKycCreate = vi.fn()
+const mockGuaranteeCreateMany = vi.fn()
 const mockTransaction = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
@@ -66,10 +68,14 @@ describe('Vendor Routes', () => {
       const tx = {
         vendor: {
           create: (...args: unknown[]) => mockVendorCreate(...args),
+          update: (...args: unknown[]) => mockVendorUpdate(...args),
           findUniqueOrThrow: (...args: unknown[]) => mockVendorFindUniqueOrThrow(...args),
         },
         vendorKyc: {
           create: (...args: unknown[]) => mockKycCreate(...args),
+        },
+        vendorGuaranteeSignature: {
+          createMany: (...args: unknown[]) => mockGuaranteeCreateMany(...args),
         },
       }
       return fn(tx)
@@ -198,6 +204,114 @@ describe('Vendor Routes', () => {
       const response = await app.inject({
         method: 'GET',
         url: '/api/v1/vendors/me',
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('POST /api/v1/vendors/me/signature', () => {
+    it('returns 201 when guarantees signed and vendor activated', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'PENDING_ACTIVATION' })
+      mockGuaranteeCreateMany.mockResolvedValueOnce({ count: 2 })
+      mockVendorUpdate.mockResolvedValueOnce({})
+      mockVendorFindUniqueOrThrow.mockResolvedValueOnce({
+        id: 'vendor-1',
+        shopName: 'Test Shop',
+        status: 'ACTIVE',
+        guaranteeSignatures: [
+          { id: 'sig-1', guaranteeType: 'RETURN_48H', signedAt: new Date() },
+          { id: 'sig-2', guaranteeType: 'WARRANTY_30D', signedAt: new Date() },
+        ],
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/vendors/me/signature',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(201)
+      const body = response.json()
+      expect(body.data.status).toBe('ACTIVE')
+      expect(body.data.guaranteeSignatures).toHaveLength(2)
+    })
+
+    it('returns 409 when vendor already active', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/vendors/me/signature',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(409)
+      expect(response.json().error.code).toBe('VENDOR_ALREADY_ACTIVE')
+    })
+
+    it('returns 404 when no vendor exists', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/vendors/me/signature',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(404)
+      expect(response.json().error.code).toBe('VENDOR_NOT_FOUND')
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/vendors/me/signature',
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('GET /api/v1/vendors/me/guarantees', () => {
+    it('returns 200 with guarantee status', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        shopName: 'Test Shop',
+        vendorType: 'FORMAL',
+        status: 'ACTIVE',
+        guaranteeSignatures: [
+          { id: 'sig-1', guaranteeType: 'RETURN_48H', signedAt: new Date() },
+          { id: 'sig-2', guaranteeType: 'WARRANTY_30D', signedAt: new Date() },
+        ],
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/guarantees',
+        headers: { authorization: 'Bearer valid-token' },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = response.json()
+      expect(body.data.allSigned).toBe(true)
+      expect(body.data.guarantees).toHaveLength(2)
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/vendors/me/guarantees',
       })
 
       expect(response.statusCode).toBe(401)

@@ -3,6 +3,7 @@ import { phoneSchema } from './auth'
 
 export const vendorTypeSchema = z.enum(['FORMAL', 'INFORMAL'])
 export const kycTypeSchema = z.enum(['RCCM', 'CNI'])
+export const guaranteeTypeSchema = z.enum(['RETURN_48H', 'WARRANTY_30D'])
 
 export const createVendorSchema = z
   .object({
