@@ -32,6 +32,21 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const supabase = createClient()
+
+      // Dev mode: bypass OTP with password login
+      if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEV_PASSWORD) {
+        const { error: pwError } = await supabase.auth.signInWithPassword({
+          phone: fullPhone,
+          password: process.env.NEXT_PUBLIC_DEV_PASSWORD,
+        })
+        if (pwError) {
+          setError(pwError.message)
+          return
+        }
+        router.push('/browse')
+        return
+      }
+
       const { error: otpError } = await supabase.auth.signInWithOtp({ phone: fullPhone })
       if (otpError) {
         setError(otpError.message)
