@@ -59,9 +59,17 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center px-4">
+    <main className="flex min-h-dvh flex-col items-center justify-center px-4 gap-6">
+      <div className="flex items-center justify-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt="Pièces.ci"
+          width={286}
+          height={260}
+        />
+      </div>
       <div className="w-full max-w-sm">
-        <h1 className="mb-2 text-center text-2xl font-bold text-[#1976D2]">Pièces</h1>
         <p className="mb-8 text-center text-sm text-gray-600">
           Connectez-vous avec votre numéro de téléphone
         </p>

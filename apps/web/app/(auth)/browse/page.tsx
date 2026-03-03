@@ -115,36 +115,44 @@ export default function BrowsePage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
       {/* Header */}
-      <header className="bg-[#FAFAFA] px-4 pb-2 pt-4 text-center">
-        <h1 className="text-xl font-bold tracking-tight text-[#1A1A1A]">
-          PIECES<span className="text-[#1976D2]">.CI</span>
-        </h1>
-        <p className="mt-1 text-xs text-gray-500">Trouver une pièce auto</p>
+      <header className="flex justify-center bg-[#FAFAFA] px-4 pb-2 pt-4">
+        <img
+          src="/logo-pieces-light.svg"
+          alt="PIÈCES.CI"
+          className="h-20 w-auto"
+        />
       </header>
 
-      {/* Véhicule sélectionné */}
-      {vehicle && (
-        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-400">Véhicule :</span>
-            <span className="font-medium text-[#1A1A1A]">
-              {vehicle.brand} · {vehicle.model}
-              {vehicle.year && ` · ${vehicle.year}`}
-              {vehicle.motor && ` · ${vehicle.motor}`}
-            </span>
-          </div>
+      {/* Véhicule sélectionné / suggestion */}
+      <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2" style={{ minHeight: 44 }}>
+        {vehicle ? (
+          <>
+            <p className="truncate text-sm">
+              <span className="text-gray-400">Véhicule : </span>
+              <span className="font-medium text-[#1A1A1A]">
+                {vehicle.brand} · {vehicle.model}{vehicle.year ? ` · ${vehicle.year}` : ''}{vehicle.motor ? ` · ${vehicle.motor}` : ''}
+              </span>
+            </p>
+            <button
+              onClick={clearVehicle}
+              className="ml-2 flex-shrink-0 p-1 text-gray-400 transition-colors hover:text-gray-600"
+              aria-label="Supprimer le véhicule"
+              style={{ minWidth: 44, minHeight: 44 }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+              </svg>
+            </button>
+          </>
+        ) : (
           <button
-            onClick={clearVehicle}
-            className="p-1 text-gray-400 transition-colors hover:text-gray-600"
-            aria-label="Supprimer le véhicule"
-            style={{ minWidth: 44, minHeight: 44 }}
+            onClick={() => setActiveTab('Sélection')}
+            className="w-full truncate text-left text-sm text-gray-400"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
-              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-            </svg>
+            Sélectionnez votre véhicule (Marque · Modèle · Année · Motorisation)
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Tabs */}
       <nav className="flex border-b border-gray-200 bg-[#FAFAFA]">
@@ -218,38 +226,94 @@ export default function BrowsePage() {
 
         {/* VIN tab */}
         {activeTab === 'VIN' && (
-          <div className="flex flex-col items-center gap-4 py-8">
-            <p className="text-sm text-gray-600">
-              Scannez ou saisissez le numéro VIN du véhicule
-            </p>
+          <div className="flex flex-col gap-4 py-6">
             <button
               onClick={() => router.push('/browse/vin')}
-              className="rounded-lg bg-[#1976D2] px-6 py-3 text-sm font-medium text-white shadow transition-transform active:scale-95"
-              style={{ minHeight: 48 }}
+              className="flex min-h-[140px] items-center justify-center rounded-lg border border-amber-100 bg-amber-50 px-4 py-4 text-center transition-transform active:scale-[0.98]"
             >
-              Scanner le VIN
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1976D2] text-white">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-6 w-6"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.5 3.75a3 3 0 00-3 3v10.5a3 3 0 003 3h15a3 3 0 003-3V6.75a3 3 0 00-3-3h-15zm4.125 3a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zm-3.873 8.703a4.126 4.126 0 017.746 0 .75.75 0 01-.351.92 7.47 7.47 0 01-3.522.877 7.47 7.47 0 01-3.522-.877.75.75 0 01-.351-.92zM15 8.25a.75.75 0 000 1.5h3.75a.75.75 0 000-1.5H15zM14.25 12a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H15a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h3.75a.75.75 0 000-1.5H15z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-amber-700">
+                  Scanner le VIN
+                </p>
+                <p className="text-xs text-gray-500">
+                  Scanner avec la caméra
+                </p>
+              </div>
             </button>
+
+            {/* Carte saisie manuelle VIN */}
+            <div className="flex min-h-[140px] flex-col items-center justify-center gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-4 text-center">
+              <p className="text-sm font-medium text-[#1976D2]">
+                Saisir le numéro VIN
+              </p>
+              <input
+                type="text"
+                placeholder="Ex: JTDKN3DU5A0..."
+                maxLength={17}
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-center text-sm uppercase tracking-widest focus:border-[#1976D2] focus:outline-none"
+                style={{ minHeight: 48 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const val = e.currentTarget.value.trim()
+                    if (val.length >= 11) {
+                      router.push(`/browse/vin?code=${encodeURIComponent(val)}`)
+                    }
+                  }
+                }}
+              />
+              <p className="text-xs text-gray-500">
+                17 caractères — visible sur la carte grise ou le châssis
+              </p>
+            </div>
           </div>
         )}
 
         {/* Texte tab */}
         {activeTab === 'Recherche' && (
-          <>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Rechercher par nom, référence OEM..."
-              className="mb-4 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#1976D2] focus:outline-none"
-              style={{ minHeight: 48 }}
-            />
+          <div className="grid auto-rows-[1fr] gap-5">
+            {/* Carte recherche par nom */}
+            <div
+              className="flex min-h-[88px] items-center justify-between rounded-lg border border-blue-100 bg-blue-50 py-3 pl-4"
+              style={{ paddingRight: 10 }}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="mb-2 text-sm font-medium text-[#1976D2]">Recherche par nom</p>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Nom, référence OEM..."
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#1976D2] focus:outline-none"
+                  style={{ minHeight: 48 }}
+                />
+              </div>
+              <div className="ml-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#1976D2] text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
 
             {searching && (
-              <p className="mb-4 text-sm text-gray-500">Recherche...</p>
+              <p className="text-sm text-gray-500">Recherche...</p>
             )}
 
             {searchQuery.trim().length >= 2 && searchResults.length > 0 && (
-              <div className="mb-6 space-y-2">
+              <div className="space-y-2">
                 <h2 className="text-sm font-semibold text-gray-600">
                   Résultats
                 </h2>
@@ -292,7 +356,7 @@ export default function BrowsePage() {
             {searchQuery.trim().length >= 2 &&
               !searching &&
               searchResults.length === 0 && (
-                <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 text-center">
+                <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
                   <p className="text-sm text-gray-500">
                     Aucun résultat pour &ldquo;{searchQuery}&rdquo;
                   </p>
@@ -301,7 +365,46 @@ export default function BrowsePage() {
                   </p>
                 </div>
               )}
-          </>
+
+            {/* Recherche par voice note */}
+            <a
+              href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto. Je vous envoie une note vocale.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-[88px] items-center justify-between rounded-lg border border-green-100 bg-green-50 py-3 pl-4 transition-transform active:scale-[0.98]"
+              style={{ paddingRight: 10 }}
+            >
+              <div>
+                <p className="text-sm font-medium text-green-800">Recherche par note vocale</p>
+                <p className="text-xs text-gray-500">Décrivez la pièce par WhatsApp</p>
+              </div>
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 0013.6 2.3A7 7 0 0019 12h-2zm-4 6.93V21h-2v-2.07A8.02 8.02 0 014.07 13H6.1a5.98 5.98 0 005.9 5 5.98 5.98 0 005.9-5h2.03A8.02 8.02 0 0113 18.93z" />
+                </svg>
+              </div>
+            </a>
+
+            {/* Recherche par message WhatsApp */}
+            <a
+              href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-[88px] items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 py-3 pl-4 transition-transform active:scale-[0.98]"
+              style={{ paddingRight: 10 }}
+            >
+              <div>
+                <p className="text-sm font-medium text-emerald-800">Recherche par message</p>
+                <p className="text-xs text-gray-500">Écrivez-nous sur WhatsApp</p>
+              </div>
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" />
+                  <path d="M7 9h10v2H7zm0-3h10v2H7z" />
+                </svg>
+              </div>
+            </a>
+          </div>
         )}
 
         {/* Logos tab — cascading dropdowns */}
