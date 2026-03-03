@@ -1,7 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createSupabaseMiddlewareClient } from './lib/supabase-middleware'
 
-const PUBLIC_PATHS = ['/login', '/']
+const PROTECTED_PATHS = [
+  '/orders',
+  '/profile',
+  '/vendors',
+  '/rider',
+  '/admin',
+  '/onboarding',
+  '/enterprise',
+]
 
 export async function middleware(request: NextRequest) {
   const { supabase, response } = createSupabaseMiddlewareClient(request)
@@ -10,12 +18,15 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isPublicPath = PUBLIC_PATHS.some(
-    (path) => request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith('/login/'),
+  const isProtectedPath = PROTECTED_PATHS.some(
+    (path) =>
+      request.nextUrl.pathname === path ||
+      request.nextUrl.pathname.startsWith(`${path}/`),
   )
 
-  if (!user && !isPublicPath) {
+  if (!user && isProtectedPath) {
     const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('returnTo', request.nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
   }
 

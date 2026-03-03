@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { phoneSchema } from 'shared/validators'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,7 +26,7 @@ export default function LoginPage() {
 
     const result = phoneSchema.safeParse(fullPhone)
     if (!result.success) {
-      setError(result.error.issues[0]?.message ?? 'Numéro invalide')
+      setError(result.error.issues[0]?.message ?? 'Numero invalide')
       return
     }
 
@@ -43,7 +44,9 @@ export default function LoginPage() {
           setError(pwError.message)
           return
         }
-        router.push('/browse')
+        const returnTo = searchParams.get('returnTo') || sessionStorage.getItem('auth_return_to') || '/browse'
+        sessionStorage.removeItem('auth_return_to')
+        router.push(returnTo)
         return
       }
 
@@ -64,20 +67,20 @@ export default function LoginPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/logo.png"
-          alt="Pièces.ci"
+          alt="Pieces.ci"
           width={286}
           height={260}
         />
       </div>
       <div className="w-full max-w-sm">
         <p className="mb-8 text-center text-sm text-gray-600">
-          Connectez-vous avec votre numéro de téléphone
+          Connectez-vous avec votre numero de telephone
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700">
-              Numéro de téléphone
+              Numero de telephone
             </label>
             <div className="flex">
               <span className="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-600">
@@ -109,5 +112,13 @@ export default function LoginPage() {
         </form>
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-dvh items-center justify-center"><p className="text-gray-500">Chargement...</p></div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

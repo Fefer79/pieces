@@ -43,7 +43,9 @@ function OtpForm() {
           setError(verifyError.message)
           return
         }
-        router.push('/')
+        const returnTo = sessionStorage.getItem('auth_return_to') || '/browse'
+        sessionStorage.removeItem('auth_return_to')
+        router.push(returnTo)
       } finally {
         setLoading(false)
       }

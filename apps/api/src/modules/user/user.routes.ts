@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
-import { switchContextSchema, updateRolesSchema } from 'shared/validators'
+import { switchContextSchema, selectRoleSchema, updateRolesSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { getProfile, switchContext, updateRoles } from './user.service.js'
+import { getProfile, switchContext, selectRole, updateRoles } from './user.service.js'
 
 export async function userRoutes(fastify: FastifyInstance) {
   fastify.get(
@@ -17,6 +17,24 @@ export async function userRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const result = await getProfile(request.user.id)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/me/role',
+    {
+      schema: {
+        body: zodToFastify(selectRoleSchema),
+        tags: ['Users'],
+        description: 'Sélectionner un rôle (ajoute le rôle si nécessaire et set activeContext)',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: [requireAuth],
+    },
+    async (request, reply) => {
+      const { role } = request.body as { role: string }
+      const result = await selectRole(request.user.id, role)
       return reply.status(200).send({ data: result })
     },
   )

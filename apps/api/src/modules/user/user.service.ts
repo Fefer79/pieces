@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
-import { switchContextSchema, updateRolesSchema } from 'shared/validators'
+import { switchContextSchema, selectRoleSchema, updateRolesSchema } from 'shared/validators'
 import type { Role } from 'shared/types'
 
 export async function getProfile(userId: string) {
@@ -41,6 +41,37 @@ export async function switchContext(userId: string, role: string) {
     where: { id: userId },
     data: { activeContext: parsed.data.role },
     select: { id: true, phone: true, roles: true, activeContext: true },
+  })
+
+  return updated
+}
+
+export async function selectRole(userId: string, role: string) {
+  const parsed = selectRoleSchema.safeParse({ role })
+  if (!parsed.success) {
+    throw new AppError('USER_INVALID_ROLE', 400, { message: parsed.error.issues[0]?.message })
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { roles: true },
+  })
+
+  if (!user) {
+    throw new AppError('USER_NOT_FOUND', 404)
+  }
+
+  const newRoles = user.roles.includes(parsed.data.role)
+    ? user.roles
+    : [...user.roles, parsed.data.role]
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      roles: newRoles,
+      activeContext: parsed.data.role,
+    },
+    select: { id: true, phone: true, roles: true, activeContext: true, consentedAt: true },
   })
 
   return updated

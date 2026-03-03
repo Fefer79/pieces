@@ -1,5 +1,5 @@
 export { phoneSchema, otpSchema } from './auth'
-export { switchContextSchema, updateRolesSchema } from './user'
+export { switchContextSchema, selectRoleSchema, updateRolesSchema } from './user'
 export { consentSchema, deletionRequestSchema } from './consent'
 export { createVendorSchema, vendorTypeSchema, kycTypeSchema, guaranteeTypeSchema, updateDeliveryZonesSchema } from './vendor'
 export { catalogItemStatusSchema, catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema } from './catalog'

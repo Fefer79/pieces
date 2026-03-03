@@ -114,8 +114,8 @@ export default function BrowsePage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      {/* Header */}
-      <header className="flex justify-center bg-[#FAFAFA] px-4 pb-2 pt-4">
+      {/* Header — hidden on desktop (sidebar has logo) */}
+      <header className="flex justify-center bg-[#FAFAFA] px-4 pb-2 pt-4 lg:hidden">
         <img
           src="/logo-pieces-light.svg"
           alt="PIÈCES.CI"
@@ -173,7 +173,7 @@ export default function BrowsePage() {
       </nav>
 
       {/* Tab content */}
-      <div className="mx-auto max-w-md px-4 py-6">
+      <div className="mx-auto max-w-md px-4 py-6 lg:max-w-5xl">
         {/* Photo tab */}
         {activeTab === 'Photo' && (
           <div className="flex flex-col gap-4 py-6">
@@ -284,7 +284,7 @@ export default function BrowsePage() {
 
         {/* Texte tab */}
         {activeTab === 'Recherche' && (
-          <div className="grid auto-rows-[1fr] gap-5">
+          <div className="grid auto-rows-[1fr] gap-5 lg:grid-cols-2">
             {/* Carte recherche par nom */}
             <div
               className="flex min-h-[88px] items-center justify-between rounded-lg border border-blue-100 bg-blue-50 py-3 pl-4"
@@ -317,6 +317,7 @@ export default function BrowsePage() {
                 <h2 className="text-sm font-semibold text-gray-600">
                   Résultats
                 </h2>
+                <div className="grid gap-2 lg:grid-cols-2 xl:grid-cols-3">
                 {searchResults.map((item) => (
                   <div
                     key={item.id}
@@ -350,6 +351,7 @@ export default function BrowsePage() {
                     )}
                   </div>
                 ))}
+                </div>
               </div>
             )}
 
@@ -486,7 +488,7 @@ export default function BrowsePage() {
       </div>
 
       {/* WhatsApp FAB */}
-      <div className="fixed bottom-20 right-4 z-50">
+      <div className="fixed bottom-20 right-4 z-50 lg:bottom-6">
         {/* Mini-menu */}
         {waMenuOpen && (
           <div className="mb-3 flex flex-col gap-2">
