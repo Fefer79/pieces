@@ -66,10 +66,9 @@ function LoginForm() {
       <div className="flex items-center justify-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/logo.png"
-          alt="Pieces.ci"
-          width={286}
-          height={260}
+          src="/logo-pieces-light.svg"
+          alt="PIÈCES.CI"
+          className="h-24 w-auto"
         />
       </div>
       <div className="w-full max-w-sm">
