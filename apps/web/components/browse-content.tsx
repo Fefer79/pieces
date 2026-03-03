@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
 
-const TABS = ['Photo', 'VIN', 'Recherche', 'Sélection'] as const
+const TABS = ['Photo', 'VIN', 'WhatsApp', 'Sélection'] as const
 type Tab = (typeof TABS)[number]
 
 const WA_NUMBER = '2250709021708'
@@ -17,7 +17,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const vinFileInputRef = useRef<HTMLInputElement>(null)
-  const [activeTab, setActiveTab] = useState<Tab>('Recherche')
+  const [activeTab, setActiveTab] = useState<Tab>('WhatsApp')
 
   // Text search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -85,7 +85,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         year: selectedYear,
         motor: selectedMotor,
       })
-      setActiveTab('Recherche')
+      setActiveTab('WhatsApp')
     }
   }
 
@@ -188,22 +188,24 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         {/* Photo tab */}
         {activeTab === 'Photo' && (
           <div className="flex flex-col gap-4 py-6">
-            {/* Conseil */}
-            <div className="flex min-h-[140px] items-center justify-center rounded-lg border border-blue-100 bg-blue-50 px-4 py-4 text-center">
-              <div className="flex flex-col items-center">
-                <p className="text-sm font-medium text-[#1976D2]">
-                  {variant === 'desktop'
-                    ? 'Vous pouvez charger une photo de la pièce depuis votre ordinateur'
-                    : 'Vous pouvez photographier directement la pièce'}
-                </p>
-                <p className="mt-2 text-xs leading-relaxed text-gray-600">
-                  Pour de meilleurs résultats, commencez par identifier votre
-                  véhicule : {variant === 'desktop' ? 'chargez une photo de' : 'photographiez l\u0027arrière de'} la{' '}
-                  <strong>carte grise</strong> ou saisissez le{' '}
-                  <strong>numéro VIN</strong> (onglet VIN).
-                </p>
+            {/* Conseil — hidden when vehicle is selected */}
+            {!vehicle && (
+              <div className="flex min-h-[140px] items-center justify-center rounded-lg border border-blue-100 bg-blue-50 px-4 py-4 text-center">
+                <div className="flex flex-col items-center">
+                  <p className="text-sm font-medium text-[#1976D2]">
+                    {variant === 'desktop'
+                      ? 'Vous pouvez charger une photo de la pièce depuis votre ordinateur'
+                      : 'Vous pouvez photographier directement la pièce'}
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-gray-600">
+                    Pour de meilleurs résultats, commencez par identifier votre
+                    véhicule : {variant === 'desktop' ? 'chargez une photo de' : 'photographiez l\u0027arrière de'} la{' '}
+                    <strong>carte grise</strong> ou saisissez le{' '}
+                    <strong>numéro VIN</strong> (onglet VIN).
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Hidden file input for desktop */}
             <input
@@ -376,9 +378,56 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
           </div>
         )}
 
-        {/* Texte tab */}
-        {activeTab === 'Recherche' && (
+        {/* WhatsApp tab */}
+        {activeTab === 'WhatsApp' && (
           <div className="grid auto-rows-[1fr] gap-5 lg:grid-cols-2">
+            {/* Recherche par voice note */}
+            <a
+              href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto. Je vous envoie une note vocale.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-[88px] items-center justify-between rounded-lg border border-green-100 bg-green-50 py-3 pl-4 transition-transform active:scale-[0.98]"
+              style={{ paddingRight: 10 }}
+            >
+              <div>
+                <p className="text-sm font-medium text-green-800">
+                  Recherche par note vocale
+                </p>
+                <p className="text-xs text-gray-500">
+                  Décrivez la pièce par WhatsApp
+                </p>
+              </div>
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 0013.6 2.3A7 7 0 0019 12h-2zm-4 6.93V21h-2v-2.07A8.02 8.02 0 014.07 13H6.1a5.98 5.98 0 005.9 5 5.98 5.98 0 005.9-5h2.03A8.02 8.02 0 0113 18.93z" />
+                </svg>
+              </div>
+            </a>
+
+            {/* Recherche par message WhatsApp */}
+            <a
+              href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-[88px] items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 py-3 pl-4 transition-transform active:scale-[0.98]"
+              style={{ paddingRight: 10 }}
+            >
+              <div>
+                <p className="text-sm font-medium text-emerald-800">
+                  Recherche par message
+                </p>
+                <p className="text-xs text-gray-500">
+                  Écrivez-nous sur WhatsApp
+                </p>
+              </div>
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" />
+                  <path d="M7 9h10v2H7zm0-3h10v2H7z" />
+                </svg>
+              </div>
+            </a>
+
             {/* Carte recherche par nom */}
             <div
               className="flex min-h-[88px] items-center justify-between rounded-lg border border-blue-100 bg-blue-50 py-3 pl-4"
@@ -473,53 +522,6 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                   </p>
                 </div>
               )}
-
-            {/* Recherche par voice note */}
-            <a
-              href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto. Je vous envoie une note vocale.')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-h-[88px] items-center justify-between rounded-lg border border-green-100 bg-green-50 py-3 pl-4 transition-transform active:scale-[0.98]"
-              style={{ paddingRight: 10 }}
-            >
-              <div>
-                <p className="text-sm font-medium text-green-800">
-                  Recherche par note vocale
-                </p>
-                <p className="text-xs text-gray-500">
-                  Décrivez la pièce par WhatsApp
-                </p>
-              </div>
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                  <path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 0013.6 2.3A7 7 0 0019 12h-2zm-4 6.93V21h-2v-2.07A8.02 8.02 0 014.07 13H6.1a5.98 5.98 0 005.9 5 5.98 5.98 0 005.9-5h2.03A8.02 8.02 0 0113 18.93z" />
-                </svg>
-              </div>
-            </a>
-
-            {/* Recherche par message WhatsApp */}
-            <a
-              href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto.')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-h-[88px] items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 py-3 pl-4 transition-transform active:scale-[0.98]"
-              style={{ paddingRight: 10 }}
-            >
-              <div>
-                <p className="text-sm font-medium text-emerald-800">
-                  Recherche par message
-                </p>
-                <p className="text-xs text-gray-500">
-                  Écrivez-nous sur WhatsApp
-                </p>
-              </div>
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" />
-                  <path d="M7 9h10v2H7zm0-3h10v2H7z" />
-                </svg>
-              </div>
-            </a>
           </div>
         )}
 
