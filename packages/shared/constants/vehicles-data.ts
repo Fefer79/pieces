@@ -1,4 +1,4 @@
-{
+export default {
   "Toyota": {
     "models": {
       "Corolla": {
@@ -1019,4 +1019,4 @@
       }
     }
   }
-}
+} as const

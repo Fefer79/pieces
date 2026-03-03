@@ -2,11 +2,11 @@
  * Marques, modèles, années et motorisations automobiles
  * Données complètes : USA, Europe, Asie (1995–2026)
  */
-import vehiclesData from './vehicles-data.json'
+import vehiclesData from './vehicles-data'
 
 type VehiclesData = Record<string, { models: Record<string, { years: number[]; engines: string[] }> }>
 
-const data = vehiclesData as VehiclesData
+const data = vehiclesData as unknown as VehiclesData
 
 /** Full data with years + engines per model */
 export const VEHICLE_DATA = data
