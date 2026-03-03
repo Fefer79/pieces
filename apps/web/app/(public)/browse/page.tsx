@@ -113,7 +113,7 @@ export default function BrowsePage() {
   }, [searchQuery, handleSearch])
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="bg-[#FAFAFA]">
       {/* Header — hidden on desktop (sidebar has logo) */}
       <header className="flex justify-center bg-[#FAFAFA] px-4 pb-2 pt-4 lg:hidden">
         <img
