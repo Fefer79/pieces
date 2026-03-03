@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { VEHICLE_BRANDS } from 'shared/constants/vehicles'
+import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
 
 interface SearchResult {
   id: string
@@ -21,22 +21,30 @@ export default function EnterpriseSearchPage() {
   const [selectedBrand, setSelectedBrand] = useState('')
   const [selectedModel, setSelectedModel] = useState('')
   const [selectedYear, setSelectedYear] = useState('')
+  const [selectedMotor, setSelectedMotor] = useState('')
 
   const brandNames = Object.keys(VEHICLE_BRANDS).sort()
   const brandData = selectedBrand ? VEHICLE_BRANDS[selectedBrand] : undefined
   const models = brandData ? Object.keys(brandData.models).sort() : []
   const modelYears = brandData && selectedModel ? brandData.models[selectedModel] : undefined
   const years = modelYears ? [...modelYears].sort((a, b) => b - a) : []
+  const engines = selectedBrand && selectedModel ? getEngines(selectedBrand, selectedModel) : []
 
   // Reset cascading
   useEffect(() => {
     setSelectedModel('')
     setSelectedYear('')
+    setSelectedMotor('')
   }, [selectedBrand])
 
   useEffect(() => {
     setSelectedYear('')
+    setSelectedMotor('')
   }, [selectedModel])
+
+  useEffect(() => {
+    setSelectedMotor('')
+  }, [selectedYear])
 
   const handleSearch = useCallback(async (q: string) => {
     if (q.trim().length < 2) {
@@ -64,6 +72,7 @@ export default function EnterpriseSearchPage() {
     setSelectedBrand('')
     setSelectedModel('')
     setSelectedYear('')
+    setSelectedMotor('')
     setSearchQuery('')
     setResults([])
   }
@@ -130,6 +139,22 @@ export default function EnterpriseSearchPage() {
               <option value="">Toutes</option>
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Motorisation */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Motorisation</label>
+            <select
+              value={selectedMotor}
+              onChange={(e) => setSelectedMotor(e.target.value)}
+              disabled={!selectedYear || engines.length === 0}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none disabled:opacity-50"
+            >
+              <option value="">Toutes</option>
+              {engines.map((eng) => (
+                <option key={eng} value={eng}>{eng}</option>
               ))}
             </select>
           </div>

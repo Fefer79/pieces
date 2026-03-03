@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { VEHICLE_BRANDS } from 'shared/constants/vehicles'
+import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
 
 const TABS = ['Photo', 'VIN', 'Recherche', 'Sélection'] as const
 type Tab = (typeof TABS)[number]
@@ -50,6 +50,7 @@ export default function BrowsePage() {
   const modelYears =
     brandData && selectedModel ? brandData.models[selectedModel] : undefined
   const years = modelYears ? [...modelYears].sort((a, b) => b - a) : []
+  const engines = selectedBrand && selectedModel ? getEngines(selectedBrand, selectedModel) : []
 
   // Reset cascading selects
   useEffect(() => {
@@ -464,15 +465,20 @@ export default function BrowsePage() {
             </select>
 
             {/* Motorisation */}
-            <input
-              type="text"
+            <select
               value={selectedMotor}
               onChange={(e) => setSelectedMotor(e.target.value)}
-              disabled={!selectedYear}
-              placeholder="Motorisation (ex: 1.6 HDi, 2.0 D-4D...)"
+              disabled={!selectedYear || engines.length === 0}
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#1976D2] focus:outline-none disabled:opacity-50"
               style={{ minHeight: 48 }}
-            />
+            >
+              <option value="">— Motorisation —</option>
+              {engines.map((eng) => (
+                <option key={eng} value={eng}>
+                  {eng}
+                </option>
+              ))}
+            </select>
 
             {/* Confirmer */}
             <button
