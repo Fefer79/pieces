@@ -149,7 +149,7 @@ export default function BrowsePage() {
             onClick={() => setActiveTab('Sélection')}
             className="w-full truncate text-left text-sm text-gray-400"
           >
-            Sélectionnez votre véhicule (Marque · Modèle · Année · Motorisation)
+            Véhicule sélectionné (Marque-Modèle-Année-Motorisation)
           </button>
         )}
       </div>
