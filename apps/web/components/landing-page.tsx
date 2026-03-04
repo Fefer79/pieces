@@ -54,11 +54,10 @@ export function LandingPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 text-center">
             <h1 className="mb-4 text-3xl font-bold text-[#1A1A1A] lg:text-4xl">
-              Trouvez vos pièces auto d&apos;occasion à Abidjan
+              Trouvez vos pièces auto neuves et seconde-main en Côte d&apos;Ivoire
             </h1>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              La première marketplace de pièces automobiles d&apos;occasion en
-              Côte d&apos;Ivoire. Recherche par photo, VIN ou nom de pièce.
+              La marketplace de pièces qui vous facilite la vie.
             </p>
           </div>
 

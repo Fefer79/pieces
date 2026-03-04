@@ -7,9 +7,9 @@ export function AboutSection() {
         </h2>
 
         <p className="mb-8 text-center text-gray-600 lg:text-lg">
-          <strong>Pièces.ci</strong> est la première marketplace de pièces auto
-          d&apos;occasion en Côte d&apos;Ivoire. Nous connectons mécaniciens,
-          propriétaires de véhicules et vendeurs de pièces à Abidjan.
+          <strong>Pièces.ci</strong> est la première marketplace de pièces
+          détachées neuves et d&apos;occasion qui connecte mécaniciens,
+          propriétaires et vendeurs.
         </p>
 
         <div className="grid gap-6 md:grid-cols-3">
