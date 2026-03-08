@@ -1,6 +1,20 @@
 import type { Metadata, Viewport } from 'next'
+import { Instrument_Sans, DM_Mono } from 'next/font/google'
 import { AuthProvider } from '@/lib/auth-context'
 import './globals.css'
+
+const instrumentSans = Instrument_Sans({
+  subsets: ['latin'],
+  variable: '--font-instrument',
+  display: 'swap',
+})
+
+const dmMono = DM_Mono({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-dm-mono',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Pièces — Marketplace Pièces Auto',
@@ -11,13 +25,19 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#1976D2',
+  themeColor: '#D4880F',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" dir="ltr">
-      <body className="bg-[#FAFAFA] text-gray-900 antialiased">
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Gloock&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className={`${instrumentSans.variable} ${dmMono.variable} bg-[#FDFBF7] font-[family-name:var(--font-instrument)] text-[#1A1714] antialiased`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

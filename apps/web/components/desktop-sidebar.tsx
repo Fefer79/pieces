@@ -55,12 +55,10 @@ export function DesktopSidebar() {
   return (
     <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-gray-200 lg:bg-white">
       {/* Logo */}
-      <div className="flex h-16 items-center justify-center border-b border-gray-200 px-4">
-        <img
-          src="/logo-pieces-light.svg"
-          alt="PIECES.CI"
-          className="h-10 w-auto"
-        />
+      <div className="flex h-16 items-center justify-center border-b border-[#E1DAC9]/50 px-4">
+        <span className="font-[family-name:Gloock,serif] text-xl text-[#1A1714]">
+          Pièces<span className="text-[#D4880F]">.</span>
+        </span>
       </div>
 
       {/* Nav items */}

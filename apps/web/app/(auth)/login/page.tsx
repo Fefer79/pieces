@@ -64,12 +64,9 @@ function LoginForm() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 gap-6">
       <div className="flex items-center justify-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo-pieces-light.svg"
-          alt="PIÈCES.CI"
-          className="h-24 w-auto"
-        />
+        <span className="font-[family-name:Gloock,serif] text-4xl text-[#1A1714]">
+          Pièces<span className="text-[#D4880F]">.</span>
+        </span>
       </div>
       <div className="w-full max-w-sm">
         <p className="mb-8 text-center text-sm text-gray-600">
@@ -92,7 +89,7 @@ function LoginForm() {
                 value={phone}
                 onChange={(e) => handlePhoneChange(e.target.value)}
                 placeholder="07 00 00 00 00"
-                className="block w-full rounded-r-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1976D2] focus:outline-none focus:ring-1 focus:ring-[#1976D2]"
+                className="block w-full rounded-r-lg border border-gray-300 px-3 py-3 text-base focus:border-[#D4880F] focus:outline-none focus:ring-1 focus:ring-[#D4880F]"
                 autoComplete="tel"
                 disabled={loading}
               />
@@ -103,7 +100,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading || phone.length < 10}
-            className="w-full rounded-lg bg-[#1976D2] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300 disabled:text-gray-500"
+            className="w-full rounded-[14px] bg-[#D4880F] px-4 py-3 text-base font-bold text-white transition-colors hover:bg-[#B8760D] disabled:bg-gray-300 disabled:text-gray-500"
             style={{ minHeight: '48px' }}
           >
             {loading ? 'Envoi en cours...' : 'Recevoir le code'}

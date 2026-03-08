@@ -34,7 +34,7 @@ Pièces est une **marketplace tripartite de pièces détachées automobiles** (n
 
 Deux canaux complémentaires servent des profils de littératie numérique radicalement différents :
 - **WhatsApp bot** — canal primaire, zéro friction, comportement existant des mécaniciens
-- **PWA offline-first** — navigation visuelle (marque > modèle > année > catégorie), dashboard enterprise
+- **PWA** — navigation visuelle (marque > modèle > année > catégorie), dashboard enterprise
 
 Le différenciateur technologique central est l'**IA de reconnaissance par photo** qui résout l'absence totale de références standardisées sur le marché ivoirien des pièces auto.
 
@@ -42,7 +42,7 @@ Le différenciateur technologique central est l'**IA de reconnaissance par photo
 
 | Persona | Profil | Pain point central | Canal préféré |
 |---|---|---|---|
-| **Kofi** (mécanicien) | 25-45 ans, formation informelle, Android bas de gamme, WhatsApp natif | 2-4h perdues par visite Adjamé, avance de trésorerie, aucun outil de gestion | WhatsApp |
+| **Kofi** (mécanicien) | 25-45 ans, formation informelle, WhatsApp natif | 2-4h perdues par visite Adjamé, avance de trésorerie, aucun outil de gestion | WhatsApp |
 | **Propriétaire** (classe moyenne) | 30-55 ans, urbain Abidjan, sensibilité prix | Opacité prix pièces, marges cachées mécanicien (50-200%+), aucun comparateur | WhatsApp + PWA |
 | **Ibrahim** (importateur/vendeur) | PME 1-10 pers., stock 500-5000 pièces sans références | Pas de catalogue digital, vente physique uniquement, zéro data demande | PWA (back-office) |
 | **Adjoua** (gestionnaire de flotte) | 10-200 véhicules, dépenses 500K-5M FCFA/mois | Pas de visibilité coûts réels, fraude interne mécaniciens | PWA (dashboard enterprise) |
@@ -50,9 +50,8 @@ Le différenciateur technologique central est l'**IA de reconnaissance par photo
 ### Défis UX Clés
 
 1. **Multi-canal, multi-persona** — Le même flux (commande tripartite) doit fonctionner nativement sur WhatsApp ET sur la PWA, pour des profils de littératie numérique radicalement différents (Kofi sur WhatsApp vs Adjoua sur dashboard)
-2. **Contraintes matérielles sévères** — Android 1-3 Go RAM, réseau 3G instable, écrans 5-6 pouces, images compressées obligatoires. La PWA doit être offline-first et ultra-légère
-3. **Confiance comme infrastructure** — Le produit attaque un marché dominé par la relation personnelle. Le système de badges, notes, escrow et factures séparées doit inspirer confiance dès la première interaction
-4. **Cold start marketplace** — L'expérience de la première recherche sans résultats pertinents peut tuer l'adoption. L'UX doit gérer gracieusement les cas "pièce non trouvée" avec des alternatives (demande inversée, notification vendeur)
+2. **Confiance comme infrastructure** — Le produit attaque un marché dominé par la relation personnelle. Le système de badges, notes, escrow et factures séparées doit inspirer confiance dès la première interaction
+3. **Cold start marketplace** — L'expérience de la première recherche sans résultats pertinents peut tuer l'adoption. L'UX doit gérer gracieusement les cas "pièce non trouvée" avec des alternatives (demande inversée, notification vendeur)
 
 ### Opportunités UX
 
@@ -80,7 +79,7 @@ L'expérience centrale de Pièces repose sur un **entonnoir d'identification à 
 | Canal | Rôle | Utilisateur primaire |
 |---|---|---|
 | **WhatsApp bot** | Canal d'entrée principal, interaction conversationnelle, envoi photo/VIN, réception résultats | Kofi (mécanicien), propriétaires peu digitalisés |
-| **PWA offline-first** | Navigation visuelle, dashboard mécanicien/vendeur/enterprise, historique, catalogue | Tous les profils, usage complémentaire |
+| **PWA** | Navigation visuelle, dashboard mécanicien/vendeur/enterprise, historique, catalogue | Tous les profils, usage complémentaire |
 
 **Propriétaire — design adaptatif selon le montant de la commande :**
 
@@ -105,7 +104,7 @@ Bot: "Kofi vous recommande un filtre à huile pour Toyota Corolla 2010.
 - "Commande confirmée"
 - "Pièce en route vers le garage"
 - "Pièce livrée"
-- Pas de carte temps réel style Uber/Glovo — simplicité et légèreté réseau
+- Pas de carte temps réel style Uber/Glovo — simplicité
 
 ### Interactions Sans Effort
 
@@ -133,7 +132,7 @@ Bot: "Kofi vous recommande un filtre à huile pour Toyota Corolla 2010.
 |---|---|---|
 | 1 | **Zéro impasse** | L'entonnoir photo → VIN → désambiguïsation visuelle → humain garantit que chaque demande aboutit. Jamais d'écran "aucun résultat" sans alternative immédiate |
 | 2 | **WhatsApp natif** | L'UX WhatsApp ne doit pas ressembler à un chatbot corporate. Les commandes simples se font sans jamais quitter WhatsApp (répondre 1, 2, 3). La sortie vers un lien n'arrive que pour les montants élevés ou le paiement mobile money |
-| 3 | **Légèreté absolue** | Chaque écran PWA < 200 KB, chaque interaction < 3 taps, chaque notification en 1 ligne. Réseau 3G = contrainte structurante. La mini-page propriétaire doit charger en < 3 secondes sur 3G |
+| 3 | **Légèreté absolue** | Chaque interaction < 3 taps, chaque notification en 1 ligne. La mini-page propriétaire doit charger rapidement |
 | 4 | **Confiance visible** | Badges, prix publics, factures séparées, escrow — la confiance n'est pas implicite, elle est affichée partout |
 | 5 | **Progressivité assistée** | L'onboarding vendeur commence par une session bulk assistée par agent terrain, puis évolue vers l'ajout continu self-service. L'utilisateur n'est jamais seul au premier contact |
 | 6 | **COD-first** | Le cash-on-delivery est l'expérience de paiement par défaut — structurellement la plus fluide dans WhatsApp et culturellement dominante. Le mobile money est une option, pas un prérequis |
@@ -209,7 +208,7 @@ Les résultats envoyés au propriétaire via WhatsApp affichent **tous les vende
 | Interaction photo | Tap caméra → photo → envoi en 1 geste. Compression automatique | Le photo-search doit être aussi fluide : tap → photo → résultats. Pas d'étape intermédiaire |
 | Conversation | Messages courts, lisibles, emoji comme structure visuelle (1️⃣ 2️⃣ 3️⃣) | Les résultats Pièces dans WhatsApp doivent ressembler à un message d'ami, pas à un email corporate |
 | Groupes | Partage naturel d'info entre pairs | Le message "Kofi vous recommande..." est un message WhatsApp natif — pas une notification d'app |
-| Offline | Messages en queue quand pas de réseau, envoi automatique au retour | La PWA doit avoir le même comportement — actions en queue, sync automatique |
+| Offline | Messages en queue quand pas de réseau, envoi automatique au retour | Comportement naturel et résilient en cas de coupure réseau |
 
 **Wave — Le standard de confiance financière**
 
@@ -287,7 +286,7 @@ Les résultats envoyés au propriétaire via WhatsApp affichent **tous les vende
 **Éviter absolument :**
 - La complexité d'inscription de n'importe quelle app classique
 - Les photos stock non représentatives (Jumia)
-- Le suivi temps réel sur carte (Glovo/Uber) — trop lourd pour le use case et le réseau
+- Le suivi temps réel sur carte (Glovo/Uber) — complexité inutile pour le use case
 - Les frais cachés révélés au checkout
 
 ## Design System Foundation
@@ -300,21 +299,21 @@ Les résultats envoyés au propriétaire via WhatsApp affichent **tous les vende
 
 | Critère | Tailwind + shadcn/ui | Pourquoi c'est le bon choix pour Pièces |
 |---|---|---|
-| **Performance** | ~0 KB JS superflu côté client, CSS purgé automatiquement | Android 1-3 Go RAM, réseau 3G — chaque KB compte |
+| **Performance** | ~0 KB JS superflu côté client, CSS purgé automatiquement | Performance optimale, bundles légers |
 | **Intégration Next.js 15** | Stack par défaut de la communauté, App Router natif, Server Components compatible | Zéro friction d'intégration, le dev frontend est immédiatement productif |
 | **Customisation** | Composants copiés dans le projet, modifiables à 100% | L'identité visuelle Pièces (logos marques, badges, prix en gros) n'est pas contrainte par un framework |
 | **Taille d'équipe** | Pas de courbe d'apprentissage MUI/Chakra, Tailwind est un standard connu | 1 dev frontend + 1 designer contractuel peuvent livrer vite |
 | **Maintenance** | Pas de mise à jour de librairie à gérer, le code est dans le projet | Équipe petite = moins de dette technique = mieux |
 | **Accessibilité** | shadcn/ui est bâti sur Radix UI (primitives accessibles WAI-ARIA) | Lecteur d'écran, navigation clavier — accessible par défaut |
-| **Offline-first** | CSS pur + composants légers = PWA performante en cache | Service Worker peut cacher les assets CSS/JS efficacement |
+| **Légèreté** | CSS pur + composants légers = PWA performante | Composants légers, pas de dépendance lourde |
 
 ### Approche d'Implémentation
 
 **Design tokens Pièces :**
 - Palette couleurs : à définir avec le designer contractuel (identité Pièces)
-- Typographie : système (sans-serif natif Android) pour la légèreté, 1 police max pour les titres
+- Typographie : système (sans-serif natif), 1 police max pour les titres
 - Espacement : grille 4px, composants tactiles minimum 48x48px (doigts, pas curseur)
-- Breakpoints : mobile-first unique (360px-414px), desktop comme bonus
+- Breakpoints : mobile-first (360px-414px), responsive desktop (1024px+)
 
 **Composants prioritaires MVP :**
 - Bouton photo (CTA principal, massif, centré)
@@ -539,7 +538,7 @@ Palette extraite du logo existant + enrichie pour les besoins UI.
 | Rôle | Couleur | Usage |
 |---|---|---|
 | **Gris Métallique** | Gris moyen (#757575) | Texte secondaire, descriptions, métadonnées |
-| **Blanc Cassé** | #FAFAFA | Fond de page — plus doux que le blanc pur, meilleur en plein soleil sur écrans bas de gamme |
+| **Blanc Cassé** | #FAFAFA | Fond de page — plus doux que le blanc pur, meilleur en plein soleil |
 | **Blanc Pur** | #FFFFFF | Fond des cartes uniquement — crée une hiérarchie visuelle (cartes blanches sur fond blanc cassé) |
 
 **Couleurs sémantiques :**
@@ -554,7 +553,7 @@ Palette extraite du logo existant + enrichie pour les besoins UI.
 **Règles d'accessibilité couleurs :**
 - Ratio de contraste minimum 4.5:1 (texte sur fond) — vérifié WCAG AA
 - Les couleurs ne sont jamais le seul indicateur (toujours accompagnées d'icône ou texte)
-- Test sur écrans bas de gamme (luminosité faible, daltonisme)
+- Test avec luminosité faible et simulateur daltonisme
 
 **Tokens Tailwind — Prêts pour le mode sombre futur :**
 - Ne jamais utiliser de couleurs en dur dans les composants
@@ -564,7 +563,7 @@ Palette extraite du logo existant + enrichie pour les besoins UI.
 
 ### Système Typographique
 
-**Principe :** Typographie système uniquement — zéro police custom à télécharger. Chaque KB économisé compte sur réseau 3G.
+**Principe :** Typographie système uniquement — zéro police custom à télécharger.
 
 **Stack typographique :**
 ```css
@@ -628,19 +627,15 @@ Le prix domine visuellement. Le propriétaire compare les prix d'abord — c'est
 **Zones tactiles :** Minimum 48x48px pour tout élément interactif — doigts gras/sales de mécanicien, pas curseur de souris
 
 **Layout mobile-first :**
-- **Largeur cible :** 360px (Android entrée de gamme) à 414px (iPhone standard)
-- **Pas de layout desktop en Phase 1** — le desktop est un bonus, pas une priorité
+- **Largeur cible :** 360px à 414px
 - **Bottom navigation :** 3 onglets : Accueil (photo + recherche), Commandes, Profil
 - **Pas de sidebar, pas de hamburger menu** — tout est visible et plat
-- Maximum 3-4 cartes résultat visibles sans scroll sur un écran 5.5"
 - Le bouton photo CTA occupe 40% de l'écran d'accueil
 
 ### Considérations d'Accessibilité
 
 | Contrainte | Solution |
 |---|---|
-| **Écrans bas de gamme** (faible luminosité, résolution basse) | Contrastes forts (noir sur blanc cassé), pas de gris subtils, couleurs saturées |
-| **Réseau 3G instable** | Zéro police custom, icônes SVG individuelles (~1KB), images lazy-loaded, squelettes de chargement |
 | **Soleil direct** (mécanicien en extérieur) | Fond blanc cassé (#FAFAFA), texte noir, couleurs vives — lisible en plein soleil |
 | **Doigts gras/sales** (mécanicien au travail) | Zones tactiles larges (44px+), espacement généreux entre les boutons |
 | **Faible littératie numérique** | Icônes universelles + texte court, pas d'icônes abstraites seules |
@@ -927,7 +922,7 @@ flowchart TD
 
     B --> C{"Vendeur intéressé ?"}
     C -->|Non| D["Note CRM\nRelancer J+7\navec témoignage vendeur actif"]
-    C -->|Oui| E["Session photo bulk\nMode offline complet\nScore qualité temps réel\nSauvegarde progressive"]
+    C -->|Oui| E["Session photo bulk\nScore qualité temps réel\nSauvegarde progressive"]
 
     E --> F["IA catalogue auto\nFiches générées"]
     F --> G["Vendeur valide\nfiches + ajuste prix\n'Catégorie : X. Correct ?'"]
@@ -953,7 +948,6 @@ flowchart TD
 
 **Enrichissements élicitation :**
 - FAQ objections vendeur intégrée dans l'app tablette
-- Mode offline complet : photos stockées localement, sync différée
 - Score qualité photo temps réel sur tablette
 - Sauvegarde progressive : reprise à tout moment + self-service pour le reste
 - Double canal SMS + appel vocal pour première commande vendeur sans WhatsApp
@@ -1082,9 +1076,8 @@ La stratégie distingue clairement 3 niveaux pour éviter la confusion entre com
 #### PhotoBulkUploader
 
 **Purpose :** Upload en masse de photos de pièces avec score qualité temps réel et sauvegarde progressive
-**Justification :** Queue de photos avec IndexedDB offline, score qualité par photo, reprise de session, sync différée
-**States :** Session active (compteur X/Y) → Photo capturée → Qualité vérifiée (✅/⚠️) → Stockée offline → Synced
-**Contrainte technique :** IndexedDB + Service Worker pour mode offline complet
+**Justification :** Queue de photos, score qualité par photo, reprise de session
+**States :** Session active (compteur X/Y) → Photo capturée → Qualité vérifiée (✅/⚠️) → Stockée → Synced
 **Phase :** P1 Sprint 3 — Effort : 3-5 jours
 
 #### RiderDeliveryScreen
@@ -1262,8 +1255,7 @@ Hiérarchie de lecture : **What → Who → How much → Action**
 | **0 commande** | Message + encouragement | "Vos commandes apparaîtront ici. Commencez par identifier une pièce !" |
 | **Chargement liste** | 3-4 Skeleton cards | Même forme que PieceResultCard, pulsation douce |
 | **Chargement image** | Placeholder gris + spinner | Zone 60x60px grise avec spinner centré |
-| **Erreur réseau** | Banner + retry | "Pas de connexion. Vos données seront envoyées dès le retour du réseau. [Réessayer]" |
-| **Mode offline** | Badge discret "hors ligne" | Petit badge gris en haut : "Mode hors ligne — sync automatique" |
+| **Erreur réseau** | Banner + retry | "Pas de connexion. [Réessayer]" |
 
 ### Patterns de Prix et Montants
 
@@ -1328,25 +1320,25 @@ Hiérarchie de lecture : **What → Who → How much → Action**
 
 ### Stratégie Responsive
 
-**Pièces est mobile-only en Phase 1.** Le desktop est un bonus, pas une priorité. Utilisateurs à 95%+ sur smartphone Android.
+**Pièces supporte mobile et desktop à parts égales.** La conception couvre les deux plateformes dès la Phase 1.
 
 | Plateforme | Priorité | Stratégie |
 |---|---|---|
-| **Mobile (360-414px)** | **P0 — Cible unique** | Toute la conception est faite ici. 1 colonne, bottom nav, boutons pleine largeur |
-| **Tablette (768px)** | **P1 — Agent terrain** | Aya utilise une tablette pour l'onboarding. Layout adapté : 2 colonnes pour PhotoBulkUploader |
-| **Desktop (1024px+)** | **P2 — Nice-to-have** | Dashboard vendeur/enterprise. Ne doit pas casser, mais pas designé pour |
+| **Mobile (360-414px)** | **P0** | 1 colonne, bottom nav, boutons pleine largeur |
+| **Tablette (768px)** | **P0** | Layout adapté : 2 colonnes pour les résultats et PhotoBulkUploader |
+| **Desktop (1024px+)** | **P0** | Dashboard vendeur/enterprise, sidebar navigation, layout multi-colonnes |
 
 ### Breakpoints
 
 | Breakpoint | Valeur Tailwind | Cible | Comportement |
 |---|---|---|---|
-| **Base** (défaut) | `<sm` | Android 360px (entrée de gamme) | 1 colonne, boutons pleine largeur, photo 40% écran |
+| **Base** (défaut) | `<sm` | Smartphones 360px | 1 colonne, boutons pleine largeur, photo 40% écran |
 | **sm** | `640px` | Smartphones larges | Légèrement plus d'air, idem layout |
 | **md** | `768px` | Tablette Aya (portrait) | 2 colonnes résultats, PhotoBulkUploader grille 2x |
 | **lg** | `1024px` | Tablette paysage / desktop | 3 colonnes résultats, sidebar navigation |
 | **xl** | `1280px+` | Desktop | Dashboard enterprise pleine largeur |
 
-**Règle :** Coder UNIQUEMENT le breakpoint base (360px). Les autres breakpoints ajoutés uniquement quand un use case réel l'exige.
+**Règle :** Coder mobile-first (breakpoint base 360px), puis enrichir progressivement pour tablette et desktop.
 
 ### Adaptations par Device
 
@@ -1393,25 +1385,6 @@ Hiérarchie de lecture : **What → Who → How much → Action**
 └────────────────────────────────┘
 ```
 
-### Contraintes Device Spécifiques
-
-| Contrainte | Impact | Solution technique |
-|---|---|---|
-| **Android 1-3 Go RAM** | App lourde = crash/freeze | Bundle < 200 KB initial. Code splitting agressif. Lazy load par route |
-| **Réseau 3G instable** | Chargement lent, timeout | Service Worker + cache offline. Skeleton loading. Images WebP < 50 KB |
-| **Écran 5-5.5"** | Peu d'espace | 1 colonne unique. Max 3-4 cards visibles sans scroll |
-| **Luminosité faible / soleil** | Lisibilité réduite | Fond #FAFAFA, contrastes forts, couleurs saturées |
-| **Batterie faible** | GPS consomme | GPS uniquement pour enregistrement garage (1 fois) et rider en livraison |
-| **Stockage limité** | Cache PWA pèse | Politique de cache à tiers (voir ci-dessous) |
-
-### Politique de Cache PWA
-
-| Tier | Contenu | Stratégie | Expiration |
-|---|---|---|---|
-| **Tier 1 — Shell** | App shell, CSS, JS, polices système | Cache-first, toujours disponible | Mise à jour au déploiement |
-| **Tier 2 — Données** | 20 derniers résultats de recherche, profil utilisateur | Stale-while-revalidate, cache 24h | 24h, puis rafraîchissement réseau |
-| **Tier 3 — Images** | Photos de pièces chargées | Cache-first, max 50 MB | 7 jours, nettoyage LRU automatique |
-
 ### Stratégie Accessibilité
 
 **Niveau cible : WCAG 2.1 AA**
@@ -1427,7 +1400,7 @@ L'accessibilité contextuelle (mains grasses, soleil, bruit) S'AJOUTE au WCAG AA
 | **Soleil direct** | Contrastes élevés, couleurs saturées, fond off-white |
 | **Attention divisée** | 1 action par écran, feedback immédiat, zéro jargon |
 | **Faible littératie numérique** | Icônes + texte court, navigation plate, patterns WhatsApp familiers |
-| **Vue déclinante (50+ ans)** | Texte minimum 14px, préférences système Android de taille de police respectées (rem partout, tester à 150% et 200%) |
+| **Vue déclinante (50+ ans)** | Texte minimum 14px, préférences système de taille de police respectées (rem partout, tester à 150% et 200%) |
 
 #### Accessibilité Classique WCAG AA
 
@@ -1460,16 +1433,16 @@ Les badges OEM / Générique / Occasion doivent être distinguables pour protano
 |---|---|---|
 | **axe-core** (@axe-core/react) | WCAG AA violations (contraste, ARIA, structure) | À chaque PR |
 | **eslint-plugin-jsx-a11y** | Alt-text manquants, rôles incorrects, labels absents | À chaque commit |
-| **Lighthouse CI** | Score accessibilité > 90, performance > 80, PWA check | À chaque PR |
+| **Lighthouse CI** | Score accessibilité > 90, performance > 80 | À chaque PR |
 
 **Tests manuels (par sprint) :**
 
 | Test | Méthode | Fréquence |
 |---|---|---|
-| **Device réel budget** | **Tecno Spark ou Itel** (~40 000 FCFA, 1-2 Go RAM) en 3G throttled. Navigateur constructeur + Chrome | Chaque sprint |
+| **Device réel** | Test sur smartphone et desktop, navigateurs Chrome/Safari | Chaque sprint |
 | **Navigation clavier** | Tab through complet sur les flows critiques | Chaque sprint |
 | **Zoom 200%** | Vérifier que rien ne casse ou déborde | Chaque sprint |
-| **Taille police système 150%** | Paramètres Android > Affichage > Taille police | Chaque sprint |
+| **Taille police système 150%** | Paramètres système > Affichage > Taille police | Chaque sprint |
 | **Daltonisme** | Simulateur protanopie/deutéranopie sur les badges et indicateurs | Chaque sprint |
 | **Soleil direct** | Tester lisibilité en extérieur sur device réel | Phase pilote |
 | **Mains mouillées** | Tester zones tactiles avec doigts humides | Phase pilote |
@@ -1490,10 +1463,10 @@ Les badges OEM / Générique / Occasion doivent être distinguables pour protano
 |---|---|
 | **Mobile-first CSS** | `@media (min-width: ...)` uniquement. Jamais `max-width` |
 | **Unités relatives** | `rem` pour texte, `%` pour largeurs, `dvh` pour hauteurs plein écran |
-| **`dvh` au lieu de `vh`** | `min-height: 100vh; min-height: 100dvh;` — s'adapte à la barre Chrome dynamique Android. Fallback `vh` pour anciens navigateurs |
+| **`dvh` au lieu de `vh`** | `min-height: 100vh; min-height: 100dvh;` — s'adapte aux barres dynamiques des navigateurs mobiles. Fallback `vh` pour anciens navigateurs |
 | **Images responsives** | `<img srcset>` avec 3 tailles : 360w, 768w, 1024w. Format WebP. `loading="lazy"` |
 | **Viewport** | `<meta name="viewport" content="width=device-width, initial-scale=1">` |
-| **Safe areas** | `env(safe-area-inset-bottom)` pour bottom nav (iPhone notch + Android gesture nav) |
+| **Safe areas** | `env(safe-area-inset-bottom)` pour bottom nav (notch + gesture nav) |
 | **Touch vs click** | Pas de hover-dependent interactions. Tout fonctionne au tap |
 | **CSS logiques** | `margin-inline-start` au lieu de `margin-left`. Prépare un éventuel RTL (expansion marché arabophone) sans refactoring |
 
@@ -1505,7 +1478,7 @@ Les badges OEM / Générique / Occasion doivent être distinguables pour protano
 | **ARIA minimal** | Radix UI (shadcn) gère l'ARIA. Ajouter uniquement sur composants custom |
 | **Focus management** | Après ouverture Dialog/Sheet : focus premier élément. Après fermeture : retour au déclencheur |
 | **Reduced motion** | `@media (prefers-reduced-motion: reduce)` : transitions instantanées |
-| **Texte dynamique** | `font-size` en `rem`. Respecter les préférences système Android de taille de police |
+| **Texte dynamique** | `font-size` en `rem`. Respecter les préférences système de taille de police |
 | **Erreurs** | Focus automatique sur le premier champ en erreur. Message inline visible sans scroll |
 | **`dir="ltr"` explicite** | Sur `<html>`. Prépare un éventuel support RTL |
 

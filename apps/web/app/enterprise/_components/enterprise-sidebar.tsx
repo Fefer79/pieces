@@ -18,11 +18,9 @@ export function EnterpriseSidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center px-6">
         <Link href="/enterprise/dashboard">
-          <img
-            src="/logo-pieces-light.svg"
-            alt="PIÈCES.CI"
-            className="h-10 w-auto"
-          />
+          <span className="font-[family-name:Gloock,serif] text-xl text-[#1A1714]">
+            Pièces<span className="text-[#D4880F]">.</span>
+          </span>
         </Link>
       </div>
 

@@ -19,14 +19,32 @@ export default function BrowsePage() {
       {/* Mobile */}
       <div className="flex min-h-dvh flex-col lg:hidden">
         {/* Header */}
-        <header className="flex items-center justify-between bg-[#FAFAFA] px-4 pb-2 pt-4">
-          <img
-            src="/logo-pieces-light.svg"
-            alt="PIÈCES.CI"
-            className="h-20 w-auto"
-          />
+        <header className="flex items-center justify-between bg-[#FDFBF7] px-4 pb-2 pt-4">
+          <div className="flex flex-col">
+            <span className="font-[family-name:Gloock,serif] text-3xl text-[#1A1714]">
+              Pièces<span className="text-[#D4880F]">.</span>
+            </span>
+            <span className="text-xs tracking-wide text-[#1A1714]/60">
+              Pièces détachées automobiles
+            </span>
+          </div>
           <MobileDrawer />
         </header>
+
+        {/* Badges */}
+        <div className="flex items-center justify-center gap-2 bg-[#FDFBF7] px-4 pb-3">
+          <span className="rounded-md bg-[#D4880F] px-2.5 py-1 text-xs font-bold text-white">
+            NEUF·OEM
+          </span>
+          <span className="text-xs text-[#1A1714]/40">&amp;</span>
+          <span className="rounded-md border border-[#D4880F] px-2.5 py-1 text-xs font-bold text-[#D4880F]">
+            OCCASION
+          </span>
+          <span className="text-xs text-[#1A1714]/40">&amp;</span>
+          <span className="rounded-md border border-[#E1DAC9] px-2.5 py-1 text-xs text-[#1A1714]/60">
+            AFTERMARKET
+          </span>
+        </div>
 
         {/* Browse content */}
         <BrowseContent variant="mobile" />
