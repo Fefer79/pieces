@@ -166,15 +166,15 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
       </div>
 
       {/* Tabs */}
-      <nav className="flex border-b border-[#E1DAC9]/50 bg-[#FDFBF7]">
+      <nav className="flex border-b border-[#E1DAC9]/50 bg-[#FFFFFF]">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'border-b-2 border-[#D4880F] text-[#D4880F]'
-                : 'text-[#1A1714]/50'
+                ? 'border-b-2 border-[#002366] text-[#002366]'
+                : 'text-[#00113a]/50'
             }`}
             style={{ minHeight: 48 }}
           >
@@ -190,12 +190,12 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
           <div className="flex flex-col gap-4 py-6">
             {/* Conseil — hidden when vehicle is selected */}
             {!vehicle && (
-              <div className="flex min-h-[140px] items-center justify-center rounded-[14px] border border-[#E1DAC9] bg-[#FDFBF7] px-4 py-4 text-center">
+              <div className="flex min-h-[140px] items-center justify-center rounded-[14px] border border-[#E1DAC9] bg-[#FFFFFF] px-4 py-4 text-center">
                 <div className="flex flex-col items-center">
-                  <p className="text-sm font-medium text-[#D4880F]">
+                  <p className="text-sm font-medium text-[#ff6b00]">
                     Sélectionner le véhicule
                   </p>
-                  <p className="mt-2 text-xs leading-relaxed text-[#1A1714]/60">
+                  <p className="mt-2 text-xs leading-relaxed text-[#00113a]/60">
                     Pour de meilleurs résultats, commencez par identifier votre
                     véhicule : photographiez l&apos;arrière de la{' '}
                     <strong>carte grise</strong>, saisissez le{' '}
@@ -233,7 +233,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               className="flex min-h-[140px] items-center justify-center rounded-lg border border-amber-100 bg-amber-50 px-4 py-4 text-center transition-transform active:scale-[0.98]"
             >
               <div className="flex flex-col items-center gap-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4880F] text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#ff6b00] text-white">
                   {variant === 'desktop' ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -265,7 +265,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                     : 'Prendre une photo de la pièce'}
                 </p>
                 <p className="text-xs text-gray-500">
-                  Identification par IA (Gemini)
+                  Identification par IA
                 </p>
               </div>
             </button>
@@ -282,7 +282,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                 className="flex min-h-[140px] items-center justify-center rounded-lg border border-amber-100 bg-amber-50 px-4 py-4 text-center transition-transform active:scale-[0.98]"
               >
                 <div className="flex flex-col items-center gap-2">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4880F] text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#ff6b00] text-white">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -307,15 +307,15 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             )}
 
             {/* Carte saisie manuelle VIN */}
-            <div className="flex min-h-[140px] flex-col items-center justify-center gap-3 rounded-lg border border-[#E1DAC9] bg-[#FDFBF7] px-4 py-4 text-center">
-              <p className="text-sm font-medium text-[#D4880F]">
+            <div className="flex min-h-[140px] flex-col items-center justify-center gap-3 rounded-lg border border-[#E1DAC9] bg-[#FFFFFF] px-4 py-4 text-center">
+              <p className="text-sm font-medium text-[#ff6b00]">
                 Saisir le numéro VIN
               </p>
               <input
                 type="text"
                 placeholder="Ex: JTDKN3DU5A0..."
                 maxLength={17}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-center text-sm uppercase tracking-widest focus:border-[#D4880F] focus:outline-none"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-center text-sm uppercase tracking-widest focus:border-[#ff6b00] focus:outline-none"
                 style={{ minHeight: 48 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -354,7 +354,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                   className="flex min-h-[100px] items-center justify-center rounded-lg border border-amber-100 bg-amber-50 px-4 py-4 text-center transition-transform active:scale-[0.98]"
                 >
                   <div className="flex flex-col items-center gap-2">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4880F] text-white">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#ff6b00] text-white">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -429,11 +429,11 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
 
             {/* Carte recherche par nom */}
             <div
-              className="flex min-h-[88px] items-center justify-between rounded-lg border border-[#E1DAC9] bg-[#FDFBF7] py-3 pl-4"
+              className="flex min-h-[88px] items-center justify-between rounded-lg border border-[#E1DAC9] bg-[#FFFFFF] py-3 pl-4"
               style={{ paddingRight: 10 }}
             >
               <div className="min-w-0 flex-1">
-                <p className="mb-2 text-sm font-medium text-[#D4880F]">
+                <p className="mb-2 text-sm font-medium text-[#ff6b00]">
                   Recherche par nom
                 </p>
                 <input
@@ -441,11 +441,11 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Nom, référence OEM..."
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#D4880F] focus:outline-none"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#ff6b00] focus:outline-none"
                   style={{ minHeight: 48 }}
                 />
               </div>
-              <div className="ml-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#D4880F] text-white">
+              <div className="ml-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#ff6b00] text-white">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -535,7 +535,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             <select
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#D4880F] focus:outline-none"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#ff6b00] focus:outline-none"
               style={{ minHeight: 48 }}
             >
               <option value="">— Marque —</option>
@@ -551,7 +551,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
               disabled={!selectedBrand}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#D4880F] focus:outline-none disabled:opacity-50"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#ff6b00] focus:outline-none disabled:opacity-50"
               style={{ minHeight: 48 }}
             >
               <option value="">— Modèle —</option>
@@ -567,7 +567,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
               disabled={!selectedModel}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#D4880F] focus:outline-none disabled:opacity-50"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#ff6b00] focus:outline-none disabled:opacity-50"
               style={{ minHeight: 48 }}
             >
               <option value="">— Année —</option>
@@ -583,7 +583,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               value={selectedMotor}
               onChange={(e) => setSelectedMotor(e.target.value)}
               disabled={!selectedYear || engines.length === 0}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#D4880F] focus:outline-none disabled:opacity-50"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#ff6b00] focus:outline-none disabled:opacity-50"
               style={{ minHeight: 48 }}
             >
               <option value="">— Motorisation —</option>
@@ -598,7 +598,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             <button
               onClick={confirmVehicle}
               disabled={!selectedBrand || !selectedModel}
-              className="w-full rounded-lg bg-[#D4880F] py-3 text-sm font-medium text-white transition-colors active:scale-[0.98] disabled:opacity-50"
+              className="w-full rounded-lg bg-[#ff6b00] py-3 text-sm font-medium text-white transition-colors active:scale-[0.98] disabled:opacity-50"
               style={{ minHeight: 48 }}
             >
               Confirmer le véhicule

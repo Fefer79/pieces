@@ -103,7 +103,7 @@ export default function OnboardingNewPage() {
             required
             minLength={2}
             maxLength={100}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
@@ -119,7 +119,7 @@ export default function OnboardingNewPage() {
             required
             minLength={2}
             maxLength={100}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
@@ -137,7 +137,7 @@ export default function OnboardingNewPage() {
             inputMode="tel"
             pattern="^\+225(01|05|07)\d{8}$"
             placeholder="+2250700000000"
-            className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none ${phoneError ? 'border-[#D32F2F] focus:border-[#D32F2F]' : 'border-gray-300 focus:border-[#1976D2]'}`}
+            className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none ${phoneError ? 'border-[#D32F2F] focus:border-[#D32F2F]' : 'border-gray-300 focus:border-[#002366]'}`}
           />
           {phoneError && <p className="mt-1 text-xs text-[#D32F2F]">{phoneError}</p>}
         </div>
@@ -153,7 +153,7 @@ export default function OnboardingNewPage() {
                   value={type.value}
                   checked={vendorType === type.value}
                   onChange={() => setVendorType(type.value)}
-                  className="text-[#1976D2]"
+                  className="text-[#002366]"
                 />
                 {type.label}
               </label>
@@ -173,7 +173,7 @@ export default function OnboardingNewPage() {
             required
             minLength={5}
             maxLength={50}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
@@ -184,7 +184,7 @@ export default function OnboardingNewPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-[#1976D2] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
+          className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
         >
           {loading ? 'Création en cours...' : 'Créer le profil vendeur'}
         </button>

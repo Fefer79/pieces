@@ -114,7 +114,7 @@ export default function OwnerChoicePage() {
                   <p className="text-xs text-gray-500">{item.vendorShopName}</p>
                   {item.category && <p className="text-xs text-gray-400">{item.category}</p>}
                 </div>
-                <p className="text-sm font-bold text-[#1976D2]">{item.priceSnapshot.toLocaleString()} F</p>
+                <p className="text-sm font-bold text-[#002366]">{item.priceSnapshot.toLocaleString()} F</p>
               </div>
             </div>
           ))}
@@ -149,7 +149,7 @@ export default function OwnerChoicePage() {
                 onClick={() => setSelectedMethod(pm.id)}
                 className={`w-full rounded-lg border p-3 text-left text-sm transition-colors ${
                   selectedMethod === pm.id
-                    ? 'border-[#1976D2] bg-blue-50 font-semibold text-[#1976D2]'
+                    ? 'border-[#002366] bg-blue-50 font-semibold text-[#002366]'
                     : 'border-gray-200 text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -163,7 +163,7 @@ export default function OwnerChoicePage() {
           <button
             onClick={handlePay}
             disabled={!selectedMethod || paying}
-            className="w-full rounded-lg bg-[#1976D2] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300"
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300"
           >
             {paying ? 'Traitement...' : `Payer ${grandTotal.toLocaleString()} FCFA`}
           </button>
@@ -192,7 +192,7 @@ export default function OwnerChoicePage() {
 
       {['DISPATCHED', 'IN_TRANSIT', 'DELIVERED', 'CONFIRMED', 'COMPLETED'].includes(order.status) && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <p className="text-sm font-semibold text-[#1976D2]">
+          <p className="text-sm font-semibold text-[#002366]">
             {order.status === 'DISPATCHED' && 'Livreur en route vers le vendeur'}
             {order.status === 'IN_TRANSIT' && 'Livraison en cours'}
             {order.status === 'DELIVERED' && 'Livré — en attente de confirmation'}
@@ -221,7 +221,7 @@ export default function OwnerChoicePage() {
         </button>
       )}
 
-      <button onClick={() => router.push('/browse')} className="mt-2 w-full text-center text-sm text-[#1976D2] hover:underline">
+      <button onClick={() => router.push('/browse')} className="mt-2 w-full text-center text-sm text-[#002366] hover:underline">
         Retour au catalogue
       </button>
     </div>

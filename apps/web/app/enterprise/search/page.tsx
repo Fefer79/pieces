@@ -92,7 +92,7 @@ export default function EnterpriseSearchPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Nom, référence..."
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
             />
           </div>
 
@@ -102,7 +102,7 @@ export default function EnterpriseSearchPage() {
             <select
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
             >
               <option value="">Toutes</option>
               {brandNames.map((b) => (
@@ -118,7 +118,7 @@ export default function EnterpriseSearchPage() {
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
               disabled={!selectedBrand}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none disabled:opacity-50"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none disabled:opacity-50"
             >
               <option value="">Tous</option>
               {models.map((m) => (
@@ -134,7 +134,7 @@ export default function EnterpriseSearchPage() {
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
               disabled={!selectedModel}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none disabled:opacity-50"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none disabled:opacity-50"
             >
               <option value="">Toutes</option>
               {years.map((y) => (
@@ -150,7 +150,7 @@ export default function EnterpriseSearchPage() {
               value={selectedMotor}
               onChange={(e) => setSelectedMotor(e.target.value)}
               disabled={!selectedYear || engines.length === 0}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none disabled:opacity-50"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none disabled:opacity-50"
             >
               <option value="">Toutes</option>
               {engines.map((eng) => (
@@ -234,7 +234,7 @@ export default function EnterpriseSearchPage() {
                     {item.category ?? '—'} &middot; {item.vendor.shopName}
                   </p>
                   {item.price != null && (
-                    <p className="mt-2 text-base font-bold text-[#1976D2]">
+                    <p className="mt-2 text-base font-bold text-[#002366]">
                       {item.price.toLocaleString('fr-FR')} FCFA
                     </p>
                   )}

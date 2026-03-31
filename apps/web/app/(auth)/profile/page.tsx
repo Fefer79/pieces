@@ -204,7 +204,7 @@ export default function ProfilePage() {
               key={role}
               onClick={() => handleSelectRole(role, redirect)}
               disabled={selectingRole}
-              className="flex w-full items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-[#1976D2] hover:shadow-md disabled:opacity-50"
+              className="flex w-full items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-[#002366] hover:shadow-md disabled:opacity-50"
               style={{ minHeight: '80px' }}
             >
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-50">
@@ -240,7 +240,7 @@ export default function ProfilePage() {
               key={role}
               className={`rounded-full px-3 py-1 text-sm font-medium ${
                 role === profile.activeContext
-                  ? 'bg-[#1976D2] text-white'
+                  ? 'bg-[#002366] text-white'
                   : 'bg-gray-100 text-gray-700'
               }`}
             >
@@ -262,7 +262,7 @@ export default function ProfilePage() {
                   key={role}
                   onClick={() => handleSwitchContext(role)}
                   disabled={switching}
-                  className="w-full rounded-lg border border-[#1976D2] px-4 py-3 text-sm font-medium text-[#1976D2] transition-colors hover:bg-[#1976D2] hover:text-white disabled:opacity-50"
+                  className="w-full rounded-lg border border-[#002366] px-4 py-3 text-sm font-medium text-[#002366] transition-colors hover:bg-[#002366] hover:text-white disabled:opacity-50"
                   style={{ minHeight: '48px' }}
                 >
                   {switching ? 'Changement...' : `Passer en ${ROLE_LABELS[role] ?? role}`}
@@ -293,7 +293,7 @@ export default function ProfilePage() {
 
 function WrenchIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
     </svg>
   )
@@ -301,7 +301,7 @@ function WrenchIcon() {
 
 function CarIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M7 17m-2 0a2 2 0 104 0 2 2 0 10-4 0" />
       <path d="M17 17m-2 0a2 2 0 104 0 2 2 0 10-4 0" />
       <path d="M5 17H3v-6l2-5h9l4 5h1a2 2 0 012 2v4h-2" />
@@ -313,7 +313,7 @@ function CarIcon() {
 
 function BuildingIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 21h18" />
       <path d="M5 21V7l8-4v18" />
       <path d="M19 21V11l-6-4" />

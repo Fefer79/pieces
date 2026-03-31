@@ -56,8 +56,8 @@ export function DesktopSidebar() {
     <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-gray-200 lg:bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center justify-center border-b border-[#E1DAC9]/50 px-4">
-        <span className="font-[family-name:Gloock,serif] text-xl text-[#1A1714]">
-          Pièces<span className="text-[#D4880F]">.</span>
+        <span className="font-[family-name:Gloock,serif] text-xl text-[#00113a]">
+          Pièces<span className="text-[#ff6b00]">.</span>
         </span>
       </div>
 
@@ -71,7 +71,7 @@ export function DesktopSidebar() {
               href={href}
               className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-blue-50 text-[#1976D2]'
+                  ? 'bg-blue-50 text-[#002366]'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >

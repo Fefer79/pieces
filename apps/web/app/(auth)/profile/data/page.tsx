@@ -111,7 +111,7 @@ export default function DataPage() {
 
   return (
     <main className="mx-auto w-full max-w-sm px-4 pt-8">
-      <Link href="/profile" className="mb-4 inline-block text-sm text-[#1976D2]">
+      <Link href="/profile" className="mb-4 inline-block text-sm text-[#002366]">
         &larr; Retour au profil
       </Link>
 

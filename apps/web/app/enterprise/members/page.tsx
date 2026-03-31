@@ -11,7 +11,7 @@ export default function EnterpriseMembersPage() {
         <div className="group relative">
           <button
             disabled
-            className="rounded-lg bg-[#1976D2] px-4 py-2.5 text-sm font-medium text-white opacity-50"
+            className="rounded-lg bg-[#002366] px-4 py-2.5 text-sm font-medium text-white opacity-50"
           >
             Inviter un membre
           </button>

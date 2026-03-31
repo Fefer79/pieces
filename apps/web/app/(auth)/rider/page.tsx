@@ -56,10 +56,10 @@ export default function RiderDashboard() {
 
       {active.map((d) => (
         <Link key={d.id} href={`/rider/delivery/${d.id}`}
-          className="mb-3 block rounded-lg border-2 border-[#1976D2] bg-blue-50 p-4">
+          className="mb-3 block rounded-lg border-2 border-[#002366] bg-blue-50 p-4">
           <div className="flex justify-between">
-            <span className="text-sm font-bold text-[#1976D2]">{STATUS_LABELS[d.status] ?? d.status}</span>
-            <span className="rounded bg-[#1976D2] px-2 py-0.5 text-xs text-white">{d.mode}</span>
+            <span className="text-sm font-bold text-[#002366]">{STATUS_LABELS[d.status] ?? d.status}</span>
+            <span className="rounded bg-[#002366] px-2 py-0.5 text-xs text-white">{d.mode}</span>
           </div>
           <p className="mt-1 text-sm text-[#1A1A1A]">{d.order.items.map((i) => i.name).join(', ')}</p>
           {d.codAmount != null && d.codAmount > 0 && (

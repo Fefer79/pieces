@@ -90,7 +90,7 @@ export default function PhotoIdentifyPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
-      <button onClick={() => router.back()} className="mb-2 text-sm text-[#1976D2] hover:underline">
+      <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">
         &larr; Retour
       </button>
       <h1 className="mb-2 text-xl font-bold text-[#1A1A1A]">Identifier par photo</h1>
@@ -107,7 +107,7 @@ export default function PhotoIdentifyPage() {
           </div>
           <button
             onClick={() => fileRef.current?.click()}
-            className="w-full rounded-lg bg-[#1976D2] py-4 text-lg font-semibold text-white transition-colors hover:bg-[#1565C0]"
+            className="w-full rounded-lg bg-[#002366] py-4 text-lg font-semibold text-white transition-colors hover:bg-[#1565C0]"
             style={{ minHeight: '40vh' }}
           >
             Prendre une photo
@@ -134,7 +134,7 @@ export default function PhotoIdentifyPage() {
               <img src={preview} alt="Pièce" className="h-full w-full object-cover" />
             </div>
           )}
-          <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#1976D2]" />
+          <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#002366]" />
           <p className="text-sm text-gray-500">Identification en cours...</p>
         </div>
       )}
@@ -142,7 +142,7 @@ export default function PhotoIdentifyPage() {
       {error && (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-[#D32F2F]">{error}</p>
-          <button onClick={reset} className="mt-2 text-sm text-[#1976D2] hover:underline">
+          <button onClick={reset} className="mt-2 text-sm text-[#002366] hover:underline">
             Réessayer
           </button>
         </div>
@@ -172,7 +172,7 @@ export default function PhotoIdentifyPage() {
                     <p className="text-xs text-gray-500">{part.vendor.shopName}</p>
                   </div>
                   {part.price && (
-                    <p className="text-sm font-bold text-[#1976D2]">{part.price.toLocaleString()} F</p>
+                    <p className="text-sm font-bold text-[#002366]">{part.price.toLocaleString()} F</p>
                   )}
                 </div>
               ))}
@@ -197,7 +197,7 @@ export default function PhotoIdentifyPage() {
               <button
                 key={c.id}
                 onClick={() => c.category && handleDisambiguate(c.category)}
-                className="rounded-lg border border-gray-200 p-3 text-left hover:border-[#1976D2] hover:bg-blue-50"
+                className="rounded-lg border border-gray-200 p-3 text-left hover:border-[#002366] hover:bg-blue-50"
               >
                 <p className="text-sm font-semibold text-[#1A1A1A]">{c.name}</p>
                 <p className="text-xs text-gray-500">{c.category}</p>
@@ -214,10 +214,10 @@ export default function PhotoIdentifyPage() {
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm text-amber-700">Identification impossible — essayez la recherche par texte ou navigation par marque.</p>
           <div className="mt-2 flex gap-2">
-            <button onClick={() => router.push('/browse')} className="text-sm text-[#1976D2] hover:underline">
+            <button onClick={() => router.push('/browse')} className="text-sm text-[#002366] hover:underline">
               Naviguer par marque
             </button>
-            <button onClick={reset} className="text-sm text-[#1976D2] hover:underline">
+            <button onClick={reset} className="text-sm text-[#002366] hover:underline">
               Réessayer
             </button>
           </div>

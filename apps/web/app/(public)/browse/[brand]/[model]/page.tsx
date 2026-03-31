@@ -25,7 +25,7 @@ export default function ModelYearsPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
-      <button onClick={() => router.back()} className="mb-2 text-sm text-[#1976D2] hover:underline">&larr; Retour</button>
+      <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-1 text-xl font-bold text-[#1A1A1A]">{brand} {model}</h1>
       <p className="mb-4 text-sm text-gray-500">Sélectionnez une année</p>
 

@@ -7,7 +7,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname()
 
   // /browse (exact) gets its own layout — no AppShell
-  if (pathname === '/browse' || pathname === '/') {
+  if (pathname === '/browse' || pathname === '/' || pathname === '/info') {
     return <>{children}</>
   }
 

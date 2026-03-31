@@ -1,4 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 80" width="280" height="80">
-  <text x="0" y="62" font-family="'Gloock', serif" font-size="64" fill="#1A1714" letter-spacing="-1">Pièces</text>
-  <circle cx="252" cy="48" r="8" fill="#D4880F"/>
+  <text x="0" y="62" font-family="'Gloock', serif" font-size="64" fill="#00113a" letter-spacing="-1">Pièces</text>
+  <circle cx="252" cy="48" r="8" fill="#ff6b00"/>
 </svg>

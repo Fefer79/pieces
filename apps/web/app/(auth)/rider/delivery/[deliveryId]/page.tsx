@@ -62,9 +62,9 @@ export default function DeliveryDetailPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
-      <button onClick={() => router.push('/rider')} className="mb-2 text-sm text-[#1976D2] hover:underline">&larr; Retour</button>
+      <button onClick={() => router.push('/rider')} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
 
-      <div className="mb-4 rounded-lg bg-[#1976D2] p-4 text-white">
+      <div className="mb-4 rounded-lg bg-[#002366] p-4 text-white">
         <p className="text-lg font-bold">{delivery.status.replace(/_/g, ' ')}</p>
         <p className="text-sm opacity-80">{delivery.mode}</p>
       </div>
@@ -89,14 +89,14 @@ export default function DeliveryDetailPage() {
       <div className="space-y-2">
         {delivery.status === 'ASSIGNED' && (
           <button onClick={() => handleAction('pickup')} disabled={acting}
-            className="w-full rounded-lg bg-[#1976D2] py-3 text-sm font-semibold text-white disabled:bg-gray-300">
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white disabled:bg-gray-300">
             {acting ? 'En cours...' : 'Démarrer le ramassage'}
           </button>
         )}
 
         {delivery.status === 'PICKUP_IN_PROGRESS' && (
           <button onClick={() => handleAction('transit')} disabled={acting}
-            className="w-full rounded-lg bg-[#1976D2] py-3 text-sm font-semibold text-white disabled:bg-gray-300">
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white disabled:bg-gray-300">
             {acting ? 'En cours...' : 'Pièce récupérée — En route'}
           </button>
         )}

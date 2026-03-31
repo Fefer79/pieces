@@ -208,7 +208,7 @@ export default function VendorCatalogDetailPage() {
     return (
       <div className="mx-auto max-w-md px-4 py-6">
         <p className="text-sm text-[#D32F2F]">{error ?? 'Fiche introuvable'}</p>
-        <button onClick={() => router.push('/vendors/catalog')} className="mt-4 text-sm text-[#1976D2]">
+        <button onClick={() => router.push('/vendors/catalog')} className="mt-4 text-sm text-[#002366]">
           Retour au catalogue
         </button>
       </div>
@@ -217,7 +217,7 @@ export default function VendorCatalogDetailPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
-      <button onClick={() => router.push('/vendors/catalog')} className="mb-4 text-sm text-[#1976D2]">
+      <button onClick={() => router.push('/vendors/catalog')} className="mb-4 text-sm text-[#002366]">
         &larr; Retour au catalogue
       </button>
 
@@ -262,7 +262,7 @@ export default function VendorCatalogDetailPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={item.aiGenerated ? 'Identifié par IA...' : 'Saisissez le nom'}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
@@ -273,7 +273,7 @@ export default function VendorCatalogDetailPage() {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="Ex: Filtration, Freinage..."
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
@@ -284,7 +284,7 @@ export default function VendorCatalogDetailPage() {
             value={oemReference}
             onChange={(e) => setOemReference(e.target.value)}
             placeholder="Ex: 90915-YZZD4"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
@@ -295,7 +295,7 @@ export default function VendorCatalogDetailPage() {
             value={vehicleCompatibility}
             onChange={(e) => setVehicleCompatibility(e.target.value)}
             placeholder="Ex: Toyota Hilux 2005-2015"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
@@ -308,7 +308,7 @@ export default function VendorCatalogDetailPage() {
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder={item.suggestedPrice ? `${item.suggestedPrice.toLocaleString('fr-FR')} F (suggestion IA)` : 'Saisissez votre prix'}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
             min="0"
           />
         </div>
@@ -319,7 +319,7 @@ export default function VendorCatalogDetailPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full rounded-lg border border-[#1976D2] py-3 text-sm font-semibold text-[#1976D2] transition-colors hover:bg-blue-50 disabled:opacity-50"
+          className="w-full rounded-lg border border-[#002366] py-3 text-sm font-semibold text-[#002366] transition-colors hover:bg-blue-50 disabled:opacity-50"
         >
           {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
         </button>
@@ -328,7 +328,7 @@ export default function VendorCatalogDetailPage() {
           <button
             onClick={handlePublish}
             disabled={saving || !price}
-            className="w-full rounded-lg bg-[#1976D2] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
           >
             Publier la fiche
           </button>

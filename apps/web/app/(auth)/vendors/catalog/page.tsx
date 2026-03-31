@@ -94,7 +94,7 @@ export default function VendorCatalogPage() {
         <h1 className="text-xl font-bold text-[#1A1A1A]">Mon Catalogue</h1>
         <button
           onClick={() => router.push('/vendors/catalog/upload')}
-          className="rounded-lg bg-[#1976D2] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0]"
+          className="rounded-lg bg-[#002366] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0]"
         >
           + Ajouter
         </button>
@@ -107,7 +107,7 @@ export default function VendorCatalogPage() {
             onClick={() => setStatusFilter(s)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               statusFilter === s
-                ? 'bg-[#1976D2] text-white'
+                ? 'bg-[#002366] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >

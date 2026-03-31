@@ -195,7 +195,7 @@ export function LoginModal({ open, onClose, onAuthenticated }: LoginModalProps) 
                   value={phone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   placeholder="07 00 00 00 00"
-                  className="block w-full rounded-r-lg border border-gray-300 px-3 py-3 text-base focus:border-[#1976D2] focus:outline-none focus:ring-1 focus:ring-[#1976D2]"
+                  className="block w-full rounded-r-lg border border-gray-300 px-3 py-3 text-base focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
                   autoComplete="tel"
                   disabled={loading}
                 />
@@ -205,7 +205,7 @@ export function LoginModal({ open, onClose, onAuthenticated }: LoginModalProps) 
             <button
               type="submit"
               disabled={loading || phone.length < 10}
-              className="w-full rounded-lg bg-[#1976D2] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300 disabled:text-gray-500"
+              className="w-full rounded-lg bg-[#002366] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300 disabled:text-gray-500"
               style={{ minHeight: '48px' }}
             >
               {loading ? 'Envoi en cours...' : 'Recevoir le code'}
@@ -230,7 +230,7 @@ export function LoginModal({ open, onClose, onAuthenticated }: LoginModalProps) 
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
                   disabled={loading}
-                  className="h-12 w-12 rounded-lg border border-gray-300 text-center text-lg font-semibold focus:border-[#1976D2] focus:outline-none focus:ring-1 focus:ring-[#1976D2] disabled:bg-gray-100"
+                  className="h-12 w-12 rounded-lg border border-gray-300 text-center text-lg font-semibold focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366] disabled:bg-gray-100"
                   aria-label={`Chiffre ${index + 1}`}
                 />
               ))}
@@ -246,7 +246,7 @@ export function LoginModal({ open, onClose, onAuthenticated }: LoginModalProps) 
                 setOtp(Array.from({ length: OTP_LENGTH }, () => ''))
                 setError('')
               }}
-              className="w-full text-center text-sm text-[#1976D2]"
+              className="w-full text-center text-sm text-[#002366]"
             >
               Changer de numero
             </button>

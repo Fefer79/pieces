@@ -86,7 +86,7 @@ export default function VendorDashboardPage() {
 
           <div className="mb-6 grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-gray-200 p-4 text-center">
-              <p className="text-2xl font-bold text-[#1976D2]">{data.catalog.published}</p>
+              <p className="text-2xl font-bold text-[#002366]">{data.catalog.published}</p>
               <p className="text-xs text-gray-500">Publiées</p>
             </div>
             <div className="rounded-lg border border-gray-200 p-4 text-center">

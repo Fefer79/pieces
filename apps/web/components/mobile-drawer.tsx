@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 
 const LINKS = [
-  { href: '#a-propos', label: 'À Propos' },
-  { href: '#comment-ca-marche', label: 'Comment ça marche' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/info#a-propos', label: 'À Propos' },
+  { href: '/info#comment-ca-marche', label: 'Comment ça marche' },
+  { href: '/info#contact', label: 'Contact' },
 ]
 
 export function MobileDrawer() {
@@ -94,7 +94,7 @@ export function MobileDrawer() {
                 <a
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="block rounded-lg px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#1976D2]"
+                  className="block rounded-lg px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#002366]"
                 >
                   {link.label}
                 </a>
@@ -107,7 +107,7 @@ export function MobileDrawer() {
         <div className="border-t border-gray-100 px-4 py-4">
           <a
             href="/login"
-            className="block rounded-lg bg-[#1976D2] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-[#1565C0]"
+            className="block rounded-lg bg-[#002366] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-[#1565C0]"
           >
             Connexion
           </a>

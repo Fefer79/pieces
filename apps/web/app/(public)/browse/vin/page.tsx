@@ -44,7 +44,7 @@ export default function VinDecodePage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
-      <button onClick={() => router.back()} className="mb-2 text-sm text-[#1976D2] hover:underline">&larr; Retour</button>
+      <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-2 text-xl font-bold text-[#1A1A1A]">Décodage VIN</h1>
       <p className="mb-4 text-sm text-gray-500">Saisissez le VIN à 17 caractères de la carte grise.</p>
 
@@ -54,14 +54,14 @@ export default function VinDecodePage() {
         onChange={(e) => setVin(e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/gi, '').slice(0, 17))}
         placeholder="Ex: JTDKN3DU5A0123456"
         maxLength={17}
-        className="mb-2 w-full rounded-lg border border-gray-300 px-4 py-3 font-mono text-sm tracking-wider focus:border-[#1976D2] focus:outline-none"
+        className="mb-2 w-full rounded-lg border border-gray-300 px-4 py-3 font-mono text-sm tracking-wider focus:border-[#002366] focus:outline-none"
       />
       <p className="mb-4 text-xs text-gray-400">{vin.length}/17 caractères</p>
 
       <button
         onClick={handleDecode}
         disabled={vin.length !== 17 || loading}
-        className="w-full rounded-lg bg-[#1976D2] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300"
+        className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300"
       >
         {loading ? 'Décodage...' : 'Décoder le VIN'}
       </button>
@@ -82,7 +82,7 @@ export default function VinDecodePage() {
                 router.push(`/browse/${brand}${model ? `/${model}` : ''}${year ? `/${year}` : ''}`)
               }
             }}
-            className="mt-2 text-sm text-[#1976D2] hover:underline"
+            className="mt-2 text-sm text-[#002366] hover:underline"
           >
             Chercher des pièces pour ce véhicule &rarr;
           </button>
@@ -92,7 +92,7 @@ export default function VinDecodePage() {
       {result && !result.decoded && (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm text-amber-700">VIN non reconnu — essayez la navigation par marque/modèle/année</p>
-          <button onClick={() => router.push('/browse')} className="mt-2 text-sm text-[#1976D2] hover:underline">
+          <button onClick={() => router.push('/browse')} className="mt-2 text-sm text-[#002366] hover:underline">
             Naviguer par marque &rarr;
           </button>
         </div>

@@ -55,14 +55,14 @@ export default function YearPartsPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
-      <button onClick={() => router.back()} className="mb-2 text-sm text-[#1976D2] hover:underline">&larr; Retour</button>
+      <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-1 text-xl font-bold text-[#1A1A1A]">{brand} {model} {year}</h1>
       <p className="mb-4 text-sm text-gray-500">{total} pièce{total > 1 ? 's' : ''} disponible{total > 1 ? 's' : ''}</p>
 
       <div className="mb-4 flex flex-wrap gap-2">
         <button
           onClick={() => setSelectedCategory('')}
-          className={`rounded-full px-3 py-1 text-xs font-medium ${!selectedCategory ? 'bg-[#1976D2] text-white' : 'bg-gray-100 text-gray-600'}`}
+          className={`rounded-full px-3 py-1 text-xs font-medium ${!selectedCategory ? 'bg-[#002366] text-white' : 'bg-gray-100 text-gray-600'}`}
         >
           Toutes
         </button>
@@ -70,7 +70,7 @@ export default function YearPartsPage() {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${selectedCategory === cat ? 'bg-[#1976D2] text-white' : 'bg-gray-100 text-gray-600'}`}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${selectedCategory === cat ? 'bg-[#002366] text-white' : 'bg-gray-100 text-gray-600'}`}
           >
             {cat}
           </button>

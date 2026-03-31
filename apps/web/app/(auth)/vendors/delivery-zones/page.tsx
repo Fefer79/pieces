@@ -137,7 +137,7 @@ export default function DeliveryZonesPage() {
       <div className="mb-4 flex items-center gap-3">
         <button
           onClick={() => router.back()}
-          className="text-sm text-[#1976D2] hover:underline"
+          className="text-sm text-[#002366] hover:underline"
         >
           &larr; Retour
         </button>
@@ -155,14 +155,14 @@ export default function DeliveryZonesPage() {
         <p className="text-sm text-gray-500">Chargement...</p>
       ) : (
         <>
-          <label className="mb-3 flex cursor-pointer items-center gap-3 rounded-lg border-2 border-[#1976D2] bg-blue-50 p-3">
+          <label className="mb-3 flex cursor-pointer items-center gap-3 rounded-lg border-2 border-[#002366] bg-blue-50 p-3">
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
-              className="h-5 w-5 accent-[#1976D2]"
+              className="h-5 w-5 accent-[#002366]"
             />
-            <span className="text-sm font-semibold text-[#1976D2]">Tout Abidjan</span>
+            <span className="text-sm font-semibold text-[#002366]">Tout Abidjan</span>
           </label>
 
           <div className="space-y-2">
@@ -175,7 +175,7 @@ export default function DeliveryZonesPage() {
                   type="checkbox"
                   checked={selectedZones.includes(commune)}
                   onChange={() => toggleCommune(commune)}
-                  className="h-5 w-5 accent-[#1976D2]"
+                  className="h-5 w-5 accent-[#002366]"
                 />
                 <span className="text-sm text-[#1A1A1A]">{commune}</span>
               </label>
@@ -185,7 +185,7 @@ export default function DeliveryZonesPage() {
           <button
             onClick={handleSave}
             disabled={saving || selectedZones.length === 0}
-            className="mt-6 w-full rounded-lg bg-[#1976D2] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300 disabled:text-gray-500"
+            className="mt-6 w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300 disabled:text-gray-500"
           >
             {saving ? 'Enregistrement...' : `Enregistrer (${selectedZones.length} commune${selectedZones.length > 1 ? 's' : ''})`}
           </button>

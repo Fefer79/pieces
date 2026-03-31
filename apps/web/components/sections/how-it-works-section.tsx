@@ -1,9 +1,20 @@
 const STEPS = [
   {
     number: '1',
-    title: 'Identifiez la pièce',
+    title: 'Le mécanicien démonte la pièce',
     description:
-      'Prenez une photo, scannez le VIN ou recherchez par nom. Notre IA identifie la pièce automatiquement.',
+      'Le mécanicien identifie et démonte la pièce à remplacer. Il prend une photo ou vous l\'envoie si vous n\'êtes pas sur place.',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+        <path d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+      </svg>
+    ),
+  },
+  {
+    number: '2',
+    title: 'La photo arrive sur Pièces',
+    description:
+      'La photo est envoyée sur Pièces. Nous vous proposons les options disponibles chez les vendeurs.',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
         <path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" />
@@ -12,32 +23,21 @@ const STEPS = [
     ),
   },
   {
-    number: '2',
-    title: 'Le mécanicien commande',
-    description:
-      'Votre mécanicien crée la commande et vous envoie un lien de paiement sécurisé.',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-        <path fillRule="evenodd" d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 004.25 22.5h15.5a1.875 1.875 0 001.865-2.071l-1.263-12a1.875 1.875 0 00-1.865-1.679H16.5V6a4.5 4.5 0 10-9 0zM12 3a3 3 0 00-3 3v.75h6V6a3 3 0 00-3-3zm-3 8.25a3 3 0 106 0v.75a.75.75 0 01-1.5 0v-.75a1.5 1.5 0 00-3 0v.75a.75.75 0 01-1.5 0v-.75z" clipRule="evenodd" />
-      </svg>
-    ),
-  },
-  {
     number: '3',
-    title: 'Paiement sécurisé',
+    title: 'Choisissez au meilleur prix',
     description:
-      'Le propriétaire paie via CinetPay. L\'argent est gardé en escrow jusqu\'à la livraison.',
+      'L\'acheteur compare les offres et choisit la pièce qui correspond le mieux à son besoin et son budget.',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-        <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clipRule="evenodd" />
+        <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
       </svg>
     ),
   },
   {
     number: '4',
-    title: 'Livraison confirmée',
+    title: 'Livraison au garage',
     description:
-      'La pièce est livrée et vérifiée. Le vendeur reçoit le paiement une fois la livraison confirmée.',
+      'La pièce est livrée directement au mécanicien. Il peut commencer la réparation dès réception.',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
         <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V13.5h12V6.375c0-1.036-.84-1.875-1.875-1.875h-8.25zM13.5 15h-12v2.625C1.5 18.66 2.34 19.5 3.375 19.5H5.25a3.75 3.75 0 117.5 0h1.875c1.035 0 1.875-.84 1.875-1.875V15z" />
@@ -59,14 +59,14 @@ export function HowItWorksSection() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step) => (
             <div key={step.number} className="flex flex-col items-center text-center">
-              <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1976D2] text-white">
+              <div className="relative mb-4 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-[#002366] text-white">
                 {step.icon}
                 <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-[#1A1A1A]">
                   {step.number}
                 </span>
               </div>
-              <h3 className="mb-2 font-semibold text-[#1A1A1A]">{step.title}</h3>
-              <p className="text-sm text-gray-600">{step.description}</p>
+              <h3 className="mb-2 min-h-[3rem] font-semibold text-[#1A1A1A]">{step.title}</h3>
+              <p className="min-h-[4.5rem] text-sm text-gray-600">{step.description}</p>
             </div>
           ))}
         </div>

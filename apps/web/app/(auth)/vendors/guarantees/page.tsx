@@ -152,7 +152,7 @@ export default function VendorGuaranteesPage() {
           <button
             onClick={handleSign}
             disabled={signing}
-            className="w-full rounded-lg bg-[#1976D2] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
           >
             {signing ? 'Signature en cours...' : 'Signer les garanties et activer mon profil'}
           </button>

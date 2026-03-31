@@ -127,7 +127,7 @@ export default function EnterpriseOrdersPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-[#1976D2] focus:outline-none"
+          className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-[#002366] focus:outline-none"
         >
           <option value="">Tous les statuts</option>
           {ALL_STATUSES.map((s) => (
@@ -140,7 +140,7 @@ export default function EnterpriseOrdersPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Rechercher par n° ou article..."
-          className="w-64 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-[#1976D2] focus:outline-none"
+          className="w-64 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-[#002366] focus:outline-none"
         />
       </div>
 

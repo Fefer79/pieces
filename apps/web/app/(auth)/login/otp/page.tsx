@@ -107,7 +107,7 @@ function OtpForm() {
 
   return (
     <div className="w-full max-w-sm">
-      <h1 className="mb-2 text-center text-2xl font-bold text-[#1976D2]">Vérification</h1>
+      <h1 className="mb-2 text-center text-2xl font-bold text-[#002366]">Vérification</h1>
       <p className="mb-8 text-center text-sm text-gray-600">
         Entrez le code envoyé au {phone}
       </p>
@@ -126,7 +126,7 @@ function OtpForm() {
             onChange={(e) => handleChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             disabled={loading}
-            className="h-12 w-12 rounded-lg border border-gray-300 text-center text-lg font-semibold focus:border-[#1976D2] focus:outline-none focus:ring-1 focus:ring-[#1976D2] disabled:bg-gray-100"
+            className="h-12 w-12 rounded-lg border border-gray-300 text-center text-lg font-semibold focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366] disabled:bg-gray-100"
             aria-label={`Chiffre ${index + 1}`}
           />
         ))}
@@ -143,7 +143,7 @@ function OtpForm() {
           type="button"
           onClick={handleResend}
           disabled={countdown > 0}
-          className="text-sm text-[#1976D2] disabled:text-gray-400"
+          className="text-sm text-[#002366] disabled:text-gray-400"
         >
           {countdown > 0 ? `Renvoyer le code (${countdown}s)` : 'Renvoyer le code'}
         </button>

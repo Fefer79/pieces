@@ -35,13 +35,13 @@ export default function EnterpriseDashboardPage() {
 
       {/* Onboarding message */}
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-6 text-center">
-        <h2 className="mb-2 text-lg font-semibold text-[#1976D2]">Bienvenue sur votre espace entreprise</h2>
+        <h2 className="mb-2 text-lg font-semibold text-[#002366]">Bienvenue sur votre espace entreprise</h2>
         <p className="mb-4 text-sm text-gray-600">
           Ajoutez des membres et des véhicules pour commencer à utiliser le tableau de bord.
         </p>
         <Link
           href="/enterprise/members"
-          className="inline-block rounded-lg bg-[#1976D2] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          className="inline-block rounded-lg bg-[#002366] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
         >
           Gérer les membres
         </Link>
@@ -52,7 +52,7 @@ export default function EnterpriseDashboardPage() {
 
 function VehicleIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="1" y="3" width="15" height="13" rx="2" ry="2" />
       <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
       <circle cx="5.5" cy="18.5" r="2.5" />
@@ -63,7 +63,7 @@ function VehicleIcon() {
 
 function MechanicIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
     </svg>
   )
@@ -71,7 +71,7 @@ function MechanicIcon() {
 
 function OrderIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
       <polyline points="14 2 14 8 20 8" />
       <line x1="16" y1="13" x2="8" y2="13" />
@@ -82,7 +82,7 @@ function OrderIcon() {
 
 function ExpenseIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" y1="1" x2="12" y2="23" />
       <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
     </svg>

@@ -86,7 +86,7 @@ export default function VehiclesPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
-      <button onClick={() => router.back()} className="mb-2 text-sm text-[#1976D2] hover:underline">&larr; Retour</button>
+      <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-4 text-xl font-bold text-[#1A1A1A]">Mes véhicules</h1>
 
       {vehicles.length === 0 && !showForm && (
@@ -102,7 +102,7 @@ export default function VehiclesPage() {
           <div className="flex gap-2">
             <button
               onClick={() => router.push(`/browse/${encodeURIComponent(v.brand)}/${encodeURIComponent(v.model)}/${v.year}`)}
-              className="text-sm text-[#1976D2] hover:underline"
+              className="text-sm text-[#002366] hover:underline"
             >
               Chercher
             </button>
@@ -116,7 +116,7 @@ export default function VehiclesPage() {
       {!showForm && vehicles.length < 5 && (
         <button
           onClick={() => setShowForm(true)}
-          className="w-full rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm text-gray-500 hover:border-[#1976D2] hover:text-[#1976D2]"
+          className="w-full rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm text-gray-500 hover:border-[#002366] hover:text-[#002366]"
         >
           + Ajouter un véhicule
         </button>
@@ -129,14 +129,14 @@ export default function VehiclesPage() {
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
             placeholder="Marque (ex: Toyota)"
-            className="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
           <input
             type="text"
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder="Modèle (ex: Corolla)"
-            className="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
           <input
             type="number"
@@ -145,7 +145,7 @@ export default function VehiclesPage() {
             placeholder="Année (ex: 2015)"
             min="1980"
             max={new Date().getFullYear() + 1}
-            className="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#1976D2] focus:outline-none"
+            className="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
           <input
             type="text"
@@ -153,7 +153,7 @@ export default function VehiclesPage() {
             onChange={(e) => setVin(e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/gi, '').slice(0, 17))}
             placeholder="VIN (optionnel, 17 caractères)"
             maxLength={17}
-            className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:border-[#1976D2] focus:outline-none"
+            className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:border-[#002366] focus:outline-none"
           />
 
           {error && <p className="mb-2 text-sm text-[#D32F2F]">{error}</p>}
@@ -162,7 +162,7 @@ export default function VehiclesPage() {
             <button
               onClick={handleAdd}
               disabled={!brand || !model || !year || saving}
-              className="flex-1 rounded-lg bg-[#1976D2] py-2 text-sm font-semibold text-white hover:bg-[#1565C0] disabled:bg-gray-300"
+              className="flex-1 rounded-lg bg-[#002366] py-2 text-sm font-semibold text-white hover:bg-[#1565C0] disabled:bg-gray-300"
             >
               {saving ? 'Ajout...' : 'Ajouter'}
             </button>

@@ -85,7 +85,7 @@ export function ConsentModal({ onConsented, getAccessToken }: ConsentModalProps)
         <button
           onClick={handleAccept}
           disabled={submitting}
-          className="w-full rounded-lg bg-[#1976D2] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
+          className="w-full rounded-lg bg-[#002366] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
           style={{ minHeight: '48px' }}
         >
           {submitting ? 'Enregistrement...' : 'J\u2019accepte'}

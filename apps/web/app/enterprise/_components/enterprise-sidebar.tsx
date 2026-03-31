@@ -18,8 +18,8 @@ export function EnterpriseSidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center px-6">
         <Link href="/enterprise/dashboard">
-          <span className="font-[family-name:Gloock,serif] text-xl text-[#1A1714]">
-            Pièces<span className="text-[#D4880F]">.</span>
+          <span className="font-[family-name:Gloock,serif] text-xl text-[#00113a]">
+            Pièces<span className="text-[#ff6b00]">.</span>
           </span>
         </Link>
       </div>
@@ -35,7 +35,7 @@ export function EnterpriseSidebar() {
                   href={href}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-50 text-[#1976D2]'
+                      ? 'bg-blue-50 text-[#002366]'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -67,7 +67,7 @@ export function EnterpriseSidebar() {
 
 function DashboardIcon({ active }: { active: boolean }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#1976D2' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="7" height="7" />
       <rect x="14" y="3" width="7" height="7" />
       <rect x="3" y="14" width="7" height="7" />
@@ -78,7 +78,7 @@ function DashboardIcon({ active }: { active: boolean }) {
 
 function MembersIcon({ active }: { active: boolean }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#1976D2' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
       <circle cx="9" cy="7" r="4" />
       <path d="M23 21v-2a4 4 0 00-3-3.87" />
@@ -89,7 +89,7 @@ function MembersIcon({ active }: { active: boolean }) {
 
 function OrdersIcon({ active }: { active: boolean }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#1976D2' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
       <polyline points="14 2 14 8 20 8" />
       <line x1="16" y1="13" x2="8" y2="13" />
@@ -100,7 +100,7 @@ function OrdersIcon({ active }: { active: boolean }) {
 
 function SearchIcon({ active }: { active: boolean }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#1976D2' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>

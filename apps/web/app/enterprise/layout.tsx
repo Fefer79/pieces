@@ -90,7 +90,7 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
           </p>
           <Link
             href="/browse"
-            className="inline-block rounded-lg bg-[#1976D2] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+            className="inline-block rounded-lg bg-[#002366] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
           >
             Retour au site
           </Link>

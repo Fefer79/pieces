@@ -36,7 +36,7 @@ export default function AdminDashboardPage() {
   if (!stats) return <main style={{ padding: 16 }}><p>Accès réservé aux administrateurs.</p></main>
 
   const cards = [
-    { label: 'Utilisateurs', value: stats.totalUsers, color: '#1976d2' },
+    { label: 'Utilisateurs', value: stats.totalUsers, color: '#002366' },
     { label: 'Vendeurs', value: stats.totalVendors, color: '#388e3c' },
     { label: 'Commandes', value: stats.totalOrders, color: '#f57c00' },
     { label: 'Commandes actives', value: stats.activeOrders, color: '#e64a19' },
@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
 
       <div style={{ marginTop: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <a href="/admin/users" style={{
-          padding: '10px 16px', background: '#1976d2', color: '#fff',
+          padding: '10px 16px', background: '#002366', color: '#fff',
           borderRadius: 6, textDecoration: 'none', fontSize: 14,
         }}>
           Gérer les utilisateurs

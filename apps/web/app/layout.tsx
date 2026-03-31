@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#D4880F',
+  themeColor: '#ff6b00',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className={`${instrumentSans.variable} ${dmMono.variable} bg-[#FDFBF7] font-[family-name:var(--font-instrument)] text-[#1A1714] antialiased`}>
+      <body className={`${instrumentSans.variable} ${dmMono.variable} bg-[#FFFFFF] font-[family-name:var(--font-instrument)] text-[#00113a] antialiased`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
