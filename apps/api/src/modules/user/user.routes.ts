@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { switchContextSchema, selectRoleSchema, updateRolesSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { getProfile, switchContext, selectRole, updateRoles } from './user.service.js'
+import { getProfile, updateProfile, switchContext, selectRole, updateRoles } from './user.service.js'
 
 export async function userRoutes(fastify: FastifyInstance) {
   fastify.get(
@@ -17,6 +17,30 @@ export async function userRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const result = await getProfile(request.user.id)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.patch(
+    '/me/profile',
+    {
+      schema: {
+        tags: ['Users'],
+        description: 'Mettre à jour le nom et l\'email de l\'utilisateur',
+        security: [{ BearerAuth: [] }],
+        body: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', maxLength: 100 },
+            email: { type: 'string', format: 'email', maxLength: 255 },
+          },
+        },
+      },
+      preHandler: [requireAuth],
+    },
+    async (request, reply) => {
+      const { name, email } = request.body as { name?: string; email?: string }
+      const result = await updateProfile(request.user.id, { name, email })
       return reply.status(200).send({ data: result })
     },
   )

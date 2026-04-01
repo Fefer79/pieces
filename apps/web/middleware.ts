@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createSupabaseMiddlewareClient } from './lib/supabase-middleware'
 
 const PROTECTED_PATHS = [
+  '/dashboard',
+  '/vehicles',
   '/orders',
   '/profile',
   '/vendors',

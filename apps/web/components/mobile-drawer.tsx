@@ -1,14 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/lib/auth-context'
 
-const LINKS = [
+const PUBLIC_LINKS = [
   { href: '/info#a-propos', label: 'À Propos' },
   { href: '/info#comment-ca-marche', label: 'Comment ça marche' },
   { href: '/info#contact', label: 'Contact' },
 ]
 
+const AUTH_LINKS = [
+  { href: '/dashboard', label: 'Mon Tableau de Bord' },
+  { href: '/profile', label: 'Mon Profil' },
+  { href: '/vehicles', label: 'Mes Véhicules' },
+  { href: '/orders', label: 'Mes Commandes' },
+]
+
 export function MobileDrawer() {
+  const { isAuthenticated } = useAuth()
   const [open, setOpen] = useState(false)
 
   // Prevent body scroll when drawer is open
@@ -89,8 +98,8 @@ export function MobileDrawer() {
         {/* Links */}
         <nav className="flex-1 px-4 py-6">
           <ul className="space-y-2">
-            {LINKS.map((link) => (
-              <li key={link.href}>
+            {(isAuthenticated ? AUTH_LINKS : PUBLIC_LINKS).map((link) => (
+              <li key={link.href + link.label}>
                 <a
                   href={link.href}
                   onClick={() => setOpen(false)}
@@ -105,12 +114,21 @@ export function MobileDrawer() {
 
         {/* Footer */}
         <div className="border-t border-gray-100 px-4 py-4">
-          <a
-            href="/login"
-            className="block rounded-lg bg-[#002366] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-[#1565C0]"
-          >
-            Connexion
-          </a>
+          {isAuthenticated ? (
+            <a
+              href="/browse"
+              className="block rounded-lg bg-[#002366] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-[#1565C0]"
+            >
+              Rechercher
+            </a>
+          ) : (
+            <a
+              href="/login"
+              className="block rounded-lg bg-[#002366] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-[#1565C0]"
+            >
+              Connexion
+            </a>
+          )}
         </div>
       </div>
     </>

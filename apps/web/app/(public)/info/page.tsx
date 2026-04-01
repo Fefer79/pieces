@@ -1,10 +1,13 @@
+'use client'
+
 import { AboutSection } from '@/components/sections/about-section'
 import { HowItWorksSection } from '@/components/sections/how-it-works-section'
 import { ContactSection } from '@/components/sections/contact-section'
+import { BottomNav } from '@/components/bottom-nav'
 
 export default function InfoPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-16 lg:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-[#E1DAC9]/50 bg-white/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
@@ -37,6 +40,7 @@ export default function InfoPage() {
           </p>
         </div>
       </footer>
+      <BottomNav />
     </div>
   )
 }

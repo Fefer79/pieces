@@ -11,6 +11,8 @@ type SupabaseClient = ReturnType<typeof createClient>
 interface UserProfile {
   id: string
   phone: string
+  name: string | null
+  email: string | null
   roles: string[]
   activeContext: string | null
 }
@@ -59,6 +61,10 @@ export default function ProfilePage() {
   const [switching, setSwitching] = useState(false)
   const [selectingRole, setSelectingRole] = useState(false)
   const [error, setError] = useState('')
+  const [editName, setEditName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -91,6 +97,45 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchProfile()
   }, [fetchProfile])
+
+  useEffect(() => {
+    if (profile) {
+      setEditName(profile.name ?? '')
+      setEditEmail(profile.email ?? '')
+    }
+  }, [profile])
+
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    setSaveSuccess(false)
+    setError('')
+    try {
+      const { data: { session } } = await getSupabase().auth.getSession()
+      if (!session) return
+      const res = await fetch('/api/v1/users/me/profile', {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: editName, email: editEmail }),
+      })
+      if (!res.ok) {
+        const body = await res.json()
+        setError(body.error?.message ?? 'Erreur lors de la sauvegarde')
+        return
+      }
+      const body = await res.json()
+      setProfile((prev) => prev ? { ...prev, ...body.data } : prev)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 2000)
+    } catch {
+      setError('Erreur de connexion')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   async function handleSelectRole(role: string, redirect: string) {
     if (selectingRole) return
@@ -231,6 +276,41 @@ export default function ProfilePage() {
         <p className="mb-1 text-sm text-gray-500">Téléphone</p>
         <p className="text-base font-medium">{maskPhone(profile.phone)}</p>
       </section>
+
+      <form onSubmit={handleSaveProfile} className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="mb-3 text-sm text-gray-500">Informations personnelles</p>
+        <div className="space-y-3">
+          <div>
+            <label htmlFor="name" className="mb-1 block text-xs text-gray-500">Nom</label>
+            <input
+              id="name"
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="Votre nom (optionnel)"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            />
+          </div>
+          <div>
+            <label htmlFor="email" className="mb-1 block text-xs text-gray-500">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={editEmail}
+              onChange={(e) => setEditEmail(e.target.value)}
+              placeholder="Votre email (optionnel)"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full rounded-lg bg-[#002366] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#001a4d] disabled:opacity-50"
+          >
+            {saving ? 'Enregistrement...' : saveSuccess ? 'Enregistré !' : 'Enregistrer'}
+          </button>
+        </div>
+      </form>
 
       <section className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
         <p className="mb-2 text-sm text-gray-500">Rôles</p>

@@ -1,6 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase'
+
+type SupabaseClient = ReturnType<typeof createClient>
 
 interface OrderHistoryItem {
   id: string
@@ -18,7 +22,50 @@ interface OrderHistoryData {
   totalPages: number
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: 'Brouillon',
+  PENDING_PAYMENT: 'En attente de paiement',
+  PAID: 'Payee',
+  VENDOR_CONFIRMED: 'Confirmee vendeur',
+  DISPATCHED: 'Expediee',
+  IN_TRANSIT: 'En transit',
+  DELIVERED: 'Livree',
+  CONFIRMED: 'Confirmee',
+  COMPLETED: 'Terminee',
+  CANCELLED: 'Annulee',
+}
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  DRAFT: { bg: 'bg-gray-100', text: 'text-gray-700' },
+  PENDING_PAYMENT: { bg: 'bg-amber-50', text: 'text-amber-700' },
+  PAID: { bg: 'bg-blue-50', text: 'text-blue-700' },
+  VENDOR_CONFIRMED: { bg: 'bg-blue-50', text: 'text-blue-700' },
+  DISPATCHED: { bg: 'bg-indigo-50', text: 'text-indigo-700' },
+  IN_TRANSIT: { bg: 'bg-indigo-50', text: 'text-indigo-700' },
+  DELIVERED: { bg: 'bg-green-50', text: 'text-green-700' },
+  CONFIRMED: { bg: 'bg-green-50', text: 'text-green-700' },
+  COMPLETED: { bg: 'bg-green-100', text: 'text-green-800' },
+  CANCELLED: { bg: 'bg-red-50', text: 'text-red-700' },
+}
+
+const DELIVERY_LABELS: Record<string, string> = {
+  PENDING_ASSIGNMENT: 'En attente',
+  ASSIGNED: 'Livreur assigne',
+  PICKUP_IN_PROGRESS: 'Recuperation',
+  IN_TRANSIT: 'En transit',
+  DELIVERED: 'Livree',
+  CONFIRMED: 'Confirmee',
+  RETURNED: 'Retournee',
+}
+
 export default function OrderHistoryPage() {
+  const router = useRouter()
+  const supabaseRef = useRef<SupabaseClient | null>(null)
+  function getSupabase() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    return supabaseRef.current
+  }
+
   const [data, setData] = useState<OrderHistoryData | null>(null)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -26,9 +73,11 @@ export default function OrderHistoryPage() {
   const fetchOrders = useCallback(async () => {
     setLoading(true)
     try {
-      const token = localStorage.getItem('access_token')
+      const { data: { session } } = await getSupabase().auth.getSession()
+      if (!session) { router.push('/login'); return }
+
       const res = await fetch(`/api/v1/orders/history?page=${page}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       })
       if (res.ok) {
         const json = await res.json()
@@ -37,82 +86,98 @@ export default function OrderHistoryPage() {
     } finally {
       setLoading(false)
     }
-  }, [page])
+  }, [page, router])
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
 
-  const statusLabels: Record<string, string> = {
-    DRAFT: 'Brouillon',
-    PENDING_PAYMENT: 'En attente de paiement',
-    PAID: 'Payée',
-    VENDOR_CONFIRMED: 'Confirmée vendeur',
-    DISPATCHED: 'Expédiée',
-    IN_TRANSIT: 'En transit',
-    DELIVERED: 'Livrée',
-    CONFIRMED: 'Confirmée',
-    COMPLETED: 'Terminée',
-    CANCELLED: 'Annulée',
-  }
-
   return (
-    <main className="mx-auto w-full max-w-[600px] px-4 py-4 lg:max-w-4xl">
-      <h1 className="mb-4 text-xl font-bold">Mes commandes</h1>
+    <main className="mx-auto w-full max-w-sm px-4 pt-8 pb-8 lg:max-w-2xl">
+      <h1 className="mb-6 text-xl font-bold text-gray-900">Mes commandes</h1>
 
-      {loading && <p>Chargement...</p>}
-
-      {data && data.orders.length === 0 && (
-        <p style={{ color: '#666' }}>Aucune commande pour le moment.</p>
+      {loading && (
+        <div className="flex min-h-[30vh] items-center justify-center">
+          <p className="text-gray-500">Chargement...</p>
+        </div>
       )}
 
-      <div className="grid gap-3 lg:grid-cols-2">
-      {data?.orders.map((order) => (
-        <div key={order.id} style={{
-          border: '1px solid #ddd', borderRadius: 8, padding: 12,
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontWeight: 600 }}>#{order.id.slice(0, 8)}</span>
-            <span style={{
-              fontSize: 12, padding: '2px 8px', borderRadius: 12,
-              background: order.status === 'COMPLETED' ? '#e8f5e9' : order.status === 'CANCELLED' ? '#ffebee' : '#fff3e0',
-              color: order.status === 'COMPLETED' ? '#2e7d32' : order.status === 'CANCELLED' ? '#c62828' : '#e65100',
-            }}>
-              {statusLabels[order.status] ?? order.status}
-            </span>
+      {!loading && data && data.orders.length === 0 && (
+        <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center">
+          <svg className="mx-auto mb-3 h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15a2.25 2.25 0 0 1 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
+          </svg>
+          <p className="mb-1 text-sm font-medium text-gray-700">Aucune commande</p>
+          <p className="text-xs text-gray-500">Vos commandes apparaitront ici.</p>
+        </div>
+      )}
+
+      {!loading && data && data.orders.length > 0 && (
+        <>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {data.orders.map((order) => {
+              const colors = STATUS_COLORS[order.status] ?? { bg: 'bg-gray-100', text: 'text-gray-700' }
+              return (
+                <div key={order.id} className="rounded-lg border border-gray-200 bg-white p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-900">
+                      #{order.id.slice(0, 8)}
+                    </span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.bg} ${colors.text}`}>
+                      {STATUS_LABELS[order.status] ?? order.status}
+                    </span>
+                  </div>
+
+                  <p className="mb-2 text-xs text-gray-500">
+                    {new Date(order.createdAt).toLocaleDateString('fr-CI', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    })}
+                  </p>
+
+                  <ul className="mb-3 space-y-1">
+                    {order.items.map((item, i) => (
+                      <li key={i} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-700">{item.name} <span className="text-gray-400">x{item.quantity}</span></span>
+                        <span className="text-gray-600">{item.priceSnapshot.toLocaleString()} FCFA</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+                    {order.delivery ? (
+                      <span className="text-xs text-gray-500">
+                        Livraison : {DELIVERY_LABELS[order.delivery.status] ?? order.delivery.status}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+                    <span className="text-sm font-bold text-gray-900">
+                      {order.totalAmount.toLocaleString()} FCFA
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
-          <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>
-            {new Date(order.createdAt).toLocaleDateString('fr-CI')}
-          </div>
-
-          <ul style={{ margin: '8px 0', paddingLeft: 16, fontSize: 14 }}>
-            {order.items.map((item, i) => (
-              <li key={i}>{item.name} x{item.quantity} — {item.priceSnapshot.toLocaleString()} FCFA</li>
-            ))}
-          </ul>
-
-          <div style={{ fontWeight: 600, textAlign: 'right' }}>
-            Total : {order.totalAmount.toLocaleString()} FCFA
-          </div>
-
-          {order.delivery && (
-            <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
-              Livraison : {order.delivery.status}
+          {data.totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-40"
+              >
+                Precedent
+              </button>
+              <span className="text-sm text-gray-500">{page} / {data.totalPages}</span>
+              <button
+                onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+                disabled={page === data.totalPages}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-40"
+              >
+                Suivant
+              </button>
             </div>
           )}
-        </div>
-      ))}
-      </div>
-
-      {data && data.totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-            Précédent
-          </button>
-          <span>{page} / {data.totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))} disabled={page === data.totalPages}>
-            Suivant
-          </button>
-        </div>
+        </>
       )}
     </main>
   )

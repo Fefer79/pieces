@@ -6,7 +6,7 @@ import type { Role } from 'shared/types'
 export async function getProfile(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, phone: true, roles: true, activeContext: true, consentedAt: true },
+    select: { id: true, phone: true, name: true, email: true, roles: true, activeContext: true, consentedAt: true },
   })
 
   if (!user) {
@@ -14,6 +14,24 @@ export async function getProfile(userId: string) {
   }
 
   return user
+}
+
+export async function updateProfile(userId: string, data: { name?: string; email?: string }) {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    throw new AppError('USER_NOT_FOUND', 404)
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.name !== undefined && { name: data.name || null }),
+      ...(data.email !== undefined && { email: data.email || null }),
+    },
+    select: { id: true, phone: true, name: true, email: true, roles: true, activeContext: true },
+  })
+
+  return updated
 }
 
 export async function switchContext(userId: string, role: string) {
