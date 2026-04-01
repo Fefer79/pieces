@@ -427,100 +427,6 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               </div>
             </a>
 
-            {/* Carte recherche par nom */}
-            <div
-              className="flex min-h-[88px] items-center justify-between rounded-lg border border-[#E1DAC9] bg-[#FFFFFF] py-3 pl-4"
-              style={{ paddingRight: 10 }}
-            >
-              <div className="min-w-0 flex-1">
-                <p className="mb-2 text-sm font-medium text-[#ff6b00]">
-                  Recherche par nom
-                </p>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Nom, référence OEM..."
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#ff6b00] focus:outline-none"
-                  style={{ minHeight: 48 }}
-                />
-              </div>
-              <div className="ml-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#ff6b00] text-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            {searching && (
-              <p className="text-sm text-gray-500">Recherche...</p>
-            )}
-
-            {searchQuery.trim().length >= 2 && searchResults.length > 0 && (
-              <div className="space-y-2">
-                <h2 className="text-sm font-semibold text-gray-600">
-                  Résultats
-                </h2>
-                <div className="grid gap-2 lg:grid-cols-2 xl:grid-cols-3">
-                  {searchResults.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex gap-3 rounded-lg border border-gray-200 bg-white p-3"
-                    >
-                      <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
-                        {item.imageThumbUrl ? (
-                          <img
-                            src={item.imageThumbUrl}
-                            alt={item.name ?? ''}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
-                            —
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {item.name ?? 'Pièce'}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {item.category ?? '—'} · {item.vendor.shopName}
-                        </p>
-                      </div>
-                      {item.price && (
-                        <p className="text-sm font-semibold">
-                          {item.price.toLocaleString('fr-FR')} F
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {searchQuery.trim().length >= 2 &&
-              !searching &&
-              searchResults.length === 0 && (
-                <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
-                  <p className="text-sm text-gray-500">
-                    Aucun résultat pour &ldquo;{searchQuery}&rdquo;
-                  </p>
-                  <p className="mt-1 text-xs text-gray-400">
-                    Essayez un autre terme ou naviguez par marque (onglet
-                    Sélection)
-                  </p>
-                </div>
-              )}
           </div>
         )}
 
@@ -603,6 +509,106 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             >
               Confirmer le véhicule
             </button>
+
+            {/* Recherche par nom — visible après confirmation du véhicule */}
+            {vehicle && (
+              <>
+                <div className="mt-2 border-t border-gray-200 pt-4">
+                  <div
+                    className="flex min-h-[88px] items-center justify-between rounded-lg border border-[#E1DAC9] bg-[#FFFFFF] py-3 pl-4"
+                    style={{ paddingRight: 10 }}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="mb-2 text-sm font-medium text-[#ff6b00]">
+                        Recherche par nom
+                      </p>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Nom, référence OEM..."
+                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-[#ff6b00] focus:outline-none"
+                        style={{ minHeight: 48 }}
+                      />
+                    </div>
+                    <div className="ml-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#ff6b00] text-white">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="h-5 w-5"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {searching && (
+                  <p className="text-sm text-gray-500">Recherche...</p>
+                )}
+
+                {searchQuery.trim().length >= 2 && searchResults.length > 0 && (
+                  <div className="space-y-2">
+                    <h2 className="text-sm font-semibold text-gray-600">
+                      Résultats
+                    </h2>
+                    <div className="grid gap-2 lg:grid-cols-2 xl:grid-cols-3">
+                      {searchResults.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex gap-3 rounded-lg border border-gray-200 bg-white p-3"
+                        >
+                          <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
+                            {item.imageThumbUrl ? (
+                              <img
+                                src={item.imageThumbUrl}
+                                alt={item.name ?? ''}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                                —
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {item.name ?? 'Pièce'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {item.category ?? '—'} · {item.vendor.shopName}
+                            </p>
+                          </div>
+                          {item.price && (
+                            <p className="text-sm font-semibold">
+                              {item.price.toLocaleString('fr-FR')} F
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {searchQuery.trim().length >= 2 &&
+                  !searching &&
+                  searchResults.length === 0 && (
+                    <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
+                      <p className="text-sm text-gray-500">
+                        Aucun résultat pour &ldquo;{searchQuery}&rdquo;
+                      </p>
+                      <p className="mt-1 text-xs text-gray-400">
+                        Essayez un autre terme
+                      </p>
+                    </div>
+                  )}
+              </>
+            )}
           </div>
         )}
       </div>
