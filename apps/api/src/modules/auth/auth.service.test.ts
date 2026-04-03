@@ -37,22 +37,44 @@ describe('sendOtp', () => {
   it('sends OTP for valid Ivorian phone number', async () => {
     mockSignInWithOtp.mockResolvedValueOnce({ error: null })
 
-    const result = await sendOtp('+2250700000000')
+    const result = await sendOtp({ phone: '+2250700000000' })
     expect(result).toEqual({ sent: true })
     expect(mockSignInWithOtp).toHaveBeenCalledWith({ phone: '+2250700000000' })
   })
 
+  it('sends OTP for valid email', async () => {
+    mockSignInWithOtp.mockResolvedValueOnce({ error: null })
+
+    const result = await sendOtp({ email: 'test@example.com' })
+    expect(result).toEqual({ sent: true })
+    expect(mockSignInWithOtp).toHaveBeenCalledWith({ email: 'test@example.com' })
+  })
+
   it('rejects invalid phone number', async () => {
-    await expect(sendOtp('+33612345678')).rejects.toMatchObject({
-      code: 'AUTH_INVALID_PHONE',
+    await expect(sendOtp({ phone: '+33612345678' })).rejects.toMatchObject({
+      code: 'AUTH_INVALID_INPUT',
       statusCode: 400,
     })
     expect(mockSignInWithOtp).not.toHaveBeenCalled()
   })
 
   it('rejects phone without country code', async () => {
-    await expect(sendOtp('0700000000')).rejects.toMatchObject({
-      code: 'AUTH_INVALID_PHONE',
+    await expect(sendOtp({ phone: '0700000000' })).rejects.toMatchObject({
+      code: 'AUTH_INVALID_INPUT',
+      statusCode: 400,
+    })
+  })
+
+  it('rejects invalid email', async () => {
+    await expect(sendOtp({ email: 'not-an-email' })).rejects.toMatchObject({
+      code: 'AUTH_INVALID_INPUT',
+      statusCode: 400,
+    })
+  })
+
+  it('rejects when neither phone nor email provided', async () => {
+    await expect(sendOtp({})).rejects.toMatchObject({
+      code: 'AUTH_INVALID_INPUT',
       statusCode: 400,
     })
   })
@@ -60,7 +82,7 @@ describe('sendOtp', () => {
   it('throws on Supabase error', async () => {
     mockSignInWithOtp.mockResolvedValueOnce({ error: { message: 'rate limited' } })
 
-    await expect(sendOtp('+2250700000000')).rejects.toMatchObject({
+    await expect(sendOtp({ phone: '+2250700000000' })).rejects.toMatchObject({
       code: 'AUTH_OTP_SEND_FAILED',
       statusCode: 500,
     })
@@ -72,7 +94,7 @@ describe('verifyOtp', () => {
     vi.clearAllMocks()
   })
 
-  it('verifies OTP and creates/updates user in Prisma', async () => {
+  it('verifies phone OTP and creates/updates user in Prisma', async () => {
     mockVerifyOtp.mockResolvedValueOnce({
       data: {
         user: { id: 'supabase-user-123' },
@@ -83,33 +105,69 @@ describe('verifyOtp', () => {
     mockUpsert.mockResolvedValueOnce({
       id: 'prisma-user-123',
       phone: '+2250700000000',
+      email: null,
       roles: ['MECHANIC'],
     })
 
-    const result = await verifyOtp('+2250700000000', '123456')
+    const result = await verifyOtp({ phone: '+2250700000000', token: '123456' })
     expect(result).toEqual({
       accessToken: 'jwt-token',
       refreshToken: 'refresh-token',
-      user: { id: 'prisma-user-123', phone: '+2250700000000', roles: ['MECHANIC'] },
+      user: { id: 'prisma-user-123', phone: '+2250700000000', email: null, roles: ['MECHANIC'] },
     })
-    expect(mockUpsert).toHaveBeenCalledWith({
-      where: { supabaseId: 'supabase-user-123' },
-      update: { phone: '+2250700000000' },
-      create: { supabaseId: 'supabase-user-123', phone: '+2250700000000', roles: ['MECHANIC'] },
+    expect(mockVerifyOtp).toHaveBeenCalledWith({
+      phone: '+2250700000000',
+      token: '123456',
+      type: 'sms',
+    })
+  })
+
+  it('verifies email OTP and creates/updates user in Prisma', async () => {
+    mockVerifyOtp.mockResolvedValueOnce({
+      data: {
+        user: { id: 'supabase-user-456' },
+        session: { access_token: 'jwt-email', refresh_token: 'refresh-email' },
+      },
+      error: null,
+    })
+    mockUpsert.mockResolvedValueOnce({
+      id: 'prisma-user-456',
+      phone: null,
+      email: 'test@example.com',
+      roles: ['MECHANIC'],
+    })
+
+    const result = await verifyOtp({ email: 'test@example.com', token: '123456' })
+    expect(result).toEqual({
+      accessToken: 'jwt-email',
+      refreshToken: 'refresh-email',
+      user: { id: 'prisma-user-456', phone: null, email: 'test@example.com', roles: ['MECHANIC'] },
+    })
+    expect(mockVerifyOtp).toHaveBeenCalledWith({
+      email: 'test@example.com',
+      token: '123456',
+      type: 'email',
     })
   })
 
   it('rejects invalid OTP format', async () => {
-    await expect(verifyOtp('+2250700000000', '12345')).rejects.toMatchObject({
-      code: 'AUTH_INVALID_OTP',
+    await expect(verifyOtp({ phone: '+2250700000000', token: '12345' })).rejects.toMatchObject({
+      code: 'AUTH_INVALID_INPUT',
       statusCode: 400,
     })
     expect(mockVerifyOtp).not.toHaveBeenCalled()
   })
 
   it('rejects invalid phone number', async () => {
-    await expect(verifyOtp('invalid', '123456')).rejects.toMatchObject({
-      code: 'AUTH_INVALID_PHONE',
+    await expect(verifyOtp({ phone: 'invalid', token: '123456' })).rejects.toMatchObject({
+      code: 'AUTH_INVALID_INPUT',
+      statusCode: 400,
+    })
+  })
+
+  it('rejects when neither phone nor email provided', async () => {
+    await expect(verifyOtp({ token: '123456' })).rejects.toMatchObject({
+      code: 'AUTH_INVALID_INPUT',
       statusCode: 400,
     })
   })
@@ -120,7 +178,7 @@ describe('verifyOtp', () => {
       error: { message: 'Token has expired or is invalid' },
     })
 
-    await expect(verifyOtp('+2250700000000', '123456')).rejects.toMatchObject({
+    await expect(verifyOtp({ phone: '+2250700000000', token: '123456' })).rejects.toMatchObject({
       code: 'AUTH_EXPIRED_OTP',
       statusCode: 400,
     })
@@ -132,7 +190,7 @@ describe('verifyOtp', () => {
       error: { message: 'Invalid OTP' },
     })
 
-    await expect(verifyOtp('+2250700000000', '123456')).rejects.toMatchObject({
+    await expect(verifyOtp({ phone: '+2250700000000', token: '123456' })).rejects.toMatchObject({
       code: 'AUTH_INVALID_OTP',
       statusCode: 400,
     })

@@ -9,7 +9,8 @@ declare module 'fastify' {
   interface FastifyRequest {
     user: {
       id: string
-      phone: string
+      phone: string | null
+      email: string | null
       roles: Role[]
       activeContext: Role | null
       consentedAt: string | null
@@ -41,10 +42,11 @@ export async function requireAuth(request: FastifyRequest) {
     update: {},
     create: {
       supabaseId: data.user.id,
-      phone: data.user.phone ?? '',
+      phone: data.user.phone ?? null,
+      email: data.user.email ?? null,
       roles: ['MECHANIC'],
     },
-    select: { id: true, phone: true, roles: true, activeContext: true, consentedAt: true },
+    select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
   })
 
   // Auto-set activeContext if single role and not yet set
@@ -59,6 +61,7 @@ export async function requireAuth(request: FastifyRequest) {
   request.user = {
     id: user.id,
     phone: user.phone,
+    email: user.email,
     roles: user.roles as Role[],
     activeContext: (user.activeContext as Role) ?? null,
     consentedAt: user.consentedAt?.toISOString() ?? null,

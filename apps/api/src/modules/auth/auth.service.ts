@@ -1,15 +1,19 @@
 import { supabaseAdmin } from '../../lib/supabase.js'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
-import { phoneSchema, otpSchema } from 'shared/validators'
+import { sendOtpSchema, verifyOtpSchema } from 'shared/validators'
 
-export async function sendOtp(phone: string) {
-  const parsed = phoneSchema.safeParse(phone)
+export async function sendOtp(input: { phone?: string; email?: string }) {
+  const parsed = sendOtpSchema.safeParse(input)
   if (!parsed.success) {
-    throw new AppError('AUTH_INVALID_PHONE', 400, { message: parsed.error.issues[0]?.message })
+    throw new AppError('AUTH_INVALID_INPUT', 400, { message: parsed.error.issues[0]?.message })
   }
 
-  const { error } = await supabaseAdmin.auth.signInWithOtp({ phone: parsed.data })
+  const otpPayload = parsed.data.phone
+    ? { phone: parsed.data.phone }
+    : { email: parsed.data.email! }
+
+  const { error } = await supabaseAdmin.auth.signInWithOtp(otpPayload)
 
   if (error) {
     throw new AppError('AUTH_OTP_SEND_FAILED', 500, { message: error.message })
@@ -18,22 +22,18 @@ export async function sendOtp(phone: string) {
   return { sent: true }
 }
 
-export async function verifyOtp(phone: string, token: string) {
-  const parsedPhone = phoneSchema.safeParse(phone)
-  if (!parsedPhone.success) {
-    throw new AppError('AUTH_INVALID_PHONE', 400, { message: parsedPhone.error.issues[0]?.message })
+export async function verifyOtp(input: { phone?: string; email?: string; token: string }) {
+  const parsed = verifyOtpSchema.safeParse(input)
+  if (!parsed.success) {
+    throw new AppError('AUTH_INVALID_INPUT', 400, { message: parsed.error.issues[0]?.message })
   }
 
-  const parsedToken = otpSchema.safeParse(token)
-  if (!parsedToken.success) {
-    throw new AppError('AUTH_INVALID_OTP', 400, { message: parsedToken.error.issues[0]?.message })
-  }
+  const isPhone = !!parsed.data.phone
+  const verifyPayload = isPhone
+    ? { phone: parsed.data.phone!, token: parsed.data.token, type: 'sms' as const }
+    : { email: parsed.data.email!, token: parsed.data.token, type: 'email' as const }
 
-  const { data, error } = await supabaseAdmin.auth.verifyOtp({
-    phone: parsedPhone.data,
-    token: parsedToken.data,
-    type: 'sms',
-  })
+  const { data, error } = await supabaseAdmin.auth.verifyOtp(verifyPayload)
 
   if (error) {
     if (error.message.includes('expired')) {
@@ -46,12 +46,20 @@ export async function verifyOtp(phone: string, token: string) {
     throw new AppError('AUTH_INVALID_OTP', 400)
   }
 
+  const upsertData = isPhone
+    ? { phone: parsed.data.phone!, email: data.user.email ?? undefined }
+    : { email: parsed.data.email!, phone: data.user.phone ?? undefined }
+
   const user = await prisma.user.upsert({
     where: { supabaseId: data.user.id },
-    update: { phone: parsedPhone.data },
+    update: {
+      ...(upsertData.phone && { phone: upsertData.phone }),
+      ...(upsertData.email && { email: upsertData.email }),
+    },
     create: {
       supabaseId: data.user.id,
-      phone: parsedPhone.data,
+      phone: upsertData.phone ?? null,
+      email: upsertData.email ?? null,
       roles: ['MECHANIC'],
     },
   })
@@ -62,6 +70,7 @@ export async function verifyOtp(phone: string, token: string) {
     user: {
       id: user.id,
       phone: user.phone,
+      email: user.email,
       roles: user.roles,
     },
   }

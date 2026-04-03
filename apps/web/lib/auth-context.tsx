@@ -8,7 +8,8 @@ type SupabaseClient = ReturnType<typeof createClient>
 
 export interface UserProfile {
   id: string
-  phone: string
+  phone: string | null
+  email: string | null
   roles: string[]
   activeContext: string | null
   consentedAt: string | null

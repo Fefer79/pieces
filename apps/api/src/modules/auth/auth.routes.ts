@@ -1,20 +1,16 @@
 import type { FastifyInstance } from 'fastify'
-import { z } from 'zod'
-import { phoneSchema, otpSchema } from 'shared/validators'
+import { sendOtpSchema, verifyOtpSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { sendOtp, verifyOtp } from './auth.service.js'
-
-const otpBodySchema = z.object({ phone: phoneSchema })
-const verifyBodySchema = z.object({ phone: phoneSchema, token: otpSchema })
 
 export async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/otp',
     {
       schema: {
-        body: zodToFastify(otpBodySchema),
+        body: zodToFastify(sendOtpSchema),
         tags: ['Auth'],
-        description: 'Envoyer un code OTP par SMS',
+        description: 'Envoyer un code OTP par SMS ou email',
       },
       config: {
         rateLimit: {
@@ -24,8 +20,8 @@ export async function authRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { phone } = request.body as { phone: string }
-      const result = await sendOtp(phone)
+      const { phone, email } = request.body as { phone?: string; email?: string }
+      const result = await sendOtp({ phone, email })
       return reply.status(200).send({ data: result })
     },
   )
@@ -34,14 +30,14 @@ export async function authRoutes(fastify: FastifyInstance) {
     '/verify',
     {
       schema: {
-        body: zodToFastify(verifyBodySchema),
+        body: zodToFastify(verifyOtpSchema),
         tags: ['Auth'],
         description: 'Vérifier le code OTP et obtenir un token JWT',
       },
     },
     async (request, reply) => {
-      const { phone, token } = request.body as { phone: string; token: string }
-      const result = await verifyOtp(phone, token)
+      const { phone, email, token } = request.body as { phone?: string; email?: string; token: string }
+      const result = await verifyOtp({ phone, email, token })
       return reply.status(200).send({ data: result })
     },
   )

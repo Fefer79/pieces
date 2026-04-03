@@ -88,7 +88,7 @@ export function DesktopSidebar() {
             {ROLE_LABELS[user.activeContext ?? ''] ?? 'Utilisateur'}
           </p>
           <p className="truncate text-sm font-medium text-gray-700">
-            {user.phone}
+            {user.phone ?? user.email}
           </p>
         </div>
       )}

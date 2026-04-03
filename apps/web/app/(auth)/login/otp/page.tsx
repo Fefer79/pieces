@@ -11,6 +11,8 @@ function OtpForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const phone = searchParams.get('phone') ?? ''
+  const email = searchParams.get('email') ?? ''
+  const isEmail = !!email
 
   const [otp, setOtp] = useState<string[]>(Array.from({ length: OTP_LENGTH }, () => ''))
   const [error, setError] = useState('')
@@ -34,11 +36,10 @@ function OtpForm() {
       setLoading(true)
       try {
         const supabase = createClient()
-        const { error: verifyError } = await supabase.auth.verifyOtp({
-          phone,
-          token: code,
-          type: 'sms',
-        })
+        const verifyPayload = isEmail
+          ? { email, token: code, type: 'email' as const }
+          : { phone, token: code, type: 'sms' as const }
+        const { error: verifyError } = await supabase.auth.verifyOtp(verifyPayload)
         if (verifyError) {
           setError(verifyError.message)
           return
@@ -50,7 +51,7 @@ function OtpForm() {
         setLoading(false)
       }
     },
-    [phone, router],
+    [phone, email, isEmail, router],
   )
 
   function handleChange(index: number, value: string) {
@@ -99,17 +100,20 @@ function OtpForm() {
     setError('')
     setCountdown(RESEND_COOLDOWN)
     const supabase = createClient()
-    const { error: resendError } = await supabase.auth.signInWithOtp({ phone })
+    const resendPayload = isEmail ? { email } : { phone }
+    const { error: resendError } = await supabase.auth.signInWithOtp(resendPayload)
     if (resendError) {
       setError(resendError.message)
     }
   }
 
+  const destination = isEmail ? email : phone
+
   return (
     <div className="w-full max-w-sm">
       <h1 className="mb-2 text-center text-2xl font-bold text-[#002366]">Vérification</h1>
       <p className="mb-8 text-center text-sm text-gray-600">
-        Entrez le code envoyé au {phone}
+        Entrez le code envoyé {isEmail ? 'à ' : 'au '}{destination}
       </p>
 
       <div className="mb-4 flex justify-center gap-2" onPaste={handlePaste}>

@@ -51,6 +51,7 @@ describe('requireAuth', () => {
     mockUpsert.mockResolvedValueOnce({
       id: 'prisma-user-123',
       phone: '+2250700000000',
+      email: null,
       roles: ['MECHANIC'],
       activeContext: null,
       consentedAt: null,
@@ -63,6 +64,7 @@ describe('requireAuth', () => {
     expect(request.user).toEqual({
       id: 'prisma-user-123',
       phone: '+2250700000000',
+      email: null,
       roles: ['MECHANIC'],
       activeContext: 'MECHANIC',
       consentedAt: null,
@@ -71,8 +73,8 @@ describe('requireAuth', () => {
     expect(mockUpsert).toHaveBeenCalledWith({
       where: { supabaseId: 'supabase-123' },
       update: {},
-      create: { supabaseId: 'supabase-123', phone: '+2250700000000', roles: ['MECHANIC'] },
-      select: { id: true, phone: true, roles: true, activeContext: true, consentedAt: true },
+      create: { supabaseId: 'supabase-123', phone: '+2250700000000', email: null, roles: ['MECHANIC'] },
+      select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
     })
     // Auto-set activeContext for single role user
     expect(mockUpdate).toHaveBeenCalledWith({

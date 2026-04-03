@@ -35,7 +35,7 @@ describe('Auth Routes', () => {
   })
 
   describe('POST /api/v1/auth/otp', () => {
-    it('returns 200 when OTP sent successfully', async () => {
+    it('returns 200 when OTP sent via phone', async () => {
       mockSignInWithOtp.mockResolvedValueOnce({ error: null })
 
       const app = buildApp()
@@ -49,20 +49,21 @@ describe('Auth Routes', () => {
       expect(response.json()).toEqual({ data: { sent: true } })
     })
 
-    it('returns 422 for invalid phone', async () => {
+    it('returns 200 when OTP sent via email', async () => {
+      mockSignInWithOtp.mockResolvedValueOnce({ error: null })
+
       const app = buildApp()
       const response = await app.inject({
         method: 'POST',
         url: '/api/v1/auth/otp',
-        payload: { phone: 'invalid' },
+        payload: { email: 'test@example.com' },
       })
 
-      expect(response.statusCode).toBe(422)
-      const body = response.json()
-      expect(body.error.code).toBe('VALIDATION_ERROR')
+      expect(response.statusCode).toBe(200)
+      expect(response.json()).toEqual({ data: { sent: true } })
     })
 
-    it('returns 422 when phone field is missing', async () => {
+    it('returns 400 when neither phone nor email provided', async () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'POST',
@@ -70,7 +71,7 @@ describe('Auth Routes', () => {
         payload: {},
       })
 
-      expect(response.statusCode).toBe(422)
+      expect(response.statusCode).toBe(400)
     })
 
     it('returns 429 after exceeding rate limit', async () => {
@@ -108,7 +109,7 @@ describe('Auth Routes', () => {
   })
 
   describe('POST /api/v1/auth/verify', () => {
-    it('returns 200 with tokens on valid OTP', async () => {
+    it('returns 200 with tokens on valid phone OTP', async () => {
       mockVerifyOtp.mockResolvedValueOnce({
         data: {
           user: { id: 'supabase-user-123' },
@@ -119,6 +120,7 @@ describe('Auth Routes', () => {
       mockUpsert.mockResolvedValueOnce({
         id: 'prisma-user-123',
         phone: '+2250700000000',
+        email: null,
         roles: ['MECHANIC'],
       })
 
@@ -133,6 +135,34 @@ describe('Auth Routes', () => {
       const body = response.json()
       expect(body.data.accessToken).toBe('jwt-token')
       expect(body.data.user.id).toBe('prisma-user-123')
+    })
+
+    it('returns 200 with tokens on valid email OTP', async () => {
+      mockVerifyOtp.mockResolvedValueOnce({
+        data: {
+          user: { id: 'supabase-user-456' },
+          session: { access_token: 'jwt-email', refresh_token: 'refresh-email' },
+        },
+        error: null,
+      })
+      mockUpsert.mockResolvedValueOnce({
+        id: 'prisma-user-456',
+        phone: null,
+        email: 'test@example.com',
+        roles: ['MECHANIC'],
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/verify',
+        payload: { email: 'test@example.com', token: '123456' },
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = response.json()
+      expect(body.data.accessToken).toBe('jwt-email')
+      expect(body.data.user.id).toBe('prisma-user-456')
     })
 
     it('returns 422 for invalid OTP format', async () => {

@@ -1,4 +1,4 @@
-export { phoneSchema, otpSchema } from './auth'
+export { phoneSchema, emailSchema, otpSchema, sendOtpSchema, verifyOtpSchema } from './auth'
 export { switchContextSchema, selectRoleSchema, updateRolesSchema } from './user'
 export { consentSchema, deletionRequestSchema } from './consent'
 export { createVendorSchema, vendorTypeSchema, kycTypeSchema, guaranteeTypeSchema, updateDeliveryZonesSchema } from './vendor'
