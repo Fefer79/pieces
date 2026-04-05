@@ -33,6 +33,13 @@ const ROLE_CARDS = [
     redirect: '/browse',
   },
   {
+    role: 'SELLER',
+    label: 'Vendeur',
+    description: 'Je vends des pièces détachées',
+    icon: ShopIcon,
+    redirect: '/vendors/catalog',
+  },
+  {
     role: 'ENTERPRISE',
     label: 'Entreprise',
     description: 'Je gère une flotte de véhicules',
@@ -40,14 +47,6 @@ const ROLE_CARDS = [
     redirect: '/enterprise/dashboard',
   },
 ] as const
-
-function maskPhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  if (digits.length < 12) return phone
-  const country = digits.slice(0, 3)
-  const d = digits.slice(3)
-  return `+${country} ${d.slice(0, 2)} ** ** ${d.slice(6, 8)} ${d.slice(8, 10)}`
-}
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -63,6 +62,7 @@ export default function ProfilePage() {
   const [error, setError] = useState('')
   const [editName, setEditName] = useState('')
   const [editEmail, setEditEmail] = useState('')
+  const [editPhone, setEditPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
 
@@ -102,6 +102,7 @@ export default function ProfilePage() {
     if (profile) {
       setEditName(profile.name ?? '')
       setEditEmail(profile.email ?? '')
+      setEditPhone(profile.phone ? profile.phone.replace('+225', '') : '')
     }
   }, [profile])
 
@@ -119,7 +120,11 @@ export default function ProfilePage() {
           Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: editName, email: editEmail }),
+        body: JSON.stringify({
+          name: editName,
+          email: editEmail,
+          ...(editPhone && { phone: `+225${editPhone.replace(/\D/g, '')}` }),
+        }),
       })
       if (!res.ok) {
         const body = await res.json()
@@ -272,14 +277,26 @@ export default function ProfilePage() {
     <main className="mx-auto w-full max-w-sm px-4 pt-8 lg:max-w-lg">
       <h1 className="mb-6 text-xl font-bold text-gray-900">Mon profil</h1>
 
-      <section className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-        <p className="mb-1 text-sm text-gray-500">Téléphone</p>
-        <p className="text-base font-medium">{maskPhone(profile.phone)}</p>
-      </section>
-
       <form onSubmit={handleSaveProfile} className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
         <p className="mb-3 text-sm text-gray-500">Informations personnelles</p>
         <div className="space-y-3">
+          <div>
+            <label htmlFor="phone" className="mb-1 block text-xs text-gray-500">Téléphone</label>
+            <div className="flex">
+              <span className="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-600">
+                +225
+              </span>
+              <input
+                id="phone"
+                type="tel"
+                inputMode="tel"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                placeholder="07 00 00 00 00"
+                className="w-full rounded-r-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              />
+            </div>
+          </div>
           <div>
             <label htmlFor="name" className="mb-1 block text-xs text-gray-500">Nom</label>
             <input
@@ -387,6 +404,15 @@ function CarIcon() {
       <path d="M5 17H3v-6l2-5h9l4 5h1a2 2 0 012 2v4h-2" />
       <path d="M9 17h6" />
       <path d="M14 6l-1.5-3H9L7.5 6" />
+    </svg>
+  )
+}
+
+function ShopIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      <path d="M9 22V12h6v10" />
     </svg>
   )
 }

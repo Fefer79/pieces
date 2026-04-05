@@ -26,21 +26,22 @@ export async function userRoutes(fastify: FastifyInstance) {
     {
       schema: {
         tags: ['Users'],
-        description: 'Mettre à jour le nom et l\'email de l\'utilisateur',
+        description: 'Mettre à jour le nom, email et téléphone de l\'utilisateur',
         security: [{ BearerAuth: [] }],
         body: {
           type: 'object',
           properties: {
             name: { type: 'string', maxLength: 100 },
             email: { type: 'string', format: 'email', maxLength: 255 },
+            phone: { type: 'string', pattern: '^\\+225(01|05|07)\\d{8}$' },
           },
         },
       },
       preHandler: [requireAuth],
     },
     async (request, reply) => {
-      const { name, email } = request.body as { name?: string; email?: string }
-      const result = await updateProfile(request.user.id, { name, email })
+      const { name, email, phone } = request.body as { name?: string; email?: string; phone?: string }
+      const result = await updateProfile(request.user.id, { name, email, phone })
       return reply.status(200).send({ data: result })
     },
   )

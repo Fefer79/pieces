@@ -9,8 +9,8 @@ export const switchContextSchema = z.object({
 })
 
 export const selectRoleSchema = z.object({
-  role: z.enum(['MECHANIC', 'OWNER', 'ENTERPRISE'] as const, {
-    message: 'Rôle invalide. Choisissez MECHANIC, OWNER ou ENTERPRISE',
+  role: z.enum(['MECHANIC', 'OWNER', 'SELLER', 'ENTERPRISE'] as const, {
+    message: 'Rôle invalide. Choisissez MECHANIC, OWNER, SELLER ou ENTERPRISE',
   }),
 })
 

@@ -16,7 +16,7 @@ export async function getProfile(userId: string) {
   return user
 }
 
-export async function updateProfile(userId: string, data: { name?: string; email?: string }) {
+export async function updateProfile(userId: string, data: { name?: string; email?: string; phone?: string }) {
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) {
     throw new AppError('USER_NOT_FOUND', 404)
@@ -27,6 +27,7 @@ export async function updateProfile(userId: string, data: { name?: string; email
     data: {
       ...(data.name !== undefined && { name: data.name || null }),
       ...(data.email !== undefined && { email: data.email || null }),
+      ...(data.phone !== undefined && { phone: data.phone || null }),
     },
     select: { id: true, phone: true, name: true, email: true, roles: true, activeContext: true },
   })
