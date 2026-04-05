@@ -45,13 +45,11 @@ function OtpForm() {
           setError(verifyError.message)
           return
         }
-        // Debug: check what verifyOtp returned
-        const hasSession = !!data.session
-        const hasUser = !!data.user
-        const { data: { session: checkSession } } = await supabase.auth.getSession()
-        const debugInfo = `session:${hasSession} user:${hasUser} token:${!!data.session?.access_token} getSession:${!!checkSession}`
+        // Debug: check cookies after verifyOtp
+        const cookies = document.cookie
+        const sbCookies = cookies.split(';').map(c => c.trim()).filter(c => c.startsWith('sb-'))
+        const debugInfo = `cookies(${sbCookies.length}): ${sbCookies.map(c => c.split('=')[0]).join(', ') || 'NONE'}`
         setError(`DEBUG: ${debugInfo}`)
-        // Temporarily stop here to see the debug info
         return
       } finally {
         setLoading(false)
