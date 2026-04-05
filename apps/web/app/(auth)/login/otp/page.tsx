@@ -45,12 +45,9 @@ function OtpForm() {
           setError(verifyError.message)
           return
         }
-        // Debug: check cookies after verifyOtp
-        const cookies = document.cookie
-        const sbCookies = cookies.split(';').map(c => c.trim()).filter(c => c.startsWith('sb-'))
-        const debugInfo = `cookies(${sbCookies.length}): ${sbCookies.map(c => c.split('=')[0]).join(', ') || 'NONE'}`
-        setError(`DEBUG: ${debugInfo}`)
-        return
+        const returnTo = sessionStorage.getItem('auth_return_to') || '/browse'
+        sessionStorage.removeItem('auth_return_to')
+        window.location.href = returnTo
       } finally {
         setLoading(false)
       }

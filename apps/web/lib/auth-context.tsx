@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabaseRef = useRef<SupabaseClient | null>(null)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authDebug, setAuthDebug] = useState('')
 
   function getSupabase() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -74,7 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const token = await getAccessToken()
         if (!token) {
-          if (!cancelled) setLoading(false)
+          if (!cancelled) {
+            setAuthDebug('no token from getSession')
+            setLoading(false)
+          }
           return
         }
 
@@ -85,9 +89,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (res.ok) {
           const body = await res.json()
           if (!cancelled) setUser(body.data)
+        } else {
+          const text = await res.text()
+          if (!cancelled) setAuthDebug(`/users/me ${res.status}: ${text.slice(0, 200)}`)
         }
-      } catch {
-        // Guest mode — no user
+      } catch (err) {
+        if (!cancelled) setAuthDebug(`init error: ${err}`)
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -135,6 +142,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         getAccessToken,
       }}
     >
+      {authDebug && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: '#fee', color: '#900', padding: '8px 12px', fontSize: 12, fontFamily: 'monospace' }}>
+          AUTH DEBUG: {authDebug}
+        </div>
+      )}
       {children}
     </AuthContext.Provider>
   )
