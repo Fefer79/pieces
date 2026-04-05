@@ -3,6 +3,7 @@
 import { Suspense, useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth-context'
 
 const PHONE_OTP_LENGTH = 6
 const EMAIL_OTP_LENGTH = 8
@@ -10,6 +11,7 @@ const RESEND_COOLDOWN = 60
 
 function OtpForm() {
   const router = useRouter()
+  const { refreshProfile } = useAuth()
   const searchParams = useSearchParams()
   const phone = searchParams.get('phone') ?? ''
   const email = searchParams.get('email') ?? ''
@@ -41,11 +43,13 @@ function OtpForm() {
         const verifyPayload = isEmail
           ? { email, token: code, type: 'email' as const }
           : { phone, token: code, type: 'sms' as const }
-        const { error: verifyError } = await supabase.auth.verifyOtp(verifyPayload)
+        const { data, error: verifyError } = await supabase.auth.verifyOtp(verifyPayload)
         if (verifyError) {
           setError(verifyError.message)
           return
         }
+        // Explicitly load the user profile before navigating
+        await refreshProfile(data.session?.access_token)
         const returnTo = sessionStorage.getItem('auth_return_to') || '/browse'
         sessionStorage.removeItem('auth_return_to')
         router.push(returnTo)
