@@ -4,7 +4,8 @@ import { Suspense, useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-const OTP_LENGTH = 6
+const PHONE_OTP_LENGTH = 6
+const EMAIL_OTP_LENGTH = 8
 const RESEND_COOLDOWN = 60
 
 function OtpForm() {
@@ -13,6 +14,7 @@ function OtpForm() {
   const phone = searchParams.get('phone') ?? ''
   const email = searchParams.get('email') ?? ''
   const isEmail = !!email
+  const OTP_LENGTH = isEmail ? EMAIL_OTP_LENGTH : PHONE_OTP_LENGTH
 
   const [otp, setOtp] = useState<string[]>(Array.from({ length: OTP_LENGTH }, () => ''))
   const [error, setError] = useState('')
