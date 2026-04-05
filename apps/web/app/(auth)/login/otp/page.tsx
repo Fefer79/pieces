@@ -40,15 +40,19 @@ function OtpForm() {
         const verifyPayload = isEmail
           ? { email, token: code, type: 'email' as const }
           : { phone, token: code, type: 'sms' as const }
-        const { error: verifyError } = await supabase.auth.verifyOtp(verifyPayload)
+        const { data, error: verifyError } = await supabase.auth.verifyOtp(verifyPayload)
         if (verifyError) {
           setError(verifyError.message)
           return
         }
-        const returnTo = sessionStorage.getItem('auth_return_to') || '/browse'
-        sessionStorage.removeItem('auth_return_to')
-        // Full reload so the AuthProvider re-initializes with the new session cookies
-        window.location.href = returnTo
+        // Debug: check what verifyOtp returned
+        const hasSession = !!data.session
+        const hasUser = !!data.user
+        const { data: { session: checkSession } } = await supabase.auth.getSession()
+        const debugInfo = `session:${hasSession} user:${hasUser} token:${!!data.session?.access_token} getSession:${!!checkSession}`
+        setError(`DEBUG: ${debugInfo}`)
+        // Temporarily stop here to see the debug info
+        return
       } finally {
         setLoading(false)
       }
