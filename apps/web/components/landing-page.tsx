@@ -1,6 +1,7 @@
 'use client'
 
 import { BrowseContent } from './browse-content'
+import { useAuth } from '@/lib/auth-context'
 
 const NAV_LINKS = [
   { href: '/info#a-propos', label: 'À Propos' },
@@ -9,6 +10,8 @@ const NAV_LINKS = [
 ]
 
 export function LandingPage() {
+  const { isAuthenticated } = useAuth()
+
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       {/* Navbar */}
@@ -36,10 +39,10 @@ export function LandingPage() {
 
           {/* CTA */}
           <a
-            href="/login"
+            href={isAuthenticated ? '/profile' : '/login'}
             className="rounded-[14px] bg-[#ff6b00] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#B8760D]"
           >
-            Connexion
+            {isAuthenticated ? 'Mon compte' : 'Connexion'}
           </a>
         </div>
       </header>
