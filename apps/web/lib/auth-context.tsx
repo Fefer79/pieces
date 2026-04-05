@@ -43,9 +43,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return session?.access_token ?? null
   }, [])
 
-  const refreshProfile = useCallback(async () => {
+  const refreshProfile = useCallback(async (accessToken?: string) => {
     try {
-      const token = await getAccessToken()
+      const token = accessToken ?? await getAccessToken()
       if (!token) {
         setUser(null)
         return
@@ -96,9 +96,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     init()
 
     const supabase = getSupabase()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
-        refreshProfile().then(() => setLoading(false))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        refreshProfile(session?.access_token).then(() => setLoading(false))
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
       }
