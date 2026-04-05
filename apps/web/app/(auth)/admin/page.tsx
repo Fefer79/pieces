@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
 
 interface DashboardStats {
   totalUsers: number
@@ -11,15 +12,23 @@ interface DashboardStats {
   openDisputes: number
 }
 
+function getSupabase() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
+}
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem('access_token')
+      const { data: { session } } = await getSupabase().auth.getSession()
+      if (!session) return
       const res = await fetch('/api/v1/admin/dashboard', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       })
       if (res.ok) {
         const json = await res.json()
@@ -80,6 +89,12 @@ export default function AdminDashboardPage() {
           borderRadius: 6, textDecoration: 'none', fontSize: 14,
         }}>
           Voir les vendeurs
+        </a>
+        <a href="/admin/catalog" style={{
+          padding: '10px 16px', background: '#7b1fa2', color: '#fff',
+          borderRadius: 6, textDecoration: 'none', fontSize: 14,
+        }}>
+          Voir les annonces
         </a>
       </div>
     </main>

@@ -5,6 +5,7 @@ import {
   getAdminUsers,
   getAdminOrders,
   getAdminVendors,
+  getAdminCatalog,
   getEnterpriseMembers,
 } from './admin.service.js'
 
@@ -64,6 +65,20 @@ export async function adminRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const query = request.query as { page?: string; limit?: string }
       const result = await getAdminVendors(Number(query.page) || 1, Number(query.limit) || 50)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  // Admin: list all catalog items (no pagination)
+  fastify.get(
+    '/catalog',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], description: 'Liste des annonces (admin)', security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const query = request.query as { status?: string }
+      const result = await getAdminCatalog(query.status)
       return reply.status(200).send({ data: result })
     },
   )

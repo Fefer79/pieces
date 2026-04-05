@@ -106,6 +106,23 @@ export async function getAdminVendors(page = 1, limit = 50) {
   return { vendors, total, page, totalPages: Math.ceil(total / limit) }
 }
 
+export async function getAdminCatalog(status?: string) {
+  const validStatuses = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const
+  const where = status && validStatuses.includes(status as typeof validStatuses[number])
+    ? { status: status as typeof validStatuses[number] }
+    : {}
+
+  const items = await prisma.catalogItem.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      vendor: { select: { id: true, businessName: true } },
+    },
+  })
+
+  return { items, total: items.length }
+}
+
 // Story 9.3: Enterprise space
 export async function getEnterpriseMembers(enterpriseUserId: string) {
   // Enterprise users can manage a fleet of mechanics
