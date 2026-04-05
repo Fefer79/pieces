@@ -100,7 +100,9 @@ function OtpForm() {
     setError('')
     setCountdown(RESEND_COOLDOWN)
     const supabase = createClient()
-    const resendPayload = isEmail ? { email } : { phone }
+    const resendPayload = isEmail
+      ? { email, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } }
+      : { phone }
     const { error: resendError } = await supabase.auth.signInWithOtp(resendPayload)
     if (resendError) {
       setError(resendError.message)
