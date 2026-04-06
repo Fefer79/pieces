@@ -37,17 +37,47 @@ export async function requireAuth(request: FastifyRequest) {
     throw new AppError('AUTH_INVALID_TOKEN', 401)
   }
 
-  const user = await prisma.user.upsert({
-    where: { supabaseId: data.user.id },
-    update: {},
-    create: {
-      supabaseId: data.user.id,
-      phone: data.user.phone ?? null,
-      email: data.user.email ?? null,
-      roles: ['MECHANIC'],
-    },
-    select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
-  })
+  let user
+  try {
+    user = await prisma.user.upsert({
+      where: { supabaseId: data.user.id },
+      update: {
+        phone: data.user.phone ?? undefined,
+        email: data.user.email ?? undefined,
+      },
+      create: {
+        supabaseId: data.user.id,
+        phone: data.user.phone ?? null,
+        email: data.user.email ?? null,
+        roles: ['MECHANIC'],
+      },
+      select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
+    })
+  } catch (err: unknown) {
+    // Unique constraint on email/phone: link existing user to this Supabase account
+    if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
+      const existing = await prisma.user.findFirst({
+        where: {
+          OR: [
+            ...(data.user.email ? [{ email: data.user.email }] : []),
+            ...(data.user.phone ? [{ phone: data.user.phone }] : []),
+          ],
+        },
+        select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
+      })
+      if (existing) {
+        user = await prisma.user.update({
+          where: { id: existing.id },
+          data: { supabaseId: data.user.id },
+          select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
+        })
+      } else {
+        throw err
+      }
+    } else {
+      throw err
+    }
+  }
 
   // Auto-set activeContext if single role and not yet set
   if (user.roles.length === 1 && !user.activeContext) {
