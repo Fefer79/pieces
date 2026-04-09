@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "type": "url",
+      "url": "https://mcp.supabase.com/mcp?project_ref=rlhkjgdpynjrfsveweuq"
+    },
+    "cloudflare": {
+      "type": "url",
+      "url": "https://bindings.mcp.cloudflare.com/mcp"
+    }
+  }
+}

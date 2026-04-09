@@ -14,6 +14,12 @@
     "turbo": "^2.6.1"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "prisma", "@prisma/client", "@prisma/engines"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "prisma",
+      "@prisma/client",
+      "@prisma/engines",
+      "workerd"
+    ]
   }
 }
