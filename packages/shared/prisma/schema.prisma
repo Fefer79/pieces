@@ -202,6 +202,7 @@ model CatalogItem {
   imageSmallUrl        String?           @map("image_small_url")
   imageMediumUrl       String?           @map("image_medium_url")
   imageLargeUrl        String?           @map("image_large_url")
+  serialPhotoUrl       String?           @map("serial_photo_url")
   aiConfidence         Float?            @map("ai_confidence")
   aiGenerated          Boolean           @default(true) @map("ai_generated")
   qualityScore         Float?            @map("quality_score")

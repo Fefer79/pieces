@@ -18,18 +18,45 @@ export async function catalogRoutes(fastify: FastifyInstance) {
       preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
     },
     async (request, reply) => {
-      const data = await request.file()
+      const parts = request.parts()
+      let fileBuffer: Buffer | null = null
+      let fileName = ''
+      let mimeType = ''
+      let serialPhotoBuffer: Buffer | null = null
+      let serialPhotoName = ''
+      let serialPhotoMime = ''
+      const fields: Record<string, string> = {}
 
-      if (!data) {
+      for await (const part of parts) {
+        if (part.type === 'file') {
+          if (part.fieldname === 'serialPhoto') {
+            serialPhotoBuffer = await part.toBuffer()
+            serialPhotoName = part.filename
+            serialPhotoMime = part.mimetype
+          } else {
+            fileBuffer = await part.toBuffer()
+            fileName = part.filename
+            mimeType = part.mimetype
+          }
+        } else {
+          fields[part.fieldname] = part.value as string
+        }
+      }
+
+      if (!fileBuffer) {
         throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
       }
 
-      const buffer = await data.toBuffer()
       const result = await uploadPartImage(
         request.user.id,
-        buffer,
-        data.filename,
-        data.mimetype,
+        fileBuffer,
+        fileName,
+        mimeType,
+        {
+          name: fields.name || undefined,
+          serialNumber: fields.serialNumber || undefined,
+          serialPhoto: serialPhotoBuffer ? { buffer: serialPhotoBuffer, fileName: serialPhotoName, mimeType: serialPhotoMime } : undefined,
+        },
       )
 
       request.log.info({

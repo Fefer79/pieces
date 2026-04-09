@@ -5,11 +5,18 @@ import { enqueue } from '../queue/queueService.js'
 import { AppError } from '../../lib/appError.js'
 import type { CatalogItemStatus } from '@prisma/client'
 
+export interface UploadPartExtras {
+  name?: string
+  serialNumber?: string
+  serialPhoto?: { buffer: Buffer; fileName: string; mimeType: string }
+}
+
 export async function uploadPartImage(
   userId: string,
   fileBuffer: Buffer,
   fileName: string,
   mimeType: string,
+  extras: UploadPartExtras = {},
 ) {
   // Validate vendor exists and is active
   const vendor = await prisma.vendor.findUnique({
@@ -38,8 +45,18 @@ export async function uploadPartImage(
 
   // Upload raw image to R2
   const ext = mimeType.split('/')[1] ?? 'jpg'
-  const imageKey = `catalog/${vendor.id}/${Date.now()}_${fileName.replace(/[^a-zA-Z0-9._-]/g, '')}.${ext}`
+  const timestamp = Date.now()
+  const imageKey = `catalog/${vendor.id}/${timestamp}_${fileName.replace(/[^a-zA-Z0-9._-]/g, '')}.${ext}`
   const imageOriginalUrl = await uploadToR2(imageKey, fileBuffer, mimeType)
+
+  // Upload serial/QR photo to R2 if provided
+  let serialPhotoUrl: string | null = null
+  let serialPhotoKey: string | null = null
+  if (extras.serialPhoto) {
+    const spExt = extras.serialPhoto.mimeType.split('/')[1] ?? 'jpg'
+    serialPhotoKey = `catalog/${vendor.id}/${timestamp}_serial_${extras.serialPhoto.fileName.replace(/[^a-zA-Z0-9._-]/g, '')}.${spExt}`
+    serialPhotoUrl = await uploadToR2(serialPhotoKey, extras.serialPhoto.buffer, extras.serialPhoto.mimeType)
+  }
 
   // Create catalog item in draft status
   const catalogItem = await prisma.catalogItem.create({
@@ -47,6 +64,9 @@ export async function uploadPartImage(
       vendorId: vendor.id,
       status: 'DRAFT',
       imageOriginalUrl,
+      ...(extras.name && { name: extras.name }),
+      ...(extras.serialNumber && { oemReference: extras.serialNumber }),
+      ...(serialPhotoUrl && { serialPhotoUrl }),
     },
   })
 
@@ -61,6 +81,9 @@ export async function uploadPartImage(
     catalogItemId: catalogItem.id,
     imageKey,
     mimeType,
+    ...(extras.name && { sellerName: extras.name }),
+    ...(extras.serialNumber && { sellerSerialNumber: extras.serialNumber }),
+    ...(serialPhotoKey && { serialPhotoKey }),
   })
 
   return catalogItem

@@ -45,6 +45,23 @@ function OtpForm() {
           setError(verifyError.message)
           return
         }
+
+        // Check if user needs to pick a role (new user with no activeContext)
+        try {
+          const profileRes = await fetch('/api/v1/users/me', {
+            headers: { Authorization: `Bearer ${data.session?.access_token}` },
+          })
+          if (profileRes.ok) {
+            const body = await profileRes.json()
+            if (!body.data.activeContext) {
+              window.location.href = '/onboarding/role'
+              return
+            }
+          }
+        } catch {
+          // If profile check fails, continue with default redirect
+        }
+
         const returnTo = sessionStorage.getItem('auth_return_to') || '/browse'
         sessionStorage.removeItem('auth_return_to')
         window.location.href = returnTo

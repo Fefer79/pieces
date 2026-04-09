@@ -168,7 +168,13 @@ export default function ProfilePage() {
         return
       }
 
-      router.push(redirect)
+      if (redirect) {
+        router.push(redirect)
+      } else {
+        // Adding role from profile — refresh profile data
+        const body = await res.json()
+        setProfile(body.data)
+      }
     } catch {
       setError('Erreur de connexion')
     } finally {
@@ -232,45 +238,7 @@ export default function ProfilePage() {
     )
   }
 
-  // New user: only MECHANIC role and no activeContext → show role selection
-  const isNewUser =
-    profile.roles.length === 1 &&
-    profile.roles[0] === 'MECHANIC' &&
-    profile.activeContext === null
-
-  if (isNewUser) {
-    return (
-      <main className="mx-auto w-full max-w-sm px-4 pt-8 lg:max-w-lg">
-        <h1 className="mb-2 text-xl font-bold text-gray-900">Bienvenue !</h1>
-        <p className="mb-6 text-sm text-gray-600">
-          Comment allez-vous utiliser Pieces ?
-        </p>
-
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-
-        <div className="space-y-3">
-          {ROLE_CARDS.map(({ role, label, description, icon: Icon, redirect }) => (
-            <button
-              key={role}
-              onClick={() => handleSelectRole(role, redirect)}
-              disabled={selectingRole}
-              className="flex w-full items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:border-[#002366] hover:shadow-md disabled:opacity-50"
-              style={{ minHeight: '80px' }}
-            >
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-50">
-                <Icon />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{label}</p>
-                <p className="text-xs text-gray-500">{description}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </main>
-    )
-  }
-
+  const availableRoles = ROLE_CARDS.filter(({ role }) => !profile.roles.includes(role))
   const isMultiRole = profile.roles.length > 1
 
   return (
@@ -346,6 +314,31 @@ export default function ProfilePage() {
           ))}
         </div>
       </section>
+
+      {availableRoles.length > 0 && (
+        <section className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+          <p className="mb-3 text-sm text-gray-500">Ajouter un rôle</p>
+          {error && <p className="mb-2 text-sm text-red-600">{error}</p>}
+          <div className="space-y-2">
+            {availableRoles.map(({ role, label, description, icon: Icon }) => (
+              <button
+                key={role}
+                onClick={() => handleSelectRole(role, '')}
+                disabled={selectingRole}
+                className="flex w-full items-center gap-3 rounded-lg border border-gray-200 p-3 text-left transition-all hover:border-[#002366] hover:shadow-sm disabled:opacity-50"
+              >
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-50">
+                  <Icon />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{label}</p>
+                  <p className="text-xs text-gray-500">{description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {isMultiRole && (
         <section className="mb-6 rounded-lg border border-gray-200 bg-white p-4">

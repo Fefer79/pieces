@@ -16,6 +16,7 @@ export default function VendorCatalogUploadPage() {
   const router = useRouter()
   const supabaseRef = useRef<SupabaseClient | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const serialPhotoInputRef = useRef<HTMLInputElement>(null)
 
   function getSupabase() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -27,10 +28,34 @@ export default function VendorCatalogUploadPage() {
   const [error, setError] = useState<string | null>(null)
   const [totalSelected, setTotalSelected] = useState(0)
 
+  // Optional fields
+  const [partName, setPartName] = useState('')
+  const [serialNumber, setSerialNumber] = useState('')
+  const [serialPhoto, setSerialPhoto] = useState<File | null>(null)
+  const [serialPhotoPreview, setSerialPhotoPreview] = useState<string | null>(null)
+
   const getAccessToken = useCallback(async () => {
     const { data: { session } } = await getSupabase().auth.getSession()
     return session?.access_token ?? null
   }, [])
+
+  function handleSerialPhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Photo du numéro de série trop volumineuse (max 5 MB)')
+      return
+    }
+    setSerialPhoto(file)
+    setSerialPhotoPreview(URL.createObjectURL(file))
+  }
+
+  function clearSerialPhoto() {
+    setSerialPhoto(null)
+    if (serialPhotoPreview) URL.revokeObjectURL(serialPhotoPreview)
+    setSerialPhotoPreview(null)
+    if (serialPhotoInputRef.current) serialPhotoInputRef.current.value = ''
+  }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -60,6 +85,9 @@ export default function VendorCatalogUploadPage() {
 
       const formData = new FormData()
       formData.append('file', file)
+      if (partName.trim()) formData.append('name', partName.trim())
+      if (serialNumber.trim()) formData.append('serialNumber', serialNumber.trim())
+      if (serialPhoto) formData.append('serialPhoto', serialPhoto)
 
       try {
         const res = await fetch('/api/v1/catalog/items/upload', {
@@ -82,8 +110,11 @@ export default function VendorCatalogUploadPage() {
     }
 
     setUploading(false)
-    // Reset file input
+    // Reset file input and optional fields
     if (fileInputRef.current) fileInputRef.current.value = ''
+    setPartName('')
+    setSerialNumber('')
+    clearSerialPhoto()
   }
 
   return (
@@ -93,7 +124,79 @@ export default function VendorCatalogUploadPage() {
         Photographiez vos pièces — l&apos;IA identifiera chaque pièce automatiquement.
       </p>
 
-      {/* Upload area */}
+      {/* Optional info fields */}
+      <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="text-sm font-medium text-gray-700">Informations optionnelles</p>
+        <div>
+          <label htmlFor="partName" className="mb-1 block text-xs text-gray-500">
+            Nom de la pièce
+          </label>
+          <input
+            id="partName"
+            type="text"
+            value={partName}
+            onChange={(e) => setPartName(e.target.value)}
+            placeholder="Ex : Alternateur Bosch"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+          />
+        </div>
+        <div>
+          <label htmlFor="serialNumber" className="mb-1 block text-xs text-gray-500">
+            Numéro de série / référence OEM
+          </label>
+          <input
+            id="serialNumber"
+            type="text"
+            value={serialNumber}
+            onChange={(e) => setSerialNumber(e.target.value)}
+            placeholder="Ex : 0 986 042 131"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+          />
+        </div>
+
+        {/* Serial / QR code photo */}
+        <div>
+          <p className="mb-1 text-xs text-gray-500">
+            Photo du numéro de série ou QR code
+          </p>
+          {serialPhotoPreview ? (
+            <div className="flex items-center gap-3">
+              <img
+                src={serialPhotoPreview}
+                alt="Aperçu numéro de série"
+                className="h-16 w-16 rounded-lg border border-gray-200 object-cover"
+              />
+              <button
+                type="button"
+                onClick={clearSerialPhoto}
+                className="text-sm text-red-600 hover:underline"
+              >
+                Supprimer
+              </button>
+            </div>
+          ) : (
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2.5 text-sm text-gray-500 transition-colors hover:border-[#002366] hover:text-[#002366]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              Photographier le numéro de série / QR code
+              <input
+                ref={serialPhotoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleSerialPhotoSelect}
+                className="hidden"
+                capture="environment"
+              />
+            </label>
+          )}
+        </div>
+      </div>
+
+      {/* Upload area — main part photo */}
       <label className="mb-4 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 transition-colors hover:border-[#002366] hover:bg-blue-50">
         <svg className="mb-2 h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
