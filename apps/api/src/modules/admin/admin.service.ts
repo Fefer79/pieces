@@ -116,7 +116,7 @@ export async function getAdminCatalog(status?: string) {
     where,
     orderBy: { createdAt: 'desc' },
     include: {
-      vendor: { select: { id: true, businessName: true } },
+      vendor: { select: { id: true, shopName: true } },
     },
   })
 
