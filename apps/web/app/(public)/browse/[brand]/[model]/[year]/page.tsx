@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -28,6 +29,15 @@ export default function YearPartsPage() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     return supabaseRef.current
   }
+
+  const { setVehicle: persistVehicle } = useSelectedVehicle()
+
+  // Persist this vehicle as the active selection on landing
+  useEffect(() => {
+    if (brand && model && year) {
+      persistVehicle({ brand, model, year })
+    }
+  }, [brand, model, year, persistVehicle])
 
   const [categories, setCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')

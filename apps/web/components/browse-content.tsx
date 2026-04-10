@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
+import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
 const TABS = ['Photo', 'VIN', 'Sélection', 'WhatsApp'] as const
 type Tab = (typeof TABS)[number]
@@ -39,13 +40,14 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
   const [selectedYear, setSelectedYear] = useState('')
   const [selectedMotor, setSelectedMotor] = useState('')
 
-  // Véhicule confirmé (affiché au-dessus des tabs)
-  const [vehicle, setVehicle] = useState<{
-    brand: string
-    model: string
-    year: string
-    motor: string
-  } | null>(null)
+  // Véhicule confirmé (persisté dans localStorage)
+  const { vehicle: persistedVehicle, setVehicle: persistVehicle, clearVehicle: clearPersistedVehicle } = useSelectedVehicle()
+  const vehicle = persistedVehicle ? {
+    brand: persistedVehicle.brand,
+    model: persistedVehicle.model,
+    year: persistedVehicle.year,
+    motor: persistedVehicle.motor ?? '',
+  } : null
 
   // WhatsApp FAB state
   const [waMenuOpen, setWaMenuOpen] = useState(false)
@@ -79,7 +81,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
 
   const confirmVehicle = () => {
     if (selectedBrand && selectedModel) {
-      setVehicle({
+      persistVehicle({
         brand: selectedBrand,
         model: selectedModel,
         year: selectedYear,
@@ -90,7 +92,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
   }
 
   const clearVehicle = () => {
-    setVehicle(null)
+    clearPersistedVehicle()
     setSelectedBrand('')
     setSelectedModel('')
     setSelectedYear('')
