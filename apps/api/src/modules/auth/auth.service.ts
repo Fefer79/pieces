@@ -60,7 +60,7 @@ export async function verifyOtp(input: { phone?: string; email?: string; token: 
       supabaseId: data.user.id,
       phone: upsertData.phone ?? null,
       email: upsertData.email ?? null,
-      roles: ['MECHANIC'],
+      roles: ['OWNER'],
     },
   })
 
