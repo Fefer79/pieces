@@ -39,7 +39,7 @@ export default function VehiclesPage() {
       const { data: { session } } = await getSupabase().auth.getSession()
       if (!session) { router.push('/login'); return }
 
-      const res = await fetch('/api/v1/vehicles/me/vehicles', {
+      const res = await fetch('/api/v1/users/me/vehicles', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
       if (res.ok) {
@@ -61,7 +61,7 @@ export default function VehiclesPage() {
       const { data: { session } } = await getSupabase().auth.getSession()
       if (!session) return
 
-      const res = await fetch('/api/v1/vehicles/me/vehicles', {
+      const res = await fetch('/api/v1/users/me/vehicles', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -99,7 +99,7 @@ export default function VehiclesPage() {
       const { data: { session } } = await getSupabase().auth.getSession()
       if (!session) return
 
-      const res = await fetch(`/api/v1/vehicles/me/vehicles/${vehicleId}`, {
+      const res = await fetch(`/api/v1/users/me/vehicles/${vehicleId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
