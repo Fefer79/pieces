@@ -114,7 +114,12 @@ function LoginForm() {
         }
         router.push(`/login/otp?phone=${encodeURIComponent(fullPhone)}`)
       } else {
-        const { error: otpError } = await supabase.auth.signInWithOtp({ email })
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        })
         if (otpError) {
           setError(otpError.message)
           return
