@@ -65,6 +65,11 @@ export default function ProfilePage() {
   const [editPhone, setEditPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [savingPassword, setSavingPassword] = useState(false)
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -222,6 +227,38 @@ export default function ProfilePage() {
     router.push('/login')
   }
 
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault()
+    setPasswordError('')
+    setPasswordSuccess(false)
+
+    if (newPassword.length < 6) {
+      setPasswordError('Le mot de passe doit contenir au moins 6 caractères')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Les mots de passe ne correspondent pas')
+      return
+    }
+
+    setSavingPassword(true)
+    try {
+      const { error: pwError } = await getSupabase().auth.updateUser({ password: newPassword })
+      if (pwError) {
+        setPasswordError(pwError.message)
+        return
+      }
+      setPasswordSuccess(true)
+      setNewPassword('')
+      setConfirmPassword('')
+      setTimeout(() => setPasswordSuccess(false), 3000)
+    } catch {
+      setPasswordError('Erreur de connexion')
+    } finally {
+      setSavingPassword(false)
+    }
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-dvh items-center justify-center">
@@ -361,6 +398,53 @@ export default function ProfilePage() {
           </div>
         </section>
       )}
+
+      <form onSubmit={handleChangePassword} className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="mb-3 text-sm text-gray-500">Sécurité — Mot de passe</p>
+        <div className="space-y-3">
+          <div>
+            <label htmlFor="newPassword" className="mb-1 block text-xs text-gray-500">
+              Nouveau mot de passe
+            </label>
+            <input
+              id="newPassword"
+              type="password"
+              value={newPassword}
+              onChange={(e) => { setNewPassword(e.target.value); setPasswordError('') }}
+              placeholder="Au moins 6 caractères"
+              minLength={6}
+              autoComplete="new-password"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            />
+          </div>
+          <div>
+            <label htmlFor="confirmPassword" className="mb-1 block text-xs text-gray-500">
+              Confirmer le mot de passe
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => { setConfirmPassword(e.target.value); setPasswordError('') }}
+              placeholder="Confirmer"
+              minLength={6}
+              autoComplete="new-password"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            />
+          </div>
+          {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+          <button
+            type="submit"
+            disabled={savingPassword || !newPassword || !confirmPassword}
+            className="w-full rounded-lg bg-[#002366] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#001a4d] disabled:opacity-50"
+          >
+            {savingPassword ? 'Enregistrement...' : passwordSuccess ? 'Mot de passe enregistré !' : 'Définir le mot de passe'}
+          </button>
+          <p className="text-xs text-gray-500">
+            Une fois défini, vous pourrez vous connecter sans recevoir d&apos;OTP.
+          </p>
+        </div>
+      </form>
 
       <Link
         href="/profile/data"

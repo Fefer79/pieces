@@ -6,13 +6,16 @@ import { createClient } from '@/lib/supabase'
 import { phoneSchema, emailSchema } from 'shared/validators'
 
 type LoginMethod = 'phone' | 'email'
+type AuthMode = 'otp' | 'password'
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [method, setMethod] = useState<LoginMethod>('phone')
+  const [authMode, setAuthMode] = useState<AuthMode>('otp')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -34,45 +37,45 @@ function LoginForm() {
     setError('')
   }
 
+  function switchAuthMode(m: AuthMode) {
+    setAuthMode(m)
+    setError('')
+    setPassword('')
+  }
+
+  async function redirectAfterLogin(accessToken: string | undefined) {
+    // Check if user has a role; if not, send to onboarding
+    try {
+      const profileRes = await fetch('/api/v1/users/me', {
+        headers: { Authorization: `Bearer ${accessToken ?? ''}` },
+      })
+      if (profileRes.ok) {
+        const body = await profileRes.json()
+        if (!body.data.activeContext) {
+          window.location.href = '/onboarding/role'
+          return
+        }
+      }
+    } catch {
+      // ignore
+    }
+    const returnTo = searchParams.get('returnTo') || sessionStorage.getItem('auth_return_to') || '/browse'
+    sessionStorage.removeItem('auth_return_to')
+    window.location.href = returnTo
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
 
     const supabase = createClient()
 
+    // Validate identifier
     if (method === 'phone') {
       const result = phoneSchema.safeParse(fullPhone)
       if (!result.success) {
         setError(result.error.issues[0]?.message ?? 'Numéro invalide')
         return
-      }
-
-      setLoading(true)
-      try {
-        // Dev mode: bypass OTP with password login
-        if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEV_PASSWORD) {
-          const { error: pwError } = await supabase.auth.signInWithPassword({
-            phone: fullPhone,
-            password: process.env.NEXT_PUBLIC_DEV_PASSWORD,
-          })
-          if (pwError) {
-            setError(pwError.message)
-            return
-          }
-          const returnTo = searchParams.get('returnTo') || sessionStorage.getItem('auth_return_to') || '/browse'
-          sessionStorage.removeItem('auth_return_to')
-          router.push(returnTo)
-          return
-        }
-
-        const { error: otpError } = await supabase.auth.signInWithOtp({ phone: fullPhone })
-        if (otpError) {
-          setError(otpError.message)
-          return
-        }
-        router.push(`/login/otp?phone=${encodeURIComponent(fullPhone)}`)
-      } finally {
-        setLoading(false)
       }
     } else {
       const result = emailSchema.safeParse(email)
@@ -80,23 +83,52 @@ function LoginForm() {
         setError(result.error.issues[0]?.message ?? 'Email invalide')
         return
       }
+    }
 
-      setLoading(true)
-      try {
+    setLoading(true)
+    try {
+      // Password mode
+      if (authMode === 'password') {
+        if (!password) {
+          setError('Mot de passe requis')
+          return
+        }
+        const credentials = method === 'phone'
+          ? { phone: fullPhone, password }
+          : { email, password }
+        const { data, error: pwError } = await supabase.auth.signInWithPassword(credentials)
+        if (pwError) {
+          setError(pwError.message)
+          return
+        }
+        await redirectAfterLogin(data.session?.access_token)
+        return
+      }
+
+      // OTP mode
+      if (method === 'phone') {
+        const { error: otpError } = await supabase.auth.signInWithOtp({ phone: fullPhone })
+        if (otpError) {
+          setError(otpError.message)
+          return
+        }
+        router.push(`/login/otp?phone=${encodeURIComponent(fullPhone)}`)
+      } else {
         const { error: otpError } = await supabase.auth.signInWithOtp({ email })
         if (otpError) {
           setError(otpError.message)
           return
         }
         router.push(`/login/otp?email=${encodeURIComponent(email)}`)
-      } finally {
-        setLoading(false)
       }
+    } finally {
+      setLoading(false)
     }
   }
 
   const isPhoneValid = phone.length >= 10
   const isEmailValid = email.length > 0
+  const canSubmit = (method === 'phone' ? isPhoneValid : isEmailValid) && (authMode === 'otp' || password.length >= 6)
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 gap-6">
@@ -111,7 +143,7 @@ function LoginForm() {
         </p>
 
         {/* Toggle phone / email */}
-        <div className="mb-6 flex rounded-lg bg-gray-100 p-1">
+        <div className="mb-4 flex rounded-lg bg-gray-100 p-1">
           <button
             type="button"
             onClick={() => switchMethod('phone')}
@@ -133,6 +165,32 @@ function LoginForm() {
             }`}
           >
             Email
+          </button>
+        </div>
+
+        {/* Toggle OTP / password */}
+        <div className="mb-6 flex rounded-lg bg-gray-100 p-1">
+          <button
+            type="button"
+            onClick={() => switchAuthMode('otp')}
+            className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-colors ${
+              authMode === 'otp'
+                ? 'bg-white text-[#00113a] shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Code par SMS/email
+          </button>
+          <button
+            type="button"
+            onClick={() => switchAuthMode('password')}
+            className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-colors ${
+              authMode === 'password'
+                ? 'bg-white text-[#00113a] shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Mot de passe
           </button>
         </div>
 
@@ -178,15 +236,36 @@ function LoginForm() {
             </div>
           )}
 
+          {authMode === 'password' && (
+            <div>
+              <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
+                Mot de passe
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError('') }}
+                placeholder="••••••••"
+                className="block w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#ff6b00] focus:outline-none focus:ring-1 focus:ring-[#ff6b00]"
+                autoComplete="current-password"
+                disabled={loading}
+                minLength={6}
+              />
+            </div>
+          )}
+
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button
             type="submit"
-            disabled={loading || (method === 'phone' ? !isPhoneValid : !isEmailValid)}
+            disabled={loading || !canSubmit}
             className="w-full rounded-[14px] bg-[#ff6b00] px-4 py-3 text-base font-bold text-white transition-colors hover:bg-[#B8760D] disabled:bg-gray-300 disabled:text-gray-500"
             style={{ minHeight: '48px' }}
           >
-            {loading ? 'Envoi en cours...' : 'Recevoir le code'}
+            {loading
+              ? (authMode === 'password' ? 'Connexion...' : 'Envoi en cours...')
+              : (authMode === 'password' ? 'Se connecter' : 'Recevoir le code')}
           </button>
         </form>
       </div>
