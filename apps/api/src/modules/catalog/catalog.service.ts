@@ -8,6 +8,8 @@ import type { CatalogItemStatus } from '@prisma/client'
 export interface UploadPartExtras {
   name?: string
   serialNumber?: string
+  category?: string
+  vehicleCompatibility?: string
   serialPhoto?: { buffer: Buffer; fileName: string; mimeType: string }
 }
 
@@ -66,6 +68,8 @@ export async function uploadPartImage(
       imageOriginalUrl,
       ...(extras.name && { name: extras.name }),
       ...(extras.serialNumber && { oemReference: extras.serialNumber }),
+      ...(extras.category && { category: extras.category }),
+      ...(extras.vehicleCompatibility && { vehicleCompatibility: extras.vehicleCompatibility }),
       ...(serialPhotoUrl && { serialPhotoUrl }),
     },
   })

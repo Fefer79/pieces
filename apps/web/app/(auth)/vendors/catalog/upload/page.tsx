@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { VEHICLE_BRANDS, getEngines, PART_CATALOG } from 'shared/constants'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -28,11 +29,44 @@ export default function VendorCatalogUploadPage() {
   const [error, setError] = useState<string | null>(null)
   const [totalSelected, setTotalSelected] = useState(0)
 
-  // Optional fields
+  // Vehicle compatibility (cascade)
+  const [brand, setBrand] = useState('')
+  const [model, setModel] = useState('')
+  const [year, setYear] = useState('')
+  const [motor, setMotor] = useState('')
+
+  // Part category (cascade)
+  const [partCategory, setPartCategory] = useState('')
+  const [partSubcategory, setPartSubcategory] = useState('')
+
+  // Optional info fields
   const [partName, setPartName] = useState('')
   const [serialNumber, setSerialNumber] = useState('')
   const [serialPhoto, setSerialPhoto] = useState<File | null>(null)
   const [serialPhotoPreview, setSerialPhotoPreview] = useState<string | null>(null)
+
+  // Derived data for vehicle cascade
+  const brandNames = useMemo(() => Object.keys(VEHICLE_BRANDS).sort(), [])
+  const models = useMemo(
+    () => (brand ? Object.keys(VEHICLE_BRANDS[brand]?.models ?? {}).sort() : []),
+    [brand],
+  )
+  const years = useMemo(() => {
+    if (!brand || !model) return [] as number[]
+    const ys = VEHICLE_BRANDS[brand]?.models[model] ?? []
+    return [...ys].sort((a, b) => b - a)
+  }, [brand, model])
+  const engines = useMemo(
+    () => (brand && model ? getEngines(brand, model) : []),
+    [brand, model],
+  )
+
+  // Derived data for part cascade
+  const categoryNames = useMemo(() => Object.keys(PART_CATALOG), [])
+  const subcategories = useMemo(
+    () => (partCategory ? PART_CATALOG[partCategory as keyof typeof PART_CATALOG] ?? [] : []),
+    [partCategory],
+  )
 
   const getAccessToken = useCallback(async () => {
     const { data: { session } } = await getSupabase().auth.getSession()
@@ -57,6 +91,37 @@ export default function VendorCatalogUploadPage() {
     if (serialPhotoInputRef.current) serialPhotoInputRef.current.value = ''
   }
 
+  // Reset cascading selects
+  function handleBrandChange(v: string) {
+    setBrand(v)
+    setModel('')
+    setYear('')
+    setMotor('')
+  }
+  function handleModelChange(v: string) {
+    setModel(v)
+    setYear('')
+    setMotor('')
+  }
+  function handleYearChange(v: string) {
+    setYear(v)
+    setMotor('')
+  }
+  function handleCategoryChange(v: string) {
+    setPartCategory(v)
+    setPartSubcategory('')
+  }
+
+  function buildVehicleCompatibility(): string | undefined {
+    if (!brand || !model) return undefined
+    return [brand, model, year, motor].filter(Boolean).join(' ')
+  }
+
+  function buildCategoryString(): string | undefined {
+    if (!partCategory) return undefined
+    return partSubcategory ? `${partCategory} / ${partSubcategory}` : partCategory
+  }
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -71,6 +136,9 @@ export default function VendorCatalogUploadPage() {
       setUploading(false)
       return
     }
+
+    const vehicleCompat = buildVehicleCompatibility()
+    const categoryStr = buildCategoryString()
 
     // Upload files sequentially
     for (let i = 0; i < files.length; i++) {
@@ -88,6 +156,8 @@ export default function VendorCatalogUploadPage() {
       if (partName.trim()) formData.append('name', partName.trim())
       if (serialNumber.trim()) formData.append('serialNumber', serialNumber.trim())
       if (serialPhoto) formData.append('serialPhoto', serialPhoto)
+      if (vehicleCompat) formData.append('vehicleCompatibility', vehicleCompat)
+      if (categoryStr) formData.append('category', categoryStr)
 
       try {
         const res = await fetch('/api/v1/catalog/items/upload', {
@@ -110,7 +180,6 @@ export default function VendorCatalogUploadPage() {
     }
 
     setUploading(false)
-    // Reset file input and optional fields
     if (fileInputRef.current) fileInputRef.current.value = ''
     setPartName('')
     setSerialNumber('')
@@ -124,7 +193,74 @@ export default function VendorCatalogUploadPage() {
         Photographiez vos pièces — l&apos;IA identifiera chaque pièce automatiquement.
       </p>
 
-      {/* Optional info fields */}
+      {/* 1. Vehicle compatibility (top) */}
+      <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="text-sm font-medium text-gray-700">Véhicule compatible</p>
+        <div>
+          <label htmlFor="brand" className="mb-1 block text-xs text-gray-500">Marque</label>
+          <select
+            id="brand"
+            value={brand}
+            onChange={(e) => handleBrandChange(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+          >
+            <option value="">— Sélectionner une marque —</option>
+            {brandNames.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+        {brand && (
+          <div>
+            <label htmlFor="model" className="mb-1 block text-xs text-gray-500">Modèle</label>
+            <select
+              id="model"
+              value={model}
+              onChange={(e) => handleModelChange(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            >
+              <option value="">— Sélectionner un modèle —</option>
+              {models.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {brand && model && years.length > 0 && (
+          <div>
+            <label htmlFor="year" className="mb-1 block text-xs text-gray-500">Année</label>
+            <select
+              id="year"
+              value={year}
+              onChange={(e) => handleYearChange(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            >
+              <option value="">— Sélectionner une année —</option>
+              {years.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {brand && model && engines.length > 0 && (
+          <div>
+            <label htmlFor="motor" className="mb-1 block text-xs text-gray-500">Motorisation (optionnel)</label>
+            <select
+              id="motor"
+              value={motor}
+              onChange={(e) => setMotor(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            >
+              <option value="">— Toutes —</option>
+              {engines.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* 2. Optional info fields */}
       <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
         <p className="text-sm font-medium text-gray-700">Informations optionnelles</p>
         <div>
@@ -153,12 +289,8 @@ export default function VendorCatalogUploadPage() {
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
           />
         </div>
-
-        {/* Serial / QR code photo */}
         <div>
-          <p className="mb-1 text-xs text-gray-500">
-            Photo du numéro de série ou QR code
-          </p>
+          <p className="mb-1 text-xs text-gray-500">Photo du numéro de série ou QR code</p>
           {serialPhotoPreview ? (
             <div className="flex items-center gap-3">
               <img
@@ -196,7 +328,7 @@ export default function VendorCatalogUploadPage() {
         </div>
       </div>
 
-      {/* Upload area — main part photo */}
+      {/* 3. Upload area — main part photo */}
       <label className="mb-4 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 transition-colors hover:border-[#002366] hover:bg-blue-50">
         <svg className="mb-2 h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -217,6 +349,41 @@ export default function VendorCatalogUploadPage() {
           capture="environment"
         />
       </label>
+
+      {/* 4. Part category cascade (bottom) */}
+      <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="text-sm font-medium text-gray-700">Type de pièce</p>
+        <div>
+          <label htmlFor="partCategory" className="mb-1 block text-xs text-gray-500">Catégorie</label>
+          <select
+            id="partCategory"
+            value={partCategory}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+          >
+            <option value="">— Sélectionner une catégorie —</option>
+            {categoryNames.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+        {partCategory && subcategories.length > 0 && (
+          <div>
+            <label htmlFor="partSubcategory" className="mb-1 block text-xs text-gray-500">Sous-catégorie</label>
+            <select
+              id="partSubcategory"
+              value={partSubcategory}
+              onChange={(e) => setPartSubcategory(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            >
+              <option value="">— Sélectionner une sous-catégorie —</option>
+              {subcategories.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
       {/* Progress counter */}
       {uploading && (

@@ -55,6 +55,8 @@ export async function catalogRoutes(fastify: FastifyInstance) {
         {
           name: fields.name || undefined,
           serialNumber: fields.serialNumber || undefined,
+          category: fields.category || undefined,
+          vehicleCompatibility: fields.vehicleCompatibility || undefined,
           serialPhoto: serialPhotoBuffer ? { buffer: serialPhotoBuffer, fileName: serialPhotoName, mimeType: serialPhotoMime } : undefined,
         },
       )
