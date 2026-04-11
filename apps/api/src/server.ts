@@ -22,6 +22,7 @@ import { reviewRoutes } from './modules/review/review.routes.js'
 import { notificationRoutes } from './modules/notification/notification.routes.js'
 import { adminRoutes } from './modules/admin/admin.routes.js'
 import multipart from '@fastify/multipart'
+import { startWorker } from './modules/queue/worker.js'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -75,6 +76,7 @@ const start = async () => {
   try {
     await fastify.listen({ port: env.PORT, host: '0.0.0.0' })
     fastify.log.info(`Server listening on port ${env.PORT}`)
+    startWorker(fastify.log)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)
