@@ -49,6 +49,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=missing_token`)
   }
 
+  // Skip role check for password recovery flows
+  if (next === '/reset-password' || type === 'recovery') {
+    return response
+  }
+
   // After successful auth, check if user has a role
   const { data: { session } } = await supabase.auth.getSession()
   if (session?.access_token) {

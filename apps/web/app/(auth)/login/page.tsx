@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useState } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { phoneSchema, emailSchema } from 'shared/validators'
@@ -243,9 +244,17 @@ function LoginForm() {
 
           {authMode === 'password' && (
             <div>
-              <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-                Mot de passe
-              </label>
+              <div className="mb-1 flex items-center justify-between">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Mot de passe
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-[#002366] hover:underline"
+                >
+                  Oublié ?
+                </Link>
+              </div>
               <input
                 id="password"
                 type="password"
