@@ -26,7 +26,7 @@ const ROLE_CARDS = [
     label: 'Vendeur',
     description: 'Je vends des pièces détachées',
     icon: ShopIcon,
-    redirect: '/vendors/catalog',
+    redirect: '/vendors/onboarding',
   },
   {
     role: 'ENTERPRISE',

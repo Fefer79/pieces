@@ -71,6 +71,11 @@ export default function VendorCatalogPage() {
       const body = await res.json()
 
       if (!res.ok) {
+        // If vendor doesn't exist, redirect to onboarding
+        if (body.error?.code === 'VENDOR_NOT_FOUND') {
+          router.push('/vendors/onboarding')
+          return
+        }
         setError(body.error?.message ?? 'Erreur lors du chargement du catalogue')
         setLoading(false)
         return

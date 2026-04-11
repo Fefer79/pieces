@@ -169,6 +169,10 @@ export default function VendorCatalogUploadPage() {
         const body = await res.json()
 
         if (!res.ok) {
+          if (body.error?.code === 'VENDOR_NOT_FOUND') {
+            router.push('/vendors/onboarding')
+            return
+          }
           setError(body.error?.message ?? `Erreur lors de l'upload de ${file.name}`)
           continue
         }
