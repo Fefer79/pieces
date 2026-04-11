@@ -314,14 +314,13 @@ export default function VendorCatalogUploadPage() {
                 <rect x="14" y="14" width="7" height="7" />
                 <rect x="3" y="14" width="7" height="7" />
               </svg>
-              Photographier le numéro de série / QR code
+              Ajouter une photo du numéro de série / QR code
               <input
                 ref={serialPhotoInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handleSerialPhotoSelect}
                 className="hidden"
-                capture="environment"
               />
             </label>
           )}
@@ -346,7 +345,6 @@ export default function VendorCatalogUploadPage() {
           onChange={handleFileSelect}
           disabled={uploading}
           className="hidden"
-          capture="environment"
         />
       </label>
 

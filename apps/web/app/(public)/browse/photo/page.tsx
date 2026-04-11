@@ -116,7 +116,6 @@ export default function PhotoIdentifyPage() {
             ref={fileRef}
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            capture="environment"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
