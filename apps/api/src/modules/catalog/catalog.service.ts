@@ -10,6 +10,8 @@ export interface UploadPartExtras {
   serialNumber?: string
   category?: string
   vehicleCompatibility?: string
+  condition?: 'NEW' | 'USED' | 'REFURBISHED'
+  warrantyMonths?: number
   serialPhoto?: { buffer: Buffer; fileName: string; mimeType: string }
 }
 
@@ -70,6 +72,8 @@ export async function uploadPartImage(
       ...(extras.serialNumber && { oemReference: extras.serialNumber }),
       ...(extras.category && { category: extras.category }),
       ...(extras.vehicleCompatibility && { vehicleCompatibility: extras.vehicleCompatibility }),
+      ...(extras.condition && { condition: extras.condition }),
+      ...(extras.warrantyMonths !== undefined && { warrantyMonths: extras.warrantyMonths }),
       ...(serialPhotoUrl && { serialPhotoUrl }),
     },
   })
@@ -169,6 +173,8 @@ export interface UpdateCatalogItemData {
   oemReference?: string | null
   vehicleCompatibility?: string | null
   price?: number
+  condition?: 'NEW' | 'USED' | 'REFURBISHED'
+  warrantyMonths?: number
 }
 
 export async function updateItem(
@@ -200,6 +206,8 @@ export async function updateItem(
   if (data.category !== undefined) updateData.category = data.category
   if (data.oemReference !== undefined) updateData.oemReference = data.oemReference
   if (data.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = data.vehicleCompatibility
+  if (data.condition !== undefined) updateData.condition = data.condition
+  if (data.warrantyMonths !== undefined) updateData.warrantyMonths = data.warrantyMonths
 
   if (data.price !== undefined) {
     updateData.price = data.price
@@ -249,6 +257,14 @@ export async function publishItem(userId: string, itemId: string) {
 
   if (item.price === null || item.price === undefined) {
     throw new AppError('CATALOG_PRICE_REQUIRED', 422, { message: 'Un prix est obligatoire pour publier la fiche' })
+  }
+
+  if (!item.condition) {
+    throw new AppError('CATALOG_CONDITION_REQUIRED', 422, { message: 'L\'état de la pièce (Neuf / Occasion / Reconditionné) est obligatoire pour publier' })
+  }
+
+  if (item.warrantyMonths === null || item.warrantyMonths === undefined) {
+    throw new AppError('CATALOG_WARRANTY_REQUIRED', 422, { message: 'La garantie vendeur est obligatoire pour publier' })
   }
 
   return prisma.catalogItem.update({

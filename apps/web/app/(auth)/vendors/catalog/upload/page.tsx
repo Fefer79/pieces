@@ -39,6 +39,10 @@ export default function VendorCatalogUploadPage() {
   const [partCategory, setPartCategory] = useState('')
   const [partSubcategory, setPartSubcategory] = useState('')
 
+  // Condition and warranty (required at publication)
+  const [condition, setCondition] = useState<'NEW' | 'USED' | 'REFURBISHED' | ''>('')
+  const [warrantyMonths, setWarrantyMonths] = useState<string>('')
+
   // Optional info fields
   const [partName, setPartName] = useState('')
   const [serialNumber, setSerialNumber] = useState('')
@@ -158,6 +162,8 @@ export default function VendorCatalogUploadPage() {
       if (serialPhoto) formData.append('serialPhoto', serialPhoto)
       if (vehicleCompat) formData.append('vehicleCompatibility', vehicleCompat)
       if (categoryStr) formData.append('category', categoryStr)
+      if (condition) formData.append('condition', condition)
+      if (warrantyMonths) formData.append('warrantyMonths', warrantyMonths)
 
       try {
         const res = await fetch('/api/v1/catalog/items/upload', {
@@ -329,6 +335,55 @@ export default function VendorCatalogUploadPage() {
             </label>
           )}
         </div>
+      </div>
+
+      {/* 2b. Condition and warranty (required at publish) */}
+      <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="text-sm font-medium text-gray-700">État et garantie <span className="text-red-500">*</span></p>
+        <div>
+          <label className="mb-1 block text-xs text-gray-500">État de la pièce</label>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { value: 'NEW', label: 'Neuf' },
+              { value: 'USED', label: 'Occasion' },
+              { value: 'REFURBISHED', label: 'Reconditionné' },
+            ].map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setCondition(value as 'NEW' | 'USED' | 'REFURBISHED')}
+                className={`rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors ${
+                  condition === value
+                    ? 'border-[#002366] bg-blue-50 text-[#002366]'
+                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label htmlFor="warranty" className="mb-1 block text-xs text-gray-500">Garantie vendeur</label>
+          <select
+            id="warranty"
+            value={warrantyMonths}
+            onChange={(e) => setWarrantyMonths(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+          >
+            <option value="">— Choisir la durée de garantie —</option>
+            <option value="0">Sans garantie (vente en l&apos;état)</option>
+            <option value="1">1 mois</option>
+            <option value="3">3 mois</option>
+            <option value="6">6 mois</option>
+            <option value="12">1 an</option>
+            <option value="24">2 ans</option>
+            <option value="36">3 ans</option>
+          </select>
+        </div>
+        <p className="text-xs text-gray-500">
+          État et garantie sont obligatoires avant publication.
+        </p>
       </div>
 
       {/* 3. Upload area — main part photo */}

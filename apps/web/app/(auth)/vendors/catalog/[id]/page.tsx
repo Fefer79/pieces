@@ -23,6 +23,8 @@ interface CatalogItem {
   qualityIssue: string | null
   inStock: boolean
   priceAlertFlag: boolean
+  condition: 'NEW' | 'USED' | 'REFURBISHED' | null
+  warrantyMonths: number | null
   createdAt: string
 }
 
@@ -49,6 +51,8 @@ export default function VendorCatalogDetailPage() {
   const [oemReference, setOemReference] = useState('')
   const [vehicleCompatibility, setVehicleCompatibility] = useState('')
   const [price, setPrice] = useState('')
+  const [condition, setCondition] = useState<'NEW' | 'USED' | 'REFURBISHED' | ''>('')
+  const [warrantyMonths, setWarrantyMonths] = useState<string>('')
 
   const getAccessToken = useCallback(async () => {
     const { data: { session } } = await getSupabase().auth.getSession()
@@ -83,6 +87,8 @@ export default function VendorCatalogDetailPage() {
       setOemReference(data.oemReference ?? '')
       setVehicleCompatibility(data.vehicleCompatibility ?? '')
       setPrice(data.price !== null ? String(data.price) : '')
+      setCondition(data.condition ?? '')
+      setWarrantyMonths(data.warrantyMonths !== null ? String(data.warrantyMonths) : '')
     } catch {
       setError('Erreur réseau. Vérifiez votre connexion.')
     } finally {
@@ -110,6 +116,13 @@ export default function VendorCatalogDetailPage() {
       if (vehicleCompatibility !== (item?.vehicleCompatibility ?? '')) body.vehicleCompatibility = vehicleCompatibility || null
       if (price !== (item?.price !== null ? String(item?.price) : '')) {
         body.price = price ? parseInt(price, 10) : undefined
+      }
+      if (condition !== (item?.condition ?? '')) {
+        if (condition) body.condition = condition
+      }
+      const currentWarranty = item?.warrantyMonths !== null && item?.warrantyMonths !== undefined ? String(item.warrantyMonths) : ''
+      if (warrantyMonths !== currentWarranty && warrantyMonths !== '') {
+        body.warrantyMonths = parseInt(warrantyMonths, 10)
       }
 
       if (Object.keys(body).length === 0) {
@@ -311,6 +324,49 @@ export default function VendorCatalogDetailPage() {
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
             min="0"
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-600">État *</label>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { value: 'NEW', label: 'Neuf' },
+              { value: 'USED', label: 'Occasion' },
+              { value: 'REFURBISHED', label: 'Reconditionné' },
+            ].map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setCondition(value as 'NEW' | 'USED' | 'REFURBISHED')}
+                className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                  condition === value
+                    ? 'border-[#002366] bg-blue-50 text-[#002366]'
+                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="warranty" className="mb-1 block text-xs font-medium text-gray-600">Garantie vendeur *</label>
+          <select
+            id="warranty"
+            value={warrantyMonths}
+            onChange={(e) => setWarrantyMonths(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
+          >
+            <option value="">— Choisir la durée —</option>
+            <option value="0">Sans garantie</option>
+            <option value="1">1 mois</option>
+            <option value="3">3 mois</option>
+            <option value="6">6 mois</option>
+            <option value="12">1 an</option>
+            <option value="24">2 ans</option>
+            <option value="36">3 ans</option>
+          </select>
         </div>
       </div>
 

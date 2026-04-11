@@ -76,6 +76,12 @@ enum CatalogItemStatus {
   ARCHIVED
 }
 
+enum PartCondition {
+  NEW
+  USED
+  REFURBISHED
+}
+
 enum OrderStatus {
   DRAFT
   PENDING_PAYMENT
@@ -208,6 +214,8 @@ model CatalogItem {
   qualityScore         Float?            @map("quality_score")
   qualityIssue         String?           @map("quality_issue")
   inStock              Boolean           @default(true) @map("in_stock")
+  condition            PartCondition?
+  warrantyMonths       Int?              @map("warranty_months")
   priceUpdatedAt       DateTime?         @map("price_updated_at")
   priceAlertFlag       Boolean           @default(false) @map("price_alert_flag")
   createdAt            DateTime          @default(now()) @map("created_at")

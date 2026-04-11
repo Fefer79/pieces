@@ -57,6 +57,8 @@ export async function catalogRoutes(fastify: FastifyInstance) {
           serialNumber: fields.serialNumber || undefined,
           category: fields.category || undefined,
           vehicleCompatibility: fields.vehicleCompatibility || undefined,
+          condition: (fields.condition as 'NEW' | 'USED' | 'REFURBISHED' | undefined) || undefined,
+          warrantyMonths: fields.warrantyMonths ? parseInt(fields.warrantyMonths, 10) : undefined,
           serialPhoto: serialPhotoBuffer ? { buffer: serialPhotoBuffer, fileName: serialPhotoName, mimeType: serialPhotoMime } : undefined,
         },
       )

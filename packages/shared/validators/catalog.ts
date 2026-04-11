@@ -12,12 +12,16 @@ export const catalogItemParamsSchema = z.object({
   id: z.string().uuid(),
 })
 
+export const partConditionSchema = z.enum(['NEW', 'USED', 'REFURBISHED'])
+
 export const updateCatalogItemSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   category: z.string().min(1).max(100).optional(),
   oemReference: z.string().max(100).nullable().optional(),
   vehicleCompatibility: z.string().max(200).nullable().optional(),
   price: z.number().int().min(0).optional(),
+  condition: partConditionSchema.optional(),
+  warrantyMonths: z.number().int().min(0).max(120).optional(),
 })
 
 export const toggleStockSchema = z.object({
