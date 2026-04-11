@@ -119,17 +119,29 @@ export default function ProfilePage() {
     try {
       const { data: { session } } = await getSupabase().auth.getSession()
       if (!session) return
+
+      // Only include fields that have a value to avoid sending empty strings
+      // which fail backend format validation (email, phone).
+      const payload: Record<string, string> = {}
+      const trimmedName = editName.trim()
+      if (trimmedName) payload.name = trimmedName
+      const trimmedEmail = editEmail.trim()
+      if (trimmedEmail) payload.email = trimmedEmail
+      const phoneDigits = editPhone.replace(/\D/g, '')
+      if (phoneDigits.length === 10) payload.phone = `+225${phoneDigits}`
+
+      if (Object.keys(payload).length === 0) {
+        setError('Aucune information à enregistrer')
+        return
+      }
+
       const res = await fetch('/api/v1/users/me/profile', {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: editName,
-          email: editEmail,
-          ...(editPhone && { phone: `+225${editPhone.replace(/\D/g, '')}` }),
-        }),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) {
         const body = await res.json()
