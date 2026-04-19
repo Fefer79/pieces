@@ -94,3 +94,11 @@ Key gotcha: `toLocaleString('fr-FR')` produces non-breaking space U+00A0 between
 ## BMAD Workflow System
 
 Project uses BMAD (Business Model Agent Development) for story management. Story files in `_bmad-output/implementation-artifacts/`. Sprint tracking in `sprint-status.yaml`. Workflows: create-story → dev-story → code-review → retrospective. Skills invoked via `/bmad-bmm-*` commands.
+
+## Design System
+
+Always read `DESIGN.md` before making any visual or UI decisions. All font choices, colors, spacing, aesthetic direction, component rules, and accessibility constraints are defined there. Do not deviate without explicit user approval. When reviewing PRs or code, flag anything that doesn't match DESIGN.md.
+
+Two USP-load-bearing rules in particular:
+- **Condition chips are first-class UI** — every product card / order line / admin row shows the condition (Neuf / Occasion importée / Ré-usiné / Aftermarket / OEM) as a colored chip, never buried in gray text.
+- **Price breakdown is explicit** — on `/choose/[shareToken]`, product detail, and order summaries, show the full breakdown (vendor price / labor / delivery / platform fees / total) before the pay button. No hidden fees.

@@ -4,43 +4,71 @@ import { LandingPage } from '@/components/landing-page'
 import { BrowseContent } from '@/components/browse-content'
 import { MobileDrawer } from '@/components/mobile-drawer'
 import { BottomNav } from '@/components/bottom-nav'
+import { PromoCarousel, type PromoSlide } from '@/components/ui/promo-carousel'
+
+const PROMO_SLIDES: PromoSlide[] = [
+  {
+    id: 'transparence',
+    eyebrow: 'La transparence d\u2019abord',
+    title: 'Le juste prix des pièces, sans intermédiaires qui gonflent.',
+    description:
+      'Neuves, occasions importées, ré-usinées \u2014 chaque annonce affiche le détail du prix. Vous payez ce que ça vaut, pas ce qu\u2019on décide pour vous.',
+    cta: { label: 'Explorer le catalogue', href: '#catalog' },
+    secondaryCta: { label: 'Comment ça marche', href: '/info' },
+    art: '\u{1F527}',
+    theme: 'navy',
+  },
+  {
+    id: 'reusine',
+    eyebrow: 'Promo du mois \u00b7 Ré-usiné certifié',
+    title: 'Alternateurs ré-usinés, -40% vs neuf.',
+    description:
+      'Testés en atelier, garantie 6 mois, performance d\u2019origine. Pour Toyota, Hyundai, Nissan, Peugeot. Livraison 24-48h à Abidjan.',
+    cta: { label: 'Voir les alternateurs \u2192', href: '#alternateurs' },
+    art: '\u2699\uFE0F',
+    theme: 'orange',
+  },
+  {
+    id: 'conseil',
+    eyebrow: 'Nouveau \u00b7 Service Conseil IA + expert',
+    title: 'Un doute sur la pièce ? Demandez à Pièces.',
+    description:
+      'Notre assistant IA répond 24h/24 aux questions de compatibilité et choix. Cas complexe ? Un expert humain prend le relais sous 30 minutes. Gratuit avant achat.',
+    cta: { label: 'Démarrer une conversation', href: '#conseil' },
+    art: '\u{1F4AC}',
+    theme: 'cream',
+  },
+]
 
 export default function BrowsePage() {
   return (
     <>
       {/* Desktop */}
       <div className="hidden lg:block">
+        <div className="mx-auto max-w-[1280px] px-6 pt-8">
+          <PromoCarousel slides={PROMO_SLIDES} />
+        </div>
         <LandingPage />
       </div>
 
       {/* Mobile */}
       <div className="flex min-h-dvh flex-col lg:hidden">
         {/* Header */}
-        <header className="flex items-center justify-between bg-[#FFFFFF] px-4 pb-2 pt-4">
+        <header className="flex items-center justify-between bg-card px-4 pb-2 pt-4">
           <div className="flex flex-col">
-            <span className="font-[family-name:Gloock,serif] text-3xl text-[#00113a]">
-              Pièces<span className="text-[#ff6b00]">.</span>
+            <span className="font-display text-3xl text-ink">
+              Pièces<span className="text-accent">.</span>
             </span>
-            <span className="text-xs tracking-wide text-[#00113a]/60">
+            <span className="text-xs tracking-wide text-muted">
               Pièces détachées automobiles
             </span>
           </div>
           <MobileDrawer />
         </header>
 
-        {/* Badges */}
-        <div className="flex items-center justify-center gap-2 bg-[#FFFFFF] px-4 pb-3">
-          <span className="rounded-md bg-[#002366] px-2.5 py-1 text-xs font-bold text-white">
-            NEUF·OEM
-          </span>
-          <span className="text-xs text-[#00113a]/40">&amp;</span>
-          <span className="rounded-md border-2 border-[#002366] px-2.5 py-1 text-xs font-bold text-[#002366]">
-            OCCASION
-          </span>
-          <span className="text-xs text-[#00113a]/40">&amp;</span>
-          <span className="rounded-md border border-[#002366]/30 px-2.5 py-1 text-xs text-[#002366]/60">
-            AFTERMARKET
-          </span>
+        {/* Mobile carousel */}
+        <div className="px-4 pb-4">
+          <PromoCarousel slides={PROMO_SLIDES} />
         </div>
 
         {/* Browse content */}

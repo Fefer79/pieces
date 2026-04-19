@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className={`${instrumentSans.variable} ${dmMono.variable} bg-[#FFFFFF] font-[family-name:var(--font-instrument)] text-[#00113a] antialiased`}>
+      <body className={`${instrumentSans.variable} ${dmMono.variable} bg-surface text-ink antialiased`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
