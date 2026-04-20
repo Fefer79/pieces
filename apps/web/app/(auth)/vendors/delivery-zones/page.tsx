@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -133,62 +134,94 @@ export default function DeliveryZonesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
-      <div className="mb-4 flex items-center gap-3">
-        <button
-          onClick={() => router.back()}
-          className="text-sm text-[#002366] hover:underline"
-        >
-          &larr; Retour
-        </button>
-        <h1 className="text-xl font-bold text-[#1A1A1A]">Zones de livraison</h1>
+    <div className="mx-auto max-w-2xl px-4 py-6 lg:py-8">
+      <button
+        onClick={() => router.back()}
+        className="mb-3 text-sm text-ink-2 hover:underline"
+      >
+        ← Retour
+      </button>
+      <div className="mb-2">
+        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+          Boutique
+        </div>
+        <h1 className="mt-1 font-display text-3xl text-ink">Zones de livraison</h1>
       </div>
-
-      <p className="mb-4 text-sm text-gray-500">
-        Sélectionnez les communes dans lesquelles vous acceptez de livrer.
+      <p className="mb-5 text-sm text-muted">
+        Sélectionnez les communes d&apos;Abidjan où vous acceptez de livrer. Les acheteurs hors zone ne verront pas vos annonces.
       </p>
 
-      {error && <p className="mb-4 text-sm text-[#D32F2F]">{error}</p>}
-      {success && <p className="mb-4 text-sm text-green-600">Zones mises à jour avec succès.</p>}
+      {error && (
+        <div className="mb-4 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="mb-4 rounded-md border border-success-fg/20 bg-success-bg p-3 text-sm text-success-fg">
+          Zones mises à jour avec succès.
+        </div>
+      )}
 
       {loading ? (
-        <p className="text-sm text-gray-500">Chargement...</p>
+        <p className="text-sm text-muted">Chargement…</p>
       ) : (
         <>
-          <label className="mb-3 flex cursor-pointer items-center gap-3 rounded-lg border-2 border-[#002366] bg-blue-50 p-3">
+          <label
+            className={`mb-3 flex cursor-pointer items-center gap-3 rounded-md border-2 p-3.5 transition-colors ${
+              allSelected ? 'border-ink-2 bg-[rgba(0,35,102,0.04)]' : 'border-border bg-card hover:border-border-strong'
+            }`}
+          >
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
-              className="h-5 w-5 accent-[#002366]"
+              className="h-5 w-5 accent-[color:var(--color-ink-2)]"
             />
-            <span className="text-sm font-semibold text-[#002366]">Tout Abidjan</span>
+            <span className={`text-sm font-semibold ${allSelected ? 'text-ink-2' : 'text-ink'}`}>
+              Tout Abidjan
+            </span>
           </label>
 
-          <div className="space-y-2">
-            {ABIDJAN_COMMUNES.map((commune) => (
-              <label
-                key={commune}
-                className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedZones.includes(commune)}
-                  onChange={() => toggleCommune(commune)}
-                  className="h-5 w-5 accent-[#002366]"
-                />
-                <span className="text-sm text-[#1A1A1A]">{commune}</span>
-              </label>
-            ))}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {ABIDJAN_COMMUNES.map((commune) => {
+              const checked = selectedZones.includes(commune)
+              return (
+                <label
+                  key={commune}
+                  className={`flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-all ${
+                    checked
+                      ? 'border-ink-2 bg-[rgba(0,35,102,0.04)]'
+                      : 'border-border bg-card hover:border-border-strong'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleCommune(commune)}
+                    className="h-5 w-5 accent-[color:var(--color-ink-2)]"
+                  />
+                  <span className={`text-sm ${checked ? 'font-medium text-ink-2' : 'text-ink'}`}>
+                    {commune}
+                  </span>
+                </label>
+              )
+            })}
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={saving || selectedZones.length === 0}
-            className="mt-6 w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:bg-gray-300 disabled:text-gray-500"
-          >
-            {saving ? 'Enregistrement...' : `Enregistrer (${selectedZones.length} commune${selectedZones.length > 1 ? 's' : ''})`}
-          </button>
+          <div className="mt-6 flex items-center justify-between gap-3">
+            <p className="font-mono text-xs text-muted">
+              {selectedZones.length}/{ABIDJAN_COMMUNES.length} sélectionnée
+              {selectedZones.length > 1 ? 's' : ''}
+            </p>
+            <Button
+              variant="accent"
+              size="lg"
+              onClick={handleSave}
+              disabled={saving || selectedZones.length === 0}
+            >
+              {saving ? 'Enregistrement…' : 'Enregistrer'}
+            </Button>
+          </div>
         </>
       )}
     </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -135,41 +136,49 @@ export default function VendorOnboardingPage() {
     }
   }
 
+  const inputClass =
+    'block w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
+  const labelClass =
+    'mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
+
   if (checking) {
     return (
       <main className="flex min-h-dvh items-center justify-center">
-        <p className="text-gray-500">Chargement...</p>
+        <p className="text-sm text-muted">Chargement…</p>
       </main>
     )
   }
 
   if (existingVendor) {
     return (
-      <main className="mx-auto w-full max-w-sm px-4 pt-8 lg:max-w-lg">
-        <h1 className="mb-2 text-xl font-bold text-gray-900">Profil vendeur existant</h1>
-        <p className="mb-6 text-sm text-gray-600">
-          Vous avez déjà un profil vendeur : <strong>{existingVendor.shopName}</strong> ({existingVendor.status})
+      <main className="mx-auto w-full max-w-lg px-4 pt-10">
+        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+          Vendeur
+        </div>
+        <h1 className="mb-3 mt-1 font-display text-3xl text-ink">Profil existant</h1>
+        <p className="mb-6 text-sm text-muted">
+          Vous avez déjà un profil vendeur : <strong className="text-ink">{existingVendor.shopName}</strong> ({existingVendor.status})
         </p>
-        <button
-          onClick={() => router.push('/vendors/catalog')}
-          className="w-full rounded-lg bg-[#002366] px-4 py-3 text-sm font-medium text-white"
-        >
+        <Button variant="primary" size="lg" block onClick={() => router.push('/vendors/catalog')}>
           Aller à mon catalogue
-        </button>
+        </Button>
       </main>
     )
   }
 
   return (
-    <main className="mx-auto w-full max-w-sm px-4 pt-8 lg:max-w-lg">
-      <h1 className="mb-2 text-xl font-bold text-gray-900">Créer votre profil vendeur</h1>
-      <p className="mb-6 text-sm text-gray-600">
-        Renseignez ces informations pour commencer à vendre des pièces.
+    <main className="mx-auto w-full max-w-lg px-4 pb-12 pt-8 lg:pt-10">
+      <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+        Vendeur
+      </div>
+      <h1 className="mb-2 mt-1 font-display text-3xl text-ink">Créer votre profil vendeur</h1>
+      <p className="mb-6 text-sm text-muted">
+        Renseignez ces informations pour commencer à vendre des pièces. Formel (RCCM) ou informel (CNI) — même plateforme, pièces justificatives différentes.
       </p>
 
       <form onSubmit={handleCreate} className="space-y-4">
         <div>
-          <label htmlFor="shopName" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="shopName" className={labelClass}>
             Nom de la boutique
           </label>
           <input
@@ -178,13 +187,13 @@ export default function VendorOnboardingPage() {
             value={shopName}
             onChange={(e) => { setShopName(e.target.value); setError('') }}
             placeholder="Ex : Pièces Auto Abidjan"
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            className={inputClass}
             required
           />
         </div>
 
         <div>
-          <label htmlFor="contactName" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="contactName" className={labelClass}>
             Nom du contact
           </label>
           <input
@@ -193,17 +202,17 @@ export default function VendorOnboardingPage() {
             value={contactName}
             onChange={(e) => { setContactName(e.target.value); setError('') }}
             placeholder="Votre nom"
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            className={inputClass}
             required
           />
         </div>
 
         <div>
-          <label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="phone" className={labelClass}>
             Téléphone
           </label>
           <div className="flex">
-            <span className="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-600">
+            <span className="inline-flex items-center rounded-l-sm border border-r-0 border-border-strong bg-surface px-3 font-mono text-sm text-muted">
               +225
             </span>
             <input
@@ -213,42 +222,44 @@ export default function VendorOnboardingPage() {
               value={phone}
               onChange={(e) => { setPhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setError('') }}
               placeholder="07 00 00 00 00"
-              className="block w-full rounded-r-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={`${inputClass} rounded-l-none`}
               required
             />
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Type de vendeur</label>
-          <div className="flex gap-2">
+          <label className={labelClass}>Type de vendeur</label>
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setVendorType('INFORMAL')}
-              className={`flex-1 rounded-lg border px-3 py-2.5 text-sm font-medium ${
+              className={`rounded-md border-2 p-3 text-left transition-all ${
                 vendorType === 'INFORMAL'
-                  ? 'border-[#002366] bg-blue-50 text-[#002366]'
-                  : 'border-gray-300 text-gray-600'
+                  ? 'border-ink-2 bg-[rgba(0,35,102,0.04)]'
+                  : 'border-border bg-card hover:border-border-strong'
               }`}
             >
-              Particulier (CNI)
+              <div className="text-sm font-semibold text-ink">🛠️ Particulier</div>
+              <div className="mt-0.5 text-[11.5px] text-muted">Avec CNI</div>
             </button>
             <button
               type="button"
               onClick={() => setVendorType('FORMAL')}
-              className={`flex-1 rounded-lg border px-3 py-2.5 text-sm font-medium ${
+              className={`rounded-md border-2 p-3 text-left transition-all ${
                 vendorType === 'FORMAL'
-                  ? 'border-[#002366] bg-blue-50 text-[#002366]'
-                  : 'border-gray-300 text-gray-600'
+                  ? 'border-ink-2 bg-[rgba(0,35,102,0.04)]'
+                  : 'border-border bg-card hover:border-border-strong'
               }`}
             >
-              Entreprise (RCCM)
+              <div className="text-sm font-semibold text-ink">🏢 Entreprise</div>
+              <div className="mt-0.5 text-[11.5px] text-muted">Avec RCCM</div>
             </button>
           </div>
         </div>
 
         <div>
-          <label htmlFor="documentNumber" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="documentNumber" className={labelClass}>
             {vendorType === 'FORMAL' ? 'Numéro RCCM' : 'Numéro CNI'}
           </label>
           <input
@@ -257,25 +268,24 @@ export default function VendorOnboardingPage() {
             value={documentNumber}
             onChange={(e) => { setDocumentNumber(e.target.value); setError('') }}
             placeholder={vendorType === 'FORMAL' ? 'Ex : CI-ABJ-2024-B-12345' : 'Ex : C001234567'}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            className={`${inputClass} font-mono`}
             required
           />
         </div>
 
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
-          En créant votre profil vendeur, vous acceptez les garanties obligatoires :
-          retour sous 48h et garantie 30 jours sur les pièces vendues.
+        <div className="rounded-md border border-occasion-fg/20 bg-occasion-bg p-3.5 text-[13px] leading-relaxed text-occasion-fg">
+          🛡️ En créant votre profil vendeur, vous acceptez les garanties obligatoires : retour sous 48h et garantie 30 jours sur les pièces vendues.
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+            {error}
+          </div>
+        )}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full rounded-lg bg-[#ff6b00] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#B8760D] disabled:opacity-50"
-        >
-          {saving ? 'Création en cours...' : 'Créer mon profil vendeur'}
-        </button>
+        <Button type="submit" variant="accent" size="lg" block disabled={saving}>
+          {saving ? 'Création en cours…' : 'Créer mon profil vendeur'}
+        </Button>
       </form>
     </main>
   )
