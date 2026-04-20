@@ -3,6 +3,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
+import { Chip } from '@/components/ui/chip'
+import { Price } from '@/components/ui/price'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -209,154 +212,192 @@ export default function VendorCatalogDetailPage() {
     }
   }
 
+  const INPUT =
+    'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
+  const LABEL = 'mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-md px-4 py-6">
-        <p className="text-sm text-gray-500">Chargement...</p>
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <p className="text-sm text-muted">Chargement…</p>
       </div>
     )
   }
 
   if (!item) {
     return (
-      <div className="mx-auto max-w-md px-4 py-6">
-        <p className="text-sm text-[#D32F2F]">{error ?? 'Fiche introuvable'}</p>
-        <button onClick={() => router.push('/vendors/catalog')} className="mt-4 text-sm text-[#002366]">
-          Retour au catalogue
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+          {error ?? 'Fiche introuvable'}
+        </div>
+        <button
+          onClick={() => router.push('/vendors/catalog')}
+          className="mt-4 text-sm text-ink-2 hover:underline"
+        >
+          ← Retour au catalogue
         </button>
       </div>
     )
   }
 
+  const statusChip =
+    item.status === 'PUBLISHED'
+      ? { variant: 'status-ok' as const, label: 'Publié' }
+      : item.status === 'DRAFT'
+        ? { variant: 'status-warn' as const, label: 'Brouillon' }
+        : { variant: 'plain' as const, label: 'Archivé' }
+
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
-      <button onClick={() => router.push('/vendors/catalog')} className="mb-4 text-sm text-[#002366]">
-        &larr; Retour au catalogue
+    <div className="mx-auto max-w-2xl px-4 py-6 lg:py-8">
+      <button
+        onClick={() => router.push('/vendors/catalog')}
+        className="mb-4 text-sm text-ink-2 hover:underline"
+      >
+        ← Retour au catalogue
       </button>
 
       {/* Image */}
-      <div className="mb-4 overflow-hidden rounded-lg bg-gray-100">
+      <div className="mb-5 overflow-hidden rounded-md border border-border bg-surface">
         {item.imageMediumUrl ? (
-          <img src={item.imageMediumUrl} alt={item.name ?? 'Pièce'} className="w-full object-cover" />
+          <img
+            src={item.imageMediumUrl}
+            alt={item.name ?? 'Pièce'}
+            className="w-full object-cover"
+          />
         ) : (
-          <div className="flex h-48 items-center justify-center text-sm text-gray-400">Photo en cours de traitement...</div>
+          <div className="flex h-56 items-center justify-center text-sm text-muted-2">
+            Photo en cours de traitement…
+          </div>
         )}
       </div>
 
-      {/* Status badge + alerts */}
-      <div className="mb-4 flex items-center gap-2">
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-          item.status === 'DRAFT' ? 'bg-yellow-100 text-yellow-700'
-            : item.status === 'PUBLISHED' ? 'bg-green-100 text-green-700'
-              : 'bg-gray-100 text-gray-500'
-        }`}>
-          {item.status === 'DRAFT' ? 'Brouillon' : item.status === 'PUBLISHED' ? 'Publié' : 'Archivé'}
-        </span>
+      {/* Status + alerts */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <Chip variant={statusChip.variant}>{statusChip.label}</Chip>
+        {item.condition === 'NEW' && <Chip variant="neuf">Neuf</Chip>}
+        {item.condition === 'USED' && <Chip variant="occasion">Occasion</Chip>}
+        {item.condition === 'REFURBISHED' && <Chip variant="reusine">Ré-usiné</Chip>}
         {item.status === 'PUBLISHED' && !item.inStock && (
-          <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">Épuisée</span>
+          <Chip variant="status-err">Épuisée</Chip>
         )}
-        {item.priceAlertFlag && (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">Alerte prix</span>
-        )}
+        {item.priceAlertFlag && <Chip variant="status-warn">Alerte prix</Chip>}
         {item.qualityIssue && (
-          <span className="text-xs text-amber-600" title={item.qualityIssue}>Photo</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-warn-fg" title={item.qualityIssue}>
+            ⚠ Photo
+          </span>
         )}
       </div>
 
-      {error && <p className="mb-3 text-sm text-[#D32F2F]">{error}</p>}
-      {success && <p className="mb-3 text-sm text-green-600">{success}</p>}
+      {error && (
+        <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="mb-3 rounded-md border border-success-fg/20 bg-success-bg p-3 text-sm text-success-fg">
+          {success}
+        </div>
+      )}
 
       {/* Edit form */}
-      <div className="space-y-3">
+      <div className="space-y-4 rounded-md border border-border bg-card p-5">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Nom de la pièce</label>
+          <label className={LABEL}>Nom de la pièce</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={item.aiGenerated ? 'Identifié par IA...' : 'Saisissez le nom'}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
+            placeholder={item.aiGenerated ? 'Identifié par IA…' : 'Saisissez le nom'}
+            className={INPUT}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Catégorie</label>
+          <label className={LABEL}>Catégorie</label>
           <input
             type="text"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="Ex: Filtration, Freinage..."
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
+            placeholder="Ex : Filtration, Freinage…"
+            className={INPUT}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Référence OEM</label>
+          <label className={LABEL}>Référence OEM</label>
           <input
             type="text"
             value={oemReference}
             onChange={(e) => setOemReference(e.target.value)}
-            placeholder="Ex: 90915-YZZD4"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
+            placeholder="Ex : 90915-YZZD4"
+            className={`${INPUT} font-mono`}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Compatibilité véhicule</label>
+          <label className={LABEL}>Compatibilité véhicule</label>
           <input
             type="text"
             value={vehicleCompatibility}
             onChange={(e) => setVehicleCompatibility(e.target.value)}
-            placeholder="Ex: Toyota Hilux 2005-2015"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
+            placeholder="Ex : Toyota Hilux 2005-2015"
+            className={INPUT}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
-            Prix (FCFA) {item.suggestedPrice && !price && <span className="text-gray-400">— Suggestion IA : {item.suggestedPrice.toLocaleString('fr-FR')} F</span>}
-          </label>
+          <label className={LABEL}>Prix (FCFA)</label>
+          {item.suggestedPrice && !price && (
+            <div className="mb-1.5 text-xs text-muted">
+              Suggestion IA : <Price amount={item.suggestedPrice} className="text-xs" />
+            </div>
+          )}
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            placeholder={item.suggestedPrice ? `${item.suggestedPrice.toLocaleString('fr-FR')} F (suggestion IA)` : 'Saisissez votre prix'}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
+            placeholder={item.suggestedPrice ? `${item.suggestedPrice.toLocaleString('fr-FR')} (suggestion IA)` : 'Saisissez votre prix'}
+            className={`${INPUT} font-mono`}
             min="0"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">État *</label>
+          <label className={LABEL}>
+            État <span className="text-accent">*</span>
+          </label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { value: 'NEW', label: 'Neuf' },
-              { value: 'USED', label: 'Occasion' },
-              { value: 'REFURBISHED', label: 'Reconditionné' },
-            ].map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setCondition(value as 'NEW' | 'USED' | 'REFURBISHED')}
-                className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
-                  condition === value
-                    ? 'border-[#002366] bg-blue-50 text-[#002366]'
-                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+              { value: 'NEW', label: 'Neuf', active: 'border-neuf-fg/50 bg-neuf-bg text-neuf-fg' },
+              { value: 'USED', label: 'Occasion', active: 'border-occasion-fg/50 bg-occasion-bg text-occasion-fg' },
+              { value: 'REFURBISHED', label: 'Reconditionné', active: 'border-reusine-fg/50 bg-reusine-bg text-reusine-fg' },
+            ].map(({ value, label, active }) => {
+              const isActive = condition === value
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setCondition(value as 'NEW' | 'USED' | 'REFURBISHED')}
+                  className={`rounded-md border-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] transition-all ${
+                    isActive ? active : 'border-border bg-card text-muted hover:border-border-strong hover:text-ink'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
           </div>
         </div>
 
         <div>
-          <label htmlFor="warranty" className="mb-1 block text-xs font-medium text-gray-600">Garantie vendeur *</label>
+          <label htmlFor="warranty" className={LABEL}>
+            Garantie vendeur <span className="text-accent">*</span>
+          </label>
           <select
             id="warranty"
             value={warrantyMonths}
             onChange={(e) => setWarrantyMonths(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
+            className={INPUT}
           >
             <option value="">— Choisir la durée —</option>
             <option value="0">Sans garantie</option>
@@ -371,37 +412,27 @@ export default function VendorCatalogDetailPage() {
       </div>
 
       {/* Actions */}
-      <div className="mt-6 space-y-3">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full rounded-lg border border-[#002366] py-3 text-sm font-semibold text-[#002366] transition-colors hover:bg-blue-50 disabled:opacity-50"
-        >
-          {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
-        </button>
+      <div className="mt-6 space-y-2.5">
+        <Button variant="secondary" block onClick={handleSave} disabled={saving}>
+          {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
+        </Button>
 
         {item.status === 'DRAFT' && (
-          <button
+          <Button
+            variant="accent"
+            size="lg"
+            block
             onClick={handlePublish}
             disabled={saving || !price}
-            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
           >
             Publier la fiche
-          </button>
+          </Button>
         )}
 
         {item.status === 'PUBLISHED' && (
-          <button
-            onClick={handleToggleStock}
-            disabled={saving}
-            className={`w-full rounded-lg py-3 text-sm font-semibold transition-colors ${
-              item.inStock
-                ? 'border border-red-300 text-red-600 hover:bg-red-50'
-                : 'border border-green-300 text-green-600 hover:bg-green-50'
-            }`}
-          >
+          <Button variant="secondary" block onClick={handleToggleStock} disabled={saving}>
             {item.inStock ? 'Marquer épuisée' : 'Remettre en stock'}
-          </button>
+          </Button>
         )}
       </div>
     </div>

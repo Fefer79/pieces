@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { VEHICLE_BRANDS, getEngines, PART_CATALOG } from 'shared/constants'
+import { Button } from '@/components/ui/button'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -197,127 +198,122 @@ export default function VendorCatalogUploadPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
-      <h1 className="mb-2 text-xl font-bold text-[#1A1A1A]">Ajouter des pièces</h1>
-      <p className="mb-6 text-sm text-gray-600">
-        Photographiez vos pièces — l&apos;IA identifiera chaque pièce automatiquement.
-      </p>
+    <div className="mx-auto max-w-2xl px-4 py-6 lg:py-8">
+      <div className="mb-6">
+        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+          Boutique · Nouvelle annonce
+        </div>
+        <h1 className="mt-1 font-display text-3xl text-ink">Ajouter des pièces</h1>
+        <p className="mt-2 text-sm text-muted">
+          Photographiez vos pièces — l&apos;IA identifie chaque pièce et pré-remplit la cascade. Vous contrôlez et publiez.
+        </p>
+      </div>
 
-      {/* 1. Vehicle compatibility (top) */}
-      <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
-        <p className="text-sm font-medium text-gray-700">Véhicule compatible</p>
-        <div>
-          <label htmlFor="brand" className="mb-1 block text-xs text-gray-500">Marque</label>
+      {/* 1. Vehicle compatibility */}
+      <FieldGroup title="Véhicule compatible">
+        <Field id="brand" label="Marque">
           <select
             id="brand"
             value={brand}
             onChange={(e) => handleBrandChange(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            className={SELECT_CLASS}
           >
             <option value="">— Sélectionner une marque —</option>
             {brandNames.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
           </select>
-        </div>
+        </Field>
         {brand && (
-          <div>
-            <label htmlFor="model" className="mb-1 block text-xs text-gray-500">Modèle</label>
+          <Field id="model" label="Modèle">
             <select
               id="model"
               value={model}
               onChange={(e) => handleModelChange(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={SELECT_CLASS}
             >
               <option value="">— Sélectionner un modèle —</option>
               {models.map((m) => (
                 <option key={m} value={m}>{m}</option>
               ))}
             </select>
-          </div>
+          </Field>
         )}
         {brand && model && years.length > 0 && (
-          <div>
-            <label htmlFor="year" className="mb-1 block text-xs text-gray-500">Année</label>
+          <Field id="year" label="Année">
             <select
               id="year"
               value={year}
               onChange={(e) => handleYearChange(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={SELECT_CLASS}
             >
               <option value="">— Sélectionner une année —</option>
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
-          </div>
+          </Field>
         )}
         {brand && model && engines.length > 0 && (
-          <div>
-            <label htmlFor="motor" className="mb-1 block text-xs text-gray-500">Motorisation (optionnel)</label>
+          <Field id="motor" label="Motorisation (optionnel)">
             <select
               id="motor"
               value={motor}
               onChange={(e) => setMotor(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={SELECT_CLASS}
             >
               <option value="">— Toutes —</option>
               {engines.map((m) => (
                 <option key={m} value={m}>{m}</option>
               ))}
             </select>
-          </div>
+          </Field>
         )}
-      </div>
+      </FieldGroup>
 
       {/* 2. Optional info fields */}
-      <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
-        <p className="text-sm font-medium text-gray-700">Informations optionnelles</p>
-        <div>
-          <label htmlFor="partName" className="mb-1 block text-xs text-gray-500">
-            Nom de la pièce
-          </label>
+      <FieldGroup title="Informations optionnelles">
+        <Field id="partName" label="Nom de la pièce">
           <input
             id="partName"
             type="text"
             value={partName}
             onChange={(e) => setPartName(e.target.value)}
             placeholder="Ex : Alternateur Bosch"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            className={INPUT_CLASS}
           />
-        </div>
-        <div>
-          <label htmlFor="serialNumber" className="mb-1 block text-xs text-gray-500">
-            Numéro de série / référence OEM
-          </label>
+        </Field>
+        <Field id="serialNumber" label="Numéro de série / référence OEM">
           <input
             id="serialNumber"
             type="text"
             value={serialNumber}
             onChange={(e) => setSerialNumber(e.target.value)}
             placeholder="Ex : 0 986 042 131"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            className={`${INPUT_CLASS} font-mono`}
           />
-        </div>
+        </Field>
         <div>
-          <p className="mb-1 text-xs text-gray-500">Photo du numéro de série ou QR code</p>
+          <div className="mb-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            Photo du numéro de série ou QR code
+          </div>
           {serialPhotoPreview ? (
             <div className="flex items-center gap-3">
               <img
                 src={serialPhotoPreview}
                 alt="Aperçu numéro de série"
-                className="h-16 w-16 rounded-lg border border-gray-200 object-cover"
+                className="h-16 w-16 rounded-sm border border-border object-cover"
               />
               <button
                 type="button"
                 onClick={clearSerialPhoto}
-                className="text-sm text-red-600 hover:underline"
+                className="text-sm text-error-fg hover:underline"
               >
                 Supprimer
               </button>
             </div>
           ) : (
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-2.5 text-sm text-gray-500 transition-colors hover:border-[#002366] hover:text-[#002366]">
+            <label className="flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-border-strong bg-card px-3 py-2.5 text-sm text-muted transition-colors hover:border-ink-2 hover:text-ink-2">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="7" height="7" />
                 <rect x="14" y="3" width="7" height="7" />
@@ -335,41 +331,48 @@ export default function VendorCatalogUploadPage() {
             </label>
           )}
         </div>
-      </div>
+      </FieldGroup>
 
-      {/* 2b. Condition and warranty (required at publish) */}
-      <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
-        <p className="text-sm font-medium text-gray-700">État et garantie <span className="text-red-500">*</span></p>
+      {/* 2b. Condition and warranty (required) */}
+      <FieldGroup
+        title="État et garantie"
+        required
+        help="État et garantie sont obligatoires avant publication."
+      >
         <div>
-          <label className="mb-1 block text-xs text-gray-500">État de la pièce</label>
+          <div className="mb-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            État de la pièce
+          </div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { value: 'NEW', label: 'Neuf' },
-              { value: 'USED', label: 'Occasion' },
-              { value: 'REFURBISHED', label: 'Reconditionné' },
-            ].map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setCondition(value as 'NEW' | 'USED' | 'REFURBISHED')}
-                className={`rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors ${
-                  condition === value
-                    ? 'border-[#002366] bg-blue-50 text-[#002366]'
-                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+              { value: 'NEW', label: 'Neuf', chipClass: 'bg-neuf-bg text-neuf-fg border-neuf-fg/30' },
+              { value: 'USED', label: 'Occasion', chipClass: 'bg-occasion-bg text-occasion-fg border-occasion-fg/30' },
+              { value: 'REFURBISHED', label: 'Reconditionné', chipClass: 'bg-reusine-bg text-reusine-fg border-reusine-fg/30' },
+            ].map(({ value, label, chipClass }) => {
+              const isActive = condition === value
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setCondition(value as 'NEW' | 'USED' | 'REFURBISHED')}
+                  className={`rounded-md border-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] transition-all ${
+                    isActive
+                      ? chipClass
+                      : 'border-border bg-card text-muted hover:border-border-strong hover:text-ink'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
           </div>
         </div>
-        <div>
-          <label htmlFor="warranty" className="mb-1 block text-xs text-gray-500">Garantie vendeur</label>
+        <Field id="warranty" label="Garantie vendeur">
           <select
             id="warranty"
             value={warrantyMonths}
             onChange={(e) => setWarrantyMonths(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            className={SELECT_CLASS}
           >
             <option value="">— Choisir la durée de garantie —</option>
             <option value="0">Sans garantie (vente en l&apos;état)</option>
@@ -380,22 +383,19 @@ export default function VendorCatalogUploadPage() {
             <option value="24">2 ans</option>
             <option value="36">3 ans</option>
           </select>
-        </div>
-        <p className="text-xs text-gray-500">
-          État et garantie sont obligatoires avant publication.
-        </p>
-      </div>
+        </Field>
+      </FieldGroup>
 
-      {/* 3. Upload area — main part photo */}
-      <label className="mb-4 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 transition-colors hover:border-[#002366] hover:bg-blue-50">
-        <svg className="mb-2 h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* 3. Upload area */}
+      <label className="mb-5 flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border-strong bg-card p-8 transition-all hover:border-ink-2 hover:bg-[rgba(0,35,102,0.03)]">
+        <svg className="mb-2 h-10 w-10 text-muted-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        <span className="text-sm font-medium text-gray-600">
-          {uploading ? 'Upload en cours...' : 'Appuyez pour prendre ou choisir des photos'}
+        <span className="text-sm font-medium text-ink">
+          {uploading ? 'Upload en cours…' : 'Appuyez pour prendre ou choisir des photos'}
         </span>
-        <span className="mt-1 text-xs text-gray-400">JPEG, PNG ou WebP — max 5 MB</span>
+        <span className="mt-1 text-xs text-muted">JPEG, PNG ou WebP — max 5 MB</span>
         <input
           ref={fileInputRef}
           type="file"
@@ -407,70 +407,74 @@ export default function VendorCatalogUploadPage() {
         />
       </label>
 
-      {/* 4. Part category cascade (bottom) */}
-      <div className="mb-4 space-y-3 rounded-lg border border-gray-200 bg-white p-4">
-        <p className="text-sm font-medium text-gray-700">Type de pièce</p>
-        <div>
-          <label htmlFor="partCategory" className="mb-1 block text-xs text-gray-500">Catégorie</label>
+      {/* 4. Part category cascade */}
+      <FieldGroup title="Type de pièce">
+        <Field id="partCategory" label="Catégorie">
           <select
             id="partCategory"
             value={partCategory}
             onChange={(e) => handleCategoryChange(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+            className={SELECT_CLASS}
           >
             <option value="">— Sélectionner une catégorie —</option>
             {categoryNames.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-        </div>
+        </Field>
         {partCategory && subcategories.length > 0 && (
-          <div>
-            <label htmlFor="partSubcategory" className="mb-1 block text-xs text-gray-500">Sous-catégorie</label>
+          <Field id="partSubcategory" label="Sous-catégorie">
             <select
               id="partSubcategory"
               value={partSubcategory}
               onChange={(e) => setPartSubcategory(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={SELECT_CLASS}
             >
               <option value="">— Sélectionner une sous-catégorie —</option>
               {subcategories.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
-          </div>
+          </Field>
         )}
-      </div>
+      </FieldGroup>
 
-      {/* Progress counter */}
+      {/* Progress */}
       {uploading && (
-        <div className="mb-4 rounded-lg bg-blue-50 p-3 text-center">
-          <p className="text-sm font-medium text-[#002366]">
-            {uploads.length}/{totalSelected} pièces traitées
+        <div className="mb-4 rounded-md border border-border bg-card p-3.5">
+          <p className="text-sm font-medium text-ink-2">
+            <span className="font-mono tabular">{uploads.length}/{totalSelected}</span> pièces traitées
           </p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-blue-100">
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
             <div
-              className="h-full rounded-full bg-[#002366] transition-all"
+              className="h-full rounded-full bg-accent transition-all duration-300"
               style={{ width: `${totalSelected > 0 ? (uploads.length / totalSelected) * 100 : 0}%` }}
             />
           </div>
         </div>
       )}
 
-      {error && <p className="mb-4 text-sm text-[#D32F2F]">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+          {error}
+        </div>
+      )}
 
       {/* Uploaded items list */}
       {uploads.length > 0 && (
-        <div className="mb-4">
-          <p className="mb-2 text-sm font-medium text-gray-700">
+        <div className="mb-5">
+          <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
             {uploads.length} pièce{uploads.length > 1 ? 's' : ''} uploadée{uploads.length > 1 ? 's' : ''}
           </p>
           <div className="space-y-2">
             {uploads.map((item) => (
-              <div key={item.id} className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-2">
-                <span className="text-green-600">✅</span>
-                <span className="text-xs text-gray-600">
-                  Fiche créée — identification IA en cours...
+              <div
+                key={item.id}
+                className="flex items-center gap-3 rounded-md border border-success-fg/20 bg-success-bg p-2.5"
+              >
+                <span className="text-success-fg">✓</span>
+                <span className="text-xs text-success-fg">
+                  Fiche créée — identification IA en cours…
                 </span>
               </div>
             ))}
@@ -479,22 +483,59 @@ export default function VendorCatalogUploadPage() {
       )}
 
       {/* Navigation */}
-      <div className="mt-6 space-y-3">
+      <div className="mt-6 space-y-2.5">
         {uploads.length > 0 && !uploading && (
-          <button
-            onClick={() => router.push('/vendors/catalog')}
-            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0]"
-          >
+          <Button variant="accent" size="lg" block onClick={() => router.push('/vendors/catalog')}>
             Voir mon catalogue ({uploads.length} pièce{uploads.length > 1 ? 's' : ''} ajoutée{uploads.length > 1 ? 's' : ''})
-          </button>
+          </Button>
         )}
-        <button
-          onClick={() => router.push('/vendors/catalog')}
-          className="w-full rounded-lg border border-gray-300 py-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
-        >
+        <Button variant="secondary" block onClick={() => router.push('/vendors/catalog')}>
           Retour au catalogue
-        </button>
+        </Button>
       </div>
+    </div>
+  )
+}
+
+const INPUT_CLASS =
+  'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
+const SELECT_CLASS = INPUT_CLASS
+
+function FieldGroup({
+  title,
+  required,
+  help,
+  children,
+}: {
+  title: string
+  required?: boolean
+  help?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="mb-4 space-y-3 rounded-md border border-border bg-card p-4">
+      <div className="flex items-center gap-1.5">
+        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+          {title}
+        </p>
+        {required && <span className="text-accent">*</span>}
+      </div>
+      {children}
+      {help && <p className="text-xs text-muted">{help}</p>}
+    </div>
+  )
+}
+
+function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+      >
+        {label}
+      </label>
+      {children}
     </div>
   )
 }
