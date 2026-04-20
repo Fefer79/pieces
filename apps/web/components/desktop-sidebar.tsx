@@ -56,8 +56,8 @@ export function DesktopSidebar() {
     <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-gray-200 lg:bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center justify-center border-b border-[#E1DAC9]/50 px-4">
-        <span className="font-[family-name:Gloock,serif] text-xl text-[#00113a]">
-          Pièces<span className="text-[#ff6b00]">.</span>
+        <span className="font-display text-xl text-ink">
+          Pièces<span className="text-accent">.</span>
         </span>
       </div>
 

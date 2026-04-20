@@ -42,8 +42,8 @@ export default function ForgotPasswordPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 gap-6">
       <div className="flex items-center justify-center">
-        <span className="font-[family-name:Gloock,serif] text-4xl text-[#00113a]">
-          Pièces<span className="text-[#ff6b00]">.</span>
+        <span className="font-display text-4xl text-ink">
+          Pièces<span className="text-accent">.</span>
         </span>
       </div>
       <div className="w-full max-w-sm">

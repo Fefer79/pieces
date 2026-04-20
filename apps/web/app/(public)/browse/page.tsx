@@ -8,15 +8,25 @@ import { PromoCarousel, type PromoSlide } from '@/components/ui/promo-carousel'
 
 const PROMO_SLIDES: PromoSlide[] = [
   {
+    id: 'intro',
+    eyebrow: 'Pièces.ci',
+    title: 'La première marketplace de pièces auto en Côte d\u2019Ivoire.',
+    description: 'Prix transparents · Multi-vendeurs · Livraison au garage.',
+    cta: { label: 'Explorer le catalogue', href: '#catalog' },
+    secondaryCta: { label: 'Comment ça marche', href: '/info' },
+    art: '\u{1F1E8}\u{1F1EE}',
+    theme: 'navy',
+  },
+  {
     id: 'transparence',
     eyebrow: 'La transparence d\u2019abord',
-    title: 'Le juste prix des pièces, sans intermédiaires qui gonflent.',
+    title: 'Le juste prix des pièces, sans intermédiaires.',
     description:
       'Neuves, occasions importées, ré-usinées \u2014 chaque annonce affiche le détail du prix. Vous payez ce que ça vaut, pas ce qu\u2019on décide pour vous.',
     cta: { label: 'Explorer le catalogue', href: '#catalog' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
     art: '\u{1F527}',
-    theme: 'navy',
+    theme: 'cream',
   },
   {
     id: 'reusine',
@@ -36,7 +46,7 @@ const PROMO_SLIDES: PromoSlide[] = [
       'Notre assistant IA répond 24h/24 aux questions de compatibilité et choix. Cas complexe ? Un expert humain prend le relais sous 30 minutes. Gratuit avant achat.',
     cta: { label: 'Démarrer une conversation', href: '#conseil' },
     art: '\u{1F4AC}',
-    theme: 'cream',
+    theme: 'navy',
   },
 ]
 
