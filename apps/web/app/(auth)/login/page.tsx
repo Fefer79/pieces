@@ -144,70 +144,57 @@ function LoginForm() {
         </span>
       </div>
       <div className="w-full max-w-sm">
-        <p className="mb-6 text-center text-sm text-gray-600">
+        <p className="mb-6 text-center text-sm text-muted">
           Connectez-vous avec votre numéro de téléphone ou email
         </p>
 
         {/* Toggle phone / email */}
-        <div className="mb-4 flex rounded-lg bg-gray-100 p-1">
-          <button
-            type="button"
-            onClick={() => switchMethod('phone')}
-            className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
-              method === 'phone'
-                ? 'bg-white text-[#00113a] shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Téléphone
-          </button>
-          <button
-            type="button"
-            onClick={() => switchMethod('email')}
-            className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
-              method === 'email'
-                ? 'bg-white text-[#00113a] shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Email
-          </button>
+        <div className="mb-3 flex rounded-md border border-border bg-surface p-1">
+          {(['phone', 'email'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => switchMethod(m)}
+              className={`flex-1 rounded-sm py-2 text-sm font-medium transition-all ${
+                method === m
+                  ? 'bg-card text-ink shadow-sm'
+                  : 'text-muted hover:text-ink'
+              }`}
+            >
+              {m === 'phone' ? 'Téléphone' : 'Email'}
+            </button>
+          ))}
         </div>
 
         {/* Toggle OTP / password */}
-        <div className="mb-6 flex rounded-lg bg-gray-100 p-1">
-          <button
-            type="button"
-            onClick={() => switchAuthMode('otp')}
-            className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-colors ${
-              authMode === 'otp'
-                ? 'bg-white text-[#00113a] shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Code par SMS/email
-          </button>
-          <button
-            type="button"
-            onClick={() => switchAuthMode('password')}
-            className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-colors ${
-              authMode === 'password'
-                ? 'bg-white text-[#00113a] shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Mot de passe
-          </button>
+        <div className="mb-6 flex rounded-md border border-border bg-surface p-1">
+          {(['otp', 'password'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => switchAuthMode(mode)}
+              className={`flex-1 rounded-sm py-1.5 text-xs font-medium transition-all ${
+                authMode === mode
+                  ? 'bg-card text-ink shadow-sm'
+                  : 'text-muted hover:text-ink'
+              }`}
+            >
+              {mode === 'otp' ? 'Code par SMS/email' : 'Mot de passe'}
+            </button>
+          ))}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {method === 'phone' ? (
             <div>
-              <label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="phone"
+                className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+              >
                 Numéro de téléphone
               </label>
               <div className="flex">
-                <span className="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-600">
+                <span className="inline-flex items-center rounded-l-sm border border-r-0 border-border-strong bg-surface px-3 font-mono text-sm text-muted">
                   +225
                 </span>
                 <input
@@ -217,7 +204,7 @@ function LoginForm() {
                   value={phone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   placeholder="07 00 00 00 00"
-                  className="block w-full rounded-r-lg border border-gray-300 px-3 py-3 text-base focus:border-[#ff6b00] focus:outline-none focus:ring-1 focus:ring-[#ff6b00]"
+                  className="block w-full rounded-r-sm border border-border-strong bg-card px-3 py-3 text-base text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
                   autoComplete="tel"
                   disabled={loading}
                 />
@@ -225,7 +212,10 @@ function LoginForm() {
             </div>
           ) : (
             <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+              >
                 Adresse email
               </label>
               <input
@@ -235,7 +225,7 @@ function LoginForm() {
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 placeholder="exemple@mail.com"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#ff6b00] focus:outline-none focus:ring-1 focus:ring-[#ff6b00]"
+                className="block w-full rounded-sm border border-border-strong bg-card px-3 py-3 text-base text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
                 autoComplete="email"
                 disabled={loading}
               />
@@ -244,14 +234,14 @@ function LoginForm() {
 
           {authMode === 'password' && (
             <div>
-              <div className="mb-1 flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <div className="mb-1.5 flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+                >
                   Mot de passe
                 </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-[#002366] hover:underline"
-                >
+                <Link href="/forgot-password" className="text-xs text-ink-2 hover:underline">
                   Oublié ?
                 </Link>
               </div>
@@ -261,7 +251,7 @@ function LoginForm() {
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError('') }}
                 placeholder="••••••••"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#ff6b00] focus:outline-none focus:ring-1 focus:ring-[#ff6b00]"
+                className="block w-full rounded-sm border border-border-strong bg-card px-3 py-3 text-base text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
                 autoComplete="current-password"
                 disabled={loading}
                 minLength={6}
@@ -269,16 +259,20 @@ function LoginForm() {
             </div>
           )}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading || !canSubmit}
-            className="w-full rounded-[14px] bg-[#ff6b00] px-4 py-3 text-base font-bold text-white transition-colors hover:bg-[#B8760D] disabled:bg-gray-300 disabled:text-gray-500"
+            className="w-full rounded-md bg-accent px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
             style={{ minHeight: '48px' }}
           >
             {loading
-              ? (authMode === 'password' ? 'Connexion...' : 'Envoi en cours...')
+              ? (authMode === 'password' ? 'Connexion…' : 'Envoi en cours…')
               : (authMode === 'password' ? 'Se connecter' : 'Recevoir le code')}
           </button>
         </form>
@@ -289,7 +283,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-dvh items-center justify-center"><p className="text-gray-500">Chargement...</p></div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh items-center justify-center">
+          <p className="text-sm text-muted">Chargement…</p>
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   )

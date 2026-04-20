@@ -274,7 +274,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <main className="flex min-h-dvh items-center justify-center">
-        <p className="text-gray-500">Chargement...</p>
+        <p className="text-sm text-muted">Chargement…</p>
       </main>
     )
   }
@@ -282,7 +282,9 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center px-4">
-        <p className="text-red-600">{error || 'Profil introuvable'}</p>
+        <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+          {error || 'Profil introuvable'}
+        </div>
       </main>
     )
   }
@@ -290,17 +292,27 @@ export default function ProfilePage() {
   const availableRoles = ROLE_CARDS.filter(({ role }) => !profile.roles.includes(role))
   const isMultiRole = profile.roles.length > 1
 
-  return (
-    <main className="mx-auto w-full max-w-sm px-4 pt-8 lg:max-w-lg">
-      <h1 className="mb-6 text-xl font-bold text-gray-900">Mon profil</h1>
+  const inputCls = 'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
+  const sectionHeader = 'mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
 
-      <form onSubmit={handleSaveProfile} className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-        <p className="mb-3 text-sm text-gray-500">Informations personnelles</p>
+  return (
+    <main className="mx-auto w-full max-w-2xl px-4 py-6 lg:py-8">
+      <div className="mb-6">
+        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+          Compte
+        </div>
+        <h1 className="mt-1 font-display text-3xl text-ink">Mon profil</h1>
+      </div>
+
+      <form onSubmit={handleSaveProfile} className="mb-4 rounded-md border border-border bg-card p-5">
+        <p className={sectionHeader}>Informations personnelles</p>
         <div className="space-y-3">
           <div>
-            <label htmlFor="phone" className="mb-1 block text-xs text-gray-500">Téléphone</label>
+            <label htmlFor="phone" className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              Téléphone
+            </label>
             <div className="flex">
-              <span className="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-600">
+              <span className="inline-flex items-center rounded-l-sm border border-r-0 border-border-strong bg-surface px-3 font-mono text-sm text-muted">
                 +225
               </span>
               <input
@@ -310,54 +322,59 @@ export default function ProfilePage() {
                 value={editPhone}
                 onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 placeholder="07 00 00 00 00"
-                className="w-full rounded-r-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+                className={`${inputCls} rounded-l-none`}
               />
             </div>
           </div>
           <div>
-            <label htmlFor="name" className="mb-1 block text-xs text-gray-500">Nom</label>
+            <label htmlFor="name" className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              Nom
+            </label>
             <input
               id="name"
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               placeholder="Votre nom (optionnel)"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={inputCls}
             />
           </div>
           <div>
-            <label htmlFor="email" className="mb-1 block text-xs text-gray-500">Email</label>
+            <label htmlFor="email" className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              Email
+            </label>
             <input
               id="email"
               type="email"
               value={editEmail}
               onChange={(e) => setEditEmail(e.target.value)}
               placeholder="Votre email (optionnel)"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={inputCls}
             />
           </div>
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-lg bg-[#002366] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#001a4d] disabled:opacity-50"
+            className="w-full rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink disabled:opacity-50"
           >
-            {saving ? 'Enregistrement...' : saveSuccess ? 'Enregistré !' : 'Enregistrer'}
+            {saving ? 'Enregistrement…' : saveSuccess ? '✓ Enregistré' : 'Enregistrer'}
           </button>
         </div>
       </form>
 
-      <section className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-        <p className="mb-2 text-sm text-gray-500">Rôles</p>
+      <section className="mb-4 rounded-md border border-border bg-card p-5">
+        <p className={sectionHeader}>Rôles actifs</p>
         <div className="flex flex-wrap gap-2">
           {profile.roles.map((role) => (
             <span
               key={role}
-              className={`rounded-full px-3 py-1 text-sm font-medium ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.04em] ${
                 role === profile.activeContext
-                  ? 'bg-[#002366] text-white'
-                  : 'bg-gray-100 text-gray-700'
+                  ? 'bg-ink-2 text-white'
+                  : 'border border-border bg-surface text-muted'
               }`}
             >
+              {role === profile.activeContext && <span>●</span>}
               {ROLE_LABELS[role] ?? role}
             </span>
           ))}
@@ -365,23 +382,27 @@ export default function ProfilePage() {
       </section>
 
       {availableRoles.length > 0 && (
-        <section className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-          <p className="mb-3 text-sm text-gray-500">Ajouter un rôle</p>
-          {error && <p className="mb-2 text-sm text-red-600">{error}</p>}
+        <section className="mb-4 rounded-md border border-border bg-card p-5">
+          <p className={sectionHeader}>Ajouter un rôle</p>
+          {error && (
+            <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             {availableRoles.map(({ role, label, description, icon: Icon }) => (
               <button
                 key={role}
                 onClick={() => handleSelectRole(role, '')}
                 disabled={selectingRole}
-                className="flex w-full items-center gap-3 rounded-lg border border-gray-200 p-3 text-left transition-all hover:border-[#002366] hover:shadow-sm disabled:opacity-50"
+                className="flex w-full items-center gap-3 rounded-md border border-border p-3 text-left transition-all hover:border-ink-2 hover:shadow-sm disabled:opacity-50"
               >
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-50">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-sm bg-[rgba(0,35,102,0.08)] text-ink-2">
                   <Icon />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{label}</p>
-                  <p className="text-xs text-gray-500">{description}</p>
+                  <p className="text-sm font-semibold text-ink">{label}</p>
+                  <p className="text-xs text-muted">{description}</p>
                 </div>
               </button>
             ))}
@@ -390,9 +411,13 @@ export default function ProfilePage() {
       )}
 
       {isMultiRole && (
-        <section className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-          <p className="mb-3 text-sm text-gray-500">Changer de contexte</p>
-          {error && <p className="mb-2 text-sm text-red-600">{error}</p>}
+        <section className="mb-4 rounded-md border border-border bg-card p-5">
+          <p className={sectionHeader}>Changer de contexte</p>
+          {error && (
+            <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             {profile.roles
               .filter((role) => role !== profile.activeContext)
@@ -401,21 +426,21 @@ export default function ProfilePage() {
                   key={role}
                   onClick={() => handleSwitchContext(role)}
                   disabled={switching}
-                  className="w-full rounded-lg border border-[#002366] px-4 py-3 text-sm font-medium text-[#002366] transition-colors hover:bg-[#002366] hover:text-white disabled:opacity-50"
+                  className="w-full rounded-md border border-ink-2 bg-card px-4 py-3 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white disabled:opacity-50"
                   style={{ minHeight: '48px' }}
                 >
-                  {switching ? 'Changement...' : `Passer en ${ROLE_LABELS[role] ?? role}`}
+                  {switching ? 'Changement…' : `Passer en ${ROLE_LABELS[role] ?? role}`}
                 </button>
               ))}
           </div>
         </section>
       )}
 
-      <form onSubmit={handleChangePassword} className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-        <p className="mb-3 text-sm text-gray-500">Sécurité — Mot de passe</p>
+      <form onSubmit={handleChangePassword} className="mb-4 rounded-md border border-border bg-card p-5">
+        <p className={sectionHeader}>Sécurité · Mot de passe</p>
         <div className="space-y-3">
           <div>
-            <label htmlFor="newPassword" className="mb-1 block text-xs text-gray-500">
+            <label htmlFor="newPassword" className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
               Nouveau mot de passe
             </label>
             <input
@@ -426,11 +451,11 @@ export default function ProfilePage() {
               placeholder="Au moins 6 caractères"
               minLength={6}
               autoComplete="new-password"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={inputCls}
             />
           </div>
           <div>
-            <label htmlFor="confirmPassword" className="mb-1 block text-xs text-gray-500">
+            <label htmlFor="confirmPassword" className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
               Confirmer le mot de passe
             </label>
             <input
@@ -441,18 +466,22 @@ export default function ProfilePage() {
               placeholder="Confirmer"
               minLength={6}
               autoComplete="new-password"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366]"
+              className={inputCls}
             />
           </div>
-          {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+          {passwordError && (
+            <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+              {passwordError}
+            </div>
+          )}
           <button
             type="submit"
             disabled={savingPassword || !newPassword || !confirmPassword}
-            className="w-full rounded-lg bg-[#002366] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#001a4d] disabled:opacity-50"
+            className="w-full rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink disabled:opacity-50"
           >
-            {savingPassword ? 'Enregistrement...' : passwordSuccess ? 'Mot de passe enregistré !' : 'Définir le mot de passe'}
+            {savingPassword ? 'Enregistrement…' : passwordSuccess ? '✓ Mot de passe enregistré' : 'Définir le mot de passe'}
           </button>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted">
             Une fois défini, vous pourrez vous connecter sans recevoir d&apos;OTP.
           </p>
         </div>
@@ -460,15 +489,15 @@ export default function ProfilePage() {
 
       <Link
         href="/profile/data"
-        className="mb-4 block w-full rounded-lg border border-gray-200 px-4 py-3 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+        className="mb-2 block w-full rounded-md border border-border-strong bg-card px-4 py-3 text-center text-sm font-medium text-ink transition-colors hover:bg-surface"
         style={{ minHeight: '48px', lineHeight: '28px' }}
       >
-        Mes données personnelles
+        Mes données personnelles →
       </Link>
 
       <button
         onClick={handleLogout}
-        className="w-full rounded-lg border border-red-300 px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+        className="w-full rounded-md border border-error-fg/30 bg-error-bg/40 px-4 py-3 text-sm font-semibold text-error-fg transition-colors hover:border-error-fg/50"
         style={{ minHeight: '48px' }}
       >
         Se déconnecter
@@ -479,7 +508,7 @@ export default function ProfilePage() {
 
 function WrenchIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
     </svg>
   )
@@ -487,7 +516,7 @@ function WrenchIcon() {
 
 function CarIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M7 17m-2 0a2 2 0 104 0 2 2 0 10-4 0" />
       <path d="M17 17m-2 0a2 2 0 104 0 2 2 0 10-4 0" />
       <path d="M5 17H3v-6l2-5h9l4 5h1a2 2 0 012 2v4h-2" />
@@ -499,7 +528,7 @@ function CarIcon() {
 
 function ShopIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
       <path d="M9 22V12h6v10" />
     </svg>
@@ -508,7 +537,7 @@ function ShopIcon() {
 
 function BuildingIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 21h18" />
       <path d="M5 21V7l8-4v18" />
       <path d="M19 21V11l-6-4" />

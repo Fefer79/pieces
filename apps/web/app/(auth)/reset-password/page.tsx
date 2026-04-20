@@ -89,23 +89,24 @@ export default function ResetPasswordPage() {
         </span>
       </div>
       <div className="w-full max-w-sm">
-        <h1 className="mb-2 text-center text-xl font-bold text-[#00113a]">
+        <h1 className="mb-2 text-center font-display text-2xl text-ink">
           Nouveau mot de passe
         </h1>
-        <p className="mb-6 text-center text-sm text-gray-600">
+        <p className="mb-6 text-center text-sm text-muted">
           Choisissez un nouveau mot de passe pour votre compte
         </p>
 
         {success ? (
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
-            <p className="text-sm text-green-800">
-              ✅ Mot de passe modifié ! Redirection en cours...
-            </p>
+          <div className="rounded-md border border-success-fg/20 bg-success-bg p-4 text-center text-sm font-medium text-success-fg">
+            ✓ Mot de passe modifié ! Redirection en cours…
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+              >
                 Nouveau mot de passe
               </label>
               <input
@@ -116,14 +117,17 @@ export default function ResetPasswordPage() {
                 placeholder="Au moins 6 caractères"
                 minLength={6}
                 autoComplete="new-password"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#ff6b00] focus:outline-none focus:ring-1 focus:ring-[#ff6b00]"
+                className="block w-full rounded-sm border border-border-strong bg-card px-3 py-3 text-base text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
                 disabled={loading}
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="confirm" className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirm"
+                className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+              >
                 Confirmer le mot de passe
               </label>
               <input
@@ -134,21 +138,25 @@ export default function ResetPasswordPage() {
                 placeholder="Confirmer"
                 minLength={6}
                 autoComplete="new-password"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#ff6b00] focus:outline-none focus:ring-1 focus:ring-[#ff6b00]"
+                className="block w-full rounded-sm border border-border-strong bg-card px-3 py-3 text-base text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
                 disabled={loading}
                 required
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading || !password || !confirm}
-              className="w-full rounded-[14px] bg-[#ff6b00] px-4 py-3 text-base font-bold text-white transition-colors hover:bg-[#B8760D] disabled:bg-gray-300 disabled:text-gray-500"
+              className="w-full rounded-md bg-accent px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
               style={{ minHeight: '48px' }}
             >
-              {loading ? 'Enregistrement...' : 'Enregistrer le mot de passe'}
+              {loading ? 'Enregistrement…' : 'Enregistrer le mot de passe'}
             </button>
           </form>
         )}

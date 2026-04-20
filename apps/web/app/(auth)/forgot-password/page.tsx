@@ -47,22 +47,21 @@ export default function ForgotPasswordPage() {
         </span>
       </div>
       <div className="w-full max-w-sm">
-        <h1 className="mb-2 text-center text-xl font-bold text-[#00113a]">
+        <h1 className="mb-2 text-center font-display text-2xl text-ink">
           Mot de passe oublié
         </h1>
-        <p className="mb-6 text-center text-sm text-gray-600">
+        <p className="mb-6 text-center text-sm text-muted">
           Entrez votre email pour recevoir un lien de réinitialisation
         </p>
 
         {sent ? (
-          <div className="space-y-4 rounded-lg border border-green-200 bg-green-50 p-4">
-            <p className="text-sm text-green-800">
-              ✉️ Un lien de réinitialisation a été envoyé à <strong>{email}</strong>.
-              Vérifiez votre boîte mail (et vos spams).
+          <div className="space-y-4 rounded-md border border-success-fg/20 bg-success-bg p-4">
+            <p className="text-sm text-success-fg">
+              ✉️ Un lien de réinitialisation a été envoyé à <strong>{email}</strong>. Vérifiez votre boîte mail (et vos spams).
             </p>
             <Link
               href="/login"
-              className="block w-full rounded-lg bg-[#002366] px-4 py-3 text-center text-sm font-medium text-white"
+              className="block w-full rounded-md bg-ink-2 px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-ink"
             >
               Retour à la connexion
             </Link>
@@ -70,7 +69,10 @@ export default function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+              >
                 Adresse email
               </label>
               <input
@@ -80,27 +82,31 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setError('') }}
                 placeholder="exemple@mail.com"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-3 text-base focus:border-[#ff6b00] focus:outline-none focus:ring-1 focus:ring-[#ff6b00]"
+                className="block w-full rounded-sm border border-border-strong bg-card px-3 py-3 text-base text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
                 autoComplete="email"
                 disabled={loading}
                 required
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+                {error}
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading || !email}
-              className="w-full rounded-[14px] bg-[#ff6b00] px-4 py-3 text-base font-bold text-white transition-colors hover:bg-[#B8760D] disabled:bg-gray-300 disabled:text-gray-500"
+              className="w-full rounded-md bg-accent px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
               style={{ minHeight: '48px' }}
             >
-              {loading ? 'Envoi en cours...' : 'Envoyer le lien'}
+              {loading ? 'Envoi en cours…' : 'Envoyer le lien'}
             </button>
 
             <Link
               href="/login"
-              className="block text-center text-sm text-[#002366] hover:underline"
+              className="block text-center text-sm text-ink-2 hover:underline"
             >
               ← Retour à la connexion
             </Link>

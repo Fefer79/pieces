@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { ROLE_LABELS } from '@/lib/role-labels'
+import { StatCard } from '@/components/ui/card'
+import { Price } from '@/components/ui/price'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -103,7 +105,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <main className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-gray-500">Chargement...</p>
+        <p className="text-sm text-muted">Chargement…</p>
       </main>
     )
   }
@@ -111,81 +113,47 @@ export default function DashboardPage() {
   const roleName = user?.activeContext ? (ROLE_LABELS[user.activeContext] ?? user.activeContext) : ''
 
   return (
-    <main className="mx-auto w-full max-w-sm px-4 pt-8 pb-8 lg:max-w-2xl">
+    <main className="mx-auto w-full max-w-2xl px-4 py-6 lg:py-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Mon tableau de bord</h1>
-        {roleName && (
-          <p className="mt-1 text-sm text-gray-500">
-            Connecte en tant que <span className="font-medium text-[#002366]">{roleName}</span>
-          </p>
-        )}
+        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+          {roleName ? `Rôle actif · ${roleName}` : 'Tableau de bord'}
+        </div>
+        <h1 className="mt-1 font-display text-3xl text-ink">Mon tableau de bord</h1>
       </div>
 
       {/* Stats cards */}
       <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-[#002366]">{orderStats.total}</p>
-          <p className="text-xs text-gray-500">Commandes</p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-amber-600">{orderStats.active}</p>
-          <p className="text-xs text-gray-500">En cours</p>
-        </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{vehicles.length}</p>
-          <p className="text-xs text-gray-500">Vehicules</p>
-        </div>
+        <StatCard label="Commandes" value={orderStats.total} />
+        <StatCard label="En cours" value={orderStats.active} />
+        <StatCard label="Véhicules" value={vehicles.length} />
       </div>
 
       {/* Quick actions */}
       <section className="mb-6">
-        <h2 className="mb-3 text-sm font-semibold text-gray-700">Actions rapides</h2>
+        <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+          Actions rapides
+        </h2>
         <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/browse"
-            className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-[#002366]"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50">
-              <svg className="h-5 w-5 text-[#002366]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-gray-700">Chercher pieces</span>
-          </Link>
-          <Link
-            href="/vehicles"
-            className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-[#002366]"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50">
-              <svg className="h-5 w-5 text-[#002366]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0H21" />
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-gray-700">Mes vehicules</span>
-          </Link>
-          <Link
-            href="/orders"
-            className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-[#002366]"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50">
-              <svg className="h-5 w-5 text-[#002366]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15a2.25 2.25 0 0 1 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-gray-700">Commandes</span>
-          </Link>
-          <Link
-            href="/profile"
-            className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-[#002366]"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50">
-              <svg className="h-5 w-5 text-[#002366]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-              </svg>
-            </div>
-            <span className="text-sm font-medium text-gray-700">Mon profil</span>
-          </Link>
+          {[
+            { href: '/browse', label: 'Chercher pièces', icon: 'm21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z' },
+            { href: '/vehicles', label: 'Mes véhicules', icon: 'M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0H21' },
+            { href: '/orders', label: 'Commandes', icon: 'M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15a2.25 2.25 0 0 1 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z' },
+            { href: '/profile', label: 'Mon profil', icon: 'M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z' },
+          ].map((a) => (
+            <Link
+              key={a.href}
+              href={a.href}
+              className="flex items-center gap-3 rounded-md border border-border bg-card p-3 transition-colors hover:border-ink-2"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-[rgba(0,35,102,0.08)]">
+                <svg className="h-5 w-5 text-ink-2" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d={a.icon} />
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-ink">{a.label}</span>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -193,23 +161,27 @@ export default function DashboardPage() {
       {vehicles.length > 0 && (
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-700">Mes vehicules</h2>
-            <Link href="/vehicles" className="text-xs font-medium text-[#002366] hover:underline">
-              Voir tout
+            <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              Mes véhicules
+            </h2>
+            <Link href="/vehicles" className="text-xs font-semibold text-ink-2 hover:underline">
+              Voir tout →
             </Link>
           </div>
-          <div className="space-y-2">
-            {vehicles.slice(0, 3).map((v) => (
+          <div className="overflow-hidden rounded-md border border-border bg-card">
+            {vehicles.slice(0, 3).map((v, idx) => (
               <Link
                 key={v.id}
                 href={`/browse/${encodeURIComponent(v.brand)}/${encodeURIComponent(v.model)}/${v.year}`}
-                className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-[#002366]"
+                className={`flex items-center justify-between px-4 py-3 transition-colors hover:bg-surface ${idx > 0 ? 'border-t border-border' : ''}`}
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{v.brand} {v.model}</p>
-                  <p className="text-xs text-gray-500">{v.year}</p>
+                  <p className="text-sm font-medium text-ink">
+                    {v.brand} {v.model}
+                  </p>
+                  <p className="font-mono text-xs tabular text-muted">{v.year}</p>
                 </div>
-                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <svg className="h-4 w-4 text-muted-2" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                 </svg>
               </Link>
@@ -221,46 +193,48 @@ export default function DashboardPage() {
       {/* Recent orders */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">Commandes recentes</h2>
+          <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            Commandes récentes
+          </h2>
           {orderStats.total > 0 && (
-            <Link href="/orders" className="text-xs font-medium text-[#002366] hover:underline">
-              Voir tout
+            <Link href="/orders" className="text-xs font-semibold text-ink-2 hover:underline">
+              Voir tout →
             </Link>
           )}
         </div>
 
         {orders.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
-            <p className="mb-1 text-sm text-gray-500">Aucune commande</p>
-            <Link href="/browse" className="text-sm font-medium text-[#002366] hover:underline">
-              Rechercher des pieces
+          <div className="rounded-md border border-dashed border-border-strong bg-card/40 p-6 text-center">
+            <p className="mb-2 text-sm font-medium text-ink">Aucune commande</p>
+            <Link href="/browse" className="text-sm font-semibold text-ink-2 hover:underline">
+              Rechercher des pièces →
             </Link>
           </div>
         ) : (
           <div className="space-y-2">
             {orders.map((order) => {
-              const colors = STATUS_COLORS[order.status] ?? { bg: 'bg-gray-100', text: 'text-gray-700' }
+              const colors = STATUS_COLORS[order.status] ?? { bg: 'bg-surface', text: 'text-muted' }
               return (
-                <div key={order.id} className="rounded-lg border border-gray-200 bg-white p-4">
+                <div key={order.id} className="rounded-md border border-border bg-card p-4">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="font-mono text-sm font-medium tabular text-ink">
                       #{order.id.slice(0, 8)}
                     </span>
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.bg} ${colors.text}`}>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-[0.04em] ${colors.bg} ${colors.text}`}>
                       {STATUS_LABELS[order.status] ?? order.status}
                     </span>
                   </div>
-                  <p className="mb-1 text-xs text-gray-500">
+                  <p className="mb-1 font-mono text-xs tabular text-muted">
                     {new Date(order.createdAt).toLocaleDateString('fr-CI', {
                       day: 'numeric', month: 'short', year: 'numeric',
                     })}
                   </p>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-muted">
                     {order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
                   </p>
-                  <p className="mt-2 text-right text-sm font-semibold text-gray-900">
-                    {order.totalAmount.toLocaleString()} FCFA
-                  </p>
+                  <div className="mt-2 text-right">
+                    <Price amount={order.totalAmount} className="text-sm" />
+                  </div>
                 </div>
               )
             })}
