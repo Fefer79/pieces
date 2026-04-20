@@ -53,10 +53,10 @@ export function DesktopSidebar() {
   const items = getNavItems(user?.activeContext ?? null, isAuthenticated)
 
   return (
-    <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-gray-200 lg:bg-white">
+    <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-border lg:bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center justify-center border-b border-[#E1DAC9]/50 px-4">
-        <span className="font-display text-xl text-ink">
+      <div className="flex h-16 items-center border-b border-border px-5">
+        <span className="font-display text-2xl text-ink">
           Pièces<span className="text-accent">.</span>
         </span>
       </div>
@@ -69,10 +69,10 @@ export function DesktopSidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex items-center rounded-md px-3 py-2.5 text-sm transition-colors ${
                 isActive
-                  ? 'bg-blue-50 text-[#002366]'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-[rgba(0,35,102,0.08)] font-semibold text-ink-2'
+                  : 'font-medium text-muted hover:bg-surface hover:text-ink'
               }`}
             >
               {label}
@@ -83,11 +83,11 @@ export function DesktopSidebar() {
 
       {/* User info */}
       {isAuthenticated && user && (
-        <div className="border-t border-gray-200 px-4 py-3">
-          <p className="truncate text-xs text-gray-500">
+        <div className="border-t border-border px-4 py-3.5">
+          <p className="truncate font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
             {ROLE_LABELS[user.activeContext ?? ''] ?? 'Utilisateur'}
           </p>
-          <p className="truncate text-sm font-medium text-gray-700">
+          <p className="mt-1 truncate text-sm font-medium text-ink">
             {user.phone ?? user.email}
           </p>
         </div>
