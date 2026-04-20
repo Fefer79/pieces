@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { Chip } from '@/components/ui/chip'
+import { Price } from '@/components/ui/price'
+import type { ChipVariant } from '@/components/ui/chip'
 
 function getSupabase() {
   return createBrowserClient(
@@ -38,10 +41,10 @@ const STATUS_LABELS: Record<string, string> = {
   ARCHIVED: 'Archivé',
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  DRAFT: 'bg-yellow-100 text-yellow-700',
-  PUBLISHED: 'bg-green-100 text-green-700',
-  ARCHIVED: 'bg-gray-100 text-gray-500',
+const STATUS_CHIP: Record<string, ChipVariant> = {
+  DRAFT: 'status-warn',
+  PUBLISHED: 'status-ok',
+  ARCHIVED: 'plain',
 }
 
 export default function AdminCatalogPage() {
@@ -83,107 +86,145 @@ export default function AdminCatalogPage() {
     fetchItems(statusFilter || undefined)
   }, [fetchItems, statusFilter])
 
+  const filters: Array<{ value: string; label: string }> = [
+    { value: '', label: 'Tous' },
+    { value: 'DRAFT', label: 'Brouillons' },
+    { value: 'PUBLISHED', label: 'Publiés' },
+    { value: 'ARCHIVED', label: 'Archivés' },
+  ]
+
   return (
-    <main className="mx-auto max-w-4xl px-4 py-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#1A1A1A]">
-          Annonces
-          {data && <span className="ml-2 text-sm font-normal text-gray-500">({data.total})</span>}
-        </h1>
-        <a
-          href="/admin"
-          className="text-sm text-[#002366] hover:underline"
-        >
-          Retour
+    <main className="mx-auto max-w-6xl px-4 py-6 lg:py-8">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            Administration · Annonces
+          </div>
+          <h1 className="mt-1 font-display text-3xl text-ink">
+            Annonces{' '}
+            {data && (
+              <span className="font-mono text-lg font-normal tabular text-muted">
+                ({data.total})
+              </span>
+            )}
+          </h1>
+        </div>
+        <a href="/admin" className="text-sm text-ink-2 hover:underline">
+          ← Dashboard
         </a>
       </div>
 
-      <div className="mb-4 flex gap-2">
-        {['', 'DRAFT', 'PUBLISHED', 'ARCHIVED'].map((s) => (
+      <div className="mb-5 flex flex-wrap gap-2">
+        {filters.map((f) => (
           <button
-            key={s}
-            onClick={() => setStatusFilter(s)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              statusFilter === s
-                ? 'bg-[#002366] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            key={f.value}
+            onClick={() => setStatusFilter(f.value)}
+            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+              statusFilter === f.value
+                ? 'bg-ink-2 text-white'
+                : 'border border-border bg-card text-muted hover:border-border-strong hover:text-ink'
             }`}
           >
-            {s === '' ? 'Tous' : STATUS_LABELS[s]}
+            {f.label}
           </button>
         ))}
       </div>
 
-      {error && <p className="mb-4 text-sm text-[#D32F2F]">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+          {error}
+        </div>
+      )}
 
-      {loading && <p className="text-sm text-gray-500">Chargement...</p>}
+      {loading && <p className="text-sm text-muted">Chargement…</p>}
 
       {!loading && data && data.items.length === 0 && (
-        <div className="rounded-lg border border-gray-200 p-8 text-center">
-          <p className="text-sm text-gray-500">Aucune annonce trouvée.</p>
+        <div className="rounded-md border border-dashed border-border-strong bg-card/40 p-10 text-center">
+          <p className="text-sm font-medium text-ink">Aucune annonce trouvée</p>
         </div>
       )}
 
       {!loading && data && data.items.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50 text-xs text-gray-500">
-              <tr>
-                <th className="px-3 py-2">Photo</th>
-                <th className="px-3 py-2">Nom</th>
-                <th className="px-3 py-2">Catégorie</th>
-                <th className="px-3 py-2">Vendeur</th>
-                <th className="px-3 py-2">Prix</th>
-                <th className="px-3 py-2">Statut</th>
-                <th className="px-3 py-2">Stock</th>
-                <th className="px-3 py-2">Date</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {data.items.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2">
-                    <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded bg-gray-100">
-                      {item.imageThumbUrl ? (
-                        <img src={item.imageThumbUrl} alt={item.name ?? ''} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-400">—</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="max-w-[200px] truncate px-3 py-2 font-medium text-[#1A1A1A]">
-                    {item.name ?? 'Sans nom'}
-                    {item.qualityIssue && <span className="ml-1 text-amber-600" title={item.qualityIssue}>⚠️</span>}
-                    {item.priceAlertFlag && <span className="ml-1 text-amber-600" title="Alerte prix">🚨</span>}
-                  </td>
-                  <td className="px-3 py-2 text-gray-600">{item.category ?? '—'}</td>
-                  <td className="px-3 py-2 text-gray-600">{item.vendor.businessName ?? '—'}</td>
-                  <td className="px-3 py-2 whitespace-nowrap">
-                    {item.price != null
-                      ? `${item.price.toLocaleString('fr-FR')} F`
-                      : item.suggestedPrice != null
-                        ? <span className="text-gray-400">{item.suggestedPrice.toLocaleString('fr-FR')} F (suggéré)</span>
-                        : '—'}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${STATUS_STYLES[item.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                      {STATUS_LABELS[item.status] ?? item.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">
-                    {item.status === 'PUBLISHED' && (
-                      <span className={`text-xs ${item.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                        {item.inStock ? 'En stock' : 'Épuisée'}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-400">
-                    {new Date(item.createdAt).toLocaleDateString('fr-FR')}
-                  </td>
+        <div className="overflow-hidden rounded-md border border-border bg-card">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
+                  <th className="px-3 py-3">Photo</th>
+                  <th className="px-3 py-3">Nom</th>
+                  <th className="px-3 py-3">Catégorie</th>
+                  <th className="px-3 py-3">Vendeur</th>
+                  <th className="px-3 py-3 text-right">Prix</th>
+                  <th className="px-3 py-3">Statut</th>
+                  <th className="px-3 py-3">Stock</th>
+                  <th className="px-3 py-3">Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.items.map((item, idx) => (
+                  <tr
+                    key={item.id}
+                    className={`transition-colors hover:bg-surface ${idx > 0 ? 'border-t border-border' : ''}`}
+                  >
+                    <td className="px-3 py-3">
+                      <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
+                        {item.imageThumbUrl ? (
+                          <img
+                            src={item.imageThumbUrl}
+                            alt={item.name ?? ''}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-2">
+                            —
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="max-w-[220px] truncate px-3 py-3 font-medium text-ink">
+                      {item.name ?? <span className="text-muted-2">Sans nom</span>}
+                      {item.qualityIssue && (
+                        <span className="ml-1 text-warn-fg" title={item.qualityIssue}>⚠️</span>
+                      )}
+                      {item.priceAlertFlag && (
+                        <span className="ml-1 text-warn-fg" title="Alerte prix">🚨</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-muted">{item.category ?? '—'}</td>
+                    <td className="px-3 py-3 text-muted">{item.vendor.businessName ?? '—'}</td>
+                    <td className="whitespace-nowrap px-3 py-3 text-right">
+                      {item.price != null ? (
+                        <Price amount={item.price} currency={false} />
+                      ) : item.suggestedPrice != null ? (
+                        <span className="font-mono tabular text-muted-2">
+                          {item.suggestedPrice.toLocaleString('fr-FR')}{' '}
+                          <span className="text-[10px] uppercase">sug.</span>
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td className="px-3 py-3">
+                      <Chip variant={STATUS_CHIP[item.status] ?? 'plain'}>
+                        {STATUS_LABELS[item.status] ?? item.status}
+                      </Chip>
+                    </td>
+                    <td className="px-3 py-3">
+                      {item.status === 'PUBLISHED' &&
+                        (item.inStock ? (
+                          <Chip variant="status-ok">En stock</Chip>
+                        ) : (
+                          <Chip variant="status-err">Épuisée</Chip>
+                        ))}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3 font-mono text-xs tabular text-muted-2">
+                      {new Date(item.createdAt).toLocaleDateString('fr-FR')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </main>
