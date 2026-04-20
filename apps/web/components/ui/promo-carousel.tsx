@@ -69,22 +69,22 @@ export function PromoCarousel({ slides, autoMs = 5500 }: { slides: PromoSlide[];
           return (
             <div
               key={slide.id}
-              className={`grid min-w-full grid-cols-1 items-center gap-8 px-6 py-10 md:grid-cols-[1.15fr_0.85fr] md:px-14 md:pb-16 md:pt-14 ${t.bg} ${t.text}`}
+              className={`grid min-w-full grid-cols-1 items-center gap-8 px-5 py-6 md:grid-cols-[1.15fr_0.85fr] md:px-14 md:pb-16 md:pt-14 ${t.bg} ${t.text}`}
             >
               <div>
-                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] opacity-75">
+                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] opacity-75 md:text-[11px] md:tracking-[0.16em]">
                   {slide.eyebrow}
                 </div>
-                <h2 className="mt-3.5 font-display text-[34px] leading-[1.05] tracking-[-0.015em] md:text-[52px]">
+                <h2 className="mt-2 font-display text-[22px] leading-[1.1] tracking-[-0.015em] md:mt-3.5 md:text-[52px] md:leading-[1.05]">
                   {slide.title}
                 </h2>
-                <p className="mt-4 max-w-[500px] text-[15px] leading-relaxed opacity-90 md:text-[17px]">
+                <p className="mt-2 max-w-[500px] text-[13px] leading-snug opacity-90 md:mt-4 md:text-[17px] md:leading-relaxed">
                   {slide.description}
                 </p>
-                <div className="mt-6 flex flex-wrap gap-2.5">
+                <div className="mt-3.5 flex flex-wrap gap-2 md:mt-6 md:gap-2.5">
                   <a
                     href={slide.cta.href}
-                    className={`inline-flex items-center justify-center rounded-md px-5 py-3 text-[15px] font-medium transition-all duration-150 active:scale-[0.98] ${
+                    className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-[13px] font-medium transition-all duration-150 active:scale-[0.98] md:px-5 md:py-3 md:text-[15px] ${
                       slide.theme === 'orange'
                         ? 'bg-white text-accent-hover hover:bg-white/90'
                         : slide.theme === 'cream'
@@ -97,7 +97,7 @@ export function PromoCarousel({ slides, autoMs = 5500 }: { slides: PromoSlide[];
                   {slide.secondaryCta && (
                     <a
                       href={slide.secondaryCta.href}
-                      className={`inline-flex items-center justify-center rounded-md border px-5 py-3 text-[15px] font-medium transition-all duration-150 active:scale-[0.98] ${
+                      className={`hidden items-center justify-center rounded-md border px-5 py-3 text-[15px] font-medium transition-all duration-150 active:scale-[0.98] md:inline-flex ${
                         slide.theme === 'cream'
                           ? 'border-border-strong bg-card text-ink hover:bg-surface'
                           : 'border-white/30 bg-white/10 text-white hover:bg-white/15'
@@ -124,13 +124,13 @@ export function PromoCarousel({ slides, autoMs = 5500 }: { slides: PromoSlide[];
         if (!current) return null
         const t = themeClasses[current.theme]
         return (
-          <div className="absolute bottom-5 left-6 z-10 flex gap-2 md:left-14">
+          <div className="absolute bottom-3 left-5 z-10 flex gap-1.5 md:bottom-5 md:left-14 md:gap-2">
             {slides.map((s, i) => (
               <button
                 key={s.id}
                 onClick={() => goTo(i)}
                 aria-label={`Aller au slide ${i + 1}`}
-                className={`h-[3px] w-9 rounded-sm transition-colors ${i === idx ? t.dotActive : t.dot}`}
+                className={`h-[3px] w-7 rounded-sm transition-colors md:w-9 ${i === idx ? t.dotActive : t.dot}`}
               />
             ))}
           </div>

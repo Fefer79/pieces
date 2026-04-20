@@ -10,7 +10,7 @@ const PROMO_SLIDES: PromoSlide[] = [
   {
     id: 'intro',
     eyebrow: 'Pièces.ci',
-    title: 'La première marketplace de pièces auto en Côte d\u2019Ivoire.',
+    title: 'La marketplace de pièces auto en Côte d\u2019Ivoire',
     description: 'Prix transparents · Multi-vendeurs · Livraison au garage.',
     cta: { label: 'Explorer le catalogue', href: '#catalog' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
@@ -41,7 +41,7 @@ const PROMO_SLIDES: PromoSlide[] = [
   {
     id: 'conseil',
     eyebrow: 'Nouveau \u00b7 Service Conseil IA + expert',
-    title: 'Un doute sur la pièce ? Demandez à Pièces.',
+    title: 'Un doute ? Demandez à nous.',
     description:
       'Notre assistant IA répond 24h/24 aux questions de compatibilité et choix. Cas complexe ? Un expert humain prend le relais sous 30 minutes. Gratuit avant achat.',
     cta: { label: 'Démarrer une conversation', href: '#conseil' },
