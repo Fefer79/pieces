@@ -23,7 +23,7 @@ const themeClasses: Record<PromoSlide['theme'], { bg: string; text: string; art:
     dotActive: 'bg-white/95',
   },
   orange: {
-    bg: 'bg-[linear-gradient(135deg,#FF6B00_0%,#FF4E00_100%)]',
+    bg: 'bg-[linear-gradient(135deg,#D9764A_0%,#C25E2E_100%)]',
     text: 'text-white',
     art: 'bg-white/15 border border-white/25',
     dot: 'bg-white/30',
@@ -38,7 +38,7 @@ const themeClasses: Record<PromoSlide['theme'], { bg: string; text: string; art:
   },
 }
 
-export function PromoCarousel({ slides, autoMs = 5500 }: { slides: PromoSlide[]; autoMs?: number }) {
+export function PromoCarousel({ slides, autoMs = 8250 }: { slides: PromoSlide[]; autoMs?: number }) {
   const [idx, setIdx] = useState(0)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 

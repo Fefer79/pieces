@@ -33,17 +33,28 @@ const PROMO_SLIDES: PromoSlide[] = [
     eyebrow: 'Promo du mois \u00b7 Ré-usiné certifié',
     title: 'Alternateurs ré-usinés, -40% vs neuf.',
     description:
-      'Testés en atelier, garantie 6 mois, performance d\u2019origine. Pour Toyota, Hyundai, Nissan, Peugeot. Livraison 24-48h à Abidjan.',
+      'Testés en atelier, garantie 3 mois, performance d\u2019origine. Pour Toyota, Hyundai, Nissan, Peugeot. Livraison 24-48h à Abidjan.',
     cta: { label: 'Voir les alternateurs \u2192', href: '#alternateurs' },
     art: '\u2699\uFE0F',
     theme: 'orange',
   },
   {
+    id: 'flotte',
+    eyebrow: 'Entreprises · Gestion de flotte',
+    title: 'Vous êtes une entreprise ? Vous avez une flotte ?',
+    description:
+      'Tarifs négociés, facturation centralisée, suivi d’entretien par véhicule, compte gestionnaire dédié et livraison prioritaire à votre garage partenaire. Enregistrez votre flotte et simplifiez la maintenance.',
+    cta: { label: 'Enregistrer ma flotte', href: '/enterprise/register' },
+    secondaryCta: { label: 'Nos services entreprise', href: '/enterprise' },
+    art: '\u{1F69B}',
+    theme: 'cream',
+  },
+  {
     id: 'conseil',
     eyebrow: 'Nouveau \u00b7 Service Conseil IA + expert',
-    title: 'Un doute ? Demandez à nous.',
+    title: 'Un doute ? Demandez-nous.',
     description:
-      'Notre assistant IA répond 24h/24 aux questions de compatibilité et choix. Cas complexe ? Un expert humain prend le relais sous 30 minutes. Gratuit avant achat.',
+      'Un assistant répond 24h/24 aux questions de compatibilité et choix. Cas complexe ? Un expert prend le relais sous 30 minutes. Gratuit avant achat.',
     cta: { label: 'Démarrer une conversation', href: '#conseil' },
     art: '\u{1F4AC}',
     theme: 'navy',

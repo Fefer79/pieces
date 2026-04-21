@@ -194,17 +194,17 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
           <div className="flex flex-col gap-4 py-6">
             {/* Conseil — hidden when vehicle is selected */}
             {!vehicle && (
-              <div className="flex min-h-[140px] items-center justify-center rounded-md border border-border bg-card px-4 py-4 text-center">
-                <div className="flex flex-col items-center">
-                  <p className="text-sm font-medium text-accent">
+              <div className="flex min-h-[140px] items-center justify-center rounded-md border border-border bg-card px-5 py-4">
+                <div className="flex max-w-[42ch] flex-col">
+                  <p className="text-center text-sm font-medium text-accent">
                     Sélectionner le véhicule
                   </p>
-                  <p className="mt-2 text-xs leading-relaxed text-muted">
-                    Pour de meilleurs résultats, commencez par identifier votre
-                    véhicule : photographiez l&apos;arrière de la{' '}
-                    <strong className="text-ink">carte grise</strong>, saisissez le{' '}
-                    <strong className="text-ink">numéro VIN</strong>, sélectionnez dans le menu ou
-                    communiquons par <strong className="text-ink">WhatsApp</strong>.
+                  <p className="mt-2 text-[13px] leading-relaxed text-muted [text-align:justify] [text-align-last:center] [hyphens:auto]">
+                    Identifiez d&apos;abord votre véhicule pour de meilleurs
+                    résultats. Plusieurs méthodes :{' '}
+                    <strong className="text-ink">carte grise</strong>,{' '}
+                    <strong className="text-ink">numéro VIN</strong>, menu déroulant ou{' '}
+                    <strong className="text-ink">WhatsApp</strong>.
                   </p>
                 </div>
               </div>
