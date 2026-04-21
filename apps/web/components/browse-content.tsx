@@ -10,6 +10,13 @@ import { Price } from '@/components/ui/price'
 const TABS = ['Photo', 'VIN', 'Sélection', 'WhatsApp'] as const
 type Tab = (typeof TABS)[number]
 
+const TAB_META: Record<Tab, { icon: string; desc: string }> = {
+  Photo: { icon: '📷', desc: 'IA identifie en 3s' },
+  VIN: { icon: '🔢', desc: '17 caractères' },
+  Sélection: { icon: '🚗', desc: 'Marque · modèle · année' },
+  WhatsApp: { icon: '💬', desc: '+225 07 09 02 17 08' },
+}
+
 const WA_NUMBER = '2250709021708'
 
 interface BrowseContentProps {
@@ -130,7 +137,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
     <div className="bg-surface">
       {/* Véhicule sélectionné / suggestion */}
       <div
-        className="flex items-center justify-between border-b border-border bg-card px-4 py-2"
+        className="mx-auto flex max-w-[1280px] items-center justify-between rounded-md border border-border bg-card px-4 py-2 lg:px-5"
         style={{ minHeight: 44 }}
       >
         {vehicle ? (
@@ -169,29 +176,57 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         )}
       </div>
 
-      {/* Tabs */}
-      <nav className="flex border-b border-border bg-card">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
-              activeTab === tab
-                ? 'border-b-2 border-ink-2 text-ink-2'
-                : 'text-muted hover:text-ink'
-            }`}
-            style={{ minHeight: 48 }}
-          >
-            {tab}
-          </button>
-        ))}
-      </nav>
+      {/* Tabs — mobile: flat bar; desktop: richer 4-up card row */}
+      {variant === 'desktop' ? (
+        <div className="mx-auto max-w-[1280px] px-0 pt-6">
+          <div className="grid grid-cols-4 overflow-hidden rounded-md border border-border bg-card">
+            {TABS.map((tab, i) => {
+              const meta = TAB_META[tab]
+              const active = activeTab === tab
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex flex-col items-center gap-1.5 px-4 py-5 text-center transition-colors ${
+                    i < TABS.length - 1 ? 'border-r border-border' : ''
+                  } ${active ? 'bg-ink-2 text-white' : 'text-ink hover:bg-surface'}`}
+                >
+                  <span className="text-[26px] leading-none">{meta.icon}</span>
+                  <span className="text-sm font-medium">
+                    {tab === 'Sélection' ? 'Mon véhicule' : tab === 'Photo' ? 'Photo de la pièce' : tab === 'VIN' ? 'Code VIN' : tab}
+                  </span>
+                  <span className={`text-[11.5px] ${active ? 'text-white/70' : 'text-muted'}`}>
+                    {meta.desc}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ) : (
+        <nav className="flex border-b border-border bg-card">
+          {TABS.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
+                activeTab === tab
+                  ? 'border-b-2 border-ink-2 text-ink-2'
+                  : 'text-muted hover:text-ink'
+              }`}
+              style={{ minHeight: 48 }}
+            >
+              {tab}
+            </button>
+          ))}
+        </nav>
+      )}
 
       {/* Tab content */}
       <div className="mx-auto max-w-md px-4 py-6 lg:max-w-[1280px] lg:px-0">
         {/* Photo tab */}
         {activeTab === 'Photo' && (
-          <div className="flex flex-col gap-4 py-6">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4 py-6">
             {/* Conseil — hidden when vehicle is selected */}
             {!vehicle && (
               <div className="flex min-h-[140px] items-center justify-center rounded-md border border-border bg-card px-5 py-4">
@@ -278,7 +313,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
 
         {/* VIN tab */}
         {activeTab === 'VIN' && (
-          <div className="flex flex-col gap-4 py-6">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4 py-6 lg:grid lg:max-w-5xl lg:grid-cols-2 lg:items-start lg:gap-6">
             {/* Scanner VIN — mobile only */}
             {variant === 'mobile' && (
               <button
@@ -383,7 +418,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
 
         {/* WhatsApp tab */}
         {activeTab === 'WhatsApp' && (
-          <div className="grid auto-rows-[1fr] gap-5 lg:grid-cols-2">
+          <div className="mx-auto grid max-w-3xl auto-rows-[1fr] gap-5 py-6 lg:max-w-5xl lg:grid-cols-2">
             {/* Recherche par voice note */}
             <a
               href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto. Je vous envoie une note vocale.')}`}
@@ -436,11 +471,12 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
 
         {/* Logos tab — cascading dropdowns */}
         {activeTab === 'Sélection' && (
-          <div className="space-y-3 py-4">
-            <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+          <div className="py-4 lg:py-6">
+            <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
               Sélectionnez votre véhicule
             </p>
 
+            <div className="space-y-3 lg:grid lg:grid-cols-4 lg:gap-3 lg:space-y-0">
             {/* Brand */}
             <select
               value={selectedBrand}
@@ -503,17 +539,20 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                 </option>
               ))}
             </select>
+            </div>
 
             {/* Confirmer */}
-            <Button
-              variant="accent"
-              size="lg"
-              block
-              onClick={confirmVehicle}
-              disabled={!selectedBrand || !selectedModel}
-            >
-              Confirmer le véhicule
-            </Button>
+            <div className="mt-4 lg:mt-5 lg:max-w-sm">
+              <Button
+                variant="accent"
+                size="lg"
+                block
+                onClick={confirmVehicle}
+                disabled={!selectedBrand || !selectedModel}
+              >
+                Confirmer le véhicule
+              </Button>
+            </div>
 
             {/* Recherche par nom — visible après confirmation du véhicule */}
             {vehicle && (
@@ -562,7 +601,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                     <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
                       Résultats
                     </h2>
-                    <div className="grid gap-2 lg:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-3 lg:grid-cols-3 xl:grid-cols-4">
                       {searchResults.map((item) => (
                         <div
                           key={item.id}
