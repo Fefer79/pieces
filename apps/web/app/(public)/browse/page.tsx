@@ -6,6 +6,13 @@ import { MobileDrawer } from '@/components/mobile-drawer'
 import { BottomNav } from '@/components/bottom-nav'
 import { PromoCarousel, type PromoSlide } from '@/components/ui/promo-carousel'
 
+function PromoArt({ src, alt }: { src: string; alt: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} className="h-full w-full rounded-md object-cover" />
+  )
+}
+
 const PROMO_SLIDES: PromoSlide[] = [
   {
     id: 'intro',
@@ -14,7 +21,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     description: 'Prix transparents · Multi-vendeurs · Livraison au garage.',
     cta: { label: 'Explorer le catalogue', href: '#catalog' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
-    art: '\u{1F1E8}\u{1F1EE}',
+    art: <PromoArt src="/promo/intro.webp" alt="Marché de pièces auto à Abidjan" />,
     theme: 'navy',
   },
   {
@@ -25,7 +32,7 @@ const PROMO_SLIDES: PromoSlide[] = [
       'Neuves, occasions importées, ré-usinées \u2014 chaque annonce affiche le détail du prix. Vous payez ce que ça vaut, pas ce qu\u2019on décide pour vous.',
     cta: { label: 'Explorer le catalogue', href: '#catalog' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
-    art: '\u{1F527}',
+    art: <PromoArt src="/promo/transparence.webp" alt="Mains de mécanicien tenant une clé à molette" />,
     theme: 'cream',
   },
   {
@@ -35,7 +42,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     description:
       'Testés en atelier, garantie 3 mois, performance d\u2019origine. Pour Toyota, Hyundai, Nissan, Peugeot. Livraison 24-48h à Abidjan.',
     cta: { label: 'Voir les alternateurs \u2192', href: '#alternateurs' },
-    art: '\u2699\uFE0F',
+    art: <PromoArt src="/promo/reusine.webp" alt="Alternateur ré-usiné sur un établi" />,
     theme: 'orange',
   },
   {
@@ -46,7 +53,7 @@ const PROMO_SLIDES: PromoSlide[] = [
       'Tarifs négociés, facturation centralisée, suivi d’entretien par véhicule, compte gestionnaire dédié et livraison prioritaire à votre garage partenaire. Enregistrez votre flotte et simplifiez la maintenance.',
     cta: { label: 'Enregistrer ma flotte', href: '/enterprise/register' },
     secondaryCta: { label: 'Nos services entreprise', href: '/enterprise' },
-    art: '\u{1F69B}',
+    art: <PromoArt src="/promo/flotte.webp" alt="Flotte de véhicules utilitaires" />,
     theme: 'cream',
   },
   {
@@ -56,7 +63,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     description:
       'Un assistant répond 24h/24 aux questions de compatibilité et choix. Cas complexe ? Un expert prend le relais sous 30 minutes. Gratuit avant achat.',
     cta: { label: 'Démarrer une conversation', href: '#conseil' },
-    art: '\u{1F4AC}',
+    art: <PromoArt src="/promo/conseil.webp" alt="Technicien ivoirien consultant son smartphone" />,
     theme: 'navy',
   },
 ]

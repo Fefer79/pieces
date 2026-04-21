@@ -29,6 +29,8 @@ interface CatalogItem {
   condition: 'NEW' | 'USED' | 'REFURBISHED' | null
   warrantyMonths: number | null
   createdAt: string
+  imageJobStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | null
+  imageJobError: string | null
 }
 
 export default function VendorCatalogDetailPage() {
@@ -45,6 +47,7 @@ export default function VendorCatalogDetailPage() {
   const [item, setItem] = useState<CatalogItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [retrying, setRetrying] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -212,6 +215,35 @@ export default function VendorCatalogDetailPage() {
     }
   }
 
+  const handleRetryImage = async () => {
+    if (!item) return
+    setRetrying(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const token = await getAccessToken()
+      if (!token) { setError('Session expirée.'); setRetrying(false); return }
+
+      const res = await fetch(`/api/v1/catalog/items/${itemId}/retry-image`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const result = await res.json()
+
+      if (!res.ok) {
+        setError(result.error?.message ?? 'Erreur')
+      } else {
+        setSuccess('Traitement relancé. La photo apparaîtra dans quelques instants.')
+        await fetchItem()
+      }
+    } catch {
+      setError('Erreur réseau.')
+    } finally {
+      setRetrying(false)
+    }
+  }
+
   const INPUT =
     'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
   const LABEL = 'mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
@@ -264,6 +296,23 @@ export default function VendorCatalogDetailPage() {
             alt={item.name ?? 'Pièce'}
             className="w-full object-cover"
           />
+        ) : item.imageJobStatus === 'FAILED' ? (
+          <div className="flex h-56 flex-col items-center justify-center gap-2 px-4 text-center">
+            <p className="text-sm font-medium text-status-err">
+              Échec du traitement de la photo
+            </p>
+            {item.imageJobError && (
+              <p className="max-w-xs text-xs text-muted-2">{item.imageJobError}</p>
+            )}
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleRetryImage}
+              disabled={retrying}
+            >
+              {retrying ? 'Relance…' : 'Réessayer'}
+            </Button>
+          </div>
         ) : (
           <div className="flex h-56 items-center justify-center text-sm text-muted-2">
             Photo en cours de traitement…

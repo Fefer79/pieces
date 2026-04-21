@@ -47,38 +47,10 @@ export function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="bg-card px-6 pb-16 pt-12">
-        <div className="mx-auto max-w-6xl">
-          {/* Hero heading */}
-          <div className="mb-10 text-center">
-            <h1 className="mb-2 font-display text-3xl text-ink lg:text-4xl">
-              Pièces détachées automobiles
-            </h1>
-            <p className="mx-auto mb-4 max-w-2xl text-base text-muted">
-              La première marketplace de pièces auto en Côte d&apos;Ivoire.
-              Prix transparents · Multi-vendeurs · Livraison au garage.
-            </p>
-            {/* Badges */}
-            <div className="flex items-center justify-center gap-3">
-              <span className="rounded-sm bg-ink-2 px-3 py-1.5 text-sm font-semibold text-white">
-                NEUF·OEM
-              </span>
-              <span className="text-sm text-muted-2">&amp;</span>
-              <span className="rounded-sm border-2 border-ink-2 px-3 py-1.5 text-sm font-semibold text-ink-2">
-                OCCASION
-              </span>
-              <span className="text-sm text-muted-2">&amp;</span>
-              <span className="rounded-sm border border-border-strong px-3 py-1.5 text-sm text-muted">
-                AFTERMARKET
-              </span>
-            </div>
-          </div>
-
-          {/* Browse content card */}
-          <div className="mx-auto max-w-3xl overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-            <BrowseContent variant="desktop" />
-          </div>
+      {/* Browse surface */}
+      <section className="px-6 pb-16 pt-8">
+        <div className="mx-auto max-w-[1280px]">
+          <BrowseContent variant="desktop" />
         </div>
       </section>
 

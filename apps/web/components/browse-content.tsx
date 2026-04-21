@@ -188,7 +188,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
       </nav>
 
       {/* Tab content */}
-      <div className="mx-auto max-w-md px-4 py-6 lg:max-w-5xl">
+      <div className="mx-auto max-w-md px-4 py-6 lg:max-w-[1280px] lg:px-0">
         {/* Photo tab */}
         {activeTab === 'Photo' && (
           <div className="flex flex-col gap-4 py-6">

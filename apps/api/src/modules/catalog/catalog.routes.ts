@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock } from './catalog.service.js'
+import { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock, retryImageJob } from './catalog.service.js'
 import { AppError } from '../../lib/appError.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema } from 'shared/validators'
@@ -154,6 +154,27 @@ export async function catalogRoutes(fastify: FastifyInstance) {
       const result = await publishItem(request.user.id, id)
 
       request.log.info({ event: 'CATALOG_ITEM_PUBLISHED', userId: request.user.id, itemId: id })
+
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/items/:id/retry-image',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Relancer le traitement image après échec',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const result = await retryImageJob(request.user.id, id)
+
+      request.log.info({ event: 'CATALOG_IMAGE_RETRIED', userId: request.user.id, itemId: id, requeued: result.requeued })
 
       return reply.status(200).send({ data: result })
     },

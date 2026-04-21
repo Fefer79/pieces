@@ -78,20 +78,13 @@ export async function uploadPartImage(
     },
   })
 
-  // Enqueue async jobs: image processing + AI identification
+  // Enqueue async image processing (variants only).
+  // AI identification is reserved for the buyer-side photo search flow —
+  // sellers know their vehicle and fill compatibility manually.
   await enqueue('IMAGE_PROCESS_VARIANTS', {
     catalogItemId: catalogItem.id,
     imageKey,
     mimeType,
-  })
-
-  await enqueue('CATALOG_AI_IDENTIFY', {
-    catalogItemId: catalogItem.id,
-    imageKey,
-    mimeType,
-    ...(extras.name && { sellerName: extras.name }),
-    ...(extras.serialNumber && { sellerSerialNumber: extras.serialNumber }),
-    ...(serialPhotoKey && { serialPhotoKey }),
   })
 
   return catalogItem
@@ -164,7 +157,55 @@ export async function getItem(userId: string, itemId: string) {
     throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Fiche catalogue introuvable' })
   }
 
-  return item
+  const imageJob = await prisma.job.findFirst({
+    where: {
+      type: 'IMAGE_PROCESS_VARIANTS',
+      payload: { path: ['catalogItemId'], equals: itemId },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { status: true, error: true },
+  })
+
+  return {
+    ...item,
+    imageJobStatus: imageJob?.status ?? null,
+    imageJobError: imageJob?.error ?? null,
+  }
+}
+
+export async function retryImageJob(userId: string, itemId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Profil vendeur introuvable' })
+  }
+
+  const item = await prisma.catalogItem.findFirst({
+    where: { id: itemId, vendorId: vendor.id },
+    select: { id: true },
+  })
+
+  if (!item) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Fiche catalogue introuvable' })
+  }
+
+  const updated = await prisma.job.updateMany({
+    where: {
+      status: 'FAILED',
+      type: 'IMAGE_PROCESS_VARIANTS',
+      payload: { path: ['catalogItemId'], equals: itemId },
+    },
+    data: { status: 'PENDING', attempts: 0, error: null },
+  })
+
+  if (updated.count === 0) {
+    throw new AppError('NO_FAILED_JOB', 409, { message: 'Aucun traitement en échec à relancer' })
+  }
+
+  return { requeued: updated.count }
 }
 
 export interface UpdateCatalogItemData {
