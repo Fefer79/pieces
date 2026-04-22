@@ -51,7 +51,7 @@ const STEPS = [
 export function HowItWorksSection() {
   return (
     <section id="comment-ca-marche" className="bg-[#FAFAFA] px-4 py-16 lg:px-8">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-4xl lg:max-w-6xl">
         <h2 className="mb-10 text-center text-2xl font-bold text-[#1A1A1A] lg:text-3xl">
           Comment ça marche
         </h2>

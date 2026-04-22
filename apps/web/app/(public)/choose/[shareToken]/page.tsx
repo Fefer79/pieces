@@ -167,7 +167,7 @@ export default function OwnerChoicePage() {
     <div className="min-h-dvh bg-surface pb-16">
       {/* Header band */}
       <div className="bg-[linear-gradient(135deg,#00113A_0%,#002366_100%)] px-4 py-6 text-white md:px-10 md:py-10">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-3xl lg:max-w-[1280px]">
           <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
             Commande partagée · #{order.id.slice(0, 8)}
           </div>
@@ -181,9 +181,9 @@ export default function OwnerChoicePage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-3xl px-4 py-6 md:px-10 md:py-8">
+      <div className="mx-auto max-w-3xl px-4 py-6 md:px-10 md:py-8 lg:max-w-[1280px] lg:py-10">
         {order.status === 'DRAFT' && (
-          <div className="grid gap-6 md:grid-cols-[1fr_380px]">
+          <div className="grid gap-6 md:grid-cols-[1fr_380px] lg:gap-10 lg:grid-cols-[1fr_420px]">
             {/* Items */}
             <div className="space-y-3">
               <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
@@ -223,7 +223,7 @@ export default function OwnerChoicePage() {
             </div>
 
             {/* Sidebar: breakdown + payment */}
-            <div className="space-y-5">
+            <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
               <PriceBreakdown
                 lines={priceLines}
                 total={grandTotal}
