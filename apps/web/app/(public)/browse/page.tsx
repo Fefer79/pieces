@@ -21,7 +21,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     description: 'Prix transparents · Multi-vendeurs · Livraison au garage.',
     cta: { label: 'Explorer le catalogue', href: '#catalog' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
-    art: <PromoArt src="/promo/intro.webp" alt="Marché de pièces auto à Abidjan" />,
+    art: <PromoArt src="/promo/transparence.webp" alt="Marché de pièces auto à Abidjan" />,
     theme: 'navy',
   },
   {
@@ -32,7 +32,7 @@ const PROMO_SLIDES: PromoSlide[] = [
       'Neuves, occasions importées, ré-usinées \u2014 chaque annonce affiche le détail du prix. Vous payez ce que ça vaut, pas ce qu\u2019on décide pour vous.',
     cta: { label: 'Explorer le catalogue', href: '#catalog' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
-    art: <PromoArt src="/promo/transparence.webp" alt="Mains de mécanicien tenant une clé à molette" />,
+    art: <PromoArt src="/promo/intro.webp" alt="Mains de mécanicien tenant une clé à molette" />,
     theme: 'cream',
   },
   {

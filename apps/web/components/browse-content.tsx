@@ -11,7 +11,7 @@ const TABS = ['Photo', 'VIN', 'Sélection', 'WhatsApp'] as const
 type Tab = (typeof TABS)[number]
 
 const TAB_META: Record<Tab, { icon: string; desc: string }> = {
-  Photo: { icon: '📷', desc: 'IA identifie en 3s' },
+  Photo: { icon: '📷', desc: 'A identifier' },
   VIN: { icon: '🔢', desc: '17 caractères' },
   Sélection: { icon: '🚗', desc: 'Marque · modèle · année' },
   WhatsApp: { icon: '💬', desc: '+225 07 09 02 17 08' },
@@ -226,7 +226,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
       <div className="mx-auto max-w-md px-4 py-6 lg:max-w-[1280px] lg:px-0">
         {/* Photo tab */}
         {activeTab === 'Photo' && (
-          <div className="mx-auto flex max-w-3xl flex-col gap-4 py-6">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4 py-6 lg:max-w-none lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-6">
             {/* Conseil — hidden when vehicle is selected */}
             {!vehicle && (
               <div className="flex min-h-[140px] items-center justify-center rounded-md border border-border bg-card px-5 py-4">
