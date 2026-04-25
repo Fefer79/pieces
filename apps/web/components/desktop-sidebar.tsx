@@ -38,6 +38,13 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean): Na
         { href: '/enterprise/dashboard', label: 'Dashboard' },
         { href: '/profile', label: 'Profil' },
       ]
+    case 'LIAISON':
+      return [
+        { href: '/liaison', label: 'Tableau de bord' },
+        { href: '/liaison/vendors', label: 'Vendeurs' },
+        { href: '/liaison/parts', label: 'Pièces' },
+        { href: '/profile', label: 'Profil' },
+      ]
     default:
       return [
         { href: '/', label: 'Accueil' },

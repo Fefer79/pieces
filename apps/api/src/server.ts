@@ -21,6 +21,7 @@ import { whatsappRoutes } from './modules/whatsapp/whatsapp.routes.js'
 import { reviewRoutes } from './modules/review/review.routes.js'
 import { notificationRoutes } from './modules/notification/notification.routes.js'
 import { adminRoutes } from './modules/admin/admin.routes.js'
+import { liaisonRoutes } from './modules/liaison/liaison.routes.js'
 import multipart from '@fastify/multipart'
 import { startWorker } from './modules/queue/worker.js'
 
@@ -66,6 +67,7 @@ export function buildApp() {
   fastify.register(reviewRoutes, { prefix: '/api/v1/reviews' })
   fastify.register(notificationRoutes, { prefix: '/api/v1/notifications' })
   fastify.register(adminRoutes, { prefix: '/api/v1/admin' })
+  fastify.register(liaisonRoutes, { prefix: '/api/v1/liaison' })
 
   return fastify
 }

@@ -5,4 +5,5 @@ export const ROLE_LABELS: Record<string, string> = {
   RIDER: 'Livreur',
   ADMIN: 'Administrateur',
   ENTERPRISE: 'Entreprise',
+  LIAISON: 'Liaison',
 }

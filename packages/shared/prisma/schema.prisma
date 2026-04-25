@@ -14,6 +14,7 @@ enum Role {
   RIDER
   ADMIN
   ENTERPRISE
+  LIAISON
 }
 
 model User {
@@ -37,6 +38,8 @@ model User {
   deliveryReviews      DeliveryReview[] @relation("DeliveryReviewer")
   disputes             Dispute[] @relation("DisputeOpener")
   notificationPreference NotificationPreference?
+  managedVendors       Vendor[]      @relation("VendorManagedByLiaison")
+  liaisonCatalogItems  CatalogItem[] @relation("CatalogItemCreatedByLiaison")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -137,13 +140,19 @@ enum JobStatus {
 
 model Vendor {
   id          String       @id @default(uuid())
-  userId      String       @unique @map("user_id")
-  user        User         @relation(fields: [userId], references: [id])
+  userId      String?      @unique @map("user_id")
+  user        User?        @relation(fields: [userId], references: [id])
+  managedByLiaisonId String? @map("managed_by_liaison_id")
+  managedByLiaison   User?  @relation("VendorManagedByLiaison", fields: [managedByLiaisonId], references: [id])
   shopName    String       @map("shop_name")
   contactName String       @map("contact_name")
   phone       String
   vendorType  VendorType   @map("vendor_type")
   status      VendorStatus @default(PENDING_ACTIVATION)
+  commune     String?
+  address     String?
+  lat         Float?
+  lng         Float?
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
@@ -155,6 +164,7 @@ model Vendor {
 
   @@map("vendors")
   @@index([phone], name: "idx_vendors_phone")
+  @@index([managedByLiaisonId], name: "idx_vendors_managed_by_liaison")
 }
 
 model VendorGuaranteeSignature {
@@ -196,6 +206,8 @@ model CatalogItem {
   id                   String            @id @default(uuid())
   vendorId             String            @map("vendor_id")
   vendor               Vendor            @relation(fields: [vendorId], references: [id])
+  createdByLiaisonId   String?           @map("created_by_liaison_id")
+  createdByLiaison     User?             @relation("CatalogItemCreatedByLiaison", fields: [createdByLiaisonId], references: [id])
   name                 String?
   category             String?
   oemReference         String?           @map("oem_reference")
@@ -223,6 +235,7 @@ model CatalogItem {
 
   @@map("catalog_items")
   @@index([vendorId, status], name: "idx_catalog_items_vendor_status")
+  @@index([createdByLiaisonId], name: "idx_catalog_items_created_by_liaison")
 }
 
 model Job {

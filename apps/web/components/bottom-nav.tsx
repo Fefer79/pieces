@@ -39,6 +39,13 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean): Na
         { href: '/enterprise/dashboard', label: 'Dashboard', icon: DashboardIcon },
         { href: '/profile', label: 'Profil', icon: ProfileIcon },
       ]
+    case 'LIAISON':
+      return [
+        { href: '/liaison', label: 'Liaison', icon: DashboardIcon },
+        { href: '/liaison/vendors', label: 'Vendeurs', icon: ShopIcon },
+        { href: '/liaison/parts', label: 'Pièces', icon: OrdersIcon },
+        { href: '/profile', label: 'Profil', icon: ProfileIcon },
+      ]
     default:
       // MECHANIC, OWNER, or null
       return [
