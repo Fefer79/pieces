@@ -17,7 +17,7 @@ const PROMO_SLIDES: PromoSlide[] = [
   {
     id: 'intro',
     eyebrow: 'Pièces.ci',
-    title: 'La marketplace de pièces auto en Côte d\u2019Ivoire',
+    title: 'La marketplace des vendeurs de pièces détachées en Côte d\u2019Ivoire',
     description: 'Prix transparents · Multi-vendeurs · Livraison au garage.',
     cta: { label: 'Explorer le catalogue', href: '/catalogue' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
