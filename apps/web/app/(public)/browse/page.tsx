@@ -19,7 +19,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     eyebrow: 'Pièces.ci',
     title: 'La marketplace de pièces auto en Côte d\u2019Ivoire',
     description: 'Prix transparents · Multi-vendeurs · Livraison au garage.',
-    cta: { label: 'Explorer le catalogue', href: '#catalog' },
+    cta: { label: 'Explorer le catalogue', href: '/catalogue' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
     art: <PromoArt src="/promo/transparence.webp" alt="Marché de pièces auto à Abidjan" />,
     theme: 'navy',
@@ -30,7 +30,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     title: 'Le juste prix des pièces, sans intermédiaires.',
     description:
       'Neuves, occasions importées, ré-usinées \u2014 chaque annonce affiche le détail du prix. Vous payez ce que ça vaut, pas ce qu\u2019on décide pour vous.',
-    cta: { label: 'Explorer le catalogue', href: '#catalog' },
+    cta: { label: 'Explorer le catalogue', href: '/catalogue' },
     secondaryCta: { label: 'Comment ça marche', href: '/info' },
     art: <PromoArt src="/promo/intro.webp" alt="Mains de mécanicien tenant une clé à molette" />,
     theme: 'cream',

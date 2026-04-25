@@ -6,7 +6,6 @@ import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
-import { ConditionChip, type Condition } from '@/components/ui/chip'
 
 const TABS = ['Photo', 'VIN', 'Sélection', 'WhatsApp'] as const
 type Tab = (typeof TABS)[number]
@@ -58,25 +57,6 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
     year: persistedVehicle.year,
     motor: persistedVehicle.motor ?? '',
   } : null
-
-  // Catalog listing state
-  const catalogRef = useRef<HTMLDivElement>(null)
-  const [catalogItems, setCatalogItems] = useState<
-    Array<{
-      id: string
-      name: string | null
-      category: string | null
-      condition: string | null
-      price: number | null
-      imageThumbUrl: string | null
-      vendor: { shopName: string }
-    }>
-  >([])
-  const [catalogPage, setCatalogPage] = useState(1)
-  const [catalogTotal, setCatalogTotal] = useState(0)
-  const [catalogTotalPages, setCatalogTotalPages] = useState(0)
-  const [catalogLoading, setCatalogLoading] = useState(false)
-  const [catalogLoaded, setCatalogLoaded] = useState(false)
 
   // WhatsApp FAB state
   const [waMenuOpen, setWaMenuOpen] = useState(false)
@@ -152,52 +132,6 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
     const timer = setTimeout(() => handleSearch(searchQuery), 300)
     return () => clearTimeout(timer)
   }, [searchQuery, handleSearch])
-
-  // Catalog fetch
-  const fetchCatalog = useCallback(async (page: number, append = false) => {
-    setCatalogLoading(true)
-    try {
-      const res = await fetch(`/api/v1/browse/parts?page=${page}&limit=20`)
-      const body = await res.json()
-      const data = body.data ?? {}
-      const items = data.items ?? []
-      setCatalogItems((prev) => (append ? [...prev, ...items] : items))
-      setCatalogTotal(data.pagination?.total ?? 0)
-      setCatalogTotalPages(data.pagination?.totalPages ?? 0)
-      setCatalogPage(page)
-      setCatalogLoaded(true)
-    } catch {
-      // silent
-    } finally {
-      setCatalogLoading(false)
-    }
-  }, [])
-
-  // Load catalog on mount & scroll to #catalog if hash present
-  useEffect(() => {
-    if (!catalogLoaded) {
-      fetchCatalog(1)
-    }
-  }, [catalogLoaded, fetchCatalog])
-
-  useEffect(() => {
-    if (catalogLoaded && window.location.hash === '#catalog') {
-      setTimeout(() => {
-        catalogRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
-    }
-  }, [catalogLoaded])
-
-  // Listen for hash changes (e.g. clicking promo CTA)
-  useEffect(() => {
-    const onHash = () => {
-      if (window.location.hash === '#catalog') {
-        catalogRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }
-    }
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
-  }, [])
 
   return (
     <div className="bg-surface">
@@ -755,78 +689,6 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             )}
           </div>
         )}
-      </div>
-
-      {/* Catalogue — all available parts */}
-      <div ref={catalogRef} id="catalog" className="scroll-mt-20 bg-surface px-4 pb-10 pt-6 lg:px-0">
-        <div className="mx-auto max-w-[1280px]">
-          <h2 className="font-display text-xl text-ink lg:text-2xl">
-            Toutes les pièces disponibles
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            {catalogTotal > 0
-              ? `${catalogTotal} pièce${catalogTotal > 1 ? 's' : ''} en stock`
-              : catalogLoading
-                ? 'Chargement…'
-                : 'Aucune pièce disponible pour le moment'}
-          </p>
-
-          {catalogItems.length > 0 && (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {catalogItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-3 rounded-md border border-border bg-card p-3 transition-all hover:border-border-strong hover:shadow-sm"
-                >
-                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
-                    {item.imageThumbUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.imageThumbUrl}
-                        alt={item.name ?? ''}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-muted-2">
-                        —
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-ink">
-                      {item.name ?? 'Pièce'}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {item.category ?? '—'} · {item.vendor.shopName}
-                    </p>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      {item.condition && (
-                        <ConditionChip condition={item.condition as Condition} />
-                      )}
-                      {item.price != null && (
-                        <Price amount={item.price} className="text-sm" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pagination — "Voir plus" */}
-          {catalogPage < catalogTotalPages && (
-            <div className="mt-6 flex justify-center">
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => fetchCatalog(catalogPage + 1, true)}
-                disabled={catalogLoading}
-              >
-                {catalogLoading ? 'Chargement…' : 'Voir plus de pièces'}
-              </Button>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* WhatsApp FAB */}
