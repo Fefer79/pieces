@@ -4,12 +4,6 @@ import { BrowseContent } from './browse-content'
 import { useAuth } from '@/lib/auth-context'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
-const NAV_LINKS = [
-  { href: '/info#a-propos', label: 'À Propos' },
-  { href: '/info#comment-ca-marche', label: 'Comment ça marche' },
-  { href: '/info#contact', label: 'Contact' },
-]
-
 export function LandingPage() {
   const { isAuthenticated } = useAuth()
   const { vehicle, clearVehicle } = useSelectedVehicle()
@@ -18,28 +12,37 @@ export function LandingPage() {
     <div className="min-h-screen bg-[#FFFFFF]">
       {/* Navbar */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-6 px-6 py-3">
-          {/* Logo */}
-          <a href="/" className="flex-shrink-0">
-            <span className="font-display text-2xl text-ink">
+        <div className="mx-auto grid max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3">
+          {/* Logo — desktop mirrors mobile: big mark + subtitle */}
+          <a href="/" className="flex flex-shrink-0 flex-col leading-tight">
+            <span className="font-display text-3xl text-ink">
               Pièces<span className="text-accent">.</span>
+            </span>
+            <span className="text-[11px] tracking-wide text-muted">
+              Pièces détachées automobiles
             </span>
           </a>
 
-          {/* Nav links */}
-          <nav className="hidden items-center gap-8 md:flex">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-muted transition-colors hover:text-accent"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
+          {/* Contact block — centered */}
+          <div className="hidden items-center justify-center gap-5 text-sm md:flex">
+            <a
+              href="mailto:contact@pieces.ci"
+              className="text-ink transition-colors hover:text-accent"
+            >
+              contact@pieces.ci
+            </a>
+            <span className="text-muted-2" aria-hidden>·</span>
+            <a
+              href="https://wa.me/2250709021708"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ink transition-colors hover:text-accent"
+            >
+              (225) 07 09 02 17 08
+            </a>
+          </div>
 
-          <div className="flex flex-1 items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-3">
             {/* Vehicle pill */}
             {vehicle && (
               <div className="hidden items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs md:flex">

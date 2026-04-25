@@ -201,24 +201,40 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
 
   return (
     <div className="bg-surface">
-      {/* Véhicule sélectionné / suggestion */}
+      {/* Véhicule sélectionné / suggestion — highlighted */}
       <div
-        className="mx-auto flex max-w-[1280px] items-center justify-between rounded-md border border-border bg-card px-4 py-2 lg:px-5"
-        style={{ minHeight: 44 }}
+        className={`mx-auto flex max-w-[1280px] items-center justify-between gap-3 rounded-md border-2 px-4 py-2.5 lg:px-5 ${
+          vehicle
+            ? 'border-ink-2 bg-[rgba(0,35,102,0.04)]'
+            : 'border-accent bg-[rgba(255,107,0,0.06)]'
+        }`}
+        style={{ minHeight: 48 }}
       >
         {vehicle ? (
           <>
-            <p className="truncate text-sm">
-              <span className="text-muted">Véhicule : </span>
-              <span className="font-medium text-ink">
-                {vehicle.brand} · {vehicle.model}
-                {vehicle.year ? ` · ${vehicle.year}` : ''}
-                {vehicle.motor ? ` · ${vehicle.motor}` : ''}
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-ink-2 text-white"
+                aria-hidden
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                  <path d="M3.5 13.5 5 9a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 9l1.5 4.5v5a1 1 0 0 1-1 1H18a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1v-5Zm3-1h11l-.9-2.7a.5.5 0 0 0-.5-.3H7.9a.5.5 0 0 0-.5.3l-.9 2.7Zm.5 3.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+                </svg>
               </span>
-            </p>
+              <p className="truncate text-sm">
+                <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-2">
+                  Véhicule sélectionné ·{' '}
+                </span>
+                <span className="font-semibold text-ink">
+                  {vehicle.brand} · {vehicle.model}
+                  {vehicle.year ? ` · ${vehicle.year}` : ''}
+                  {vehicle.motor ? ` · ${vehicle.motor}` : ''}
+                </span>
+              </p>
+            </div>
             <button
               onClick={clearVehicle}
-              className="ml-2 flex-shrink-0 p-1 text-muted-2 transition-colors hover:text-ink"
+              className="flex-shrink-0 p-1 text-muted-2 transition-colors hover:text-ink"
               aria-label="Supprimer le véhicule"
               style={{ minWidth: 44, minHeight: 44 }}
             >
@@ -235,9 +251,22 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         ) : (
           <button
             onClick={() => setActiveTab('Sélection')}
-            className="w-full truncate text-left text-sm text-muted-2"
+            className="flex w-full items-center gap-2.5 text-left"
           >
-            Véhicule sélectionné (Marque-Modèle-Année-Motorisation)
+            <span
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent text-white"
+              aria-hidden
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                <path d="M3.5 13.5 5 9a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 9l1.5 4.5v5a1 1 0 0 1-1 1H18a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1v-5Zm3-1h11l-.9-2.7a.5.5 0 0 0-.5-.3H7.9a.5.5 0 0 0-.5.3l-.9 2.7Zm.5 3.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+              </svg>
+            </span>
+            <span className="truncate text-sm">
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-accent">
+                Sélectionnez votre véhicule ·{' '}
+              </span>
+              <span className="text-ink">Marque · Modèle · Année · Motorisation</span>
+            </span>
           </button>
         )}
       </div>
@@ -292,6 +321,12 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
       <div className="mx-auto max-w-md px-4 py-6 lg:max-w-[1280px] lg:px-0">
         {/* Photo tab */}
         {activeTab === 'Photo' && (
+          <>
+            <p className="mx-auto mt-6 max-w-3xl px-1 text-center text-[13px] leading-relaxed text-muted lg:max-w-2xl">
+              <span className="font-medium text-ink">Vous ne connaissez pas le nom de la pièce ?</span>{' '}
+              Photographiez-la — notre IA l&apos;identifie pour vous. Sinon, parcourez le catalogue
+              par nom plus bas.
+            </p>
           <div className="mx-auto flex max-w-3xl flex-col gap-4 py-6 lg:max-w-none lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-6">
             {/* Conseil — hidden when vehicle is selected */}
             {!vehicle && (
@@ -375,6 +410,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               </div>
             </button>
           </div>
+          </>
         )}
 
         {/* VIN tab */}
