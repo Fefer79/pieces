@@ -3,8 +3,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { StatCard } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -75,96 +73,64 @@ export default function VendorDashboardPage() {
   }, [fetchDashboard])
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 lg:py-8">
-      <div className="mb-6">
-        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-          Boutique
-        </div>
-        <h1 className="mt-1 font-display text-3xl text-ink">
-          {data ? data.vendor.shopName : 'Tableau de bord'}
-        </h1>
-      </div>
+    <div className="mx-auto max-w-md px-4 py-6">
+      <h1 className="mb-1 text-xl font-bold text-[#1A1A1A]">Tableau de bord</h1>
 
-      {error && (
-        <div className="mb-4 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-          {error}
-        </div>
-      )}
+      {error && <p className="mb-4 text-sm text-[#D32F2F]">{error}</p>}
 
-      {loading && <p className="text-sm text-muted">Chargement…</p>}
+      {loading && <p className="text-sm text-gray-500">Chargement...</p>}
 
       {!loading && data && (
         <>
-          <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatCard label="Publiées" value={data.catalog.published} />
-            <StatCard label="Brouillons" value={data.catalog.draft} />
-            <StatCard label="Épuisées" value={data.catalog.outOfStock} />
-            <StatCard label="Archivées" value={data.catalog.archived} />
-          </div>
+          <p className="mb-4 text-sm text-gray-500">{data.vendor.shopName}</p>
 
-          <div className="mb-6">
-            <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              Accès rapide
-            </h2>
-            <div className="space-y-2">
-              <QuickAction
-                title="Mon catalogue"
-                description="Annonces publiées, brouillons, stock"
-                onClick={() => router.push('/vendors/catalog')}
-              />
-              <QuickAction
-                title="Zones de livraison"
-                description={`${data.vendor.deliveryZonesCount} commune${data.vendor.deliveryZonesCount > 1 ? 's' : ''} couverte${data.vendor.deliveryZonesCount > 1 ? 's' : ''}`}
-                onClick={() => router.push('/vendors/delivery-zones')}
-              />
-              <QuickAction
-                title="Garanties"
-                description="Configurer les garanties par catégorie"
-                onClick={() => router.push('/vendors/guarantees')}
-              />
+          <div className="mb-6 grid grid-cols-2 gap-3">
+            <div className="rounded-lg border border-gray-200 p-4 text-center">
+              <p className="text-2xl font-bold text-[#002366]">{data.catalog.published}</p>
+              <p className="text-xs text-gray-500">Publiées</p>
+            </div>
+            <div className="rounded-lg border border-gray-200 p-4 text-center">
+              <p className="text-2xl font-bold text-amber-600">{data.catalog.draft}</p>
+              <p className="text-xs text-gray-500">Brouillons</p>
+            </div>
+            <div className="rounded-lg border border-gray-200 p-4 text-center">
+              <p className="text-2xl font-bold text-red-600">{data.catalog.outOfStock}</p>
+              <p className="text-xs text-gray-500">Épuisées</p>
+            </div>
+            <div className="rounded-lg border border-gray-200 p-4 text-center">
+              <p className="text-2xl font-bold text-gray-400">{data.catalog.archived}</p>
+              <p className="text-xs text-gray-500">Archivées</p>
             </div>
           </div>
 
-          <div className="rounded-md border border-dashed border-border-strong bg-card/40 p-6 text-center">
-            <p className="text-sm font-medium text-muted">Commandes & paiements</p>
-            <p className="mt-1 text-xs text-muted-2">Bientôt disponible</p>
+          <div className="mb-6 space-y-2">
+            <h2 className="text-sm font-semibold text-[#1A1A1A]">Accès rapide</h2>
+            <button
+              onClick={() => router.push('/vendors/catalog')}
+              className="w-full rounded-lg border border-gray-200 p-3 text-left text-sm transition-colors hover:bg-gray-50"
+            >
+              Mon catalogue &rarr;
+            </button>
+            <button
+              onClick={() => router.push('/vendors/delivery-zones')}
+              className="w-full rounded-lg border border-gray-200 p-3 text-left text-sm transition-colors hover:bg-gray-50"
+            >
+              Zones de livraison ({data.vendor.deliveryZonesCount} commune{data.vendor.deliveryZonesCount > 1 ? 's' : ''}) &rarr;
+            </button>
+            <button
+              onClick={() => router.push('/vendors/guarantees')}
+              className="w-full rounded-lg border border-gray-200 p-3 text-left text-sm transition-colors hover:bg-gray-50"
+            >
+              Garanties &rarr;
+            </button>
           </div>
 
-          <div className="mt-8">
-            <Button
-              variant="accent"
-              size="lg"
-              block
-              onClick={() => router.push('/vendors/catalog/upload')}
-            >
-              + Publier une nouvelle annonce
-            </Button>
+          <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
+            <p className="text-sm text-gray-400">Commandes & paiements</p>
+            <p className="text-xs text-gray-300">Bientôt disponible</p>
           </div>
         </>
       )}
     </div>
-  )
-}
-
-function QuickAction({
-  title,
-  description,
-  onClick,
-}: {
-  title: string
-  description: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="group flex w-full items-center justify-between rounded-md border border-border bg-card p-4 text-left transition-all hover:border-border-strong hover:shadow-sm"
-    >
-      <div>
-        <div className="text-sm font-semibold text-ink">{title}</div>
-        <div className="mt-0.5 text-xs text-muted">{description}</div>
-      </div>
-      <span className="text-muted-2 transition-colors group-hover:text-ink">→</span>
-    </button>
   )
 }

@@ -1,19 +1,16 @@
 'use client'
 
 import { Suspense, useState, useRef, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-const PHONE_OTP_LENGTH = 6
-const EMAIL_OTP_LENGTH = 8
+const OTP_LENGTH = 6
 const RESEND_COOLDOWN = 60
 
 function OtpForm() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const phone = searchParams.get('phone') ?? ''
-  const email = searchParams.get('email') ?? ''
-  const isEmail = !!email
-  const OTP_LENGTH = isEmail ? EMAIL_OTP_LENGTH : PHONE_OTP_LENGTH
 
   const [otp, setOtp] = useState<string[]>(Array.from({ length: OTP_LENGTH }, () => ''))
   const [error, setError] = useState('')
@@ -37,39 +34,23 @@ function OtpForm() {
       setLoading(true)
       try {
         const supabase = createClient()
-        const verifyPayload = isEmail
-          ? { email, token: code, type: 'email' as const }
-          : { phone, token: code, type: 'sms' as const }
-        const { data, error: verifyError } = await supabase.auth.verifyOtp(verifyPayload)
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          phone,
+          token: code,
+          type: 'sms',
+        })
         if (verifyError) {
           setError(verifyError.message)
           return
         }
-
-        // Check if user needs to pick a role (new user with no activeContext)
-        try {
-          const profileRes = await fetch('/api/v1/users/me', {
-            headers: { Authorization: `Bearer ${data.session?.access_token}` },
-          })
-          if (profileRes.ok) {
-            const body = await profileRes.json()
-            if (!body.data.activeContext) {
-              window.location.href = '/onboarding/role'
-              return
-            }
-          }
-        } catch {
-          // If profile check fails, continue with default redirect
-        }
-
         const returnTo = sessionStorage.getItem('auth_return_to') || '/browse'
         sessionStorage.removeItem('auth_return_to')
-        window.location.href = returnTo
+        router.push(returnTo)
       } finally {
         setLoading(false)
       }
     },
-    [phone, email, isEmail],
+    [phone, router],
   )
 
   function handleChange(index: number, value: string) {
@@ -118,27 +99,18 @@ function OtpForm() {
     setError('')
     setCountdown(RESEND_COOLDOWN)
     const supabase = createClient()
-    const resendPayload = isEmail ? { email } : { phone }
-    const { error: resendError } = await supabase.auth.signInWithOtp(resendPayload)
+    const { error: resendError } = await supabase.auth.signInWithOtp({ phone })
     if (resendError) {
       setError(resendError.message)
     }
   }
 
-  const destination = isEmail ? email : phone
-
   return (
-    <div className="w-full max-w-md">
-      <div className="mb-6 text-center">
-        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-accent">
-          Vérification
-        </div>
-        <h1 className="mt-1 font-display text-3xl text-ink">Code envoyé</h1>
-        <p className="mt-2 text-sm text-muted">
-          Entrez le code reçu {isEmail ? 'à ' : 'au '}
-          <span className="font-mono text-ink">{destination}</span>
-        </p>
-      </div>
+    <div className="w-full max-w-sm">
+      <h1 className="mb-2 text-center text-2xl font-bold text-[#002366]">Vérification</h1>
+      <p className="mb-8 text-center text-sm text-gray-600">
+        Entrez le code envoyé au {phone}
+      </p>
 
       <div className="mb-4 flex justify-center gap-2" onPaste={handlePaste}>
         {otp.map((digit, index) => (
@@ -154,24 +126,16 @@ function OtpForm() {
             onChange={(e) => handleChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             disabled={loading}
-            className={`aspect-square w-12 rounded-sm border-2 bg-card text-center font-mono text-xl font-semibold text-ink outline-none transition-all disabled:bg-surface ${
-              digit
-                ? 'border-ink-2 bg-[rgba(0,35,102,0.04)]'
-                : 'border-border-strong hover:border-ink focus:border-accent focus:shadow-[0_0_0_3px_rgba(255,107,0,0.15)]'
-            }`}
+            className="h-12 w-12 rounded-lg border border-gray-300 text-center text-lg font-semibold focus:border-[#002366] focus:outline-none focus:ring-1 focus:ring-[#002366] disabled:bg-gray-100"
             aria-label={`Chiffre ${index + 1}`}
           />
         ))}
       </div>
 
-      {error && (
-        <div className="mb-4 rounded-md border border-error-fg/20 bg-error-bg p-3 text-center text-sm text-error-fg">
-          {error}
-        </div>
-      )}
+      {error && <p className="mb-4 text-center text-sm text-red-600">{error}</p>}
 
       {loading && (
-        <p className="mb-4 text-center text-sm text-muted">Vérification en cours…</p>
+        <p className="mb-4 text-center text-sm text-gray-500">Vérification en cours...</p>
       )}
 
       <div className="text-center">
@@ -179,9 +143,9 @@ function OtpForm() {
           type="button"
           onClick={handleResend}
           disabled={countdown > 0}
-          className="font-mono text-xs tabular text-ink-2 hover:underline disabled:text-muted-2 disabled:no-underline"
+          className="text-sm text-[#002366] disabled:text-gray-400"
         >
-          {countdown > 0 ? `Renvoyer le code dans ${countdown}s` : 'Renvoyer le code'}
+          {countdown > 0 ? `Renvoyer le code (${countdown}s)` : 'Renvoyer le code'}
         </button>
       </div>
     </div>
@@ -191,7 +155,7 @@ function OtpForm() {
 export default function OtpPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-4">
-      <Suspense fallback={<p className="text-sm text-muted">Chargement…</p>}>
+      <Suspense fallback={<p className="text-gray-500">Chargement...</p>}>
         <OtpForm />
       </Suspense>
     </main>

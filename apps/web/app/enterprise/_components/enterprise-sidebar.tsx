@@ -18,8 +18,8 @@ export function EnterpriseSidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center px-6">
         <Link href="/enterprise/dashboard">
-          <span className="font-display text-xl text-ink">
-            Pièces<span className="text-accent">.</span>
+          <span className="font-[family-name:Gloock,serif] text-xl text-[#00113a]">
+            Pièces<span className="text-[#ff6b00]">.</span>
           </span>
         </Link>
       </div>

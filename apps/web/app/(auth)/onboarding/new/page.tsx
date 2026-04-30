@@ -86,21 +86,15 @@ export default function OnboardingNewPage() {
     }
   }
 
-  const inputCls = 'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
-  const labelCls = 'mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
-
   return (
-    <div className="mx-auto max-w-lg px-4 py-6 lg:py-8">
-      <div className="mb-6">
-        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-          Onboarding
-        </div>
-        <h1 className="mt-1 font-display text-3xl text-ink">Profil vendeur</h1>
-      </div>
+    <div className="mx-auto max-w-md px-4 py-6">
+      <h1 className="mb-6 text-xl font-bold text-[#1A1A1A]">Onboarding Vendeur</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="shopName" className={labelCls}>Nom de la boutique</label>
+          <label htmlFor="shopName" className="mb-1 block text-sm font-medium text-[#1A1A1A]">
+            Nom de la boutique
+          </label>
           <input
             id="shopName"
             type="text"
@@ -109,12 +103,14 @@ export default function OnboardingNewPage() {
             required
             minLength={2}
             maxLength={100}
-            className={inputCls}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
         <div>
-          <label htmlFor="contactName" className={labelCls}>Nom du contact</label>
+          <label htmlFor="contactName" className="mb-1 block text-sm font-medium text-[#1A1A1A]">
+            Nom du contact
+          </label>
           <input
             id="contactName"
             type="text"
@@ -123,12 +119,14 @@ export default function OnboardingNewPage() {
             required
             minLength={2}
             maxLength={100}
-            className={inputCls}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
         <div>
-          <label htmlFor="phone" className={labelCls}>Téléphone vendeur</label>
+          <label htmlFor="phone" className="mb-1 block text-sm font-medium text-[#1A1A1A]">
+            Téléphone vendeur
+          </label>
           <input
             id="phone"
             type="tel"
@@ -139,41 +137,34 @@ export default function OnboardingNewPage() {
             inputMode="tel"
             pattern="^\+225(01|05|07)\d{8}$"
             placeholder="+2250700000000"
-            className={`${inputCls} font-mono ${phoneError ? 'border-error-fg focus:border-error-fg focus:shadow-[0_0_0_3px_rgba(180,35,24,0.08)]' : ''}`}
+            className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none ${phoneError ? 'border-[#D32F2F] focus:border-[#D32F2F]' : 'border-gray-300 focus:border-[#002366]'}`}
           />
-          {phoneError && <p className="mt-1 text-xs text-error-fg">{phoneError}</p>}
+          {phoneError && <p className="mt-1 text-xs text-[#D32F2F]">{phoneError}</p>}
         </div>
 
         <fieldset>
-          <legend className={labelCls}>Type de vendeur</legend>
+          <legend className="mb-2 text-sm font-medium text-[#1A1A1A]">Type de vendeur</legend>
           <div className="space-y-2">
             {VENDOR_TYPES.map((type) => (
-              <label
-                key={type.value}
-                className={`flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors ${
-                  vendorType === type.value
-                    ? 'border-ink-2 bg-[rgba(0,35,102,0.04)]'
-                    : 'border-border bg-card hover:border-border-strong'
-                }`}
-              >
+              <label key={type.value} className="flex items-center gap-2 text-sm">
                 <input
                   type="radio"
                   name="vendorType"
                   value={type.value}
                   checked={vendorType === type.value}
                   onChange={() => setVendorType(type.value)}
-                  className="accent-[color:var(--color-ink-2)]"
+                  className="text-[#002366]"
                 />
-                <span className={`text-sm ${vendorType === type.value ? 'font-semibold text-ink' : 'text-ink'}`}>
-                  {type.label}
-                </span>
+                {type.label}
               </label>
             ))}
           </div>
         </fieldset>
 
         <div>
-          <label htmlFor="documentNumber" className={labelCls}>{kycLabel}</label>
+          <label htmlFor="documentNumber" className="mb-1 block text-sm font-medium text-[#1A1A1A]">
+            {kycLabel}
+          </label>
           <input
             id="documentNumber"
             type="text"
@@ -182,22 +173,20 @@ export default function OnboardingNewPage() {
             required
             minLength={5}
             maxLength={50}
-            className={`${inputCls} font-mono`}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
         {error && (
-          <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-            {error}
-          </div>
+          <p className="text-sm text-[#D32F2F]">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-accent py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
         >
-          {loading ? 'Création en cours…' : 'Créer le profil vendeur'}
+          {loading ? 'Création en cours...' : 'Créer le profil vendeur'}
         </button>
       </form>
     </div>

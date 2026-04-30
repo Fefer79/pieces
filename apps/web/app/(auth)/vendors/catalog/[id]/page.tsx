@@ -3,9 +3,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Chip } from '@/components/ui/chip'
-import { Price } from '@/components/ui/price'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -26,11 +23,7 @@ interface CatalogItem {
   qualityIssue: string | null
   inStock: boolean
   priceAlertFlag: boolean
-  condition: 'NEW' | 'USED' | 'REFURBISHED' | null
-  warrantyMonths: number | null
   createdAt: string
-  imageJobStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | null
-  imageJobError: string | null
 }
 
 export default function VendorCatalogDetailPage() {
@@ -47,7 +40,6 @@ export default function VendorCatalogDetailPage() {
   const [item, setItem] = useState<CatalogItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [retrying, setRetrying] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -57,8 +49,6 @@ export default function VendorCatalogDetailPage() {
   const [oemReference, setOemReference] = useState('')
   const [vehicleCompatibility, setVehicleCompatibility] = useState('')
   const [price, setPrice] = useState('')
-  const [condition, setCondition] = useState<'NEW' | 'USED' | 'REFURBISHED' | ''>('')
-  const [warrantyMonths, setWarrantyMonths] = useState<string>('')
 
   const getAccessToken = useCallback(async () => {
     const { data: { session } } = await getSupabase().auth.getSession()
@@ -93,8 +83,6 @@ export default function VendorCatalogDetailPage() {
       setOemReference(data.oemReference ?? '')
       setVehicleCompatibility(data.vehicleCompatibility ?? '')
       setPrice(data.price !== null ? String(data.price) : '')
-      setCondition(data.condition ?? '')
-      setWarrantyMonths(data.warrantyMonths !== null ? String(data.warrantyMonths) : '')
     } catch {
       setError('Erreur réseau. Vérifiez votre connexion.')
     } finally {
@@ -122,13 +110,6 @@ export default function VendorCatalogDetailPage() {
       if (vehicleCompatibility !== (item?.vehicleCompatibility ?? '')) body.vehicleCompatibility = vehicleCompatibility || null
       if (price !== (item?.price !== null ? String(item?.price) : '')) {
         body.price = price ? parseInt(price, 10) : undefined
-      }
-      if (condition !== (item?.condition ?? '')) {
-        if (condition) body.condition = condition
-      }
-      const currentWarranty = item?.warrantyMonths !== null && item?.warrantyMonths !== undefined ? String(item.warrantyMonths) : ''
-      if (warrantyMonths !== currentWarranty && warrantyMonths !== '') {
-        body.warrantyMonths = parseInt(warrantyMonths, 10)
       }
 
       if (Object.keys(body).length === 0) {
@@ -215,273 +196,156 @@ export default function VendorCatalogDetailPage() {
     }
   }
 
-  const handleRetryImage = async () => {
-    if (!item) return
-    setRetrying(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      const token = await getAccessToken()
-      if (!token) { setError('Session expirée.'); setRetrying(false); return }
-
-      const res = await fetch(`/api/v1/catalog/items/${itemId}/retry-image`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const result = await res.json()
-
-      if (!res.ok) {
-        setError(result.error?.message ?? 'Erreur')
-      } else {
-        setSuccess('Traitement relancé. La photo apparaîtra dans quelques instants.')
-        await fetchItem()
-      }
-    } catch {
-      setError('Erreur réseau.')
-    } finally {
-      setRetrying(false)
-    }
-  }
-
-  const INPUT =
-    'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
-  const LABEL = 'mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
-
   if (loading) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <p className="text-sm text-muted">Chargement…</p>
+      <div className="mx-auto max-w-md px-4 py-6">
+        <p className="text-sm text-gray-500">Chargement...</p>
       </div>
     )
   }
 
   if (!item) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-          {error ?? 'Fiche introuvable'}
-        </div>
-        <button
-          onClick={() => router.push('/vendors/catalog')}
-          className="mt-4 text-sm text-ink-2 hover:underline"
-        >
-          ← Retour au catalogue
+      <div className="mx-auto max-w-md px-4 py-6">
+        <p className="text-sm text-[#D32F2F]">{error ?? 'Fiche introuvable'}</p>
+        <button onClick={() => router.push('/vendors/catalog')} className="mt-4 text-sm text-[#002366]">
+          Retour au catalogue
         </button>
       </div>
     )
   }
 
-  const statusChip =
-    item.status === 'PUBLISHED'
-      ? { variant: 'status-ok' as const, label: 'Publié' }
-      : item.status === 'DRAFT'
-        ? { variant: 'status-warn' as const, label: 'Brouillon' }
-        : { variant: 'plain' as const, label: 'Archivé' }
-
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 lg:py-8">
-      <button
-        onClick={() => router.push('/vendors/catalog')}
-        className="mb-4 text-sm text-ink-2 hover:underline"
-      >
-        ← Retour au catalogue
+    <div className="mx-auto max-w-md px-4 py-6">
+      <button onClick={() => router.push('/vendors/catalog')} className="mb-4 text-sm text-[#002366]">
+        &larr; Retour au catalogue
       </button>
 
       {/* Image */}
-      <div className="mb-5 overflow-hidden rounded-md border border-border bg-surface">
+      <div className="mb-4 overflow-hidden rounded-lg bg-gray-100">
         {item.imageMediumUrl ? (
-          <img
-            src={item.imageMediumUrl}
-            alt={item.name ?? 'Pièce'}
-            className="w-full object-cover"
-          />
-        ) : item.imageJobStatus === 'FAILED' ? (
-          <div className="flex h-56 flex-col items-center justify-center gap-2 px-4 text-center">
-            <p className="text-sm font-medium text-status-err">
-              Échec du traitement de la photo
-            </p>
-            {item.imageJobError && (
-              <p className="max-w-xs text-xs text-muted-2">{item.imageJobError}</p>
-            )}
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handleRetryImage}
-              disabled={retrying}
-            >
-              {retrying ? 'Relance…' : 'Réessayer'}
-            </Button>
-          </div>
+          <img src={item.imageMediumUrl} alt={item.name ?? 'Pièce'} className="w-full object-cover" />
         ) : (
-          <div className="flex h-56 items-center justify-center text-sm text-muted-2">
-            Photo en cours de traitement…
-          </div>
+          <div className="flex h-48 items-center justify-center text-sm text-gray-400">Photo en cours de traitement...</div>
         )}
       </div>
 
-      {/* Status + alerts */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Chip variant={statusChip.variant}>{statusChip.label}</Chip>
-        {item.condition === 'NEW' && <Chip variant="neuf">Neuf</Chip>}
-        {item.condition === 'USED' && <Chip variant="occasion">Occasion</Chip>}
-        {item.condition === 'REFURBISHED' && <Chip variant="reusine">Ré-usiné</Chip>}
+      {/* Status badge + alerts */}
+      <div className="mb-4 flex items-center gap-2">
+        <span className={`rounded-full px-3 py-1 text-xs font-medium ${
+          item.status === 'DRAFT' ? 'bg-yellow-100 text-yellow-700'
+            : item.status === 'PUBLISHED' ? 'bg-green-100 text-green-700'
+              : 'bg-gray-100 text-gray-500'
+        }`}>
+          {item.status === 'DRAFT' ? 'Brouillon' : item.status === 'PUBLISHED' ? 'Publié' : 'Archivé'}
+        </span>
         {item.status === 'PUBLISHED' && !item.inStock && (
-          <Chip variant="status-err">Épuisée</Chip>
+          <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">Épuisée</span>
         )}
-        {item.priceAlertFlag && <Chip variant="status-warn">Alerte prix</Chip>}
+        {item.priceAlertFlag && (
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">Alerte prix</span>
+        )}
         {item.qualityIssue && (
-          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-warn-fg" title={item.qualityIssue}>
-            ⚠ Photo
-          </span>
+          <span className="text-xs text-amber-600" title={item.qualityIssue}>Photo</span>
         )}
       </div>
 
-      {error && (
-        <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-3 rounded-md border border-success-fg/20 bg-success-bg p-3 text-sm text-success-fg">
-          {success}
-        </div>
-      )}
+      {error && <p className="mb-3 text-sm text-[#D32F2F]">{error}</p>}
+      {success && <p className="mb-3 text-sm text-green-600">{success}</p>}
 
       {/* Edit form */}
-      <div className="space-y-4 rounded-md border border-border bg-card p-5">
+      <div className="space-y-3">
         <div>
-          <label className={LABEL}>Nom de la pièce</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600">Nom de la pièce</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={item.aiGenerated ? 'Identifié par IA…' : 'Saisissez le nom'}
-            className={INPUT}
+            placeholder={item.aiGenerated ? 'Identifié par IA...' : 'Saisissez le nom'}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
         <div>
-          <label className={LABEL}>Catégorie</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600">Catégorie</label>
           <input
             type="text"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="Ex : Filtration, Freinage…"
-            className={INPUT}
+            placeholder="Ex: Filtration, Freinage..."
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
         <div>
-          <label className={LABEL}>Référence OEM</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600">Référence OEM</label>
           <input
             type="text"
             value={oemReference}
             onChange={(e) => setOemReference(e.target.value)}
-            placeholder="Ex : 90915-YZZD4"
-            className={`${INPUT} font-mono`}
+            placeholder="Ex: 90915-YZZD4"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
         <div>
-          <label className={LABEL}>Compatibilité véhicule</label>
+          <label className="mb-1 block text-xs font-medium text-gray-600">Compatibilité véhicule</label>
           <input
             type="text"
             value={vehicleCompatibility}
             onChange={(e) => setVehicleCompatibility(e.target.value)}
-            placeholder="Ex : Toyota Hilux 2005-2015"
-            className={INPUT}
+            placeholder="Ex: Toyota Hilux 2005-2015"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
           />
         </div>
 
         <div>
-          <label className={LABEL}>Prix (FCFA)</label>
-          {item.suggestedPrice && !price && (
-            <div className="mb-1.5 text-xs text-muted">
-              Suggestion IA : <Price amount={item.suggestedPrice} className="text-xs" />
-            </div>
-          )}
+          <label className="mb-1 block text-xs font-medium text-gray-600">
+            Prix (FCFA) {item.suggestedPrice && !price && <span className="text-gray-400">— Suggestion IA : {item.suggestedPrice.toLocaleString('fr-FR')} F</span>}
+          </label>
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            placeholder={item.suggestedPrice ? `${item.suggestedPrice.toLocaleString('fr-FR')} (suggestion IA)` : 'Saisissez votre prix'}
-            className={`${INPUT} font-mono`}
+            placeholder={item.suggestedPrice ? `${item.suggestedPrice.toLocaleString('fr-FR')} F (suggestion IA)` : 'Saisissez votre prix'}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
             min="0"
           />
-        </div>
-
-        <div>
-          <label className={LABEL}>
-            État <span className="text-accent">*</span>
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { value: 'NEW', label: 'Neuf', active: 'border-neuf-fg/50 bg-neuf-bg text-neuf-fg' },
-              { value: 'USED', label: 'Occasion', active: 'border-occasion-fg/50 bg-occasion-bg text-occasion-fg' },
-              { value: 'REFURBISHED', label: 'Reconditionné', active: 'border-reusine-fg/50 bg-reusine-bg text-reusine-fg' },
-            ].map(({ value, label, active }) => {
-              const isActive = condition === value
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setCondition(value as 'NEW' | 'USED' | 'REFURBISHED')}
-                  className={`rounded-md border-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] transition-all ${
-                    isActive ? active : 'border-border bg-card text-muted hover:border-border-strong hover:text-ink'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="warranty" className={LABEL}>
-            Garantie vendeur <span className="text-accent">*</span>
-          </label>
-          <select
-            id="warranty"
-            value={warrantyMonths}
-            onChange={(e) => setWarrantyMonths(e.target.value)}
-            className={INPUT}
-          >
-            <option value="">— Choisir la durée —</option>
-            <option value="0">Sans garantie</option>
-            <option value="1">1 mois</option>
-            <option value="3">3 mois</option>
-            <option value="6">6 mois</option>
-            <option value="12">1 an</option>
-            <option value="24">2 ans</option>
-            <option value="36">3 ans</option>
-          </select>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="mt-6 space-y-2.5">
-        <Button variant="secondary" block onClick={handleSave} disabled={saving}>
-          {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
-        </Button>
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full rounded-lg border border-[#002366] py-3 text-sm font-semibold text-[#002366] transition-colors hover:bg-blue-50 disabled:opacity-50"
+        >
+          {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+        </button>
 
         {item.status === 'DRAFT' && (
-          <Button
-            variant="accent"
-            size="lg"
-            block
+          <button
             onClick={handlePublish}
             disabled={saving || !price}
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
           >
             Publier la fiche
-          </Button>
+          </button>
         )}
 
         {item.status === 'PUBLISHED' && (
-          <Button variant="secondary" block onClick={handleToggleStock} disabled={saving}>
+          <button
+            onClick={handleToggleStock}
+            disabled={saving}
+            className={`w-full rounded-lg py-3 text-sm font-semibold transition-colors ${
+              item.inStock
+                ? 'border border-red-300 text-red-600 hover:bg-red-50'
+                : 'border border-green-300 text-green-600 hover:bg-green-50'
+            }`}
+          >
             {item.inStock ? 'Marquer épuisée' : 'Remettre en stock'}
-          </Button>
+          </button>
         )}
       </div>
     </div>

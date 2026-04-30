@@ -33,6 +33,18 @@ packages/shared/prisma/*.db
 # Serwist (generated service worker)
 apps/web/public/sw.js
 apps/web/public/swe-worker-*.js
+# macOS Finder duplicates of generated service workers
+apps/web/public/sw [0-9]*.js
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Stray promo art at repo root (move under apps/web/public/ if needed)
+/flotte.png
+/intro.png
+/pieces.png
+/reusine.png
+/transparence.png
 
 # OpenNext / Cloudflare build output
 .open-next/

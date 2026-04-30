@@ -96,7 +96,7 @@ export default function DataPage() {
   if (loading) {
     return (
       <main className="flex min-h-dvh items-center justify-center">
-        <p className="text-sm text-muted">Chargement…</p>
+        <p className="text-gray-500">Chargement...</p>
       </main>
     )
   }
@@ -104,83 +104,68 @@ export default function DataPage() {
   if (!data) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center px-4">
-        <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-          {error || 'Données introuvables'}
-        </div>
+        <p className="text-red-600">{error || 'Données introuvables'}</p>
       </main>
     )
   }
 
-  const field = 'mb-1 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
-
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-6 lg:py-8">
-      <Link href="/profile" className="mb-3 inline-block text-sm text-ink-2 hover:underline">
-        ← Retour au profil
+    <main className="mx-auto w-full max-w-sm px-4 pt-8">
+      <Link href="/profile" className="mb-4 inline-block text-sm text-[#002366]">
+        &larr; Retour au profil
       </Link>
 
-      <div className="mb-6">
-        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-          Compte · RGPD
-        </div>
-        <h1 className="mt-1 font-display text-3xl text-ink">Mes données</h1>
-      </div>
+      <h1 className="mb-6 text-xl font-bold text-gray-900">Mes données</h1>
 
-      <div className="space-y-2.5">
-        <section className="rounded-md border border-border bg-card p-4">
-          <p className={field}>Téléphone</p>
-          <p className="font-mono text-base text-ink">{data.phone}</p>
-        </section>
+      <section className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="mb-1 text-sm text-gray-500">Téléphone</p>
+        <p className="text-base font-medium">{data.phone}</p>
+      </section>
 
-        <section className="rounded-md border border-border bg-card p-4">
-          <p className={field}>Rôles</p>
-          <p className="text-base text-ink">
-            {data.roles.map((r) => ROLE_LABELS[r] ?? r).join(', ')}
-          </p>
-        </section>
+      <section className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="mb-1 text-sm text-gray-500">Rôles</p>
+        <p className="text-base font-medium">
+          {data.roles.map((r) => ROLE_LABELS[r] ?? r).join(', ')}
+        </p>
+      </section>
 
-        <section className="rounded-md border border-border bg-card p-4">
-          <p className={field}>Contexte actif</p>
-          <p className="text-base text-ink">
-            {data.activeContext ? (ROLE_LABELS[data.activeContext] ?? data.activeContext) : 'Aucun'}
-          </p>
-        </section>
+      <section className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="mb-1 text-sm text-gray-500">Contexte actif</p>
+        <p className="text-base font-medium">
+          {data.activeContext ? (ROLE_LABELS[data.activeContext] ?? data.activeContext) : 'Aucun'}
+        </p>
+      </section>
 
-        <section className="rounded-md border border-border bg-card p-4">
-          <p className={field}>Consentement ARTCI</p>
-          <p className="text-base text-ink">
-            {data.consentedAt
-              ? `Accepté le ${new Date(data.consentedAt).toLocaleDateString('fr-CI')}`
-              : 'Non consenti'}
-          </p>
-        </section>
+      <section className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="mb-1 text-sm text-gray-500">Consentement ARTCI</p>
+        <p className="text-base font-medium">
+          {data.consentedAt
+            ? `Accepté le ${new Date(data.consentedAt).toLocaleDateString('fr-CI')}`
+            : 'Non consenti'}
+        </p>
+      </section>
 
-        <section className="rounded-md border border-border bg-card p-4">
-          <p className={field}>Compte créé le</p>
-          <p className="font-mono text-base tabular text-ink">
-            {new Date(data.createdAt).toLocaleDateString('fr-CI')}
-          </p>
-        </section>
-      </div>
+      <section className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+        <p className="mb-1 text-sm text-gray-500">Compte créé le</p>
+        <p className="text-base font-medium">
+          {new Date(data.createdAt).toLocaleDateString('fr-CI')}
+        </p>
+      </section>
 
-      {error && (
-        <div className="mt-4 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-          {error}
-        </div>
-      )}
+      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
 
       {deletionRequested ? (
-        <div className="mt-4 rounded-md border border-success-fg/20 bg-success-bg p-4 text-sm text-success-fg">
-          ✓ Votre demande de suppression a été enregistrée. Elle sera traitée conformément à la réglementation en vigueur.
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          Votre demande de suppression a été enregistrée. Elle sera traitée conformément à la réglementation en vigueur.
         </div>
       ) : (
         <button
           onClick={handleDeletionRequest}
           disabled={requesting}
-          className="mt-4 w-full rounded-md border border-error-fg/30 bg-error-bg/40 px-4 py-3 text-sm font-semibold text-error-fg transition-colors hover:border-error-fg/50 disabled:opacity-50"
+          className="w-full rounded-lg border border-red-300 px-4 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
           style={{ minHeight: '48px' }}
         >
-          {requesting ? 'Envoi…' : 'Demander la suppression de mes données'}
+          {requesting ? 'Envoi...' : 'Demander la suppression de mes données'}
         </button>
       )}
     </main>

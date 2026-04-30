@@ -3,8 +3,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Chip } from '@/components/ui/chip'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -108,20 +106,16 @@ export default function VendorGuaranteesPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <p className="text-sm text-muted">Chargement…</p>
+      <div className="mx-auto max-w-md px-4 py-6">
+        <p className="text-sm text-gray-500">Chargement...</p>
       </div>
     )
   }
 
   if (!data) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        {error && (
-          <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-            {error}
-          </div>
-        )}
+      <div className="mx-auto max-w-md px-4 py-6">
+        {error && <p className="text-sm text-[#D32F2F]">{error}</p>}
       </div>
     )
   }
@@ -129,67 +123,54 @@ export default function VendorGuaranteesPage() {
   const isPending = data.status === 'PENDING_ACTIVATION'
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 lg:py-8">
-      <div className="mb-2">
-        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-          Vendeur · {data.vendorType === 'FORMAL' ? 'Formel' : 'Informel'}
-        </div>
-        <h1 className="mt-1 font-display text-3xl text-ink">Garanties obligatoires</h1>
-      </div>
-      <p className="mb-6 text-sm text-muted">
-        {data.shopName} — retour sous 48h + garantie 30 jours sur toute pièce vendue. C&apos;est la contrepartie de la confiance que les acheteurs vous accordent.
+    <div className="mx-auto max-w-md px-4 py-6">
+      <h1 className="mb-2 text-xl font-bold text-[#1A1A1A]">Garanties Obligatoires</h1>
+      <p className="mb-6 text-sm text-gray-600">
+        {data.shopName} — {data.vendorType === 'FORMAL' ? 'Formel' : 'Informel'}
       </p>
 
-      <div className="space-y-2.5">
+      <div className="space-y-4">
         {data.guarantees.map((g) => (
           <div
             key={g.type}
-            className={`flex items-start gap-3 rounded-md border p-4 ${
-              g.signed ? 'border-success-fg/20 bg-success-bg' : 'border-border bg-card'
-            }`}
+            className={`rounded-lg border p-4 ${g.signed ? 'border-green-300 bg-green-50' : 'border-gray-300 bg-white'}`}
           >
-            <div className="flex-1">
-              <p className={`text-sm font-medium ${g.signed ? 'text-success-fg' : 'text-ink'}`}>
-                {g.label}
+            <p className="text-sm font-medium text-[#1A1A1A]">{g.label}</p>
+            {g.signed && g.signedAt && (
+              <p className="mt-1 text-xs text-green-700">
+                Signée le {new Date(g.signedAt).toLocaleDateString('fr-FR')}
               </p>
-              {g.signed && g.signedAt && (
-                <p className="mt-1 text-xs text-success-fg/80">
-                  Signée le {new Date(g.signedAt).toLocaleDateString('fr-FR')}
-                </p>
-              )}
-            </div>
-            {g.signed ? (
-              <Chip variant="status-ok">Signée</Chip>
-            ) : (
-              <Chip variant="plain">Non signée</Chip>
             )}
           </div>
         ))}
       </div>
 
-      {error && (
-        <div className="mt-4 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-          {error}
-        </div>
-      )}
+      {error && <p className="mt-4 text-sm text-[#D32F2F]">{error}</p>}
 
       {isPending && !data.allSigned && (
         <div className="mt-6 space-y-3">
-          <Button variant="accent" size="lg" block onClick={handleSign} disabled={signing}>
-            {signing ? 'Signature en cours…' : 'Signer les garanties et activer mon profil'}
-          </Button>
-          <Button variant="secondary" block onClick={() => router.push('/profile')}>
+          <button
+            onClick={handleSign}
+            disabled={signing}
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1565C0] disabled:opacity-50"
+          >
+            {signing ? 'Signature en cours...' : 'Signer les garanties et activer mon profil'}
+          </button>
+          <button
+            onClick={() => router.push('/profile')}
+            className="w-full rounded-lg border border-gray-300 py-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+          >
             Refuser — mon profil restera inactif
-          </Button>
-          <p className="text-xs text-muted">
+          </button>
+          <p className="text-xs text-gray-500">
             En refusant, votre profil restera en attente d&apos;activation et vous ne pourrez pas recevoir de commandes.
           </p>
         </div>
       )}
 
       {data.allSigned && (
-        <div className="mt-6 rounded-md border border-success-fg/20 bg-success-bg p-4 text-center text-sm font-medium text-success-fg">
-          🛡️ Toutes les garanties sont signées. Votre profil est actif.
+        <div className="mt-6 rounded-lg border border-green-300 bg-green-50 p-4 text-center">
+          <p className="text-sm font-medium text-green-800">Toutes les garanties sont signées. Votre profil est actif.</p>
         </div>
       )}
     </div>

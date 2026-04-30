@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
-import { Price } from '@/components/ui/price'
 
 interface SearchResult {
   id: string
@@ -78,37 +77,32 @@ export default function EnterpriseSearchPage() {
     setResults([])
   }
 
-  const filterInput =
-    'w-full rounded-sm border border-border bg-card px-3 py-2 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)] disabled:opacity-50'
-  const filterLabel =
-    'mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
-
   return (
     <div className="flex h-full">
       {/* Left sidebar filters */}
-      <aside className="w-64 flex-shrink-0 border-r border-border bg-card p-6">
-        <h2 className="mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
-          Filtres
-        </h2>
+      <aside className="w-60 flex-shrink-0 border-r border-gray-200 bg-white p-6">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">Filtres</h2>
 
         <div className="space-y-4">
+          {/* Search */}
           <div>
-            <label className={filterLabel}>Recherche</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Recherche</label>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Nom, référence…"
-              className={filterInput}
+              placeholder="Nom, référence..."
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
             />
           </div>
 
+          {/* Brand */}
           <div>
-            <label className={filterLabel}>Marque</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Marque</label>
             <select
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className={filterInput}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none"
             >
               <option value="">Toutes</option>
               {brandNames.map((b) => (
@@ -117,13 +111,14 @@ export default function EnterpriseSearchPage() {
             </select>
           </div>
 
+          {/* Model */}
           <div>
-            <label className={filterLabel}>Modèle</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Modèle</label>
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
               disabled={!selectedBrand}
-              className={filterInput}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none disabled:opacity-50"
             >
               <option value="">Tous</option>
               {models.map((m) => (
@@ -132,13 +127,14 @@ export default function EnterpriseSearchPage() {
             </select>
           </div>
 
+          {/* Year */}
           <div>
-            <label className={filterLabel}>Année</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Année</label>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
               disabled={!selectedModel}
-              className={filterInput}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none disabled:opacity-50"
             >
               <option value="">Toutes</option>
               {years.map((y) => (
@@ -147,13 +143,14 @@ export default function EnterpriseSearchPage() {
             </select>
           </div>
 
+          {/* Motorisation */}
           <div>
-            <label className={filterLabel}>Motorisation</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">Motorisation</label>
             <select
               value={selectedMotor}
               onChange={(e) => setSelectedMotor(e.target.value)}
               disabled={!selectedYear || engines.length === 0}
-              className={filterInput}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-[#002366] focus:outline-none disabled:opacity-50"
             >
               <option value="">Toutes</option>
               {engines.map((eng) => (
@@ -164,7 +161,7 @@ export default function EnterpriseSearchPage() {
 
           <button
             onClick={resetFilters}
-            className="w-full rounded-md border border-border-strong bg-card px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
           >
             Réinitialiser
           </button>
@@ -172,38 +169,33 @@ export default function EnterpriseSearchPage() {
       </aside>
 
       {/* Results grid */}
-      <div className="flex-1 p-6 lg:p-8">
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              Entreprise
-            </div>
-            <h1 className="mt-1 font-display text-3xl text-ink">Recherche de pièces</h1>
-          </div>
+      <div className="flex-1 p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Recherche de pièces</h1>
           {results.length > 0 && (
-            <p className="font-mono text-xs tabular text-muted">
-              {results.length} résultat{results.length > 1 ? 's' : ''}
-            </p>
+            <p className="text-sm text-gray-500">{results.length} résultat{results.length > 1 ? 's' : ''}</p>
           )}
         </div>
 
-        {searching && <p className="text-sm text-muted">Recherche en cours…</p>}
+        {searching && (
+          <p className="text-sm text-gray-500">Recherche en cours...</p>
+        )}
 
         {!searching && searchQuery.trim().length < 2 && results.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-border-strong bg-card py-16 text-center">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-2">
+          <div className="flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-white py-16 text-center">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <p className="mt-4 text-sm font-medium text-ink">Saisissez un terme pour rechercher des pièces</p>
-            <p className="mt-1 text-xs text-muted">Utilisez les filtres à gauche pour affiner vos résultats</p>
+            <p className="mt-4 text-sm text-gray-500">Saisissez un terme pour rechercher des pièces</p>
+            <p className="mt-1 text-xs text-gray-400">Utilisez les filtres à gauche pour affiner vos résultats</p>
           </div>
         )}
 
         {!searching && searchQuery.trim().length >= 2 && results.length === 0 && (
-          <div className="rounded-md border border-dashed border-border-strong bg-card p-10 text-center">
-            <p className="text-sm font-medium text-ink">Aucun résultat pour «&nbsp;{searchQuery}&nbsp;»</p>
-            <p className="mt-1 text-xs text-muted">Essayez un autre terme ou modifiez vos filtres</p>
+          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
+            <p className="text-sm text-gray-500">Aucun résultat pour &ldquo;{searchQuery}&rdquo;</p>
+            <p className="mt-1 text-xs text-gray-400">Essayez un autre terme ou modifiez vos filtres</p>
           </div>
         )}
 
@@ -212,9 +204,10 @@ export default function EnterpriseSearchPage() {
             {results.map((item) => (
               <div
                 key={item.id}
-                className="overflow-hidden rounded-md border border-border bg-card transition-all hover:border-border-strong hover:shadow-md"
+                className="overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-md"
               >
-                <div className="h-40 bg-surface">
+                {/* Image */}
+                <div className="h-40 bg-gray-100">
                   {item.imageThumbUrl ? (
                     <img
                       src={item.imageThumbUrl}
@@ -222,7 +215,7 @@ export default function EnterpriseSearchPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-muted-2">
+                    <div className="flex h-full w-full items-center justify-center text-gray-300">
                       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                         <circle cx="8.5" cy="8.5" r="1.5" />
@@ -232,17 +225,18 @@ export default function EnterpriseSearchPage() {
                   )}
                 </div>
 
+                {/* Content */}
                 <div className="p-4">
-                  <h3 className="truncate text-sm font-semibold text-ink">
+                  <h3 className="truncate text-sm font-semibold text-gray-900">
                     {item.name ?? 'Pièce'}
                   </h3>
-                  <p className="mt-1 text-xs text-muted">
-                    {item.category ?? '—'} · {item.vendor.shopName}
+                  <p className="mt-1 text-xs text-gray-500">
+                    {item.category ?? '—'} &middot; {item.vendor.shopName}
                   </p>
                   {item.price != null && (
-                    <div className="mt-2">
-                      <Price amount={item.price} className="text-base font-semibold text-ink" />
-                    </div>
+                    <p className="mt-2 text-base font-bold text-[#002366]">
+                      {item.price.toLocaleString('fr-FR')} FCFA
+                    </p>
                   )}
                 </div>
               </div>

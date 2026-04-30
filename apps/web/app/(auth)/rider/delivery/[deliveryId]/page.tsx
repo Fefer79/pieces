@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Price } from '@/components/ui/price'
 
 interface Delivery {
   id: string
@@ -55,124 +53,70 @@ export default function DeliveryDetailPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-sm text-muted">Chargement…</p>
-      </div>
-    )
+    return <div className="flex min-h-[50vh] items-center justify-center"><p className="text-gray-500">Chargement...</p></div>
   }
 
   if (!delivery) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-          Livraison introuvable
-        </div>
-      </div>
-    )
+    return <div className="mx-auto max-w-md px-4 py-6"><p className="text-sm text-[#D32F2F]">Livraison introuvable</p></div>
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 lg:py-8">
-      <button
-        onClick={() => router.push('/rider')}
-        className="mb-3 text-sm text-ink-2 hover:underline"
-      >
-        ← Retour
-      </button>
+    <div className="mx-auto max-w-md px-4 py-6">
+      <button onClick={() => router.push('/rider')} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
 
-      {/* Header band */}
-      <div className="mb-5 overflow-hidden rounded-md border border-border">
-        <div className="flex items-center justify-between bg-[linear-gradient(135deg,#00113A_0%,#002366_100%)] p-5 text-white">
-          <div>
-            <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-white/75">
-              ● {delivery.status.replace(/_/g, ' ')}
-            </div>
-            <div className="mt-1 font-display text-2xl">#{delivery.id.slice(0, 8)}</div>
-            <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] opacity-80">
-              Mode : {delivery.mode}
-            </div>
-          </div>
-          {delivery.codAmount != null && delivery.codAmount > 0 && (
-            <div className="rounded-sm bg-accent px-4 py-3 text-right">
-              <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.12em] opacity-90">
-                À encaisser (COD)
-              </div>
-              <Price amount={delivery.codAmount} className="mt-0.5 text-lg font-semibold" />
-            </div>
-          )}
-        </div>
+      <div className="mb-4 rounded-lg bg-[#002366] p-4 text-white">
+        <p className="text-lg font-bold">{delivery.status.replace(/_/g, ' ')}</p>
+        <p className="text-sm opacity-80">{delivery.mode}</p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-md border border-border bg-card p-4 border-l-4 border-l-ink-2">
-          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-            📍 Ramassage · Vendeur
-          </div>
-          <p className="mt-2 text-sm text-ink">
-            {delivery.pickupAddress ?? <span className="text-muted-2">Adresse non renseignée</span>}
-          </p>
-        </div>
-
-        <div className="rounded-md border border-border bg-card p-4 border-l-4 border-l-accent">
-          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-            🏁 Livraison · Client
-          </div>
-          <p className="mt-2 text-sm text-ink">
-            {delivery.deliveryAddress ?? <span className="text-muted-2">Adresse non renseignée</span>}
-          </p>
-        </div>
+      <div className="mb-3 rounded-lg border border-gray-200 p-3">
+        <p className="text-xs font-semibold text-gray-500">RAMASSAGE</p>
+        <p className="text-sm text-[#1A1A1A]">{delivery.pickupAddress ?? 'Adresse non renseignée'}</p>
       </div>
 
-      <div className="mt-6 space-y-2.5">
+      <div className="mb-3 rounded-lg border border-gray-200 p-3">
+        <p className="text-xs font-semibold text-gray-500">LIVRAISON</p>
+        <p className="text-sm text-[#1A1A1A]">{delivery.deliveryAddress ?? 'Adresse non renseignée'}</p>
+      </div>
+
+      {delivery.codAmount != null && delivery.codAmount > 0 && (
+        <div className="mb-4 rounded-lg bg-green-50 p-4 text-center">
+          <p className="text-xs text-green-600">Montant à collecter (COD)</p>
+          <p className="text-3xl font-bold text-green-700">{delivery.codAmount.toLocaleString()} FCFA</p>
+        </div>
+      )}
+
+      <div className="space-y-2">
         {delivery.status === 'ASSIGNED' && (
-          <Button
-            variant="accent"
-            size="lg"
-            block
-            onClick={() => handleAction('pickup')}
-            disabled={acting}
-          >
-            {acting ? 'En cours…' : 'Démarrer le ramassage'}
-          </Button>
+          <button onClick={() => handleAction('pickup')} disabled={acting}
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white disabled:bg-gray-300">
+            {acting ? 'En cours...' : 'Démarrer le ramassage'}
+          </button>
         )}
 
         {delivery.status === 'PICKUP_IN_PROGRESS' && (
-          <Button
-            variant="accent"
-            size="lg"
-            block
-            onClick={() => handleAction('transit')}
-            disabled={acting}
-          >
-            {acting ? 'En cours…' : 'Pièce récupérée — En route'}
-          </Button>
+          <button onClick={() => handleAction('transit')} disabled={acting}
+            className="w-full rounded-lg bg-[#002366] py-3 text-sm font-semibold text-white disabled:bg-gray-300">
+            {acting ? 'En cours...' : 'Pièce récupérée — En route'}
+          </button>
         )}
 
         {delivery.status === 'IN_TRANSIT' && (
           <>
-            <Button
-              variant="accent"
-              size="lg"
-              block
-              onClick={() => handleAction('deliver')}
-              disabled={acting}
-            >
-              {acting ? 'En cours…' : 'Confirmer la livraison'}
-            </Button>
-            <button
-              onClick={() => handleAction('client-absent')}
-              disabled={acting}
-              className="w-full rounded-md border border-warn-fg/30 bg-warn-bg px-4 py-3 text-sm font-semibold text-warn-fg transition-colors hover:border-warn-fg/50 disabled:opacity-50"
-            >
+            <button onClick={() => handleAction('deliver')} disabled={acting}
+              className="w-full rounded-lg bg-green-600 py-3 text-sm font-semibold text-white disabled:bg-gray-300">
+              {acting ? 'En cours...' : 'Confirmer la livraison'}
+            </button>
+            <button onClick={() => handleAction('client-absent')} disabled={acting}
+              className="w-full rounded-lg border border-amber-300 bg-amber-50 py-3 text-sm font-semibold text-amber-700 disabled:bg-gray-100">
               Client absent
             </button>
           </>
         )}
 
         {delivery.status === 'DELIVERED' && (
-          <div className="rounded-md border border-success-fg/20 bg-success-bg p-4 text-center text-sm font-semibold text-success-fg">
-            ✓ Livraison confirmée
+          <div className="rounded-lg bg-green-50 p-4 text-center">
+            <p className="text-sm font-semibold text-green-700">Livraison confirmée</p>
           </div>
         )}
       </div>

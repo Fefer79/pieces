@@ -51,7 +51,6 @@ describe('requireAuth', () => {
     mockUpsert.mockResolvedValueOnce({
       id: 'prisma-user-123',
       phone: '+2250700000000',
-      email: null,
       roles: ['MECHANIC'],
       activeContext: null,
       consentedAt: null,
@@ -64,7 +63,6 @@ describe('requireAuth', () => {
     expect(request.user).toEqual({
       id: 'prisma-user-123',
       phone: '+2250700000000',
-      email: null,
       roles: ['MECHANIC'],
       activeContext: 'MECHANIC',
       consentedAt: null,
@@ -72,7 +70,7 @@ describe('requireAuth', () => {
     expect(mockGetUser).toHaveBeenCalledWith('valid-token')
     expect(mockUpsert).toHaveBeenCalledWith({
       where: { supabaseId: 'supabase-123' },
-      update: {},
+      update: { phone: '+2250700000000', email: undefined },
       create: { supabaseId: 'supabase-123', phone: '+2250700000000', email: null, roles: ['MECHANIC'] },
       select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
     })
