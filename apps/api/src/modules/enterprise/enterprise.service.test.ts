@@ -50,7 +50,7 @@ describe('enterprise.service', () => {
       enterpriseFindUnique.mockResolvedValue(null) // slug available
       enterpriseCreate.mockResolvedValueOnce({ id: 'e1', name: 'Transports Yopougon SARL', slug: 'transports-yopougon-sarl' })
 
-      await createEnterprise('user-1', { name: 'Transports Yopougon SARL' })
+      await createEnterprise('user-1', { name: 'Transports Yopougon SARL', commune: 'Yopougon' })
 
       expect(enterpriseCreate).toHaveBeenCalledTimes(1)
       const callArg = enterpriseCreate.mock.calls[0]![0] as { data: { slug: string; members: { create: { role: string; userId: string } } } }
@@ -65,7 +65,7 @@ describe('enterprise.service', () => {
         .mockResolvedValueOnce(null)             // -2 available
       enterpriseCreate.mockResolvedValueOnce({ id: 'e1' })
 
-      await createEnterprise('user-1', { name: 'Garage Plateau' })
+      await createEnterprise('user-1', { name: 'Garage Plateau', commune: 'Plateau' })
 
       const callArg = enterpriseCreate.mock.calls[0]![0] as { data: { slug: string } }
       expect(callArg.data.slug).toBe('garage-plateau-2')
@@ -75,7 +75,7 @@ describe('enterprise.service', () => {
       enterpriseFindUnique.mockResolvedValue(null)
       enterpriseCreate.mockResolvedValueOnce({ id: 'e1' })
 
-      await createEnterprise('user-1', { name: 'Sociéte 2é Échélon!' })
+      await createEnterprise('user-1', { name: 'Sociéte 2é Échélon!', commune: 'Treichville' })
 
       const callArg = enterpriseCreate.mock.calls[0]![0] as { data: { slug: string } }
       expect(callArg.data.slug).toMatch(/^societe-2e-echelon$/)

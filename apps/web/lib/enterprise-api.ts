@@ -71,7 +71,10 @@ export type Enterprise = {
   id: string
   name: string
   slug: string
+  commune: string | null
   address: string | null
+  lat: number | null
+  lng: number | null
   rccm: string | null
   createdAt: string
   memberRole?: 'OWNER' | 'MANAGER' | 'MECHANIC' | 'ACCOUNTANT'

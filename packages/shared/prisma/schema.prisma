@@ -274,7 +274,10 @@ model Enterprise {
   id        String   @id @default(uuid())
   name      String
   slug      String   @unique
+  commune   String?
   address   String?
+  lat       Float?
+  lng       Float?
   rccm      String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
