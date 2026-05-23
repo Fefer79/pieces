@@ -6,6 +6,7 @@ export const createOrderSchema = z.object({
   })).min(1, 'Au moins un article est requis'),
   ownerPhone: z.string().regex(/^\+225\d{10}$/, 'Numéro ivoirien requis (+225...)').optional(),
   laborCost: z.number().int().min(0).optional(),
+  vehicleId: z.string().uuid().optional(),
 })
 
 export const confirmOrderSchema = z.object({

@@ -27,10 +27,11 @@ export async function orderRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const body = request.body as { items: { catalogItemId: string }[]; ownerPhone?: string; laborCost?: number }
+      const body = request.body as { items: { catalogItemId: string }[]; ownerPhone?: string; laborCost?: number; vehicleId?: string }
       const order = await createOrder(request.user.id, body.items, {
         ownerPhone: body.ownerPhone,
         laborCost: body.laborCost,
+        vehicleId: body.vehicleId,
       })
       return reply.status(201).send({ data: order })
     },

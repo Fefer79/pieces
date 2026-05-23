@@ -11,6 +11,8 @@ const mockOrderCreate = vi.fn()
 const mockOrderFindUnique = vi.fn()
 const mockOrderFindMany = vi.fn()
 const mockOrderUpdate = vi.fn()
+const mockVehicleFindUnique = vi.fn()
+const mockEnterpriseMemberFindUnique = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -28,6 +30,12 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...args: unknown[]) => mockOrderFindUnique(...args),
       findMany: (...args: unknown[]) => mockOrderFindMany(...args),
       update: (...args: unknown[]) => mockOrderUpdate(...args),
+    },
+    vehicle: {
+      findUnique: (...args: unknown[]) => mockVehicleFindUnique(...args),
+    },
+    enterpriseMember: {
+      findUnique: (...args: unknown[]) => mockEnterpriseMemberFindUnique(...args),
     },
   },
 }))
@@ -141,6 +149,76 @@ describe('order.service', () => {
       mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'IN_TRANSIT' })
 
       await expect(cancelOrder('order-1', 'user-1')).rejects.toThrow()
+    })
+  })
+
+  describe('createOrder vehicle wiring', () => {
+    function mockCatalogOk() {
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, vendorId: 'v1', vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } },
+      ])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+    }
+
+    it('links order to an enterprise-owned vehicle and derives enterpriseId', async () => {
+      mockVehicleFindUnique.mockResolvedValueOnce({
+        id: 'veh-1', userId: null, enterpriseId: 'e-1',
+      })
+      mockEnterpriseMemberFindUnique.mockResolvedValueOnce({ id: 'mem-1' })
+      mockCatalogOk()
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }], { vehicleId: 'veh-1' })
+
+      const createArg = mockOrderCreate.mock.calls[0]![0] as { data: { vehicleId: string; enterpriseId: string } }
+      expect(createArg.data.vehicleId).toBe('veh-1')
+      expect(createArg.data.enterpriseId).toBe('e-1')
+    })
+
+    it('links a personally-owned vehicle (no enterpriseId set)', async () => {
+      mockVehicleFindUnique.mockResolvedValueOnce({
+        id: 'veh-2', userId: 'user-1', enterpriseId: null,
+      })
+      mockCatalogOk()
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }], { vehicleId: 'veh-2' })
+
+      const createArg = mockOrderCreate.mock.calls[0]![0] as { data: { vehicleId: string; enterpriseId: string | undefined } }
+      expect(createArg.data.vehicleId).toBe('veh-2')
+      expect(createArg.data.enterpriseId).toBeUndefined()
+      // No membership lookup should be needed when the vehicle has no enterprise
+      expect(mockEnterpriseMemberFindUnique).not.toHaveBeenCalled()
+    })
+
+    it('rejects when vehicle does not exist', async () => {
+      mockVehicleFindUnique.mockResolvedValueOnce(null)
+
+      await expect(
+        createOrder('user-1', [{ catalogItemId: 'item-1' }], { vehicleId: 'ghost' }),
+      ).rejects.toMatchObject({ statusCode: 404, code: 'VEHICLE_NOT_FOUND' })
+      expect(mockOrderCreate).not.toHaveBeenCalled()
+    })
+
+    it('rejects when the user is not the owner and not a member of the vehicle enterprise', async () => {
+      mockVehicleFindUnique.mockResolvedValueOnce({
+        id: 'veh-3', userId: 'someone-else', enterpriseId: 'e-1',
+      })
+      mockEnterpriseMemberFindUnique.mockResolvedValueOnce(null)
+
+      await expect(
+        createOrder('user-1', [{ catalogItemId: 'item-1' }], { vehicleId: 'veh-3' }),
+      ).rejects.toMatchObject({ statusCode: 403, code: 'VEHICLE_FORBIDDEN' })
+      expect(mockOrderCreate).not.toHaveBeenCalled()
+    })
+
+    it('falls through unchanged when no vehicleId is provided', async () => {
+      mockCatalogOk()
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }])
+
+      expect(mockVehicleFindUnique).not.toHaveBeenCalled()
+      const createArg = mockOrderCreate.mock.calls[0]![0] as { data: { vehicleId: string | undefined; enterpriseId: string | undefined } }
+      expect(createArg.data.vehicleId).toBeUndefined()
+      expect(createArg.data.enterpriseId).toBeUndefined()
     })
   })
 })
