@@ -20,7 +20,7 @@ vi.mock('../../lib/supabase.js', () => ({
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
-    userVehicle: {
+    vehicle: {
       findMany: (...args: unknown[]) => mockUserVehicleFindMany(...args),
       count: (...args: unknown[]) => mockUserVehicleCount(...args),
       create: (...args: unknown[]) => mockUserVehicleCreate(...args),

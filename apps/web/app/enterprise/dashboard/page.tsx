@@ -1,90 +1,253 @@
 'use client'
+/* eslint-disable react-hooks/set-state-in-effect, react/no-unescaped-entities */
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import {
+  enterpriseFetch,
+  enterpriseDownload,
+  getActiveEnterpriseId,
+  setActiveEnterpriseId,
+  type Enterprise,
+  type DashboardData,
+} from '@/lib/enterprise-api'
 
-const STAT_CARDS = [
-  { label: 'Véhicules', value: '—', icon: VehicleIcon },
-  { label: 'Mécaniciens', value: '—', icon: MechanicIcon },
-  { label: 'Commandes actives', value: '—', icon: OrderIcon },
-  { label: 'Dépenses du mois', value: '—', icon: ExpenseIcon },
-] as const
+function formatFcfa(n: number) {
+  return `${n.toLocaleString('fr-FR')} FCFA`
+}
 
 export default function EnterpriseDashboardPage() {
-  return (
-    <div className="p-8">
-      <h1 className="mb-1 text-2xl font-bold text-gray-900">Tableau de bord</h1>
-      <p className="mb-8 text-sm text-gray-500">Vue d&apos;ensemble de votre entreprise</p>
+  const [loading, setLoading] = useState(true)
+  const [enterprises, setEnterprises] = useState<Enterprise[]>([])
+  const [active, setActive] = useState<Enterprise | null>(null)
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-      {/* Stat cards */}
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {STAT_CARDS.map(({ label, value, icon: Icon }) => (
-          <div
-            key={label}
-            className="flex items-center gap-4 rounded-lg border border-gray-200 bg-white p-5"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-              <Icon />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{value}</p>
-              <p className="text-sm text-gray-500">{label}</p>
-            </div>
+  // ---- Load enterprises and pick active --------------------------------
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const res = await enterpriseFetch<Enterprise[]>('/')
+      if (cancelled) return
+      if (!res.ok) {
+        setError(res.message)
+        setLoading(false)
+        return
+      }
+      setEnterprises(res.data)
+      const storedId = getActiveEnterpriseId()
+      const picked = res.data.find((e) => e.id === storedId) ?? res.data[0] ?? null
+      setActive(picked)
+      if (picked) setActiveEnterpriseId(picked.id)
+      setLoading(false)
+    })()
+    return () => { cancelled = true }
+  }, [])
+
+  // ---- Load dashboard data when active changes --------------------------
+
+  useEffect(() => {
+    if (!active) {
+      setDashboard(null)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const res = await enterpriseFetch<DashboardData>(`/${active.id}/dashboard`)
+      if (cancelled) return
+      if (res.ok) setDashboard(res.data)
+      else setError(res.message)
+    })()
+    return () => { cancelled = true }
+  }, [active])
+
+  async function handleExport() {
+    if (!active) return
+    const blob = await enterpriseDownload(`/${active.id}/orders/export.csv`)
+    if (!blob) return
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `pieces-commandes-${active.slug}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  if (loading) {
+    return <div className="p-8 text-sm text-muted">Chargement…</div>
+  }
+
+  if (enterprises.length === 0) {
+    return <CreateEnterprisePrompt onCreated={(e) => {
+      setEnterprises([e])
+      setActive(e)
+      setActiveEnterpriseId(e.id)
+    }} />
+  }
+
+  return (
+    <div className="p-6 lg:p-8">
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            Entreprise
           </div>
-        ))}
+          <h1 className="mt-1 font-display text-3xl text-ink">Tableau de bord</h1>
+          {active && (
+            <p className="mt-1 text-sm text-muted">{active.name}</p>
+          )}
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={!active || !dashboard}
+          className="rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-ink hover:bg-surface disabled:opacity-50"
+        >
+          Exporter (CSV)
+        </button>
       </div>
 
-      {/* Onboarding message */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-6 text-center">
-        <h2 className="mb-2 text-lg font-semibold text-[#002366]">Bienvenue sur votre espace entreprise</h2>
-        <p className="mb-4 text-sm text-gray-600">
-          Ajoutez des membres et des véhicules pour commencer à utiliser le tableau de bord.
-        </p>
-        <Link
-          href="/enterprise/members"
-          className="inline-block rounded-lg bg-[#002366] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-        >
-          Gérer les membres
-        </Link>
+      {error && (
+        <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Véhicules" value={dashboard ? String(dashboard.vehiclesCount) : '—'} />
+        <StatCard label="Membres" value={dashboard ? String(dashboard.membersCount) : '—'} />
+        <StatCard label="Commandes actives" value={dashboard ? String(dashboard.activeOrders) : '—'} />
+        <StatCard label="Dépenses du mois" value={dashboard ? formatFcfa(dashboard.monthlySpend) : '—'} />
+      </div>
+
+      <div className="rounded-md border border-border bg-card">
+        <div className="border-b border-border px-6 py-4">
+          <h2 className="font-display text-lg text-ink">Véhicules les plus coûteux</h2>
+          <p className="mt-1 text-xs text-muted">Sur toute la période — top 5 par dépenses cumulées.</p>
+        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
+              <th className="px-6 py-3 text-left">Véhicule</th>
+              <th className="px-6 py-3 text-left">Plaque</th>
+              <th className="px-6 py-3 text-right">Total dépensé</th>
+            </tr>
+          </thead>
+          <tbody>
+            {!dashboard && (
+              <tr><td colSpan={3} className="px-6 py-8 text-center text-sm text-muted">Chargement…</td></tr>
+            )}
+            {dashboard && dashboard.topVehiclesByCost.length === 0 && (
+              <tr><td colSpan={3} className="px-6 py-8 text-center text-sm text-muted">Aucune commande payée pour le moment.</td></tr>
+            )}
+            {dashboard?.topVehiclesByCost.map((t, i) => (
+              <tr key={i} className="border-b border-border last:border-0">
+                <td className="px-6 py-3 text-sm text-ink">
+                  {t.vehicle ? (
+                    <Link href={`/enterprise/vehicles/${t.vehicle.id}`} className="hover:underline">
+                      {t.vehicle.brand} {t.vehicle.model} {t.vehicle.year}
+                    </Link>
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </td>
+                <td className="px-6 py-3 text-sm text-muted">{t.vehicle?.plate ?? '—'}</td>
+                <td className="px-6 py-3 text-right text-sm font-medium tabular text-ink">
+                  {formatFcfa(t.totalSpent)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
 }
 
-function VehicleIcon() {
+function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="3" width="15" height="13" rx="2" ry="2" />
-      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-      <circle cx="5.5" cy="18.5" r="2.5" />
-      <circle cx="18.5" cy="18.5" r="2.5" />
-    </svg>
+    <div className="rounded-md border border-border bg-card p-5">
+      <p className="font-display text-2xl text-ink tabular">{value}</p>
+      <p className="mt-1 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+        {label}
+      </p>
+    </div>
   )
 }
 
-function MechanicIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
-    </svg>
-  )
-}
+function CreateEnterprisePrompt({ onCreated }: { onCreated: (e: Enterprise) => void }) {
+  const [name, setName] = useState('')
+  const [address, setAddress] = useState('')
+  const [rccm, setRccm] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-function OrderIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-    </svg>
-  )
-}
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmitting(true)
+    setError(null)
+    const res = await enterpriseFetch<Enterprise>('/', {
+      method: 'POST',
+      body: JSON.stringify({ name, address: address || undefined, rccm: rccm || undefined }),
+    })
+    setSubmitting(false)
+    if (!res.ok) {
+      setError(res.message)
+      return
+    }
+    onCreated(res.data)
+  }
 
-function ExpenseIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="1" x2="12" y2="23" />
-      <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-    </svg>
+    <div className="p-6 lg:p-8">
+      <div className="mb-6">
+        <h1 className="font-display text-3xl text-ink">Créer mon entreprise</h1>
+        <p className="mt-1 text-sm text-muted">
+          Avant de gérer votre flotte, créez votre entreprise. Vous en serez le propriétaire.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="max-w-md space-y-4 rounded-md border border-border bg-card p-6">
+        <div>
+          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            Nom de l'entreprise *
+          </label>
+          <input
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-1 w-full rounded-sm border border-border bg-white px-3 py-2 text-sm text-ink"
+            placeholder="Ex. Transports Yopougon SARL"
+          />
+        </div>
+        <div>
+          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Adresse</label>
+          <input
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className="mt-1 w-full rounded-sm border border-border bg-white px-3 py-2 text-sm text-ink"
+          />
+        </div>
+        <div>
+          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">RCCM</label>
+          <input
+            type="text"
+            value={rccm}
+            onChange={(e) => setRccm(e.target.value)}
+            className="mt-1 w-full rounded-sm border border-border bg-white px-3 py-2 text-sm text-ink"
+          />
+        </div>
+        {error && <div className="text-sm text-red-600">{error}</div>}
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink disabled:opacity-50"
+        >
+          {submitting ? 'Création…' : 'Créer l\'entreprise'}
+        </button>
+      </form>
+    </div>
   )
 }

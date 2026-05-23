@@ -37,7 +37,7 @@ vi.mock('../../lib/prisma.js', () => ({
       count: vi.fn(),
     },
     searchSynonym: { findMany: vi.fn() },
-    userVehicle: { findMany: vi.fn(), count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), delete: vi.fn() },
+    vehicle: { findMany: vi.fn(), count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), delete: vi.fn() },
     order: {
       create: (...args: unknown[]) => mockOrderCreate(...args),
       findUnique: (...args: unknown[]) => mockOrderFindUnique(...args),

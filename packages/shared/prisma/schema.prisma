@@ -31,7 +31,8 @@ model User {
 
   dataDeletionRequests DataDeletionRequest[]
   vendor               Vendor?
-  vehicles             UserVehicle[]
+  vehicles             Vehicle[]
+  enterpriseMemberships EnterpriseMember[]
   initiatedOrders      Order[]  @relation("OrderInitiator")
   riderDeliveries      Delivery[] @relation("DeliveryRider")
   sellerReviews        SellerReview[] @relation("SellerReviewer")
@@ -254,18 +255,80 @@ model Job {
   @@index([status, type], name: "idx_jobs_status_type")
 }
 
-model UserVehicle {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  brand     String
-  model     String
-  year      Int
-  vin       String?
-  createdAt DateTime @default(now()) @map("created_at")
+enum VehicleUsageType {
+  TRANSPORT
+  CHANTIER
+  LIVRAISON
+  DIRECTION
+  AUTRE
+}
 
-  @@map("user_vehicles")
-  @@index([userId], name: "idx_user_vehicles_user")
+enum EnterpriseMemberRole {
+  OWNER
+  MANAGER
+  MECHANIC
+  ACCOUNTANT
+}
+
+model Enterprise {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  address   String?
+  rccm      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members  EnterpriseMember[]
+  vehicles Vehicle[]
+  orders   Order[]
+
+  @@map("enterprises")
+  @@index([slug], name: "idx_enterprises_slug")
+}
+
+model EnterpriseMember {
+  id           String               @id @default(uuid())
+  enterpriseId String               @map("enterprise_id")
+  enterprise   Enterprise           @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  userId       String               @map("user_id")
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         EnterpriseMemberRole @default(MECHANIC)
+  invitedAt    DateTime?            @map("invited_at")
+  joinedAt     DateTime?            @map("joined_at")
+  createdAt    DateTime             @default(now()) @map("created_at")
+
+  @@map("enterprise_members")
+  @@unique([enterpriseId, userId], name: "uq_enterprise_member")
+  @@index([userId], name: "idx_enterprise_members_user")
+}
+
+model Vehicle {
+  id               String            @id @default(uuid())
+  userId           String?           @map("user_id")
+  user             User?             @relation(fields: [userId], references: [id])
+  enterpriseId     String?           @map("enterprise_id")
+  enterprise       Enterprise?       @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  brand            String
+  model            String
+  year             Int
+  vin              String?
+  plate            String?
+  engine           String?
+  mileage          Int?
+  mileageUpdatedAt DateTime?         @map("mileage_updated_at")
+  usageType        VehicleUsageType? @map("usage_type")
+  groupName        String?           @map("group_name")
+  photoUrl         String?           @map("photo_url")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  orders Order[]
+
+  @@map("vehicles")
+  @@index([userId], name: "idx_vehicles_user")
+  @@index([enterpriseId], name: "idx_vehicles_enterprise")
+  @@index([plate], name: "idx_vehicles_plate")
 }
 
 enum DisputeStatus {
@@ -338,6 +401,10 @@ model Order {
   id              String        @id @default(uuid())
   initiatorId     String        @map("initiator_id")
   initiator       User          @relation("OrderInitiator", fields: [initiatorId], references: [id])
+  vehicleId       String?       @map("vehicle_id")
+  vehicle         Vehicle?      @relation(fields: [vehicleId], references: [id])
+  enterpriseId    String?       @map("enterprise_id")
+  enterprise      Enterprise?   @relation(fields: [enterpriseId], references: [id])
   ownerPhone      String?       @map("owner_phone")
   status          OrderStatus   @default(DRAFT)
   paymentMethod   PaymentMethod? @map("payment_method")
@@ -361,6 +428,8 @@ model Order {
   @@map("orders")
   @@index([initiatorId], name: "idx_orders_initiator")
   @@index([status], name: "idx_orders_status")
+  @@index([vehicleId], name: "idx_orders_vehicle")
+  @@index([enterpriseId], name: "idx_orders_enterprise")
 }
 
 model OrderItem {

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
   { href: '/enterprise/dashboard', label: 'Tableau de bord', icon: DashboardIcon },
+  { href: '/enterprise/vehicles', label: 'Véhicules', icon: VehiclesIcon },
   { href: '/enterprise/members', label: 'Membres', icon: MembersIcon },
   { href: '/enterprise/orders', label: 'Commandes', icon: OrdersIcon },
   { href: '/enterprise/search', label: 'Recherche', icon: SearchIcon },
@@ -18,8 +19,8 @@ export function EnterpriseSidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center px-6">
         <Link href="/enterprise/dashboard">
-          <span className="font-[family-name:Gloock,serif] text-xl text-[#00113a]">
-            Pièces<span className="text-[#ff6b00]">.</span>
+          <span className="font-display text-xl text-ink">
+            Pièces<span className="text-accent">.</span>
           </span>
         </Link>
       </div>
@@ -72,6 +73,17 @@ function DashboardIcon({ active }: { active: boolean }) {
       <rect x="14" y="3" width="7" height="7" />
       <rect x="3" y="14" width="7" height="7" />
       <rect x="14" y="14" width="7" height="7" />
+    </svg>
+  )
+}
+
+function VehiclesIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="3" width="15" height="13" rx="2" ry="2" />
+      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+      <circle cx="5.5" cy="18.5" r="2.5" />
+      <circle cx="18.5" cy="18.5" r="2.5" />
     </svg>
   )
 }
