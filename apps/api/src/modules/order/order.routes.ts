@@ -12,6 +12,7 @@ import {
   transitionOrder,
 } from './order.service.js'
 import { getUserOrderHistory } from '../admin/admin.service.js'
+import { generateDevisPdf } from './devis.service.js'
 
 export async function orderRoutes(fastify: FastifyInstance) {
   // Create order (mechanic initiates)
@@ -160,6 +161,27 @@ export async function orderRoutes(fastify: FastifyInstance) {
       const body = (request.body as { reason?: string } | null) ?? {}
       const order = await cancelOrder(orderId, 'buyer', body.reason)
       return reply.status(200).send({ data: order })
+    },
+  )
+
+  // Download devis PDF
+  fastify.get(
+    '/:orderId/devis.pdf',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Orders'],
+        description: 'Télécharger le devis PDF de la commande',
+        security: [{ BearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const { orderId } = request.params as { orderId: string }
+      const pdf = await generateDevisPdf(orderId, request.user.id)
+      reply
+        .header('Content-Type', 'application/pdf')
+        .header('Content-Disposition', `attachment; filename="devis-${orderId}.pdf"`)
+      return reply.send(pdf)
     },
   )
 }

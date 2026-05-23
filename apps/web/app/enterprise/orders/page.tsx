@@ -78,6 +78,22 @@ export default function EnterpriseOrdersPage() {
     return true
   }) ?? []
 
+  const downloadDevis = async (orderId: string) => {
+    const { data: { session } } = await getSupabase().auth.getSession()
+    if (!session) return
+    const res = await fetch(`/api/v1/orders/${orderId}/devis.pdf`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `devis-${orderId.slice(0, 8)}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const exportCSV = () => {
     if (!filteredOrders.length) return
 
@@ -158,12 +174,13 @@ export default function EnterpriseOrdersPage() {
               <th className="px-6 py-3 text-right">Montant</th>
               <th className="px-6 py-3 text-left">Date</th>
               <th className="px-6 py-3 text-right">Articles</th>
+              <th className="px-6 py-3 text-right">Devis</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted">
                   Chargement…
                 </td>
               </tr>
@@ -171,7 +188,7 @@ export default function EnterpriseOrdersPage() {
 
             {!loading && filteredOrders.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted">
                   Aucune commande{statusFilter || searchQuery ? ' correspondant aux filtres' : ''}.
                 </td>
               </tr>
@@ -200,6 +217,14 @@ export default function EnterpriseOrdersPage() {
                   </td>
                   <td className="px-6 py-4 text-right font-mono text-sm tabular text-muted">
                     {order.items.reduce((sum, i) => sum + i.quantity, 0)}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => downloadDevis(order.id)}
+                      className="text-sm font-medium text-ink-2 hover:underline"
+                    >
+                      PDF
+                    </button>
                   </td>
                 </tr>
               )
