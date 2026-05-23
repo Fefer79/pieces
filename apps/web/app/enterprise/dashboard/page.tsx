@@ -202,9 +202,7 @@ function CreateEnterprisePrompt({ onCreated }: { onCreated: (e: Enterprise) => v
     <div className="p-6 lg:p-8">
       <div className="mb-6">
         <h1 className="font-display text-3xl text-ink">Créer mon entreprise</h1>
-        <p className="mt-1 text-sm text-muted">
-          Avant de gérer votre flotte, créez votre entreprise. Vous en serez le propriétaire.
-        </p>
+        <p className="mt-1 text-sm text-muted">Première étape pour gérer votre flotte.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-md space-y-4 rounded-md border border-border bg-card p-6">
@@ -222,7 +220,7 @@ function CreateEnterprisePrompt({ onCreated }: { onCreated: (e: Enterprise) => v
           />
         </div>
         <div>
-          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Adresse</label>
+          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Adresse <span className="text-muted/60">(facultatif)</span></label>
           <input
             type="text"
             value={address}
@@ -231,7 +229,7 @@ function CreateEnterprisePrompt({ onCreated }: { onCreated: (e: Enterprise) => v
           />
         </div>
         <div>
-          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">RCCM</label>
+          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">RCCM <span className="text-muted/60">(facultatif)</span></label>
           <input
             type="text"
             value={rccm}
