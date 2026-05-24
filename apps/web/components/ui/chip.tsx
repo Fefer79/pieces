@@ -71,3 +71,21 @@ export function ConditionChip({ condition, className }: { condition: Condition; 
     </Chip>
   )
 }
+
+const PART_SOURCE_LABELS = {
+  OEM: 'OEM',
+  AFTERMARKET: 'Aftermarket',
+  COMPATIBLE: 'Compatible',
+} as const
+
+export type PartSource = keyof typeof PART_SOURCE_LABELS
+
+export function PartSourceChip({ source, className }: { source: PartSource; className?: string }) {
+  const variant: ChipVariant =
+    source === 'OEM' ? 'oem' : source === 'AFTERMARKET' ? 'aftermarket' : 'plain'
+  return (
+    <Chip variant={variant} className={className}>
+      {PART_SOURCE_LABELS[source]}
+    </Chip>
+  )
+}

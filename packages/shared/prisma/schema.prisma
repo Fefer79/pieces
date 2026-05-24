@@ -86,6 +86,12 @@ enum PartCondition {
   REFURBISHED
 }
 
+enum PartSource {
+  OEM
+  AFTERMARKET
+  COMPATIBLE
+}
+
 enum OrderStatus {
   DRAFT
   PENDING_PAYMENT
@@ -228,6 +234,7 @@ model CatalogItem {
   qualityIssue         String?           @map("quality_issue")
   inStock              Boolean           @default(true) @map("in_stock")
   condition            PartCondition?
+  partSource           PartSource?       @map("part_source")
   warrantyMonths       Int?              @map("warranty_months")
   priceUpdatedAt       DateTime?         @map("price_updated_at")
   priceAlertFlag       Boolean           @default(false) @map("price_alert_flag")
