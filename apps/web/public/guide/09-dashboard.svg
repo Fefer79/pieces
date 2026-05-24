@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#FAFAFA"/>
+  <rect x="40" y="40" width="1120" height="620" fill="none" stroke="#E5E7EB" stroke-width="2" stroke-dasharray="8,8"/>
+  <text x="600" y="340" font-family="Inter, system-ui, sans-serif" font-size="32" fill="#6B6F76" text-anchor="middle" font-weight="500">Capture à intégrer</text>
+  <text x="600" y="380" font-family="ui-monospace, SF Mono, monospace" font-size="14" fill="#9CA3AF" text-anchor="middle">apps/web/public/guide/</text>
+</svg>
