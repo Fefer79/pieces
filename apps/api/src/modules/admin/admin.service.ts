@@ -1,4 +1,6 @@
 import { prisma } from '../../lib/prisma.js'
+import { Prisma } from '@prisma/client'
+import { AppError } from '../../lib/appError.js'
 
 // Story 9.1: Order history for user
 export async function getUserOrderHistory(userId: string, page = 1, limit = 20) {
@@ -121,6 +123,448 @@ export async function getAdminCatalog(status?: string) {
   })
 
   return { items, total: items.length }
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2: rich admin dashboard endpoints (overview, detail, analytics, CSV)
+// ---------------------------------------------------------------------------
+
+const COMPLETED_STATUS = 'COMPLETED' as const
+
+export async function getAdminOverview() {
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1)
+
+  const [
+    totalUsers,
+    totalVendors,
+    totalEnterprises,
+    totalOrders,
+    activeOrders,
+    ordersThisMonth,
+    newUsersThisMonth,
+    completedOrders,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.vendor.count(),
+    prisma.enterprise.count(),
+    prisma.order.count(),
+    prisma.order.count({ where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } }),
+    prisma.order.count({ where: { createdAt: { gte: startOfMonth } } }),
+    prisma.user.count({ where: { createdAt: { gte: startOfMonth } } }),
+    prisma.order.findMany({
+      where: { status: COMPLETED_STATUS },
+      select: { totalAmount: true, createdAt: true, items: { select: { commissionAmount: true } } },
+    }),
+  ])
+
+  const totalGMV = completedOrders.reduce((sum, o) => sum + (o.totalAmount ?? 0), 0)
+  const totalCommissions = completedOrders.reduce(
+    (sum, o) => sum + o.items.reduce((s, i) => s + (i.commissionAmount ?? 0), 0),
+    0,
+  )
+
+  // Revenue per month for the last 12 months
+  const monthBuckets: { month: string; gmv: number; commissions: number; orders: number }[] = []
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(twelveMonthsAgo.getFullYear(), twelveMonthsAgo.getMonth() + i, 1)
+    monthBuckets.push({ month: d.toISOString().slice(0, 7), gmv: 0, commissions: 0, orders: 0 })
+  }
+  for (const order of completedOrders) {
+    if (!order.createdAt) continue
+    const key = order.createdAt.toISOString().slice(0, 7)
+    const bucket = monthBuckets.find((b) => b.month === key)
+    if (!bucket) continue
+    bucket.gmv += order.totalAmount ?? 0
+    bucket.orders += 1
+    bucket.commissions += order.items.reduce((s, i) => s + (i.commissionAmount ?? 0), 0)
+  }
+
+  // Top 5 vendors by commissions earned
+  const topVendorsRaw = await prisma.orderItem.groupBy({
+    by: ['vendorId'],
+    where: { order: { status: COMPLETED_STATUS } },
+    _sum: { commissionAmount: true, priceSnapshot: true },
+    _count: { _all: true },
+    orderBy: { _sum: { commissionAmount: 'desc' } },
+    take: 5,
+  })
+  const topVendors = await Promise.all(
+    topVendorsRaw.map(async (row) => {
+      const v = await prisma.vendor.findUnique({
+        where: { id: row.vendorId },
+        select: { id: true, shopName: true },
+      })
+      return {
+        vendorId: row.vendorId,
+        shopName: v?.shopName ?? '(supprimé)',
+        commissions: row._sum.commissionAmount ?? 0,
+        gmv: row._sum.priceSnapshot ?? 0,
+        orderItems: row._count._all,
+      }
+    }),
+  )
+
+  return {
+    totals: {
+      users: totalUsers,
+      vendors: totalVendors,
+      enterprises: totalEnterprises,
+      orders: totalOrders,
+      activeOrders,
+      gmv: totalGMV,
+      commissions: totalCommissions,
+    },
+    thisMonth: { orders: ordersThisMonth, newUsers: newUsersThisMonth },
+    revenueByMonth: monthBuckets,
+    topVendors,
+  }
+}
+
+interface AdminListQuery {
+  q?: string
+  status?: string
+  vendorId?: string
+  role?: string
+  page?: number
+  limit?: number
+}
+
+export async function getAdminCatalogList(query: AdminListQuery) {
+  const page = query.page ?? 1
+  const limit = Math.min(query.limit ?? 50, 200)
+  const skip = (page - 1) * limit
+
+  const validStatuses = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const
+  const where: Prisma.CatalogItemWhereInput = {}
+  if (query.status && validStatuses.includes(query.status as typeof validStatuses[number])) {
+    where.status = query.status as typeof validStatuses[number]
+  }
+  if (query.vendorId) where.vendorId = query.vendorId
+  if (query.q) {
+    where.OR = [
+      { name: { contains: query.q, mode: 'insensitive' } },
+      { category: { contains: query.q, mode: 'insensitive' } },
+      { oemReference: { contains: query.q, mode: 'insensitive' } },
+    ]
+  }
+
+  const [items, total] = await Promise.all([
+    prisma.catalogItem.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      include: {
+        vendor: { select: { id: true, shopName: true } },
+        photos: { orderBy: { position: 'asc' }, take: 1, select: { urlThumb: true, urlOriginal: true } },
+      },
+    }),
+    prisma.catalogItem.count({ where }),
+  ])
+
+  return { items, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+}
+
+export async function getAdminVendorsList(query: AdminListQuery) {
+  const page = query.page ?? 1
+  const limit = Math.min(query.limit ?? 50, 200)
+  const skip = (page - 1) * limit
+
+  const where: Prisma.VendorWhereInput = {}
+  if (query.q) {
+    where.OR = [
+      { shopName: { contains: query.q, mode: 'insensitive' } },
+      { user: { phone: { contains: query.q } } },
+      { user: { email: { contains: query.q, mode: 'insensitive' } } },
+    ]
+  }
+
+  const [vendors, total] = await Promise.all([
+    prisma.vendor.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      include: {
+        user: { select: { id: true, phone: true, email: true, name: true } },
+        _count: { select: { catalogItems: true } },
+      },
+    }),
+    prisma.vendor.count({ where }),
+  ])
+
+  return { vendors, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+}
+
+export async function getAdminVendorDetail(vendorId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { id: vendorId },
+    include: {
+      user: { select: { id: true, phone: true, email: true, name: true, createdAt: true } },
+      kyc: true,
+    },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Vendeur introuvable' })
+  }
+
+  const [items, transactions, commissionAgg] = await Promise.all([
+    prisma.catalogItem.findMany({
+      where: { vendorId },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        commissionAmount: true,
+        status: true,
+        condition: true,
+        createdAt: true,
+      },
+    }),
+    prisma.orderItem.findMany({
+      where: { vendorId, order: { status: COMPLETED_STATUS } },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      select: {
+        id: true,
+        name: true,
+        priceSnapshot: true,
+        commissionAmount: true,
+        quantity: true,
+        createdAt: true,
+        order: { select: { id: true, status: true, totalAmount: true } },
+      },
+    }),
+    prisma.orderItem.aggregate({
+      where: { vendorId, order: { status: COMPLETED_STATUS } },
+      _sum: { commissionAmount: true, priceSnapshot: true },
+      _count: { _all: true },
+    }),
+  ])
+
+  // Per-month commission breakdown for last 12 months
+  const now = new Date()
+  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1)
+  const monthBuckets: { month: string; commissions: number; gmv: number; orders: number }[] = []
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(twelveMonthsAgo.getFullYear(), twelveMonthsAgo.getMonth() + i, 1)
+    monthBuckets.push({ month: d.toISOString().slice(0, 7), commissions: 0, gmv: 0, orders: 0 })
+  }
+  for (const t of transactions) {
+    const key = t.createdAt.toISOString().slice(0, 7)
+    const bucket = monthBuckets.find((b) => b.month === key)
+    if (!bucket) continue
+    bucket.commissions += t.commissionAmount ?? 0
+    bucket.gmv += t.priceSnapshot * t.quantity
+    bucket.orders += 1
+  }
+
+  return {
+    vendor,
+    items,
+    transactions,
+    totals: {
+      commissions: commissionAgg._sum.commissionAmount ?? 0,
+      gmv: commissionAgg._sum.priceSnapshot ?? 0,
+      transactionCount: commissionAgg._count._all,
+    },
+    commissionByMonth: monthBuckets,
+  }
+}
+
+export async function getAdminClientsList(query: AdminListQuery) {
+  const page = query.page ?? 1
+  const limit = Math.min(query.limit ?? 50, 200)
+  const skip = (page - 1) * limit
+
+  const where: Prisma.UserWhereInput = {}
+  if (query.q) {
+    where.OR = [
+      { name: { contains: query.q, mode: 'insensitive' } },
+      { phone: { contains: query.q } },
+      { email: { contains: query.q, mode: 'insensitive' } },
+    ]
+  }
+  if (query.role) {
+    where.roles = { has: query.role as Prisma.UserWhereInput['roles'] extends { has?: infer R } ? R : never }
+  }
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        roles: true,
+        activeContext: true,
+        createdAt: true,
+        _count: { select: { initiatedOrders: true } },
+      },
+    }),
+    prisma.user.count({ where }),
+  ])
+
+  return { users, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+}
+
+export async function getAdminClientDetail(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true, name: true, phone: true, email: true, roles: true,
+      activeContext: true, createdAt: true,
+    },
+  })
+  if (!user) throw new AppError('USER_NOT_FOUND', 404, { message: 'Utilisateur introuvable' })
+
+  const orders = await prisma.order.findMany({
+    where: { initiatorId: userId },
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+    select: {
+      id: true, status: true, totalAmount: true, createdAt: true,
+      items: { select: { id: true, name: true, priceSnapshot: true, quantity: true } },
+    },
+  })
+
+  const totalSpent = orders
+    .filter((o) => o.status === 'COMPLETED')
+    .reduce((sum, o) => sum + (o.totalAmount ?? 0), 0)
+
+  return { user, orders, totals: { orderCount: orders.length, totalSpent } }
+}
+
+export async function getAdminEnterprisesList(query: AdminListQuery) {
+  const page = query.page ?? 1
+  const limit = Math.min(query.limit ?? 50, 200)
+  const skip = (page - 1) * limit
+
+  const where: Prisma.EnterpriseWhereInput = {}
+  if (query.q) {
+    where.OR = [
+      { name: { contains: query.q, mode: 'insensitive' } },
+      { commune: { contains: query.q, mode: 'insensitive' } },
+      { rccm: { contains: query.q, mode: 'insensitive' } },
+    ]
+  }
+
+  const [enterprises, total] = await Promise.all([
+    prisma.enterprise.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      include: { _count: { select: { vehicles: true, members: true } } },
+    }),
+    prisma.enterprise.count({ where }),
+  ])
+
+  return { enterprises, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+}
+
+export async function getAdminEnterpriseDetail(enterpriseId: string) {
+  const enterprise = await prisma.enterprise.findUnique({
+    where: { id: enterpriseId },
+    include: {
+      members: {
+        include: { user: { select: { id: true, name: true, phone: true, email: true } } },
+      },
+      vehicles: { orderBy: { createdAt: 'desc' } },
+    },
+  })
+
+  if (!enterprise) {
+    throw new AppError('ENTERPRISE_NOT_FOUND', 404, { message: 'Entreprise introuvable' })
+  }
+
+  const orders = await prisma.order.findMany({
+    where: { enterpriseId },
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+    select: { id: true, status: true, totalAmount: true, createdAt: true },
+  })
+
+  return { enterprise, orders }
+}
+
+// ---------------------------------------------------------------------------
+// CSV export
+// ---------------------------------------------------------------------------
+
+function csvCell(v: unknown): string {
+  if (v === null || v === undefined) return ''
+  const s = String(v)
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return `"${s.replace(/"/g, '""')}"`
+  }
+  return s
+}
+
+function csvRows(headers: string[], rows: (string | number | null | undefined)[][]): string {
+  const out = [headers.join(',')]
+  for (const r of rows) out.push(r.map(csvCell).join(','))
+  return out.join('\n')
+}
+
+export async function exportCsv(entity: 'vendors' | 'clients' | 'orders' | 'catalog'): Promise<string> {
+  if (entity === 'vendors') {
+    const rows = await prisma.vendor.findMany({
+      include: { user: { select: { phone: true, email: true, name: true } } },
+    })
+    return csvRows(
+      ['id', 'shopName', 'status', 'name', 'phone', 'email', 'createdAt'],
+      rows.map((v) => [v.id, v.shopName, v.status, v.user?.name ?? '', v.user?.phone ?? v.phone, v.user?.email ?? '', v.createdAt.toISOString()]),
+    )
+  }
+
+  if (entity === 'clients') {
+    const rows = await prisma.user.findMany({
+      select: { id: true, name: true, phone: true, email: true, roles: true, createdAt: true },
+    })
+    return csvRows(
+      ['id', 'name', 'phone', 'email', 'roles', 'createdAt'],
+      rows.map((u) => [u.id, u.name, u.phone, u.email, u.roles.join(';'), u.createdAt.toISOString()]),
+    )
+  }
+
+  if (entity === 'orders') {
+    const rows = await prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { items: { select: { commissionAmount: true } } },
+    })
+    return csvRows(
+      ['id', 'status', 'totalAmount', 'commissionsTotal', 'createdAt'],
+      rows.map((o) => [
+        o.id,
+        o.status,
+        o.totalAmount,
+        o.items.reduce((s, i) => s + (i.commissionAmount ?? 0), 0),
+        o.createdAt.toISOString(),
+      ]),
+    )
+  }
+
+  // catalog
+  const rows = await prisma.catalogItem.findMany({
+    include: { vendor: { select: { shopName: true } } },
+  })
+  return csvRows(
+    ['id', 'vendorShopName', 'name', 'category', 'price', 'commissionAmount', 'status', 'condition', 'createdAt'],
+    rows.map((c) => [
+      c.id, c.vendor.shopName, c.name, c.category, c.price,
+      c.commissionAmount, c.status, c.condition, c.createdAt.toISOString(),
+    ]),
+  )
 }
 
 // Story 9.3: Enterprise space

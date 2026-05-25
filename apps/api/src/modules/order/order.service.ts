@@ -59,6 +59,7 @@ export async function createOrder(
       price: true,
       imageThumbUrl: true,
       vendorId: true,
+      commissionAmount: true,
       vendor: { select: { id: true, shopName: true, status: true } },
     },
   })
@@ -87,6 +88,7 @@ export async function createOrder(
           name: item.name ?? 'Pièce',
           category: item.category,
           priceSnapshot: item.price ?? 0,
+          commissionAmount: item.commissionAmount,
           imageThumbUrl: item.imageThumbUrl,
         })),
       },
