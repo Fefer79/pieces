@@ -46,6 +46,17 @@ export async function handleImageProcess(job: Job, logger: { info: (obj: Record<
       },
     })
 
+    // Mirror variants on the position-0 photo row so the multi-photo UI gets them too.
+    await prisma.catalogItemPhoto.updateMany({
+      where: { catalogItemId: payload.catalogItemId, position: 0 },
+      data: {
+        urlThumb: thumbUrl,
+        urlSmall: smallUrl,
+        urlMedium: mediumUrl,
+        urlLarge: largeUrl,
+      },
+    })
+
     logger.info({ event: 'IMAGE_VARIANTS_PROCESSED', catalogItemId: payload.catalogItemId }, 'Image variants generated')
     await markCompleted(job.id)
   } catch (err) {
