@@ -3,10 +3,10 @@ services:
     name: pieces-api
     runtime: node
     region: frankfurt
-    plan: free
+    plan: starter
     rootDir: .
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm -F shared db:generate && pnpm -F api build
-    startCommand: pnpm -F api start
+    startCommand: pnpm -F shared exec prisma migrate deploy && pnpm -F api start
     healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION
