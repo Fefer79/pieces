@@ -1,107 +1,108 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
-import { StatCard } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { adminFetch, fmtFcfa } from '@/lib/admin-api'
+import {
+  Chart as ChartJS,
+  CategoryScale, LinearScale, BarElement, LineElement, PointElement,
+  Title, Tooltip, Legend,
+} from 'chart.js'
+import { Bar } from 'react-chartjs-2'
 
-interface DashboardStats {
-  totalUsers: number
-  totalVendors: number
-  totalOrders: number
-  activeOrders: number
-  totalDisputes: number
-  openDisputes: number
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend)
+
+interface Overview {
+  totals: {
+    users: number; vendors: number; enterprises: number; orders: number
+    activeOrders: number; gmv: number; commissions: number
+  }
+  thisMonth: { orders: number; newUsers: number }
+  revenueByMonth: { month: string; gmv: number; commissions: number; orders: number }[]
+  topVendors: { vendorId: string; shopName: string; commissions: number; gmv: number; orderItems: number }[]
 }
 
-function getSupabase() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+function Kpi({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-md border border-border bg-card p-4">
+      <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">{label}</div>
+      <div className="mt-1 text-2xl font-semibold text-ink">{value}</div>
+    </div>
   )
 }
 
-export default function AdminDashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
+export default function AdminOverviewPage() {
+  const [data, setData] = useState<Overview | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const fetchStats = useCallback(async () => {
-    try {
-      const { data: { session } } = await getSupabase().auth.getSession()
-      if (!session) return
-      const res = await fetch('/api/v1/admin/dashboard', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      })
-      if (res.ok) {
-        const json = await res.json()
-        setStats(json.data)
-      }
-    } finally {
-      setLoading(false)
-    }
+  useEffect(() => {
+    adminFetch<Overview>('/admin/overview').then(setData).catch((e) => setError(e.message))
   }, [])
 
-  useEffect(() => { fetchStats() }, [fetchStats])
-
-  if (loading) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <p className="text-sm text-muted">Chargement…</p>
-      </main>
-    )
-  }
-
-  if (!stats) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <div className="rounded-md border border-error-fg/20 bg-error-bg p-4 text-sm text-error-fg">
-          Accès réservé aux administrateurs.
-        </div>
-      </main>
-    )
-  }
-
-  const cards: Array<{ label: string; value: number }> = [
-    { label: 'Utilisateurs', value: stats.totalUsers },
-    { label: 'Vendeurs', value: stats.totalVendors },
-    { label: 'Commandes', value: stats.totalOrders },
-    { label: 'Actives', value: stats.activeOrders },
-    { label: 'Litiges', value: stats.totalDisputes },
-    { label: 'Ouverts', value: stats.openDisputes },
-  ]
+  if (error) return <div className="p-6 text-sm text-status-err">{error}</div>
+  if (!data) return <div className="p-6 text-sm text-muted">Chargement…</div>
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-6 lg:py-8">
-      <div className="mb-6">
-        <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-          Administration · Pièces.ci
-        </div>
-        <h1 className="mt-1 font-display text-3xl text-ink">Tableau de bord</h1>
+    <div className="p-4 lg:p-6">
+      <h1 className="mb-4 font-display text-2xl text-ink">Tableau de bord</h1>
+
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Kpi label="GMV total" value={fmtFcfa(data.totals.gmv)} />
+        <Kpi label="Commissions" value={fmtFcfa(data.totals.commissions)} />
+        <Kpi label="Commandes actives" value={data.totals.activeOrders} />
+        <Kpi label="Commandes ce mois" value={data.thisMonth.orders} />
+        <Kpi label="Utilisateurs" value={data.totals.users} />
+        <Kpi label="Vendeurs" value={data.totals.vendors} />
+        <Kpi label="Entreprises" value={data.totals.enterprises} />
+        <Kpi label="Nouveaux ce mois" value={data.thisMonth.newUsers} />
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {cards.map((c) => (
-          <StatCard key={c.label} label={c.label} value={c.value} />
-        ))}
+      <div className="mb-6 rounded-md border border-border bg-card p-4">
+        <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Revenus 12 derniers mois</div>
+        <Bar
+          data={{
+            labels: data.revenueByMonth.map((m) => m.month),
+            datasets: [
+              { label: 'GMV (FCFA)', data: data.revenueByMonth.map((m) => m.gmv), backgroundColor: '#002366' },
+              { label: 'Commissions (FCFA)', data: data.revenueByMonth.map((m) => m.commissions), backgroundColor: '#ff6b00' },
+            ],
+          }}
+          options={{
+            responsive: true,
+            plugins: { legend: { position: 'top' as const } },
+            scales: { y: { beginAtZero: true } },
+          }}
+        />
       </div>
 
-      <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-        Actions
-      </h2>
-      <div className="flex flex-wrap gap-2">
-        <Button variant="primary" onClick={() => (window.location.href = '/admin/users')}>
-          Gérer les utilisateurs
-        </Button>
-        <Button variant="secondary" onClick={() => (window.location.href = '/admin/orders')}>
-          Voir les commandes
-        </Button>
-        <Button variant="secondary" onClick={() => (window.location.href = '/admin/vendors')}>
-          Voir les vendeurs
-        </Button>
-        <Button variant="secondary" onClick={() => (window.location.href = '/admin/catalog')}>
-          Voir les annonces
-        </Button>
+      <div className="rounded-md border border-border bg-card p-4">
+        <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Top 5 vendeurs (commissions)</div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+              <th className="py-1">Vendeur</th>
+              <th className="py-1 text-right">Commissions</th>
+              <th className="py-1 text-right">GMV</th>
+              <th className="py-1 text-right">Articles vendus</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.topVendors.map((v) => (
+              <tr key={v.vendorId} className="border-t border-border">
+                <td className="py-2">
+                  <Link href={`/admin/vendors/${v.vendorId}`} className="text-ink-2 hover:underline">{v.shopName}</Link>
+                </td>
+                <td className="py-2 text-right font-mono">{fmtFcfa(v.commissions)}</td>
+                <td className="py-2 text-right font-mono">{fmtFcfa(v.gmv)}</td>
+                <td className="py-2 text-right font-mono">{v.orderItems}</td>
+              </tr>
+            ))}
+            {data.topVendors.length === 0 && (
+              <tr><td colSpan={4} className="py-4 text-center text-xs text-muted">Aucune commande terminée pour l&apos;instant.</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
-    </main>
+    </div>
   )
 }

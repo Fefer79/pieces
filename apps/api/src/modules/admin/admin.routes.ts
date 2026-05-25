@@ -7,7 +7,18 @@ import {
   getAdminVendors,
   getAdminCatalog,
   getEnterpriseMembers,
+  getAdminOverview,
+  getAdminCatalogList,
+  getAdminVendorsList,
+  getAdminVendorDetail,
+  getAdminClientsList,
+  getAdminClientDetail,
+  getAdminEnterprisesList,
+  getAdminEnterpriseDetail,
+  exportCsv,
 } from './admin.service.js'
+import { zodToFastify } from '../../lib/zodSchema.js'
+import { adminListQuerySchema, adminExportQuerySchema } from 'shared/validators'
 
 export async function adminRoutes(fastify: FastifyInstance) {
   // Story 9.2: Admin dashboard stats
@@ -80,6 +91,143 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const query = request.query as { status?: string }
       const result = await getAdminCatalog(query.status)
       return reply.status(200).send({ data: result })
+    },
+  )
+
+  // Phase 2 — rich admin dashboard
+  fastify.get(
+    '/overview',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], description: 'KPIs + revenu mensuel + top vendeurs', security: [{ BearerAuth: [] }] },
+    },
+    async (_request, reply) => {
+      const data = await getAdminOverview()
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/catalog/list',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Liste catalogue paginée + recherche + filtres',
+        querystring: zodToFastify(adminListQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const data = await getAdminCatalogList(request.query as Record<string, never>)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/vendors/list',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Liste vendeurs paginée + recherche',
+        querystring: zodToFastify(adminListQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const data = await getAdminVendorsList(request.query as Record<string, never>)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/vendors/:id/detail',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Détail vendeur + transactions + commissions' },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await getAdminVendorDetail(id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/clients/list',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Liste clients (utilisateurs) paginée + recherche',
+        querystring: zodToFastify(adminListQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const data = await getAdminClientsList(request.query as Record<string, never>)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/clients/:id/detail',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Détail client + commandes' },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await getAdminClientDetail(id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/enterprises/list',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Liste entreprises paginée + recherche',
+        querystring: zodToFastify(adminListQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const data = await getAdminEnterprisesList(request.query as Record<string, never>)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/enterprises/:id/detail',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Détail entreprise + membres + parc + commandes' },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await getAdminEnterpriseDetail(id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/export.csv',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Export CSV (entity = vendors|clients|orders|catalog)',
+        querystring: zodToFastify(adminExportQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const { entity } = request.query as { entity: 'vendors' | 'clients' | 'orders' | 'catalog' }
+      const csv = await exportCsv(entity)
+      return reply
+        .header('content-type', 'text/csv; charset=utf-8')
+        .header('content-disposition', `attachment; filename="${entity}-${Date.now()}.csv"`)
+        .status(200)
+        .send(csv)
     },
   )
 

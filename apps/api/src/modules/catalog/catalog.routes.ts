@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock, retryImageJob } from './catalog.service.js'
+import { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock, retryImageJob, addPhoto, removePhoto, reorderPhotos, listPhotos, type UpdateCatalogItemData } from './catalog.service.js'
 import { AppError } from '../../lib/appError.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema } from 'shared/validators'
+import { catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema, photoParamsSchema, reorderPhotosSchema } from 'shared/validators'
 
 export async function catalogRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -129,7 +129,7 @@ export async function catalogRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
-      const body = request.body as { name?: string; category?: string; oemReference?: string | null; vehicleCompatibility?: string | null; price?: number }
+      const body = request.body as UpdateCatalogItemData
       const result = await updateItem(request.user.id, id, body, request.log)
 
       request.log.info({ event: 'CATALOG_ITEM_UPDATED', userId: request.user.id, itemId: id })
@@ -177,6 +177,89 @@ export async function catalogRoutes(fastify: FastifyInstance) {
       request.log.info({ event: 'CATALOG_IMAGE_RETRIED', userId: request.user.id, itemId: id, requeued: result.requeued })
 
       return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/items/:id/photos',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Liste les photos d\'une fiche catalogue',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await listPhotos(request.user.id, id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.post(
+    '/items/:id/photos',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Ajoute une photo (max 3) à une fiche catalogue',
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+        params: zodToFastify(catalogItemParamsSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const data = await addPhoto(request.user.id, id, buffer, file.filename, file.mimetype)
+      request.log.info({ event: 'CATALOG_PHOTO_ADDED', userId: request.user.id, itemId: id, photoId: data.id, position: data.position })
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.delete(
+    '/items/:id/photos/:photoId',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Supprime une photo d\'une fiche catalogue',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(photoParamsSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id, photoId } = request.params as { id: string; photoId: string }
+      const data = await removePhoto(request.user.id, id, photoId)
+      request.log.info({ event: 'CATALOG_PHOTO_REMOVED', userId: request.user.id, itemId: id, photoId })
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/items/:id/photos/reorder',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Réordonne les photos d\'une fiche catalogue',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+        body: zodToFastify(reorderPhotosSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const { photoIds } = request.body as { photoIds: string[] }
+      const data = await reorderPhotos(request.user.id, id, photoIds)
+      request.log.info({ event: 'CATALOG_PHOTOS_REORDERED', userId: request.user.id, itemId: id })
+      return reply.status(200).send({ data })
     },
   )
 

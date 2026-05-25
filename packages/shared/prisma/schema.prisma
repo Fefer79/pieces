@@ -238,12 +238,32 @@ model CatalogItem {
   warrantyMonths       Int?              @map("warranty_months")
   priceUpdatedAt       DateTime?         @map("price_updated_at")
   priceAlertFlag       Boolean           @default(false) @map("price_alert_flag")
+  commissionAmount     Int?              @map("commission_amount")
+  commissionAcceptedAt DateTime?         @map("commission_accepted_at")
+  photos               CatalogItemPhoto[]
   createdAt            DateTime          @default(now()) @map("created_at")
   updatedAt            DateTime          @updatedAt @map("updated_at")
 
   @@map("catalog_items")
   @@index([vendorId, status], name: "idx_catalog_items_vendor_status")
   @@index([createdByLiaisonId], name: "idx_catalog_items_created_by_liaison")
+}
+
+model CatalogItemPhoto {
+  id              String      @id @default(uuid())
+  catalogItemId   String      @map("catalog_item_id")
+  catalogItem     CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  position        Int
+  urlOriginal     String      @map("url_original")
+  urlThumb        String?     @map("url_thumb")
+  urlSmall        String?     @map("url_small")
+  urlMedium       String?     @map("url_medium")
+  urlLarge        String?     @map("url_large")
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  @@map("catalog_item_photos")
+  @@unique([catalogItemId, position], name: "uq_catalog_photo_position")
+  @@index([catalogItemId], name: "idx_catalog_photos_item")
 }
 
 model Job {
@@ -454,6 +474,7 @@ model OrderItem {
   priceSnapshot   Int      @map("price_snapshot")
   quantity        Int      @default(1)
   imageThumbUrl   String?  @map("image_thumb_url")
+  commissionAmount Int?    @map("commission_amount")
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@map("order_items")

@@ -2,7 +2,23 @@ export { phoneSchema, emailSchema, otpSchema, sendOtpSchema, verifyOtpSchema } f
 export { switchContextSchema, selectRoleSchema, updateRolesSchema } from './user'
 export { consentSchema, deletionRequestSchema } from './consent'
 export { createVendorSchema, vendorTypeSchema, kycTypeSchema, guaranteeTypeSchema, updateDeliveryZonesSchema } from './vendor'
-export { catalogItemStatusSchema, catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema, partConditionSchema, partSourceSchema } from './catalog'
+export {
+  catalogItemStatusSchema,
+  catalogItemFilterSchema,
+  catalogItemParamsSchema,
+  updateCatalogItemSchema,
+  toggleStockSchema,
+  partConditionSchema,
+  partSourceSchema,
+  photoParamsSchema,
+  reorderPhotosSchema,
+  adminListQuerySchema,
+  adminExportQuerySchema,
+  minCommissionFor,
+  MIN_COMMISSION_FCFA,
+  MIN_COMMISSION_RATE,
+  MAX_PHOTOS_PER_ITEM,
+} from './catalog'
 export { vinDecodeSchema, createVehicleSchema } from './browse'
 export { createOrderSchema, confirmOrderSchema, cancelOrderSchema } from './order'
 export { createSellerReviewSchema, createDeliveryReviewSchema, openDisputeSchema, resolveDisputeSchema } from './review'

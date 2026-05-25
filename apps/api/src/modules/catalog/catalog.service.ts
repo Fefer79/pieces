@@ -1,9 +1,30 @@
 import { prisma } from '../../lib/prisma.js'
 import { uploadToR2 } from '../../lib/r2.js'
-import { MAX_FILE_SIZE } from '../../lib/imageProcessor.js'
+import { MAX_FILE_SIZE, processVariants } from '../../lib/imageProcessor.js'
 import { enqueue } from '../queue/queueService.js'
 import { AppError } from '../../lib/appError.js'
 import type { CatalogItemStatus } from '@prisma/client'
+import { minCommissionFor, MAX_PHOTOS_PER_ITEM } from 'shared/validators'
+
+const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+async function assertVendorOwnsItem(userId: string, itemId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Profil vendeur introuvable' })
+  }
+  const item = await prisma.catalogItem.findFirst({
+    where: { id: itemId, vendorId: vendor.id },
+    select: { id: true, vendorId: true, status: true, price: true, commissionAmount: true },
+  })
+  if (!item) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Fiche catalogue introuvable' })
+  }
+  return { vendor, item }
+}
 
 export interface UploadPartExtras {
   name?: string
@@ -62,7 +83,7 @@ export async function uploadPartImage(
     serialPhotoUrl = await uploadToR2(serialPhotoKey, extras.serialPhoto.buffer, extras.serialPhoto.mimeType)
   }
 
-  // Create catalog item in draft status
+  // Create catalog item in draft status + the position-0 photo row.
   const catalogItem = await prisma.catalogItem.create({
     data: {
       vendorId: vendor.id,
@@ -75,6 +96,12 @@ export async function uploadPartImage(
       ...(extras.condition && { condition: extras.condition }),
       ...(extras.warrantyMonths !== undefined && { warrantyMonths: extras.warrantyMonths }),
       ...(serialPhotoUrl && { serialPhotoUrl }),
+      photos: {
+        create: {
+          position: 0,
+          urlOriginal: imageOriginalUrl,
+        },
+      },
     },
   })
 
@@ -151,6 +178,7 @@ export async function getItem(userId: string, itemId: string) {
       id: itemId,
       vendorId: vendor.id,
     },
+    include: { photos: { orderBy: { position: 'asc' } } },
   })
 
   if (!item) {
@@ -217,6 +245,8 @@ export interface UpdateCatalogItemData {
   condition?: 'NEW' | 'USED' | 'REFURBISHED'
   partSource?: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
   warrantyMonths?: number
+  commissionAmount?: number
+  commissionAccepted?: boolean
 }
 
 export async function updateItem(
@@ -270,9 +300,26 @@ export async function updateItem(
     }
   }
 
+  // Commission: validate >= max(1000, 5% × effective price)
+  if (data.commissionAmount !== undefined) {
+    const effectivePrice = data.price ?? item.price ?? 0
+    const minRequired = minCommissionFor(effectivePrice)
+    if (data.commissionAmount < minRequired) {
+      throw new AppError('COMMISSION_TOO_LOW', 422, {
+        message: `Commission minimale pour ce prix : ${minRequired} FCFA`,
+      })
+    }
+    updateData.commissionAmount = data.commissionAmount
+  }
+
+  if (data.commissionAccepted === true) {
+    updateData.commissionAcceptedAt = new Date()
+  }
+
   return prisma.catalogItem.update({
     where: { id: itemId },
     data: updateData,
+    include: { photos: { orderBy: { position: 'asc' } } },
   })
 }
 
@@ -310,6 +357,22 @@ export async function publishItem(userId: string, itemId: string) {
     throw new AppError('CATALOG_WARRANTY_REQUIRED', 422, { message: 'La garantie vendeur est obligatoire pour publier' })
   }
 
+  if (item.commissionAmount === null || item.commissionAmount === undefined) {
+    throw new AppError('CATALOG_COMMISSION_REQUIRED', 422, { message: 'Une commission est obligatoire pour publier' })
+  }
+
+  if (item.commissionAmount < minCommissionFor(item.price)) {
+    throw new AppError('COMMISSION_TOO_LOW', 422, {
+      message: `Commission insuffisante (min ${minCommissionFor(item.price)} FCFA)`,
+    })
+  }
+
+  if (!item.commissionAcceptedAt) {
+    throw new AppError('CATALOG_COMMISSION_NOT_ACCEPTED', 422, {
+      message: 'Vous devez accepter explicitement la commission pour publier',
+    })
+  }
+
   return prisma.catalogItem.update({
     where: { id: itemId },
     data: { status: 'PUBLISHED' },
@@ -341,5 +404,147 @@ export async function toggleStock(userId: string, itemId: string, inStock: boole
   return prisma.catalogItem.update({
     where: { id: itemId },
     data: { inStock },
+  })
+}
+
+export async function addPhoto(
+  userId: string,
+  itemId: string,
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+) {
+  const { vendor } = await assertVendorOwnsItem(userId, itemId)
+
+  if (fileBuffer.length > MAX_FILE_SIZE) {
+    throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
+  }
+  if (!ALLOWED_IMAGE_MIME_TYPES.includes(mimeType)) {
+    throw new AppError('INVALID_FILE_TYPE', 422, { message: 'Format accepté : JPEG, PNG ou WebP' })
+  }
+
+  const existing = await prisma.catalogItemPhoto.findMany({
+    where: { catalogItemId: itemId },
+    orderBy: { position: 'asc' },
+    select: { position: true },
+  })
+
+  if (existing.length >= MAX_PHOTOS_PER_ITEM) {
+    throw new AppError('TOO_MANY_PHOTOS', 422, {
+      message: `Maximum ${MAX_PHOTOS_PER_ITEM} photos par pièce`,
+    })
+  }
+
+  const nextPosition = existing.length
+
+  const ext = mimeType.split('/')[1] ?? 'jpg'
+  const timestamp = Date.now()
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '')
+  const baseKey = `catalog/${vendor.id}/${itemId}/photo_${nextPosition}_${timestamp}_${safeName}`
+  const originalKey = `${baseKey}.${ext}`
+
+  const urlOriginal = await uploadToR2(originalKey, fileBuffer, mimeType)
+
+  // Generate variants inline (fast: ~200ms for 4 sizes on typical phone photos)
+  const variants = await processVariants(fileBuffer)
+  const [urlThumb, urlSmall, urlMedium, urlLarge] = await Promise.all([
+    uploadToR2(`${baseKey}_thumb.webp`, variants.thumb, 'image/webp'),
+    uploadToR2(`${baseKey}_small.webp`, variants.small, 'image/webp'),
+    uploadToR2(`${baseKey}_medium.webp`, variants.medium, 'image/webp'),
+    uploadToR2(`${baseKey}_large.webp`, variants.large, 'image/webp'),
+  ])
+
+  return prisma.catalogItemPhoto.create({
+    data: {
+      catalogItemId: itemId,
+      position: nextPosition,
+      urlOriginal,
+      urlThumb,
+      urlSmall,
+      urlMedium,
+      urlLarge,
+    },
+  })
+}
+
+export async function removePhoto(userId: string, itemId: string, photoId: string) {
+  await assertVendorOwnsItem(userId, itemId)
+
+  const photo = await prisma.catalogItemPhoto.findUnique({
+    where: { id: photoId },
+    select: { id: true, catalogItemId: true, position: true },
+  })
+
+  if (!photo || photo.catalogItemId !== itemId) {
+    throw new AppError('PHOTO_NOT_FOUND', 404, { message: 'Photo introuvable' })
+  }
+
+  // Delete + reposition remaining photos to keep positions 0..n-1 contiguous.
+  await prisma.$transaction(async (tx) => {
+    await tx.catalogItemPhoto.delete({ where: { id: photoId } })
+    const remaining = await tx.catalogItemPhoto.findMany({
+      where: { catalogItemId: itemId },
+      orderBy: { position: 'asc' },
+      select: { id: true },
+    })
+    for (let i = 0; i < remaining.length; i++) {
+      const row = remaining[i]
+      if (!row) continue
+      await tx.catalogItemPhoto.update({
+        where: { id: row.id },
+        data: { position: i },
+      })
+    }
+  })
+
+  return { deleted: true }
+}
+
+export async function reorderPhotos(userId: string, itemId: string, photoIds: string[]) {
+  await assertVendorOwnsItem(userId, itemId)
+
+  const existing = await prisma.catalogItemPhoto.findMany({
+    where: { catalogItemId: itemId },
+    select: { id: true },
+  })
+
+  const existingIds = new Set(existing.map((p) => p.id))
+  if (photoIds.length !== existing.length || !photoIds.every((id) => existingIds.has(id))) {
+    throw new AppError('REORDER_INVALID', 422, {
+      message: 'La liste des photos ne correspond pas aux photos de cette pièce',
+    })
+  }
+
+  // Two-pass to avoid unique-constraint conflicts on (catalogItemId, position).
+  await prisma.$transaction(async (tx) => {
+    for (let i = 0; i < photoIds.length; i++) {
+      const pid = photoIds[i]
+      if (!pid) continue
+      await tx.catalogItemPhoto.update({
+        where: { id: pid },
+        data: { position: 1000 + i },
+      })
+    }
+    for (let i = 0; i < photoIds.length; i++) {
+      const pid = photoIds[i]
+      if (!pid) continue
+      await tx.catalogItemPhoto.update({
+        where: { id: pid },
+        data: { position: i },
+      })
+    }
+  })
+
+  return prisma.catalogItemPhoto.findMany({
+    where: { catalogItemId: itemId },
+    orderBy: { position: 'asc' },
+  })
+}
+
+export async function listPhotos(userId: string, itemId: string) {
+  await assertVendorOwnsItem(userId, itemId)
+  return prisma.catalogItemPhoto.findMany({
+    where: { catalogItemId: itemId },
+    orderBy: { position: 'asc' },
   })
 }
