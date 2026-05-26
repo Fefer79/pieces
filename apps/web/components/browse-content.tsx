@@ -6,6 +6,7 @@ import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
+import { VehicleSearchPanel } from '@/components/vehicle-search-panel'
 
 const TABS = ['Photo', 'VIN', 'Sélection', 'WhatsApp'] as const
 type Tab = (typeof TABS)[number]
@@ -204,6 +205,17 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
           </button>
         )}
       </div>
+
+      {/* Search panel — visible once a vehicle is selected */}
+      {vehicle && (
+        <div className="mx-auto max-w-[1280px] px-4 lg:px-0">
+          <VehicleSearchPanel
+            brand={vehicle.brand}
+            model={vehicle.model}
+            year={vehicle.year || undefined}
+          />
+        </div>
+      )}
 
       {/* Tabs — mobile: flat bar; desktop: richer 4-up card row */}
       {variant === 'desktop' ? (
