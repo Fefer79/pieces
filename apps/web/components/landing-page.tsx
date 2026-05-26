@@ -1,10 +1,11 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { BrowseContent } from './browse-content'
 import { useAuth } from '@/lib/auth-context'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
-export function LandingPage() {
+export function LandingPage({ children }: { children?: ReactNode }) {
   const { isAuthenticated } = useAuth()
   const { vehicle, clearVehicle } = useSelectedVehicle()
 
@@ -74,6 +75,8 @@ export function LandingPage() {
           </div>
         </div>
       </header>
+
+      {children}
 
       {/* Browse surface */}
       <section className="px-6 pb-16 pt-8">

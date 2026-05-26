@@ -89,13 +89,14 @@ export default function BrowsePage() {
     <>
       {/* Desktop */}
       <div className="hidden lg:block">
-        <div className="mx-auto max-w-[1280px] px-6 pt-8">
-          <PromoCarousel slides={PROMO_SLIDES} />
-        </div>
-        <div className="mx-auto max-w-[1280px] px-6 pt-10">
-          <CategoryCarousel tiles={CATEGORY_TILES} />
-        </div>
-        <LandingPage />
+        <LandingPage>
+          <div className="mx-auto max-w-[1280px] px-6 pt-8">
+            <PromoCarousel slides={PROMO_SLIDES} />
+          </div>
+          <div className="mx-auto max-w-[1280px] px-6 pt-10">
+            <CategoryCarousel tiles={CATEGORY_TILES} />
+          </div>
+        </LandingPage>
       </div>
 
       {/* Mobile */}
