@@ -69,16 +69,53 @@ export async function browseRoutes(fastify: FastifyInstance) {
     {
       schema: {
         tags: ['Browse'],
-        description: 'Parcourir les pièces par filtres (marque, modèle, année, catégorie)',
+        description:
+          'Parcourir les pièces par filtres (marque, modèle, année, catégorie, q, vendorId, condition, priceMin/Max, sortBy)',
       },
     },
     async (request, reply) => {
-      const query = request.query as { brand?: string; model?: string; year?: string; category?: string; page?: string; limit?: string }
+      const query = request.query as {
+        brand?: string
+        model?: string
+        year?: string
+        category?: string
+        q?: string
+        vendorId?: string
+        condition?: string
+        priceMin?: string
+        priceMax?: string
+        sortBy?: string
+        page?: string
+        limit?: string
+      }
+
+      const allowedConditions = ['NEW', 'USED', 'REFURBISHED'] as const
+      const conditionList = query.condition
+        ? query.condition
+            .split(',')
+            .map((c) => c.trim().toUpperCase())
+            .filter((c): c is (typeof allowedConditions)[number] =>
+              (allowedConditions as readonly string[]).includes(c),
+            )
+        : undefined
+
+      const allowedSorts = ['recent', 'price_asc', 'price_desc'] as const
+      const sortBy =
+        query.sortBy && (allowedSorts as readonly string[]).includes(query.sortBy)
+          ? (query.sortBy as (typeof allowedSorts)[number])
+          : undefined
+
       const result = await browseParts({
         brand: query.brand,
         model: query.model,
         year: query.year ? parseInt(query.year, 10) : undefined,
         category: query.category,
+        q: query.q,
+        vendorId: query.vendorId,
+        condition: conditionList && conditionList.length > 0 ? conditionList : undefined,
+        priceMin: query.priceMin ? parseInt(query.priceMin, 10) : undefined,
+        priceMax: query.priceMax ? parseInt(query.priceMax, 10) : undefined,
+        sortBy,
         page: query.page ? parseInt(query.page, 10) : undefined,
         limit: query.limit ? parseInt(query.limit, 10) : undefined,
       })

@@ -9,7 +9,6 @@ export {
   updateCatalogItemSchema,
   toggleStockSchema,
   partConditionSchema,
-  partSourceSchema,
   photoParamsSchema,
   reorderPhotosSchema,
   adminListQuerySchema,
