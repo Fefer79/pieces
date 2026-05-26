@@ -182,34 +182,6 @@ describe('catalog.service', () => {
       )
     })
 
-    it('persists partSource when provided', async () => {
-      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
-      mockCatalogItemFindFirst.mockResolvedValueOnce({
-        id: 'item-1', vendorId: 'vendor-1', status: 'DRAFT', price: null, priceUpdatedAt: null,
-      })
-      mockCatalogItemUpdate.mockResolvedValueOnce({ id: 'item-1', partSource: 'AFTERMARKET' })
-
-      await updateItem('user-1', 'item-1', { partSource: 'AFTERMARKET' })
-
-      expect(mockCatalogItemUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ partSource: 'AFTERMARKET' }) }),
-      )
-    })
-
-    it('clears partSource when null is sent', async () => {
-      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
-      mockCatalogItemFindFirst.mockResolvedValueOnce({
-        id: 'item-1', vendorId: 'vendor-1', status: 'DRAFT', price: null, priceUpdatedAt: null,
-      })
-      mockCatalogItemUpdate.mockResolvedValueOnce({ id: 'item-1', partSource: null })
-
-      await updateItem('user-1', 'item-1', { partSource: null })
-
-      expect(mockCatalogItemUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ partSource: null }) }),
-      )
-    })
-
     it('throws VENDOR_NOT_FOUND when no vendor', async () => {
       mockVendorFindUnique.mockResolvedValueOnce(null)
 

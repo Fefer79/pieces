@@ -59,14 +59,7 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const body = request.body as {
-        name: string
-        commune: string
-        address?: string
-        lat?: number
-        lng?: number
-        rccm?: string
-      }
+      const body = request.body as { name: string; address?: string; rccm?: string }
       const enterprise = await createEnterprise(request.user.id, body)
       return reply.status(201).send({ data: enterprise })
     },

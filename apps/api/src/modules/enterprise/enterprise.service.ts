@@ -24,24 +24,14 @@ async function uniqueSlug(name: string) {
 
 export async function createEnterprise(
   ownerUserId: string,
-  data: {
-    name: string
-    commune: string
-    address?: string
-    lat?: number
-    lng?: number
-    rccm?: string
-  },
+  data: { name: string; address?: string; rccm?: string },
 ) {
   const slug = await uniqueSlug(data.name)
   const enterprise = await prisma.enterprise.create({
     data: {
       name: data.name,
       slug,
-      commune: data.commune,
       address: data.address,
-      lat: data.lat,
-      lng: data.lng,
       rccm: data.rccm,
       members: {
         create: {
@@ -51,17 +41,7 @@ export async function createEnterprise(
         },
       },
     },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      commune: true,
-      address: true,
-      lat: true,
-      lng: true,
-      rccm: true,
-      createdAt: true,
-    },
+    select: { id: true, name: true, slug: true, address: true, rccm: true, createdAt: true },
   })
   return enterprise
 }
@@ -74,7 +54,7 @@ export async function listEnterprisesForUser(userId: string) {
       role: true,
       joinedAt: true,
       enterprise: {
-        select: { id: true, name: true, slug: true, commune: true, address: true, lat: true, lng: true, rccm: true, createdAt: true },
+        select: { id: true, name: true, slug: true, address: true, rccm: true, createdAt: true },
       },
     },
   })
@@ -109,10 +89,7 @@ export async function getEnterprise(enterpriseId: string, userId: string) {
       id: true,
       name: true,
       slug: true,
-      commune: true,
       address: true,
-      lat: true,
-      lng: true,
       rccm: true,
       createdAt: true,
       _count: { select: { vehicles: true, members: true } },

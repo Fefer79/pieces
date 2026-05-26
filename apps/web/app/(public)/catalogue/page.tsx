@@ -5,14 +5,13 @@ import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
-import { ConditionChip, PartSourceChip, type Condition, type PartSource } from '@/components/ui/chip'
+import { ConditionChip, type Condition } from '@/components/ui/chip'
 
 interface CatalogItem {
   id: string
   name: string | null
   category: string | null
   condition: string | null
-  partSource: string | null
   price: number | null
   imageThumbUrl: string | null
   vendor: { shopName: string }
@@ -252,12 +251,9 @@ export default function CataloguePage() {
                   <p className="truncate text-xs text-muted">
                     {item.category ?? '—'} · {item.vendor.shopName}
                   </p>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  <div className="mt-1.5 flex items-center gap-2">
                     {item.condition && (
                       <ConditionChip condition={item.condition as Condition} />
-                    )}
-                    {item.partSource && (
-                      <PartSourceChip source={item.partSource as PartSource} />
                     )}
                   </div>
                 </div>

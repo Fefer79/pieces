@@ -12,39 +12,8 @@ function generateShareToken(): string {
 export async function createOrder(
   initiatorId: string,
   items: { catalogItemId: string }[],
-  options: { ownerPhone?: string; laborCost?: number; vehicleId?: string } = {},
+  options: { ownerPhone?: string; laborCost?: number } = {},
 ) {
-  // Validate vehicle access if a vehicleId is provided
-  let vehicleId: string | undefined
-  let enterpriseId: string | undefined
-  if (options.vehicleId) {
-    const vehicle = await prisma.vehicle.findUnique({
-      where: { id: options.vehicleId },
-      select: { id: true, userId: true, enterpriseId: true },
-    })
-    if (!vehicle) {
-      throw new AppError('VEHICLE_NOT_FOUND', 404, { message: 'Véhicule introuvable' })
-    }
-
-    const ownsDirectly = vehicle.userId === initiatorId
-    let memberOfEnterprise = false
-    if (vehicle.enterpriseId) {
-      const membership = await prisma.enterpriseMember.findUnique({
-        where: { uq_enterprise_member: { enterpriseId: vehicle.enterpriseId, userId: initiatorId } },
-        select: { id: true },
-      })
-      memberOfEnterprise = membership !== null
-    }
-    if (!ownsDirectly && !memberOfEnterprise) {
-      throw new AppError('VEHICLE_FORBIDDEN', 403, {
-        message: 'Vous n\'avez pas accès à ce véhicule',
-      })
-    }
-
-    vehicleId = vehicle.id
-    enterpriseId = vehicle.enterpriseId ?? undefined
-  }
-
   // Fetch catalog items with vendor info and lock prices
   const catalogItems = await prisma.catalogItem.findMany({
     where: {
@@ -78,8 +47,6 @@ export async function createOrder(
       shareToken,
       totalAmount,
       laborCost: options.laborCost,
-      vehicleId,
-      enterpriseId,
       items: {
         create: catalogItems.map((item) => ({
           catalogItemId: item.id,

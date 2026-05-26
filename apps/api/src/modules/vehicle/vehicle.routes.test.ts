@@ -34,15 +34,13 @@ vi.mock('../../lib/prisma.js', () => ({
     vendor: { findUnique: vi.fn() },
     catalogItem: { findMany: vi.fn(), count: vi.fn() },
     searchSynonym: { findMany: vi.fn() },
-    vehicle: {
+    userVehicle: {
       findMany: (...args: unknown[]) => mockUserVehicleFindMany(...args),
       count: (...args: unknown[]) => mockUserVehicleCount(...args),
       create: (...args: unknown[]) => mockUserVehicleCreate(...args),
       findFirst: (...args: unknown[]) => mockUserVehicleFindFirst(...args),
       delete: (...args: unknown[]) => mockUserVehicleDelete(...args),
     },
-    enterprise: { findUnique: vi.fn(), create: vi.fn(), findMany: vi.fn(), count: vi.fn() },
-    enterpriseMember: { findUnique: vi.fn(), create: vi.fn(), findMany: vi.fn(), count: vi.fn(), delete: vi.fn() },
   },
 }))
 

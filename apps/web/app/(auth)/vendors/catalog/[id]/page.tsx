@@ -37,7 +37,6 @@ interface CatalogItem {
   inStock: boolean
   priceAlertFlag: boolean
   condition: 'NEW' | 'USED' | 'REFURBISHED' | null
-  partSource: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
   warrantyMonths: number | null
   commissionAmount: number | null
   commissionAcceptedAt: string | null
@@ -81,7 +80,6 @@ export default function VendorCatalogDetailPage() {
   const [vehicleCompatibility, setVehicleCompatibility] = useState('')
   const [price, setPrice] = useState('')
   const [condition, setCondition] = useState<'NEW' | 'USED' | 'REFURBISHED' | ''>('')
-  const [partSource, setPartSource] = useState<'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | ''>('')
   const [warrantyMonths, setWarrantyMonths] = useState<string>('')
   const [commissionAmount, setCommissionAmount] = useState<string>('')
   const [commissionAccepted, setCommissionAccepted] = useState<boolean>(false)
@@ -121,7 +119,6 @@ export default function VendorCatalogDetailPage() {
       setVehicleCompatibility(data.vehicleCompatibility ?? '')
       setPrice(data.price !== null ? String(data.price) : '')
       setCondition(data.condition ?? '')
-      setPartSource(data.partSource ?? '')
       setWarrantyMonths(data.warrantyMonths !== null ? String(data.warrantyMonths) : '')
       setCommissionAmount(data.commissionAmount !== null ? String(data.commissionAmount) : '')
       setCommissionAccepted(!!data.commissionAcceptedAt)
@@ -155,9 +152,6 @@ export default function VendorCatalogDetailPage() {
       }
       if (condition !== (item?.condition ?? '')) {
         if (condition) body.condition = condition
-      }
-      if (partSource !== (item?.partSource ?? '')) {
-        body.partSource = partSource || null
       }
       const currentWarranty = item?.warrantyMonths !== null && item?.warrantyMonths !== undefined ? String(item.warrantyMonths) : ''
       if (warrantyMonths !== currentWarranty && warrantyMonths !== '') {
@@ -449,9 +443,6 @@ export default function VendorCatalogDetailPage() {
         {item.condition === 'NEW' && <Chip variant="neuf">Neuf</Chip>}
         {item.condition === 'USED' && <Chip variant="occasion">Occasion</Chip>}
         {item.condition === 'REFURBISHED' && <Chip variant="reusine">Ré-usiné</Chip>}
-        {item.partSource === 'OEM' && <Chip variant="oem">OEM</Chip>}
-        {item.partSource === 'AFTERMARKET' && <Chip variant="aftermarket">Aftermarket</Chip>}
-        {item.partSource === 'COMPATIBLE' && <Chip variant="plain">Compatible</Chip>}
         {item.status === 'PUBLISHED' && !item.inStock && (
           <Chip variant="status-err">Épuisée</Chip>
         )}
@@ -562,34 +553,6 @@ export default function VendorCatalogDetailPage() {
               )
             })}
           </div>
-        </div>
-
-        <div>
-          <label className={LABEL}>Origine</label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { value: 'OEM', label: 'OEM', active: 'border-oem-fg/50 bg-oem-bg text-oem-fg' },
-              { value: 'AFTERMARKET', label: 'Aftermarket', active: 'border-aftermarket-fg/50 bg-aftermarket-bg text-aftermarket-fg' },
-              { value: 'COMPATIBLE', label: 'Compatible', active: 'border-border-strong bg-surface text-ink' },
-            ].map(({ value, label, active }) => {
-              const isActive = partSource === value
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPartSource(isActive ? '' : (value as 'OEM' | 'AFTERMARKET' | 'COMPATIBLE'))}
-                  className={`rounded-md border-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] transition-all ${
-                    isActive ? active : 'border-border bg-card text-muted hover:border-border-strong hover:text-ink'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-          <p className="mt-1 text-xs text-muted">
-            OEM = pièce d&apos;origine constructeur. Aftermarket = équipementier reconnu (Bosch, Valeo…). Compatible = générique.
-          </p>
         </div>
 
         <div>

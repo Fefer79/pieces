@@ -44,7 +44,7 @@ export const liaisonCreatePartSchema = z.object({
   category: z.string().min(2).max(80).optional(),
   oemReference: z.string().max(80).optional(),
   vehicleCompatibility: z.string().max(255).optional(),
-  price: z.number().int().min(1).optional(),
+  price: z.number().int().positive().optional(),
   condition: z.enum(['NEW', 'USED', 'REFURBISHED']),
   warrantyMonths: z.number().int().min(0).max(60).optional(),
   inStock: z.boolean().default(true),

@@ -243,7 +243,6 @@ export interface UpdateCatalogItemData {
   vehicleCompatibility?: string | null
   price?: number
   condition?: 'NEW' | 'USED' | 'REFURBISHED'
-  partSource?: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
   warrantyMonths?: number
   commissionAmount?: number
   commissionAccepted?: boolean
@@ -279,7 +278,6 @@ export async function updateItem(
   if (data.oemReference !== undefined) updateData.oemReference = data.oemReference
   if (data.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = data.vehicleCompatibility
   if (data.condition !== undefined) updateData.condition = data.condition
-  if (data.partSource !== undefined) updateData.partSource = data.partSource
   if (data.warrantyMonths !== undefined) updateData.warrantyMonths = data.warrantyMonths
 
   if (data.price !== undefined) {
