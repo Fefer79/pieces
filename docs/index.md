@@ -107,6 +107,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 
 - [Templates WhatsApp](./whatsapp-templates.md) — Templates de messages WhatsApp Business
 - [Brochure commerciale Pièces](./brochure-commerciale-pieces.md) — Présentation tous publics des services (mécanicien, propriétaire, vendeur, livreur, entreprise, WhatsApp) et comment y accéder — Rédigée 2026-05-27
+- [Brochure commerciale Entreprises](./brochure-commerciale-entreprises.md) — Présentation B2B dédiée aux gestionnaires de flotte (5 à 100+ véhicules) : pain points, ROI, dashboard, workflow approbation, cas d'usage, démarrage — Rédigée 2026-05-27
 
 ### Rétrospectives (`_bmad-output/implementation-artifacts/`)
 
