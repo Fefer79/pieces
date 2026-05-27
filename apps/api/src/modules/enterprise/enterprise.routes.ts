@@ -62,6 +62,12 @@ import {
 } from './vehicle.service.js'
 import { getEnterpriseDashboard, exportEnterpriseOrdersCsv } from './dashboard.service.js'
 import { getSubscriptionForMember } from './subscription.service.js'
+import {
+  listInvoicesForEnterprise,
+  getInvoicePdf,
+  getMonthlyInvoicePdf,
+  exportFecCsv,
+} from './invoice.service.js'
 import type { VehicleUsageType, EnterpriseMemberRole } from '@prisma/client'
 
 export async function enterpriseRoutes(fastify: FastifyInstance) {
@@ -692,6 +698,76 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
       const { enterpriseId } = request.params as { enterpriseId: string }
       const data = await getSubscriptionForMember(enterpriseId, request.user.id)
       return reply.send({ data })
+    },
+  )
+
+  // ---- Invoices --------------------------------------------------------
+
+  fastify.get(
+    '/:enterpriseId/invoices',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Liste des factures (optionnellement filtrées par year+month)' },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const q = request.query as { year?: string; month?: string }
+      const data = await listInvoicesForEnterprise(enterpriseId, request.user.id, {
+        year: q.year ? Number(q.year) : undefined,
+        month: q.month ? Number(q.month) : undefined,
+      })
+      return reply.send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/invoices/:invoiceId.pdf',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Télécharger une facture en PDF' },
+    },
+    async (request, reply) => {
+      const { invoiceId } = request.params as { enterpriseId: string; invoiceId: string }
+      const pdf = await getInvoicePdf(invoiceId, request.user.id)
+      reply.header('Content-Type', 'application/pdf')
+      reply.header('Content-Disposition', `attachment; filename="facture-${invoiceId}.pdf"`)
+      return reply.send(pdf)
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/invoices/monthly/:yyyymm.pdf',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Facture mensuelle consolidée — yyyymm = 202605' },
+    },
+    async (request, reply) => {
+      const { enterpriseId, yyyymm } = request.params as { enterpriseId: string; yyyymm: string }
+      const m = /^(\d{4})(\d{2})$/.exec(yyyymm)
+      if (!m) return reply.status(400).send({ error: { code: 'BAD_PERIOD', message: 'Format attendu yyyymm (ex: 202605)' } })
+      const year = Number(m[1])
+      const month = Number(m[2])
+      const pdf = await getMonthlyInvoicePdf(enterpriseId, year, month, request.user.id)
+      reply.header('Content-Type', 'application/pdf')
+      reply.header('Content-Disposition', `attachment; filename="pieces-mensuelle-${yyyymm}.pdf"`)
+      return reply.send(pdf)
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/invoices/fec/:yyyymm.csv',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Export FEC CSV (HT/TVA/TTC par facture)' },
+    },
+    async (request, reply) => {
+      const { enterpriseId, yyyymm } = request.params as { enterpriseId: string; yyyymm: string }
+      const m = /^(\d{4})(\d{2})$/.exec(yyyymm)
+      if (!m) return reply.status(400).send({ error: { code: 'BAD_PERIOD', message: 'Format attendu yyyymm' } })
+      const csv = await exportFecCsv(enterpriseId, Number(m[1]), Number(m[2]), request.user.id)
+      reply.header('Content-Type', 'text/csv; charset=utf-8')
+      reply.header('Content-Disposition', `attachment; filename="pieces-fec-${yyyymm}.csv"`)
+      return reply.send(csv)
     },
   )
 

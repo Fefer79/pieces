@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { canTransition } from './order.stateMachine.js'
 import { recomputeVendorScore } from '../vendor/vendorScore.service.js'
+import { getOrCreateInvoiceForOrder } from '../enterprise/invoice.service.js'
 
 const DELIVERED_STATUSES = new Set(['DELIVERED', 'CONFIRMED', 'COMPLETED'])
 
@@ -210,6 +211,16 @@ export async function transitionOrder(
 
   if (DELIVERED_STATUSES.has(toStatus)) {
     rescoreOrderVendors(orderId)
+  }
+
+  if (toStatus === 'PAID') {
+    // Fire-and-forget invoice issuance. Idempotent — getOrCreate returns
+    // existing invoice if already issued.
+    void getOrCreateInvoiceForOrder(orderId).catch((err) => {
+      // log only; never let invoice failure rollback the order transition
+      // eslint-disable-next-line no-console
+      console.error('[invoice] failed to issue', orderId, err)
+    })
   }
 
   return updated

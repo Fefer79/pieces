@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: '/enterprise/centers', label: 'Centres', icon: CentersIcon },
   { href: '/enterprise/returns', label: 'Retours', icon: ReturnsIcon },
   { href: '/enterprise/buffer-stock', label: 'Stock tampon', icon: StockIcon },
+  { href: '/enterprise/invoices', label: 'Factures', icon: InvoicesIcon },
   { href: '/enterprise/billing', label: 'Abonnement', icon: BillingIcon },
 ] as const
 
@@ -148,6 +149,17 @@ function StockIcon({ active }: { active: boolean }) {
       <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
       <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
       <line x1="12" y1="22.08" x2="12" y2="12" />
+    </svg>
+  )
+}
+
+function InvoicesIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
     </svg>
   )
 }

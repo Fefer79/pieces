@@ -361,6 +361,8 @@ model Enterprise {
   maintenanceCenters  MaintenanceCenter[]
   bufferStock         EnterpriseBufferStock[]
   subscriptions       EnterpriseSubscription[]
+  invoices            Invoice[]
+  monthlyInvoices     EnterpriseMonthlyInvoice[]
 
   @@map("enterprises")
   @@index([slug], name: "idx_enterprises_slug")
@@ -396,6 +398,49 @@ enum SubscriptionEventKind {
   CYCLE_CHANGED
   ROI_GUARANTEE_INVOKED
   SLA_BREACH
+}
+
+model Invoice {
+  id                   String   @id @default(uuid())
+  orderId              String   @unique @map("order_id")
+  order                Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  enterpriseId         String?  @map("enterprise_id")
+  enterprise           Enterprise? @relation(fields: [enterpriseId], references: [id])
+  invoiceNumber        String   @unique @map("invoice_number")
+  issuedAt             DateTime @default(now()) @map("issued_at")
+  // Amounts en FCFA
+  subtotalHt           Int      @map("subtotal_ht")
+  tvaRate              Int      @default(18) @map("tva_rate") // pourcentage
+  tvaAmount            Int      @map("tva_amount")
+  totalTtc             Int      @map("total_ttc")
+  // FNE / DGI compliance — nullable jusqu'à intégration FNE-CI officielle
+  fneValidationNumber  String?  @map("fne_validation_number")
+  fneQrPayload         String?  @map("fne_qr_payload")
+  fneSubmittedAt       DateTime? @map("fne_submitted_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("invoices")
+  @@index([enterpriseId], name: "idx_invoices_enterprise")
+  @@index([issuedAt], name: "idx_invoices_issued_at")
+}
+
+model EnterpriseMonthlyInvoice {
+  id            String   @id @default(uuid())
+  enterpriseId  String   @map("enterprise_id")
+  enterprise    Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  year          Int
+  month         Int      // 1-12
+  invoiceCount  Int      @default(0) @map("invoice_count")
+  totalHt       Int      @default(0) @map("total_ht")
+  tvaAmount     Int      @default(0) @map("tva_amount")
+  totalTtc      Int      @default(0) @map("total_ttc")
+  generatedAt   DateTime @default(now()) @map("generated_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("enterprise_monthly_invoices")
+  @@unique([enterpriseId, year, month], name: "uq_enterprise_monthly")
+  @@index([enterpriseId], name: "idx_monthly_invoices_enterprise")
 }
 
 model EnterpriseSubscription {
@@ -702,6 +747,7 @@ model Order {
   sellerReviews   SellerReview[]
   disputes        Dispute[]
   returns         ReturnOrder[]
+  invoice         Invoice?
 
   @@map("orders")
   @@index([initiatorId], name: "idx_orders_initiator")
