@@ -145,6 +145,110 @@ export async function deleteSchedule(
   await prisma.maintenanceSchedule.delete({ where: { id: scheduleId } })
 }
 
+export async function listEnterpriseUpcomingMaintenance(
+  enterpriseId: string,
+  userId: string,
+) {
+  await assertMember(enterpriseId, userId)
+  const vehicles = await prisma.vehicle.findMany({
+    where: { enterpriseId },
+    select: {
+      id: true,
+      brand: true,
+      model: true,
+      year: true,
+      plate: true,
+      mileage: true,
+      createdAt: true,
+      maintenanceSchedules: {
+        where: { enabled: true },
+        select: {
+          id: true,
+          kind: true,
+          label: true,
+          intervalKm: true,
+          warningKm: true,
+          lastDoneAtKm: true,
+          lastDoneAt: true,
+        },
+      },
+    },
+  })
+
+  const now = Date.now()
+  type Alert = {
+    vehicleId: string
+    brand: string
+    model: string
+    year: number
+    plate: string | null
+    mileage: number | null
+    scheduleId: string
+    kind: string
+    label: string | null
+    intervalKm: number
+    nextDueAtKm: number | null
+    kmRemaining: number | null
+    status: ScheduleStatus
+    estimatedDaysToDue: number | null
+  }
+  const alerts: Alert[] = []
+
+  for (const v of vehicles) {
+    // crude km/day estimate: mileage / days since vehicle creation, fallback null
+    const ageDays = Math.max(1, (now - v.createdAt.getTime()) / 86_400_000)
+    const kmPerDay = v.mileage != null && ageDays > 0 ? v.mileage / ageDays : null
+
+    for (const s of v.maintenanceSchedules) {
+      const { status, nextDueAtKm, kmRemaining } = computeScheduleStatus(v.mileage, s)
+      if (status === 'OK') continue
+
+      let estimatedDaysToDue: number | null = null
+      if (status === 'DUE_SOON' && kmRemaining != null && kmPerDay != null && kmPerDay > 0) {
+        estimatedDaysToDue = Math.max(1, Math.round(kmRemaining / kmPerDay))
+      }
+
+      alerts.push({
+        vehicleId: v.id,
+        brand: v.brand,
+        model: v.model,
+        year: v.year,
+        plate: v.plate,
+        mileage: v.mileage,
+        scheduleId: s.id,
+        kind: s.kind,
+        label: s.label,
+        intervalKm: s.intervalKm,
+        nextDueAtKm,
+        kmRemaining,
+        status,
+        estimatedDaysToDue,
+      })
+    }
+  }
+
+  const urgency: Record<ScheduleStatus, number> = {
+    OVERDUE: 0,
+    DUE_SOON: 1,
+    NEVER_DONE: 2,
+    OK: 3,
+  }
+  alerts.sort((a, b) => {
+    const u = urgency[a.status] - urgency[b.status]
+    if (u !== 0) return u
+    return (a.kmRemaining ?? Number.POSITIVE_INFINITY) - (b.kmRemaining ?? Number.POSITIVE_INFINITY)
+  })
+
+  return {
+    counts: {
+      overdue: alerts.filter((a) => a.status === 'OVERDUE').length,
+      dueSoon: alerts.filter((a) => a.status === 'DUE_SOON').length,
+      neverDone: alerts.filter((a) => a.status === 'NEVER_DONE').length,
+    },
+    alerts,
+  }
+}
+
 // "Mark done now" — convenience: sets lastDoneAtKm to current vehicle mileage and lastDoneAt to now.
 export async function markScheduleDone(
   enterpriseId: string,

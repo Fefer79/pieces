@@ -23,11 +23,49 @@ function formatFcfa(n: number) {
   return `${n.toLocaleString('fr-FR')} FCFA`
 }
 
+interface MaintenanceAlert {
+  vehicleId: string
+  brand: string
+  model: string
+  year: number
+  plate: string | null
+  mileage: number | null
+  scheduleId: string
+  kind: string
+  label: string | null
+  intervalKm: number
+  nextDueAtKm: number | null
+  kmRemaining: number | null
+  status: 'OVERDUE' | 'DUE_SOON' | 'NEVER_DONE' | 'OK'
+  estimatedDaysToDue: number | null
+}
+
+interface MaintenanceUpcoming {
+  counts: { overdue: number; dueSoon: number; neverDone: number }
+  alerts: MaintenanceAlert[]
+}
+
+const KIND_LABEL_FR: Record<string, string> = {
+  OIL_CHANGE: 'Vidange',
+  OIL_FILTER: 'Filtre huile',
+  AIR_FILTER: 'Filtre air',
+  FUEL_FILTER: 'Filtre carburant',
+  CABIN_FILTER: "Filtre habitacle",
+  BRAKE_PADS_FRONT: 'Plaquettes AV',
+  BRAKE_PADS_REAR: 'Plaquettes AR',
+  TIMING_BELT: 'Courroie distrib.',
+  TIRES: 'Pneus',
+  COOLANT: 'Liquide refroid.',
+  TRANSMISSION_FLUID: 'Huile boîte',
+  OTHER: 'Autre',
+}
+
 export default function EnterpriseDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [enterprises, setEnterprises] = useState<Enterprise[]>([])
   const [active, setActive] = useState<Enterprise | null>(null)
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
+  const [maintenance, setMaintenance] = useState<MaintenanceUpcoming | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   // ---- Load enterprises and pick active --------------------------------
@@ -61,10 +99,14 @@ export default function EnterpriseDashboardPage() {
     }
     let cancelled = false
     ;(async () => {
-      const res = await enterpriseFetch<DashboardData>(`/${active.id}/dashboard`)
+      const [dRes, mRes] = await Promise.all([
+        enterpriseFetch<DashboardData>(`/${active.id}/dashboard`),
+        enterpriseFetch<MaintenanceUpcoming>(`/${active.id}/maintenance/upcoming`),
+      ])
       if (cancelled) return
-      if (res.ok) setDashboard(res.data)
-      else setError(res.message)
+      if (dRes.ok) setDashboard(dRes.data)
+      else setError(dRes.message)
+      if (mRes.ok) setMaintenance(mRes.data)
     })()
     return () => { cancelled = true }
   }, [active])
@@ -126,6 +168,92 @@ export default function EnterpriseDashboardPage() {
         <StatCard label="Commandes actives" value={dashboard ? String(dashboard.activeOrders) : '—'} />
         <StatCard label="Dépenses du mois" value={dashboard ? formatFcfa(dashboard.monthlySpend) : '—'} />
       </div>
+
+      {maintenance && (maintenance.counts.overdue + maintenance.counts.dueSoon + maintenance.counts.neverDone > 0) && (
+        <div className="mb-8 rounded-md border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+            <div>
+              <h2 className="font-display text-lg text-ink">Entretiens à prévoir</h2>
+              <p className="mt-1 text-xs text-muted">
+                Alertes prédictives basées sur le kilométrage et les intervalles déclarés.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 font-mono text-[11px]">
+              {maintenance.counts.overdue > 0 && (
+                <span className="rounded-full bg-red-100 px-2 py-0.5 text-red-700">
+                  {maintenance.counts.overdue} en retard
+                </span>
+              )}
+              {maintenance.counts.dueSoon > 0 && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">
+                  {maintenance.counts.dueSoon} bientôt
+                </span>
+              )}
+              {maintenance.counts.neverDone > 0 && (
+                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">
+                  {maintenance.counts.neverDone} jamais fait
+                </span>
+              )}
+            </div>
+          </div>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
+                <th className="px-6 py-3 text-left">Véhicule</th>
+                <th className="px-6 py-3 text-left">Entretien</th>
+                <th className="px-6 py-3 text-right">Reste</th>
+                <th className="px-6 py-3 text-right">Estimation</th>
+                <th className="px-6 py-3 text-left">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              {maintenance.alerts.slice(0, 10).map((a) => {
+                const badgeClass =
+                  a.status === 'OVERDUE'
+                    ? 'bg-red-100 text-red-700'
+                    : a.status === 'DUE_SOON'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-gray-100 text-gray-600'
+                const statusLabel =
+                  a.status === 'OVERDUE' ? 'En retard' : a.status === 'DUE_SOON' ? 'Bientôt' : 'Jamais fait'
+                return (
+                  <tr key={a.scheduleId} className="border-b border-border last:border-0">
+                    <td className="px-6 py-3 text-sm text-ink">
+                      <Link href={`/enterprise/vehicles/${a.vehicleId}`} className="hover:underline">
+                        {a.brand} {a.model} {a.year}
+                      </Link>
+                      {a.plate && <span className="ml-2 font-mono text-[10px] text-muted">{a.plate}</span>}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-muted">
+                      {a.label ?? KIND_LABEL_FR[a.kind] ?? a.kind}
+                    </td>
+                    <td className="px-6 py-3 text-right text-sm tabular text-muted">
+                      {a.kmRemaining != null
+                        ? a.kmRemaining < 0
+                          ? `−${Math.abs(a.kmRemaining).toLocaleString('fr-FR')} km`
+                          : `${a.kmRemaining.toLocaleString('fr-FR')} km`
+                        : '—'}
+                    </td>
+                    <td className="px-6 py-3 text-right text-sm tabular text-muted">
+                      {a.estimatedDaysToDue != null ? `~${a.estimatedDaysToDue} j` : '—'}
+                    </td>
+                    <td className="px-6 py-3">
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${badgeClass}`}>
+                        {statusLabel}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          {maintenance.alerts.length > 10 && (
+            <div className="border-t border-border px-6 py-3 text-xs text-muted">
+              + {maintenance.alerts.length - 10} autres alertes
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="rounded-md border border-border bg-card">
         <div className="border-b border-border px-6 py-4">

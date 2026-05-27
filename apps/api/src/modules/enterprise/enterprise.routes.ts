@@ -14,6 +14,7 @@ import {
   updateSchedule,
   deleteSchedule,
   markScheduleDone,
+  listEnterpriseUpcomingMaintenance,
   type ScheduleInput,
 } from './maintenance.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
@@ -208,6 +209,19 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
         vehicleId: string
       }
       const data = await getEnterpriseVehicle(enterpriseId, request.user.id, vehicleId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/maintenance/upcoming',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await listEnterpriseUpcomingMaintenance(enterpriseId, request.user.id)
       return reply.send({ data })
     },
   )
