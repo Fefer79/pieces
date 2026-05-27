@@ -1,14 +1,16 @@
 # Manuel d'utilisation — Administrateur Pièces
 
-**Version :** 2.0
-**Date :** Mai 2026
+**Version :** 2.1
+**Date :** 27 mai 2026
 **Plateforme :** Pièces — Marketplace pièces auto d'occasion (Côte d'Ivoire)
 
 ---
 
 ## À qui s'adresse ce document
 
-Ce manuel décrit l'ensemble des écrans et des leviers dont dispose un administrateur Pièces pour superviser la plateforme : utilisateurs, Liaisons terrain, vendeurs, catalogue, commandes, livraisons, entreprises clientes, paiements, retours, et la nouvelle couche d'audit. Il est tenu à jour à mesure que de nouvelles capacités sont déployées.
+Ce manuel décrit l'ensemble des écrans et des leviers dont dispose un administrateur Pièces pour superviser la plateforme : utilisateurs, Liaisons terrain, vendeurs, catalogue, commandes, livraisons, entreprises clientes, paiements, retours, abonnements entreprise (Flotte Pro / Flotte Pro +), factures normalisées FNE-CI, et la couche d'audit. Il est tenu à jour à mesure que de nouvelles capacités sont déployées.
+
+**Nouveautés v2.1 (27 mai 2026)** : packaging Flotte Pro 3 niveaux + activation manuelle admin des abonnements (§19), fondations factures normalisées DGI + facture mensuelle consolidée + export FEC (§20).
 
 ---
 
@@ -32,7 +34,9 @@ Ce manuel décrit l'ensemble des écrans et des leviers dont dispose un administ
 16. [Exports CSV et données](#16-exports-csv-et-données)
 17. [Référence API admin](#17-référence-api-admin)
 18. [Référence schéma de données](#18-référence-schéma-de-données)
-19. [FAQ et dépannage](#19-faq-et-dépannage)
+19. [Abonnements entreprise — Flotte Pro / Flotte Pro +](#19-abonnements-entreprise--flotte-pro--flotte-pro-)
+20. [Factures normalisées FNE-CI](#20-factures-normalisées-fne-ci)
+21. [FAQ et dépannage](#21-faq-et-dépannage)
 
 ---
 
@@ -417,6 +421,8 @@ Sections :
 - **Commandes** passées au nom de l'entreprise
 - **Stocks tampon** (cf. §10)
 - **Plans d'entretien** (cf. §9)
+- **Abonnement** (Flotte Pro / Flotte Pro +) — bouton **Gérer l'abonnement** en haut de page (cf. §19)
+- **Factures émises** sur cette entreprise (cf. §20)
 
 ### Modèle Enterprise — champs clés
 
@@ -856,7 +862,221 @@ Liste exhaustive des modèles Prisma (`packages/shared/prisma/schema.prisma`). T
 
 ---
 
-## 19. FAQ et dépannage
+## 19. Abonnements entreprise — Flotte Pro / Flotte Pro +
+
+### Packaging et tarification
+
+Trois niveaux, prix flat par véhicule, sans paliers dégressifs.
+
+| Tier | Code interne | Prix | Promesse |
+|---|---|---|---|
+| Gratuit | `FREE` | 0 F | Marketplace, comparateur prix, garantie pièce |
+| Flotte Pro | `PRO_FLOTTE` | 5 000 F / véhicule / mois | Pilotage, alertes prédictives, facturation normalisée |
+| Flotte Pro + | `PRO_FLOTTE_PLUS` | 10 000 F / véhicule / mois | Tout Flotte Pro + livraison 3 h chrono + SLA monétisé |
+
+**Hiérarchie d'inclusion** : `PRO_FLOTTE_PLUS` > `PRO_FLOTTE` > `FREE`. Flotte Pro + inclut systématiquement toutes les fonctionnalités de Flotte Pro. On ne peut pas prendre Flotte Pro + sans Flotte Pro (un seul abonnement remplace l'autre).
+
+**Cycles de facturation** : `MONTHLY` ou `ANNUAL` (payer 10 mois pour 12 = 2 mois offerts).
+
+### Phase pilote : activation manuelle admin
+
+Pas de paiement automatique en phase 1. L'admin Pièces active manuellement chaque abonnement après accord commercial avec l'entreprise.
+
+URL : `/admin/enterprises/:id/subscription`
+
+Accès : bouton **Gérer l'abonnement** sur la fiche `/admin/enterprises/:id`.
+
+### Écran d'activation
+
+**Panneau « Abonnement actuel »** affiche, si abonnement actif :
+- Le tier (Flotte Pro / Flotte Pro +) avec badge statut coloré
+- Prix par véhicule + total mensuel + total annuel calculés depuis le nombre de véhicules réel de l'entreprise
+- Date de démarrage, date d'expiration d'essai, cycle de facturation
+- Notes commerciales
+- **Actions rapides** : Activer (sortir d'essai), Suspendre, Réactiver, Annuler
+
+**Panneau « Créer / changer d'abonnement »** :
+- Sélecteur tier (FREE / PRO_FLOTTE / PRO_FLOTTE_PLUS)
+- Sélecteur cycle (mensuel / annuel)
+- Case **essai 30 jours** (paramétrable de 1 à 90 jours, activé par défaut sauf FREE)
+- Champ notes libre (contexte commercial, contact, conditions)
+- **Important** : créer un nouvel abonnement annule automatiquement l'abonnement actif précédent (transition propre).
+
+**Panneau « Historique »** :
+- Liste de tous les abonnements (actifs et clôturés) avec accordéons
+- Chaque entrée détaille les **événements audit** (`CREATED`, `TRIAL_STARTED`, `ACTIVATED`, `SUSPENDED`, `REACTIVATED`, `CANCELLED`, `TIER_CHANGED`, `CYCLE_CHANGED`, `ROI_GUARANTEE_INVOKED`, `SLA_BREACH`) avec horodatage et acteur
+
+### Statuts (`SubscriptionStatus`)
+
+| Statut | Sens | Conséquence côté features |
+|---|---|---|
+| `TRIALING` | Essai 30 j en cours | Toutes les features du tier activées |
+| `ACTIVE` | Abonnement payant actif | Toutes les features du tier activées |
+| `SUSPENDED` | Suspendu (impayé, litige…) | Features désactivées tant que pas réactivé |
+| `CANCELLED` | Définitivement résilié | Features désactivées, entreprise repasse en FREE |
+
+L'expiration automatique d'un essai (`trialEndsAt` < now) bascule lazy le tier effectif à `FREE` même si le statut DB reste `TRIALING` (à durcir par un cron en phase 2).
+
+### Modèle `EnterpriseSubscription`
+
+| Champ | Rôle |
+|---|---|
+| `enterpriseId` | FK vers `enterprises` |
+| `tier` | `SubscriptionTier` |
+| `status` | `SubscriptionStatus` |
+| `billingCycle` | `MONTHLY` ou `ANNUAL` |
+| `trialEndsAt` | Date d'expiration de l'essai (nullable) |
+| `startedAt` | Date de démarrage |
+| `currentPeriodEnd` | Fin de période en cours (cron facturation en phase 2) |
+| `cancelledAt` | Date d'annulation (nullable) |
+| `notes` | Contexte commercial (texte libre) |
+
+Tous les changements de statut/tier produisent une ligne dans `EnterpriseSubscriptionEvent` avec payload JSON et `actorUserId` pour l'audit.
+
+### Endpoints admin
+
+| Méthode | URL | Effet |
+|---|---|---|
+| `GET` | `/api/v1/admin/enterprises/:id/subscription` | Abonnement actif + tarif estimé (basé sur nb véhicules réel) |
+| `GET` | `/api/v1/admin/enterprises/:id/subscriptions` | Historique complet avec événements |
+| `POST` | `/api/v1/admin/enterprises/:id/subscriptions` | Créer (annule l'actif précédent). Body : `{ tier, billingCycle, startTrial, trialDays, notes }` |
+| `PATCH` | `/api/v1/admin/subscriptions/:subscriptionId` | Modifier (tier, status, billingCycle, notes) |
+
+### Endpoint entreprise (lecture seule)
+
+| Méthode | URL | Effet |
+|---|---|---|
+| `GET` | `/api/v1/enterprises/:id/subscription` | Abonnement + tarif (member-scoped via `assertMember`) |
+
+Côté UI entreprise : `/enterprise/billing` affiche le tier actif, compte à rebours essai, prompt d'upgrade.
+
+### Garantie ROI 3 mois
+
+Promesse commerciale documentée dans la brochure : si à 3 mois Flotte Pro n'a pas fait économiser au moins l'équivalent de l'abonnement, l'entreprise est remboursée de la dernière mensualité et repasse en FREE. Event audit : `ROI_GUARANTEE_INVOKED`. Suivi manuel par le commercial en phase 1.
+
+### Calculateur ROI public
+
+`/entreprises/calculateur-roi` — page publique avec sliders (nb véhicules, budget pièces annuel, taux d'économie projetée, sélecteur de tier). Calcule en temps réel : abonnement mensuel/annuel, économie nette, ratio ROI, payback en jours. Pas de tracking, pas de stockage — outil de qualification.
+
+### Roadmap phase 2 (non livré)
+
+- CinetPay récurrent (Mobile Money + carte)
+- Cron mensuel de facturation + `currentPeriodEnd` automatique
+- Cron d'expiration d'essai qui bascule `TRIALING` → `ACTIVE` ou `CANCELLED` selon paiement
+- Alerte commerciale automatique à J-7 de fin d'essai si features Pro Flotte utilisées
+
+---
+
+## 20. Factures normalisées FNE-CI
+
+### Pourquoi
+
+La législation ivoirienne impose aux entreprises au régime du réel d'émettre des **factures normalisées** validées par la Direction Générale des Impôts (FNE-CI / Facture Normalisée Électronique). Le module fournit la fondation : un objet `Invoice` immuable par commande payée, avec ventilation HT/TVA/TTC, plus une consolidation mensuelle par entreprise.
+
+**Important** : l'intégration officielle de la passerelle FNE-CI n'est pas encore active. Les factures émises actuellement portent une bannière « FNE intégration en cours » et valent justificatif commercial. Les champs `fne_validation_number` et `fne_qr_payload` sont nullables, prêts à être remplis rétroactivement à l'activation de la passerelle.
+
+### Émission automatique
+
+Une facture est créée automatiquement à la transition `PAID` d'une commande. L'opération est :
+- **Idempotente** : `getOrCreateInvoiceForOrder` retourne la facture existante si déjà émise.
+- **Non bloquante** : un échec d'émission ne rollback jamais la transition payée — l'erreur est logguée et la facture pourra être régénérée plus tard.
+
+### Numérotation
+
+Format : `PCS-YYYYMM-NNNNN`
+
+Exemple : `PCS-202605-00042` = 42e facture émise sur mai 2026. Le compteur reset chaque mois.
+
+### Modèle `Invoice`
+
+| Champ | Rôle |
+|---|---|
+| `orderId` | FK unique vers `orders` |
+| `enterpriseId` | FK vers `enterprises` (nullable pour commandes non-entreprise) |
+| `invoiceNumber` | Numéro unique (PCS-YYYYMM-NNNNN) |
+| `issuedAt` | Date d'émission |
+| `subtotalHt` | Montant HT en FCFA (entier) |
+| `tvaRate` | Taux TVA (% — défaut 18) |
+| `tvaAmount` | Montant TVA en FCFA |
+| `totalTtc` | Total TTC = `subtotalHt + tvaAmount` |
+| `fneValidationNumber` | Numéro DGI (nullable, FNE) |
+| `fneQrPayload` | Payload QR code FNE (nullable) |
+| `fneSubmittedAt` | Date de soumission à la passerelle FNE (nullable) |
+
+Décomposition TTC → HT + TVA : `ht = round(ttc / 1.18)`, `tva = ttc - ht`. Stocké à l'émission ; immuable même si la commande change ensuite.
+
+### Modèle `EnterpriseMonthlyInvoice`
+
+Cache de consolidation par entreprise et par mois. Upserted à chaque génération du PDF mensuel.
+
+| Champ | Rôle |
+|---|---|
+| `year`, `month` | Période (clé unique avec `enterpriseId`) |
+| `invoiceCount` | Nombre de factures sur le mois |
+| `totalHt` / `tvaAmount` / `totalTtc` | Totaux agrégés |
+| `generatedAt` | Dernière régénération |
+
+### Endpoints (member-scoped)
+
+| Méthode | URL | Effet |
+|---|---|---|
+| `GET` | `/api/v1/enterprises/:id/invoices?year=YYYY&month=MM` | Liste des factures de la période |
+| `GET` | `/api/v1/enterprises/:id/invoices/:invoiceId.pdf` | PDF d'une facture unitaire |
+| `GET` | `/api/v1/enterprises/:id/invoices/monthly/:yyyymm.pdf` | PDF consolidé du mois |
+| `GET` | `/api/v1/enterprises/:id/invoices/fec/:yyyymm.csv` | Export FEC CSV |
+
+### Format PDF facture unitaire
+
+Une page A4 portrait :
+- En-tête : logo Pièces, mention « Facture normalisée », numéro de facture, date
+- **Bannière FNE** : verte avec numéro de validation DGI si présent, jaune « intégration en cours » sinon
+- Émetteur (Pièces.ci SAS) / Destinataire (raison sociale, adresse, RCCM)
+- Référence commande + véhicule
+- Tableau items : désignation, qté, prix TTC, total
+- Bloc totaux : Main-d'œuvre, Livraison, Sous-total HT, TVA, **TOTAL TTC** (encadré accent)
+- Footer : mention CGU + TVA 18 %
+
+### Format PDF consolidé mensuel
+
+Une ou plusieurs pages A4 :
+- En-tête : « Facture mensuelle consolidée », mois + année
+- Bloc entreprise (raison sociale, adresse, RCCM)
+- Boîte récap : nombre de factures + total TTC en gros + détail HT/TVA
+- Tableau : date, n° facture, véhicule, HT, TVA, TTC (multi-pages si besoin)
+- Footer : « Document à conserver pour la comptabilité »
+
+### Export FEC CSV
+
+Colonnes (séparateur `;`) : `Date;NumeroFacture;NumeroValidationDGI;Commande;HT;TauxTVA;TVA;TTC`
+
+Compatible avec la plupart des logiciels comptables ivoiriens (et Excel). Le `NumeroValidationDGI` est vide tant que FNE n'est pas branché.
+
+### Écran entreprise
+
+`/enterprise/invoices` :
+- Sélecteur de période (12 derniers mois)
+- Stats récap (nb factures, total HT, TVA, TTC)
+- Tableau facture par facture avec chip DGI (« Validé » / « FNE à venir ») et bouton Télécharger PDF
+- Boutons globaux : **Télécharger facture consolidée (PDF)** + **Export FEC (CSV)**
+- Encart informatif sur l'intégration FNE-CI en cours
+
+### Roadmap FNE-CI (non livré)
+
+1. Récupérer la spec officielle de la passerelle FNE-CI (DGI Côte d'Ivoire)
+2. Implémenter le client (auth, soumission, callback)
+3. Backfill automatique des factures déjà émises : push à FNE → mise à jour `fne_validation_number` + `fne_qr_payload` + `fne_submitted_at`
+4. Génération QR code dans le PDF (intégré à la bannière verte)
+5. Cron de retry sur les échecs de soumission
+
+### Sécurité et conformité
+
+- Les factures sont **immuables après émission**. Pour corriger, émettre une note de crédit (à modéliser en phase 2).
+- L'accès est gating par `assertMember` côté API — seuls les membres de l'entreprise peuvent télécharger leurs factures.
+- Aucune donnée fiscale n'est exposée publiquement ; toutes les URLs PDF requièrent Bearer token.
+
+---
+
+## 21. FAQ et dépannage
 
 **Q. Un admin n'apparaît pas dans la liste Liaisons.**
 R. Vérifier que `'LIAISON'` est bien dans le tableau `users.roles`. Si ce n'est pas le cas, mettre à jour via `PATCH /api/v1/users/:id/roles` — la logique ajoute automatiquement LIAISON quand ADMIN est dans la liste. Si l'admin existait avant mai 2026, un backfill SQL a été appliqué le 27 mai 2026 :

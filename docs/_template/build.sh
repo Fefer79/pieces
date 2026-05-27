@@ -38,7 +38,7 @@ fi
 
 # Document registry: "slug|category|subtitle"
 DOCS=(
-  "deep-dive-manuel-administrateur|Manuel utilisateur|Administrateur · v2.0 · Mai 2026"
+  "deep-dive-manuel-administrateur|Manuel utilisateur|Administrateur · v2.1 · 27 mai 2026"
   "deep-dive-manuel-bot-whatsapp|Manuel technique|Bot WhatsApp · v1.0 · Mai 2026"
   "deep-dive-manuel-client|Manuel utilisateur|Client · v1.0 · Mai 2026"
   "deep-dive-manuel-entreprise|Manuel utilisateur|Entreprise · v1.0 · Mai 2026"
