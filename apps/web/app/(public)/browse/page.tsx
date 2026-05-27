@@ -89,13 +89,14 @@ export default function BrowsePage() {
     <>
       {/* Desktop */}
       <div className="hidden lg:block">
-        <div className="mx-auto max-w-[1280px] px-6 pt-8">
-          <PromoCarousel slides={PROMO_SLIDES} />
-        </div>
-        <div className="mx-auto max-w-[1280px] px-6 pt-10">
-          <CategoryCarousel tiles={CATEGORY_TILES} />
-        </div>
-        <LandingPage />
+        <LandingPage>
+          <div className="mx-auto max-w-[1280px] px-6 pt-8">
+            <PromoCarousel slides={PROMO_SLIDES} />
+          </div>
+          <div className="mx-auto max-w-[1280px] px-6 pt-10">
+            <CategoryCarousel tiles={CATEGORY_TILES} />
+          </div>
+        </LandingPage>
       </div>
 
       {/* Mobile */}
@@ -112,6 +113,25 @@ export default function BrowsePage() {
           </div>
           <MobileDrawer />
         </header>
+
+        {/* Mobile contacts */}
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-border bg-card px-4 py-2 text-xs">
+          <a
+            href="mailto:contact@pieces.ci"
+            className="text-ink transition-colors hover:text-accent"
+          >
+            contact@pieces.ci
+          </a>
+          <span className="text-muted-2" aria-hidden>·</span>
+          <a
+            href="https://wa.me/2250709021708"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-ink transition-colors hover:text-accent"
+          >
+            (225) 07 09 02 17 08
+          </a>
+        </div>
 
         {/* Mobile carousel */}
         <div className="px-4 pb-4">
