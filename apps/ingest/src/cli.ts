@@ -1,7 +1,9 @@
 import { parseArgs } from 'node:util'
 import { ingestOsmAbidjan } from './pipeline/competitor.ts'
+import { ingestNhtsaVehicles } from './pipeline/vehicles.ts'
+import { enrichVehicleYears } from './pipeline/vehicle-years.ts'
 
-type SourceName = 'osm'
+type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year'
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
@@ -20,6 +22,18 @@ async function main(): Promise<void> {
     case 'osm': {
       console.log(`[ingest] osm abidjan ${dryRun ? '(dry-run)' : ''}`)
       const stats = await ingestOsmAbidjan({ dryRun })
+      console.log('[ingest] done', stats)
+      break
+    }
+    case 'nhtsa': {
+      console.log(`[ingest] nhtsa vehicles ${dryRun ? '(dry-run)' : ''}`)
+      const stats = await ingestNhtsaVehicles({ dryRun })
+      console.log('[ingest] done', stats)
+      break
+    }
+    case 'nhtsa-year': {
+      console.log(`[ingest] nhtsa year enrichment ${dryRun ? '(dry-run)' : ''}`)
+      const stats = await enrichVehicleYears({ dryRun })
       console.log('[ingest] done', stats)
       break
     }
