@@ -31,7 +31,15 @@ export default function AdminEnterpriseDetailPage() {
   return (
     <div className="p-4 lg:p-6">
       <Link href="/admin/enterprises" className="mb-3 inline-block text-sm text-ink-2 hover:underline">← Entreprises</Link>
-      <h1 className="mb-1 font-display text-2xl text-ink">{e.name}</h1>
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-2xl text-ink">{e.name}</h1>
+        <Link
+          href={`/admin/enterprises/${e.id}/subscription`}
+          className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover"
+        >
+          Gérer l&apos;abonnement
+        </Link>
+      </div>
       <div className="mb-4 text-sm text-muted">{e.commune ?? ''} · RCCM : {e.rccm ?? '—'}</div>
 
       <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
