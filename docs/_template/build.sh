@@ -52,6 +52,7 @@ DOCS=(
   "deep-dive-manuel-visiteur|Manuel utilisateur|Visiteur · v1.0 · Mai 2026"
   "brochure-commerciale-pieces|Brochure commerciale|Édition générale · Mai 2026"
   "brochure-commerciale-entreprises|Brochure commerciale|Édition Entreprises · Mai 2026"
+  "brochure-commerciale-entreprises-2026-05|Brochure commerciale|Édition Entreprises — Fleet Suite · Mai 2026"
 )
 
 # Filter to the slugs given on the command line, if any
