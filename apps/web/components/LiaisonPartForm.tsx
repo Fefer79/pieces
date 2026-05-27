@@ -53,18 +53,15 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
   const [vehicleCompatibility, setVehicleCompatibility] = useState(
     initial?.vehicleCompatibility ?? '',
   )
-  const initialPrice = initial?.price != null ? String(initial.price) : ''
-  const [price, setPrice] = useState(initialPrice)
+  const [price, setPrice] = useState(initial?.price != null ? String(initial.price) : '')
   const [condition, setCondition] = useState<Condition>(initial?.condition ?? 'USED')
   const [warrantyMonths, setWarrantyMonths] = useState(
     initial?.warrantyMonths != null ? String(initial.warrantyMonths) : '',
   )
 
-  const initialMin = minCommissionFor(initialPrice ? Number(initialPrice) : 0)
   const [commission, setCommission] = useState(
-    initial?.commissionAmount != null ? String(initial.commissionAmount) : String(initialMin),
+    initial?.commissionAmount != null ? String(initial.commissionAmount) : '',
   )
-  const [commissionTouched, setCommissionTouched] = useState(initial?.commissionAmount != null)
   const [inStock, setInStock] = useState(initial?.inStock ?? true)
 
   const [submitting, setSubmitting] = useState(false)
@@ -73,15 +70,8 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
   const priceNum = useMemo(() => (price ? Number(price) : 0), [price])
   const minCommission = useMemo(() => minCommissionFor(priceNum), [priceNum])
 
-  const handlePriceChange = (val: string) => {
-    setPrice(val)
-    if (!commissionTouched) {
-      setCommission(String(minCommissionFor(val ? Number(val) : 0)))
-    }
-  }
-
   const commissionNum = commission ? Number(commission) : 0
-  const commissionBelowMin = commissionNum < minCommission
+  const commissionBelowMin = commission !== '' && commissionNum < minCommission
   const valid = name.length >= 2
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,7 +167,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
           type="number"
           inputMode="numeric"
           value={price}
-          onChange={(e) => handlePriceChange(e.target.value)}
+          onChange={(e) => setPrice(e.target.value)}
           className="liaison-input"
           placeholder="Ex : 45000"
           min={0}
@@ -186,25 +176,20 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
 
       <Field
         label="Commission Pièces (FCFA)"
-        hint={`Minimum : ${minCommission.toLocaleString('fr-FR')} FCFA (max de 1 000 F ou 5 % du prix)`}
+        hint="Montant agréé avec le vendeur"
       >
         <input
           type="number"
           inputMode="numeric"
           value={commission}
-          onChange={(e) => {
-            setCommissionTouched(true)
-            setCommission(e.target.value)
-          }}
-          onBlur={() => {
-            if (commissionBelowMin) setCommission(String(minCommission))
-          }}
+          onChange={(e) => setCommission(e.target.value)}
           className="liaison-input"
+          placeholder="Ex : 3000"
           min={0}
         />
         {commissionBelowMin && (
           <p className="mt-1 text-xs text-[#B45309]">
-            Sera automatiquement remontée à {minCommission.toLocaleString('fr-FR')} FCFA
+            Plancher de sécurité : sera enregistrée à {minCommission.toLocaleString('fr-FR')} FCFA minimum
           </p>
         )}
       </Field>
