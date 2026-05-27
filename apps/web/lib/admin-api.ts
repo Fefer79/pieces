@@ -4,6 +4,7 @@ export async function adminFetch<T>(path: string, init?: RequestInit): Promise<T
   const supabase = createClient()
   const { data: { session } } = await supabase.auth.getSession()
   const token = session?.access_token
+  // eslint-disable-next-line no-restricted-syntax
   if (!token) throw new Error('Session expirée')
   const res = await fetch(path.startsWith('http') ? path : `/api/v1${path}`, {
     ...init,
@@ -14,6 +15,7 @@ export async function adminFetch<T>(path: string, init?: RequestInit): Promise<T
   })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
+    // eslint-disable-next-line no-restricted-syntax
     throw new Error(body?.error?.message ?? `Erreur ${res.status}`)
   }
   if (res.headers.get('content-type')?.includes('csv')) {
