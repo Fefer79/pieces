@@ -17,7 +17,8 @@ const AUTH_LINKS = [
 ]
 
 export function MobileDrawer() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  const isAdmin = user?.roles?.includes('ADMIN') ?? false
   const [open, setOpen] = useState(false)
 
   // Prevent body scroll when drawer is open
@@ -103,6 +104,18 @@ export function MobileDrawer() {
             {isAuthenticated ? 'Mon compte' : 'Informations'}
           </p>
           <ul className="space-y-1">
+            {isAdmin && (
+              <li>
+                <a
+                  href="/admin"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-between rounded-md border border-ink-2 bg-[rgba(0,35,102,0.04)] px-3 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
+                >
+                  <span>Administration</span>
+                  <span>→</span>
+                </a>
+              </li>
+            )}
             {(isAuthenticated ? AUTH_LINKS : PUBLIC_LINKS).map((link) => (
               <li key={link.href + link.label}>
                 <a

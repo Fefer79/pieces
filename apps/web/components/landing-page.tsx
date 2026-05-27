@@ -6,8 +6,9 @@ import { useAuth } from '@/lib/auth-context'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
 export function LandingPage({ children }: { children?: ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const { vehicle, clearVehicle } = useSelectedVehicle()
+  const isAdmin = user?.roles?.includes('ADMIN') ?? false
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
@@ -63,6 +64,16 @@ export function LandingPage({ children }: { children?: ReactNode }) {
                   </svg>
                 </button>
               </div>
+            )}
+
+            {/* Admin link */}
+            {isAdmin && (
+              <a
+                href="/admin"
+                className="rounded-md border border-ink-2 px-4 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
+              >
+                Admin
+              </a>
             )}
 
             {/* CTA */}

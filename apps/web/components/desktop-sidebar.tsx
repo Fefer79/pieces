@@ -10,7 +10,7 @@ interface NavItem {
   label: string
 }
 
-function getNavItems(activeContext: string | null, isAuthenticated: boolean): NavItem[] {
+function getNavItems(activeContext: string | null, isAuthenticated: boolean, isAdmin: boolean): NavItem[] {
   if (!isAuthenticated) {
     return [
       { href: '/', label: 'Accueil' },
@@ -18,24 +18,29 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean): Na
     ]
   }
 
+  const adminItem: NavItem[] = isAdmin ? [{ href: '/admin', label: 'Administration' }] : []
+
   switch (activeContext) {
     case 'SELLER':
       return [
         { href: '/', label: 'Accueil' },
         { href: '/vendors/catalog', label: 'Boutique' },
         { href: '/orders', label: 'Commandes' },
+        ...adminItem,
         { href: '/profile', label: 'Profil' },
       ]
     case 'RIDER':
       return [
         { href: '/', label: 'Accueil' },
         { href: '/rider', label: 'Livraisons' },
+        ...adminItem,
         { href: '/profile', label: 'Profil' },
       ]
     case 'ENTERPRISE':
       return [
         { href: '/', label: 'Accueil' },
         { href: '/enterprise/dashboard', label: 'Dashboard' },
+        ...adminItem,
         { href: '/profile', label: 'Profil' },
       ]
     case 'LIAISON':
@@ -43,12 +48,21 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean): Na
         { href: '/liaison', label: 'Tableau de bord' },
         { href: '/liaison/vendors', label: 'Vendeurs' },
         { href: '/liaison/parts', label: 'Pièces' },
+        ...adminItem,
+        { href: '/profile', label: 'Profil' },
+      ]
+    case 'ADMIN':
+      return [
+        { href: '/', label: 'Accueil' },
+        { href: '/admin', label: 'Administration' },
+        { href: '/dashboard', label: 'Tableau de bord' },
         { href: '/profile', label: 'Profil' },
       ]
     default:
       return [
         { href: '/', label: 'Accueil' },
         { href: '/orders', label: 'Commandes' },
+        ...adminItem,
         { href: '/profile', label: 'Profil' },
       ]
   }
@@ -57,7 +71,8 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean): Na
 export function DesktopSidebar() {
   const pathname = usePathname()
   const { user, isAuthenticated } = useAuth()
-  const items = getNavItems(user?.activeContext ?? null, isAuthenticated)
+  const isAdmin = user?.roles?.includes('ADMIN') ?? false
+  const items = getNavItems(user?.activeContext ?? null, isAuthenticated, isAdmin)
 
   return (
     <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-border lg:bg-card">
