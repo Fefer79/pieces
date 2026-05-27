@@ -1,25 +1,38 @@
 # Manuel d'utilisation — Administrateur Pièces
 
-**Version :** 1.0
-**Date :** 2026-03-01
+**Version :** 2.0
+**Date :** Mai 2026
 **Plateforme :** Pièces — Marketplace pièces auto d'occasion (Côte d'Ivoire)
+
+---
+
+## À qui s'adresse ce document
+
+Ce manuel décrit l'ensemble des écrans et des leviers dont dispose un administrateur Pièces pour superviser la plateforme : utilisateurs, Liaisons terrain, vendeurs, catalogue, commandes, livraisons, entreprises clientes, paiements, retours, et la nouvelle couche d'audit. Il est tenu à jour à mesure que de nouvelles capacités sont déployées.
 
 ---
 
 ## Table des matières
 
 1. [Accès et connexion](#1-accès-et-connexion)
-2. [Tableau de bord administrateur](#2-tableau-de-bord-administrateur)
-3. [Gestion des utilisateurs](#3-gestion-des-utilisateurs)
-4. [Gestion des vendeurs](#4-gestion-des-vendeurs)
-5. [Gestion des commandes](#5-gestion-des-commandes)
-6. [Gestion des livraisons](#6-gestion-des-livraisons)
-7. [Gestion des litiges](#7-gestion-des-litiges)
-8. [Notifications](#8-notifications)
-9. [Cycle de vie d'une commande](#9-cycle-de-vie-dune-commande)
-10. [Système de paiement et séquestre](#10-système-de-paiement-et-séquestre)
-11. [Référence API rapide](#11-référence-api-rapide)
-12. [FAQ et dépannage](#12-faq-et-dépannage)
+2. [Architecture rôles et permissions](#2-architecture-rôles-et-permissions)
+3. [Tableau de bord et navigation admin](#3-tableau-de-bord-et-navigation-admin)
+4. [Gestion des utilisateurs (clients)](#4-gestion-des-utilisateurs-clients)
+5. [Gestion des Liaisons et journal d'audit](#5-gestion-des-liaisons-et-journal-daudit)
+6. [Gestion des vendeurs et scoring](#6-gestion-des-vendeurs-et-scoring)
+7. [Gestion du catalogue et politique commission](#7-gestion-du-catalogue-et-politique-commission)
+8. [Gestion des entreprises et flottes](#8-gestion-des-entreprises-et-flottes)
+9. [Centres de maintenance et plans d'entretien](#9-centres-de-maintenance-et-plans-dentretien)
+10. [Stocks tampon entreprise](#10-stocks-tampon-entreprise)
+11. [Gestion des commandes](#11-gestion-des-commandes)
+12. [Gestion des livraisons](#12-gestion-des-livraisons)
+13. [Retours et litiges](#13-retours-et-litiges)
+14. [Paiements et escrow](#14-paiements-et-escrow)
+15. [Notifications et messagerie](#15-notifications-et-messagerie)
+16. [Exports CSV et données](#16-exports-csv-et-données)
+17. [Référence API admin](#17-référence-api-admin)
+18. [Référence schéma de données](#18-référence-schéma-de-données)
+19. [FAQ et dépannage](#19-faq-et-dépannage)
 
 ---
 
@@ -27,601 +40,874 @@
 
 ### Prérequis
 
-- Disposer d'un compte Pièces avec le **rôle ADMIN** attribué
-- Un numéro de téléphone ivoirien (+225) enregistré dans le système
+- Compte Pièces avec le **rôle ADMIN** attribué dans la table `users.roles`
+- Numéro de téléphone ivoirien (+225) enregistré et confirmé
 
 ### Se connecter
 
-1. Ouvrir l'application Pièces sur votre navigateur mobile ou desktop
-2. Sur la page de connexion, saisir votre numéro de téléphone au format `+225 XX XX XX XX XX`
-   - Préfixes acceptés : `01` (MTN), `05` (Moov), `07` (Orange)
-3. Cliquer sur **Envoyer le code**
-4. Saisir le **code OTP à 6 chiffres** reçu par SMS
-5. Le système vérifie automatiquement le code et vous connecte
+1. Ouvrir `https://pieces.ci` sur navigateur mobile ou desktop.
+2. Saisir le numéro de téléphone au format `+225 XX XX XX XX XX` (préfixes acceptés : `01` MTN, `05` Moov, `07` Orange).
+3. Cliquer **Envoyer le code** : un OTP à 6 chiffres arrive par SMS.
+4. Saisir l'OTP — la vérification est automatique dès le 6e chiffre.
+5. Accepter le consentement ARTCI (loi n°2013-450) au premier login.
 
-### Consentement aux données personnelles
+### Accéder à l'espace admin
 
-Lors de votre première connexion, un modal de consentement s'affiche :
+- URL directe : `https://pieces.ci/admin`
+- Lien "Admin" présent dans le header desktop et le menu mobile pour les comptes avec rôle ADMIN
+- Le contexte actif (`activeContext`) peut être basculé entre tous les rôles que possède le compte ; pour l'admin, basculer en `ADMIN` (ou `LIAISON` puisque les admins ont aussi ce rôle, voir section 2).
 
-- **Données collectées :** numéro de téléphone, historique des transactions, photos de pièces
-- **Droits :** consultation de vos données, demande de suppression
-- **Base légale :** Loi ivoirienne n°2013-450 relative à la protection des données à caractère personnel
+### Sécurité
 
-Vous devez accepter les conditions pour accéder à la plateforme.
-
-### Navigation
-
-La barre de navigation en bas de l'écran propose 3 onglets :
-- **Accueil** — Page d'accueil
-- **Commandes** — Historique des commandes
-- **Profil** — Votre profil et paramètres
-
-Pour accéder au **tableau de bord admin**, naviguez vers `/admin` dans la barre d'adresse.
+- Authentification 100 % OTP — pas de mot de passe stocké
+- Sessions JWT Supabase avec cookies HttpOnly côté SSR
+- Toutes les routes `/api/v1/admin/*` sont gardées `requireAuth + requireRole('ADMIN')`
 
 ---
 
-## 2. Tableau de bord administrateur
+## 2. Architecture rôles et permissions
 
-**URL :** `/admin`
-
-Le tableau de bord affiche **6 indicateurs clés** en temps réel :
-
-| Indicateur | Description | Couleur |
-|------------|-------------|---------|
-| **Utilisateurs** | Nombre total d'utilisateurs inscrits | Bleu |
-| **Vendeurs** | Nombre total de profils vendeur créés | Vert |
-| **Commandes** | Nombre total de commandes créées | Orange |
-| **Commandes actives** | Commandes ni terminées ni annulées | Rouge |
-| **Litiges** | Nombre total de litiges ouverts | Violet |
-| **Litiges ouverts** | Litiges en attente de résolution | Rouge foncé |
-
-### Actions rapides
-
-Trois boutons d'accès rapide sont disponibles :
-
-- **Gérer les utilisateurs** → Liste paginée de tous les utilisateurs
-- **Voir les commandes** → Liste paginée de toutes les commandes
-- **Voir les vendeurs** → Liste paginée de tous les vendeurs
-
-### Accès restreint
-
-Si vous n'avez pas le rôle ADMIN, le message **"Accès réservé aux administrateurs"** s'affiche à la place du tableau de bord.
-
----
-
-## 3. Gestion des utilisateurs
-
-### Consulter la liste des utilisateurs
-
-**API :** `GET /api/v1/admin/users?page=1&limit=50`
-
-La liste affiche pour chaque utilisateur :
-- **Téléphone** — Numéro +225
-- **Rôles** — Liste des rôles attribués (MECHANIC, OWNER, SELLER, RIDER, ADMIN, ENTERPRISE)
-- **Contexte actif** — Le rôle actuellement actif
-- **Date d'inscription** — Date de création du compte
-
-La liste est paginée par défaut (50 utilisateurs par page).
-
-### Modifier les rôles d'un utilisateur
-
-**API :** `PATCH /api/v1/users/:userId/roles`
-
-**Corps de la requête :**
-```json
-{
-  "roles": ["MECHANIC", "SELLER"]
-}
-```
-
-**Rôles disponibles :**
+### Les 7 rôles de la plateforme
 
 | Rôle | Description |
-|------|-------------|
-| `MECHANIC` | Mécanicien — peut créer des commandes pour le compte de propriétaires |
-| `OWNER` | Propriétaire de véhicule — peut payer des commandes |
-| `SELLER` | Vendeur de pièces — gère un catalogue et reçoit des commandes |
-| `RIDER` | Livreur — effectue les livraisons |
-| `ADMIN` | Administrateur — accès complet à la plateforme |
-| `ENTERPRISE` | Entreprise — gestion de flotte de mécaniciens |
+|---|---|
+| **MECHANIC** | Mécanicien — recherche les pièces, crée les devis tripartites |
+| **OWNER** | Propriétaire de véhicule — paie les devis, suit les commandes |
+| **SELLER** | Vendeur de pièces — catalogue, commandes reçues, livraisons |
+| **RIDER** | Livreur partenaire — courses assignées |
+| **ENTERPRISE** | Gestionnaire d'une flotte d'entreprise — espace dédié |
+| **LIAISON** | Employé Pièces terrain — onboarde vendeurs, gère leurs comptes |
+| **ADMIN** | Administrateur plateforme — supervise tout |
 
-**Règles :**
-- Un utilisateur doit avoir **au moins 1 rôle**
-- Si le contexte actif actuel est retiré des rôles, le système bascule automatiquement sur le premier rôle de la nouvelle liste
-- L'attribution du rôle ADMIN donne un accès complet — **à utiliser avec précaution**
-- L'opération est journalisée (`ADMIN_UPDATE_ROLES` dans les logs)
+### Règles d'attribution
 
----
+Un utilisateur peut cumuler plusieurs rôles. Le champ `activeContext` détermine quel rôle est utilisé pour le contrôle d'accès à chaque requête, mais `requireRole(...)` accepte n'importe quel rôle présent dans le tableau `roles`.
 
-## 4. Gestion des vendeurs
+**Règle automatique implémentée mai 2026 :** chaque fois qu'on attribue le rôle ADMIN à un utilisateur via l'API `PATCH /api/v1/users/:id/roles`, le rôle **LIAISON est automatiquement ajouté** s'il n'y est pas déjà. Logique métier : un admin doit pouvoir faire ce que fait un Liaison sur le terrain quand nécessaire.
 
-### Consulter la liste des vendeurs
+Cette règle vit dans `apps/api/src/modules/user/user.service.ts` (`updateRoles`).
 
-**API :** `GET /api/v1/admin/vendors?page=1&limit=50`
+### Garde côté API
 
-Chaque vendeur affiche :
-- **Nom de la boutique**
-- **Nom du contact**
-- **Téléphone**
-- **Type** — FORMAL (entreprise déclarée) ou INFORMAL (vendeur individuel)
-- **Statut** — PENDING_ACTIVATION, ACTIVE, ou PAUSED
-- **Type KYC** — RCCM (registre commerce) ou CNI (carte nationale d'identité)
-
-### Statuts vendeur
-
-| Statut | Signification |
-|--------|---------------|
-| `PENDING_ACTIVATION` | Profil créé, en attente de signature des garanties |
-| `ACTIVE` | Profil actif, peut publier et recevoir des commandes |
-| `PAUSED` | Profil suspendu temporairement |
-
-### Processus d'onboarding vendeur
-
-1. **Création du profil** — Le vendeur (ou un agent terrain) soumet ses informations et son document KYC
-   - Vendeur **FORMEL** → Document RCCM obligatoire
-   - Vendeur **INFORMEL** → CNI obligatoire
-2. **Signature des garanties** — Le vendeur signe deux garanties obligatoires :
-   - **RETURN_48H** — Reprise sous 48h si pièce incorrecte, remboursement intégral
-   - **WARRANTY_30D** — Garantie fonctionnement minimum 30 jours
-3. **Activation automatique** — Une fois les deux garanties signées, le statut passe à `ACTIVE`
-
-### Interventions admin sur les vendeurs
-
-En tant qu'admin, vous pouvez :
-- **Consulter tous les profils vendeurs** et leurs documents KYC
-- **Créer un profil vendeur** pour le compte d'un utilisateur (via l'API avec le rôle ADMIN)
-- **Gérer les zones de livraison** d'un vendeur
-
-> **Note :** L'activation se fait automatiquement par signature des garanties. Il n'existe pas actuellement de bouton d'activation/désactivation manuelle dans l'interface admin.
+- Routes admin : `preHandler: [requireAuth, requireRole('ADMIN')]`
+- Routes Liaison : `preHandler: [requireAuth, requireRole('LIAISON', 'ADMIN')]` — donc un admin peut tout faire ce que fait un Liaison sans bascule de contexte.
+- Routes entreprise : `preHandler: [requireAuth, requireRole('ENTERPRISE', 'ADMIN')]`
+- Routes vendeur : `requireRole('SELLER', 'ADMIN')`
+- Routes livreur : `requireRole('RIDER', 'ADMIN')`
 
 ---
 
-## 5. Gestion des commandes
+## 3. Tableau de bord et navigation admin
 
-### Consulter les commandes
+### Tableau de bord (`/admin`)
 
-**API :** `GET /api/v1/admin/orders?page=1&limit=50&status=PAID`
+Page d'accueil de l'espace admin. Affiche les KPI consolidés temps réel via l'endpoint `GET /api/v1/admin/overview` :
 
-La liste affiche :
-- **ID de commande** (UUID tronqué)
-- **Statut actuel** (avec badge de couleur)
-- **Montant total** (en FCFA)
-- **Articles commandés** (nom, quantité, prix)
-- **Méthode de paiement**
-- **Dates clés** (création, paiement, confirmation vendeur, annulation)
+**Totals :**
+- Utilisateurs (cumul)
+- Vendeurs (cumul)
+- Entreprises (cumul)
+- Commandes (cumul)
+- Commandes actives (status ≠ COMPLETED/CANCELLED)
+- GMV en FCFA (Gross Merchandise Value)
+- Commissions Pièces cumulées en FCFA
 
-### Filtrage par statut
+**Ce mois :**
+- Nouvelles commandes
+- Nouveaux utilisateurs
 
-Vous pouvez filtrer les commandes par statut en ajoutant le paramètre `?status=` :
+**Graphique :** chiffre d'affaires mensuel (GMV + commissions + nombre de commandes), 12 derniers mois, rendu via Chart.js.
 
-| Statut | Description |
-|--------|-------------|
-| `DRAFT` | Brouillon — commande créée, pas encore payée |
-| `PENDING_PAYMENT` | En attente de paiement mobile money |
-| `PAID` | Payée — en attente de confirmation vendeur |
-| `VENDOR_CONFIRMED` | Confirmée par le vendeur |
-| `DISPATCHED` | Expédiée — livreur assigné |
-| `IN_TRANSIT` | En cours de livraison |
-| `DELIVERED` | Livrée — en attente de confirmation acheteur |
-| `CONFIRMED` | Réception confirmée par l'acheteur |
-| `COMPLETED` | Terminée — fonds libérés au vendeur |
-| `CANCELLED` | Annulée |
+**Top vendeurs :** classement des 10 meilleurs vendeurs par commissions générées sur les 90 derniers jours.
 
-### Points d'attention
+### Navigation latérale (desktop) ou sélecteur (mobile)
 
-- **Commandes PAID sans confirmation vendeur** → Si plus de 45 minutes, contacter le vendeur ou annuler
-- **Commandes DELIVERED sans confirmation** → Auto-complétées après 48h (libération fonds)
-- **Limite COD :** Le paiement à la livraison est limité à **75 000 FCFA** maximum
+| Lien | Page | Vue |
+|---|---|---|
+| Tableau de bord | `/admin` | Overview KPI |
+| Pièces | `/admin/parts` | Liste catalogue avec filtres |
+| Vendeurs | `/admin/vendors` | Liste vendeurs paginée + recherche |
+| Clients | `/admin/clients` | Liste users avec filtres (rôle, recherche) |
+| Entreprises | `/admin/enterprises` | Liste des entreprises clientes |
+| Liaisons | `/admin/liaisons` | Liste des Liaisons + audit log (voir §5) |
+| Catalogue (legacy) | `/admin/catalog` | Vue catalogue v1 (à terme dépréciée) |
 
 ---
 
-## 6. Gestion des livraisons
+## 4. Gestion des utilisateurs (clients)
 
-### Créer une livraison
+### Liste (`/admin/clients`)
 
-**API :** `POST /api/v1/deliveries`
+Endpoint : `GET /api/v1/admin/clients/list?q=&role=&page=&limit=`
 
-Lorsqu'une commande est confirmée par le vendeur (`VENDOR_CONFIRMED`), l'admin crée une livraison :
+- **Recherche** : nom, téléphone, email
+- **Filtre rôle** : MECHANIC / OWNER / SELLER / RIDER / ENTERPRISE / LIAISON / ADMIN
+- **Pagination** : `page` + `limit` (défaut 50, max 200)
 
-```json
-{
-  "orderId": "uuid-de-la-commande",
-  "pickupAddress": "Adresse du vendeur, Cocody",
-  "pickupLat": 5.3364,
-  "pickupLng": -3.9628,
-  "deliveryAddress": "Adresse du client, Yopougon",
-  "deliveryLat": 5.3411,
-  "deliveryLng": -4.0682,
-  "mode": "STANDARD",
-  "codAmount": 15000
-}
+Colonnes : nom, téléphone, email, rôles cumulés, nombre de commandes initiées.
+
+Lien direct vers le détail : `/admin/clients/:id`.
+
+### Détail (`/admin/clients/:id`)
+
+Endpoint : `GET /api/v1/admin/clients/:id/detail`
+
+Affiche le profil complet, les rôles, le contexte actif, le consentement ARTCI, les commandes passées, les véhicules associés, les avis laissés.
+
+### Modifier les rôles
+
+Endpoint : `PATCH /api/v1/users/:id/roles` (body : `{ roles: ["MECHANIC", "ADMIN"] }`)
+
+- Validation via `updateRolesSchema`
+- Si ADMIN est ajouté → LIAISON est ajouté automatiquement (cf. §2)
+- L'`activeContext` est conservé si encore présent dans la nouvelle liste, sinon le premier rôle
+
+### Export CSV clients
+
+Endpoint : `GET /api/v1/admin/export?entity=clients`
+
+Renvoie un fichier CSV horodaté `clients-<timestamp>.csv` avec toutes les colonnes consolidées.
+
+---
+
+## 5. Gestion des Liaisons et journal d'audit
+
+Section nouvelle — déployée mai 2026.
+
+### Pourquoi
+
+Le Liaison est l'employé Pièces qui démarche les vendeurs sur le terrain, crée leurs comptes, saisit leurs premières pièces et fait agréer la commission. Sans visibilité côté admin, impossible de superviser son activité, détecter les anomalies (sur-commissions, sous-commissions, vendeurs orphelins), ou auditer une transaction litigieuse.
+
+### Liste (`/admin/liaisons`)
+
+Endpoint : `GET /api/v1/admin/liaisons`
+
+Affiche tous les utilisateurs ayant le rôle LIAISON dans leur tableau `roles`, avec pour chacun :
+
+| Colonne | Source |
+|---|---|
+| Nom | `users.name` |
+| Contact | `phone · email` |
+| Rôles | `users.roles` (joints par virgule) |
+| Vendeurs | Nombre de `Vendor` où `managedByLiaisonId = user.id` |
+| Pièces | Nombre de `CatalogItem` où `createdByLiaisonId = user.id` |
+| **À agréer** | Pièces créées par le Liaison avec `commissionAcceptedAt IS NULL` — **affichées en orange si > 0** |
+| Actions log | Nombre total d'entrées `ActivityLog` pour ce Liaison |
+
+Cliquer le nom ouvre le détail.
+
+### Détail (`/admin/liaisons/:id`)
+
+Endpoint : `GET /api/v1/admin/liaisons/:id`
+
+Trois sections :
+
+**Profil**
+- Nom, téléphone, email
+- Rôles cumulés, contexte actif
+- Date d'inscription
+
+**Vendeurs gérés**
+- Liste de tous les vendeurs avec `managedByLiaisonId = :id`
+- Pour chacun : nom de boutique, contact, commune, statut (PENDING_ACTIVATION / ACTIVE / PAUSED), nombre de pièces, date de création
+- Ordre : du plus récent au plus ancien
+
+**Pièces saisies (50 dernières)**
+- Liste des `CatalogItem` où `createdByLiaisonId = :id`
+- Colonnes : nom de la pièce, vendeur, prix, commission, **icône agréée** (✓ vert / ⏳ orange), statut catalogue (PUBLISHED/DRAFT/ARCHIVED), date
+
+### Journal d'audit
+
+Endpoint : `GET /api/v1/admin/liaisons/:id/activity?page=&limit=`
+
+Affiche en bas de la page détail un tableau chronologique de toutes les actions du Liaison :
+
+| Colonne | Contenu |
+|---|---|
+| Date | Timestamp ISO formaté en local |
+| Action | Libellé français de l'action (cf. ci-dessous) |
+| Cible | `targetType · targetId` (8 premiers caractères pour lisibilité) |
+| Détails | Payload JSONB de l'événement |
+
+Actions traçables (table `activity_logs`, colonne `action`) :
+
+| Code | Libellé | Quand |
+|---|---|---|
+| `LIAISON_VENDOR_CREATED` | Vendeur créé | POST `/liaison/vendors` |
+| `LIAISON_VENDOR_UPDATED` | Vendeur modifié | PATCH `/liaison/vendors/:id` |
+| `LIAISON_PART_CREATED` | Pièce ajoutée | POST `/liaison/vendors/:id/parts` |
+| `LIAISON_PART_UPDATED` | Pièce modifiée | PATCH `/liaison/vendors/:id/parts/:partId` |
+| `LIAISON_COMMISSION_ACCEPTED` | Commission agréée | POST `/liaison/vendors/:id/parts/:partId/accept-commission` |
+
+Pagination : 50 entrées par page par défaut. Les index DB sont sur `(actor_id, created_at DESC)`, `(action, created_at DESC)`, `(target_type, target_id)` et `(created_at DESC)`.
+
+### Architecture du log
+
+- Table : `activity_logs`
+- Helper : `apps/api/src/lib/activityLog.ts` (`recordActivity()`)
+- Best-effort : si la création de log échoue, l'opération métier (création de pièce par ex.) n'échoue pas. C'est volontaire — on ne bloque pas la production sur de la traçabilité.
+- Append-only : aucun endpoint admin ne permet la modification ou la suppression d'une entrée.
+
+---
+
+## 6. Gestion des vendeurs et scoring
+
+### Liste (`/admin/vendors`)
+
+Endpoint : `GET /api/v1/admin/vendors/list?q=&status=&page=&limit=`
+
+Filtres : statut (`PENDING_ACTIVATION`, `ACTIVE`, `PAUSED`), recherche libre (nom de boutique, téléphone, contact, RCCM/CNI).
+
+Colonnes : boutique, contact, type (FORMAL/INFORMAL), KYC, commune, statut, score, nombre de pièces, date de création, Liaison gestionnaire (si présent).
+
+### Détail (`/admin/vendors/:id/detail`)
+
+Profil complet + KYC + garanties signées + zones de livraison + catalogue + commandes + reviews + métriques de scoring.
+
+### Système de scoring vendeur
+
+Déployé mai 2026. Champs sur le modèle `Vendor` :
+
+| Champ | Définition |
+|---|---|
+| `ordersDelivered` | Compteur de commandes confirmées sur 90 jours |
+| `disputesOpened` | Nombre de litiges ouverts contre ce vendeur sur 90 jours |
+| `avgReviewRating` | Moyenne des notes laissées par les acheteurs |
+| `aggregateRating` | Score composite recalculé périodiquement |
+| `scoreUpdatedAt` | Dernière mise à jour du score |
+
+Le score impacte le tri dans les résultats de recherche `/api/v1/browse/search` : les vendeurs mieux notés remontent.
+
+### Recalcul du scoring
+
+**Pour un vendeur spécifique** :
+```
+POST /api/v1/admin/vendors/:id/recompute-score
 ```
 
-**Modes de livraison :**
-- `STANDARD` — Livraison normale
-- `EXPRESS` — Livraison prioritaire
-
-### Consulter les livraisons en attente
-
-**API :** `GET /api/v1/deliveries/pending`
-
-Affiche toutes les livraisons avec le statut `PENDING_ASSIGNMENT` (en attente d'un rider).
-
-### Assigner un rider
-
-**API :** `POST /api/v1/deliveries/:deliveryId/assign`
-
-```json
-{
-  "riderId": "uuid-du-rider"
-}
+**Pour tous les vendeurs** :
+```
+POST /api/v1/admin/vendors/recompute-scores
 ```
 
-**Règles :**
-- La livraison doit être au statut `PENDING_ASSIGNMENT`
-- Le rider doit avoir le rôle `RIDER`
-- Une fois assigné, le statut passe à `ASSIGNED`
+Opération coûteuse — à lancer hors heures de pointe. Service : `apps/api/src/modules/vendor/vendorScore.service.ts`.
 
-### Cycle de vie d'une livraison
+### Activation d'un vendeur
+
+Un vendeur créé par un Liaison ou via auto-onboarding est en statut `PENDING_ACTIVATION`. Pour le passer en `ACTIVE` :
+
+1. Vérifier la signature des deux garanties (`RETURN_48H` et `WARRANTY_30D`) dans `vendor_guarantee_signatures`
+2. Vérifier que le KYC est rempli (`vendor_kyc`) et que `isPublic = true` si formel
+3. Update : `UPDATE vendors SET status = 'ACTIVE' WHERE id = '...'`
+
+Une commande ne peut pas être finalisée tant que le vendeur n'est pas ACTIVE.
+
+---
+
+## 7. Gestion du catalogue et politique commission
+
+### Liste (`/admin/parts` et `/admin/catalog`)
+
+Endpoint : `GET /api/v1/admin/catalog/list?q=&status=&vendorId=&page=&limit=`
+
+Colonnes : photo thumb, nom, catégorie, état (chip coloré), source (OEM/Aftermarket/Compatible), vendeur, prix, commission, statut catalogue, stock, agréée par vendeur, date de création.
+
+### Modèle CatalogItem — champs clés
+
+| Champ | Type | Rôle |
+|---|---|---|
+| `name` | String | Libellé de la pièce |
+| `category` | String | Catégorie libre |
+| `oemReference` | String | Référence OEM constructeur |
+| `vehicleCompatibility` | String | Texte libre marque/modèle/année |
+| `price` | Int (FCFA) | Prix de vente |
+| `suggestedPrice` | Int (FCFA) | Prix suggéré par l'IA |
+| `condition` | Enum | NEW / USED / REFURBISHED |
+| `partSource` | Enum | OEM / AFTERMARKET / COMPATIBLE |
+| `warrantyMonths` | Int | Garantie vendeur en mois |
+| `commissionAmount` | Int (FCFA) | Commission Pièces, voir ci-dessous |
+| `commissionAcceptedAt` | DateTime? | Horodatage de l'agrément vendeur |
+| `inStock` | Boolean | Disponibilité physique |
+| `status` | Enum | DRAFT / PUBLISHED / ARCHIVED |
+| `aiGenerated` | Boolean | Identifié par l'IA |
+| `aiConfidence` | Float | Score Gemini 0-1 |
+| `imageOriginalUrl` + `imageThumbUrl` + `imageSmallUrl` + `imageMediumUrl` + `imageLargeUrl` | String | Variantes Sharp |
+| `serialPhotoUrl` | String? | Photo n° de série / QR |
+| `createdByLiaisonId` | String? | Lien vers `User` Liaison |
+| `priceAlertFlag` | Boolean | Variation > 50 % en < 1h |
+| `priceUpdatedAt` | DateTime? | Dernier changement de prix |
+
+### Politique commission
+
+**Plancher de sécurité** automatiquement appliqué côté serveur :
+
+> commission minimum = max(1 000 FCFA, 5 % × prix de vente)
+
+Implémentation : `minCommissionFor(price)` dans `packages/shared/validators/catalog.ts`.
+
+**Comportement de clamp :**
+- Quand un Liaison ou un vendeur soumet une commission, le serveur la compare au plancher.
+- Si elle est inférieure, le serveur l'enregistre automatiquement au plancher. **Pas de rejet** — c'est volontaire (cf. décision produit mai 2026 : observer les commissions réelles plutôt que les forcer à 5 %).
+- Le frontend affiche un message discret quand le clamp va s'appliquer.
+
+**Workflow d'agrément :**
+- Une commission proposée n'est pas engageante. Le vendeur doit explicitement la valider.
+- L'agrément se matérialise par `commissionAcceptedAt = NOW()`.
+- Pour le Liaison : bouton "Marquer agréée" sur la page édition pièce.
+- Pour le vendeur self-service : flag `commissionAccepted: true` dans le PATCH catalog.
+- **Si la commission est modifiée**, `commissionAcceptedAt` est remis à `null` automatiquement — un agrément n'est valable que pour le montant exact qui était proposé.
+
+### Photos catalog (jusqu'à 3 par pièce)
+
+Modèle `CatalogItemPhoto` :
+- `position` : 0 / 1 / 2 (photo principale + 2 secondaires)
+- `originalUrl` + variantes redimensionnées
+- Endpoints : POST `/catalog/items/:id/photos`, DELETE `/catalog/items/:id/photos/:photoId`, POST `/catalog/items/:id/photos/reorder`
+
+### Fitments (catalog_item_fitments)
+
+Ajouté mai 2026. Permet de lier une pièce à des couples *marque / modèle / années / motorisation* structurés (au-delà du `vehicleCompatibility` texte libre).
+
+Modèle `CatalogItemFitment` :
+- `brand`, `model`, `yearFrom`, `yearTo`, `engine`
+- Un `CatalogItem` peut avoir N fitments.
+- Sert à améliorer la précision de la recherche par véhicule (avec décodage VIN).
+
+### Références canoniques (ingest)
+
+L'app `apps/ingest` alimente des tables maître (`part_references`, `part_categories`, `vehicle_makes`, `vehicle_models`, `vehicle_generations`, `vehicle_engines`) via :
+- **NHTSA** : `pnpm -F ingest start nhtsa` (marques + modèles)
+- **NHTSA year enrichment** : `pnpm -F ingest start nhtsa-year`
+- **OSM Abidjan** : `pnpm -F ingest start osm` (vendeurs concurrents → `competitor_vendors`)
+
+Ces données alimentent l'autocomplétion vehicle dans les formulaires et le scoring de pertinence dans la recherche.
+
+### Détection bait-and-switch
+
+Si le prix d'une pièce PUBLISHED change de plus de 50 % en moins d'une heure, `priceAlertFlag` est mis à `true` et un log warn est émis (`PRICE_ALERT_BAIT_SWITCH`). À surveiller côté admin.
+
+### Statut
+
+- **DRAFT** → en cours de création par le vendeur (photos / prix / commission requis pour publier)
+- **PUBLISHED** → visible dans la recherche publique
+- **ARCHIVED** → masqué mais conservé pour historique
+
+L'archivage se fait via `PATCH /catalog/items/:id` body `{ status: 'ARCHIVED' }`.
+
+---
+
+## 8. Gestion des entreprises et flottes
+
+Section nouvelle — feature livrée mai 2026 en plusieurs phases (A→G).
+
+### Liste (`/admin/enterprises`)
+
+Endpoint : `GET /api/v1/admin/enterprises/list?q=&page=&limit=`
+
+Colonnes : raison sociale, RCCM, contact principal, nombre de véhicules, nombre de membres, date de création.
+
+### Détail (`/admin/enterprises/:id/detail`)
+
+Endpoint : `GET /api/v1/admin/enterprises/:id/detail`
+
+Sections :
+- Profil légal (raison sociale, RCCM, RIB, adresse, GPS)
+- **Membres** (`enterprise_members`) avec leurs rôles internes (MECHANIC, MANAGER, OWNER, DRIVER, ACCOUNTANT)
+- **Flotte** (`vehicles`) avec immatriculation, marque/modèle, année, kilométrage, type d'usage (`vehicleUsageType`), centre de maintenance attitré
+- **Commandes** passées au nom de l'entreprise
+- **Stocks tampon** (cf. §10)
+- **Plans d'entretien** (cf. §9)
+
+### Modèle Enterprise — champs clés
+
+| Champ | Rôle |
+|---|---|
+| `name` | Raison sociale |
+| `rccm` | Registre du commerce |
+| `rib` | Compte bancaire (paiement par virement) |
+| `commune` + `address` + `lat` + `lng` | Localisation |
+| `contactName` + `contactPhone` + `contactEmail` | Référent |
+| `createdAt` | Date d'inscription |
+
+### Espace Enterprise (`/enterprise`)
+
+Côté utilisateur ENTERPRISE :
+- `/enterprise/dashboard` : vue d'ensemble flotte (alertes, coûts cumulés)
+- `/enterprise/vehicles` : liste de la flotte avec actions par véhicule
+- `/enterprise/vehicles/[vehicleId]` : historique maintenance + commandes du véhicule
+- `/enterprise/vehicles/import` : import CSV en masse
+- `/enterprise/members` : gestion des membres et invitations
+- `/enterprise/orders` : commandes consolidées
+- `/enterprise/search` : recherche de pièces avec contexte entreprise
+- `/enterprise/buffer-stock` : stocks tampon (cf. §10)
+
+### Import CSV véhicules
+
+Endpoint : `POST /api/v1/enterprises/:id/vehicles/import` (multipart)
+
+- Format : CSV avec en-têtes (`plate`, `make`, `model`, `year`, `mileage`, `usage_type`, ...)
+- Validation : `csvImportRowSchema` (`packages/shared/validators/enterprise.ts`)
+- Erreurs ligne par ligne renvoyées en JSON
+- Idempotent : doublons par `plate + enterpriseId` ignorés
+
+### Membres et rôles internes
+
+Modèle `EnterpriseMember` :
+- `enterpriseId` + `userId` (unique combo)
+- `role` (`EnterpriseMemberRole`) : OWNER / MANAGER / MECHANIC / DRIVER / ACCOUNTANT
+- `invitedAt` / `joinedAt`
+
+Le mécanisme d'invitation envoie un SMS sur le numéro indiqué ; à la connexion, l'invité accepte et son `User` est rattaché.
+
+---
+
+## 9. Centres de maintenance et plans d'entretien
+
+Sections nouvelles — déployées mai 2026 (chantiers 6 et 7).
+
+### Centres de maintenance
+
+Modèle `MaintenanceCenter` :
+- `name`, `address`, `commune`, `lat`, `lng`, `phone`
+- `specialties` : array de catégories prises en charge
+- `homeForVehicleCount` : compteur dénormalisé
+
+**Vehicle → MaintenanceCenter** : chaque véhicule peut avoir un `homeCenterId` (centre de maintenance attitré). Quand une panne survient, on suggère ce centre en priorité.
+
+Endpoints :
+- `GET /api/v1/maintenance/centers` (liste publique)
+- `POST /api/v1/admin/maintenance/centers` (création par admin)
+- `PATCH /api/v1/admin/maintenance/centers/:id`
+- `POST /api/v1/enterprises/:eId/vehicles/:vId/home-center` (associer un véhicule à un centre)
+
+### Plans d'entretien prédictifs
+
+Modèle `MaintenanceSchedule` :
+- `enterpriseId` + `vehicleId` (optionnel — peut s'appliquer à tous les véhicules de l'entreprise)
+- `category` (vidange, freinage, etc.)
+- `intervalKm` ou `intervalDays`
+- `lastDoneAt` / `lastDoneMileage`
+- `nextDueAt` / `nextDueMileage`
+
+Recalcul cron : un job tourne quotidiennement et met à jour les `nextDue*` champs en fonction du kilométrage relevé. Les véhicules en alerte apparaissent sur le dashboard entreprise et — pour l'admin — via un endpoint dédié pour audit.
+
+---
+
+## 10. Stocks tampon entreprise
+
+Section nouvelle — chantier 9, déployé mai 2026.
+
+### Pourquoi
+
+Garantir une disponibilité 24h sur des SKU critiques pour une flotte spécifique (filtres, plaquettes de frein, courroies, huiles). L'entreprise réserve un stock minimum auprès de Pièces ; on engage la disponibilité contre une contrepartie commerciale.
+
+### Modèle EnterpriseBufferStock
+
+| Champ | Rôle |
+|---|---|
+| `enterpriseId` + `catalogItemId` | Unique combo |
+| `targetQty` | Quantité visée |
+| `currentQty` | Stock effectif (mis à jour à chaque retrait) |
+| `autoReplenish` | Si `true`, déclenche commande automatique sous seuil |
+| `notes` | Texte libre |
+
+### Statut dérivé (calcul serveur)
+
+| Statut | Condition |
+|---|---|
+| `OUT` | `currentQty <= 0` |
+| `LOW` | `currentQty < targetQty × 0.5` |
+| `BELOW_TARGET` | `currentQty < targetQty` |
+| `OK` | `currentQty >= targetQty` |
+
+### Endpoints (`/enterprises/:enterpriseId/buffer-stock`)
+
+| Méthode | Path | Rôle |
+|---|---|---|
+| GET | `/` | ENTERPRISE+ Liste |
+| POST | `/` | OWNER/MANAGER Création |
+| PATCH | `/:id` | OWNER/MANAGER Modification |
+| POST | `/:id/adjust` | OWNER/MANAGER/MECHANIC `{ delta: ±N }` |
+| DELETE | `/:id` | OWNER/MANAGER Suppression |
+
+### UI (`/enterprise/buffer-stock`)
+
+Tableau avec target vs current, badge de statut coloré, boutons ±1 pour ajustement rapide, et bannière supérieure comptant les alertes critiques (OUT + LOW). Formulaire de création prend un UUID de `CatalogItem`, target qty, qty initiale, et flag auto-replenish.
+
+---
+
+## 11. Gestion des commandes
+
+### Liste (`/admin/orders` — endpoint, UI à venir)
+
+Endpoint : `GET /api/v1/admin/orders?status=&page=&limit=`
+
+Colonnes : ID, statut, initiateur (mécanicien), propriétaire, vendeur, total, commission Pièces, date.
+
+### Machine à états
+
+Définie dans `apps/api/src/modules/order/order.stateMachine.ts` :
+
+```
+DRAFT
+  ↓ pay-link generated
+PENDING_PAYMENT
+  ↓ payment confirmed (CinetPay webhook)
+PAID
+  ↓ vendor accepts
+VENDOR_CONFIRMED
+  ↓ rider assigned
+DISPATCHED
+  ↓ pickup done
+IN_TRANSIT
+  ↓ delivered
+DELIVERED
+  ↓ recipient confirms (48h auto)
+CONFIRMED
+  ↓ payout to vendor
+COMPLETED
+
+Any non-terminal state can transition to:
+CANCELLED (with refund of escrow)
+```
+
+`canTransition(from, to)` est appelé avant toute mise à jour DB pour rejeter les transitions invalides.
+
+### Modèle Order — champs clés
+
+| Champ | Rôle |
+|---|---|
+| `shareToken` | UUID partagé sur la page `/choose/[shareToken]` pour le paiement |
+| `initiatorId` | User mécanicien |
+| `ownerId` | User propriétaire qui paie |
+| `vendorId` | Vendeur fournisseur |
+| `status` | OrderStatus |
+| `total` (FCFA) | Total dû par l'acheteur |
+| `vendorPrice` | Prix vendeur reverssé |
+| `laborCost` | Main-d'œuvre mécanicien |
+| `deliveryFee` | Frais livraison |
+| `platformFee` | Frais Pièces (TVA incl. si applicable) |
+| `paymentMethod` | ORANGE_MONEY / MTN_MOMO / WAVE / COD |
+| `escrowStatus` | HELD / RELEASED / REFUNDED |
+
+### Modèle OrderItem
+
+- `commissionAmount` figé au moment de la commande (snapshot)
+- `vendorPrice` figé
+- `condition` et `partSource` snapshot pour traçabilité
+
+### Modèle OrderEvent
+
+Log d'évènements append-only par commande (états, paiements, livraisons, litiges). Utilisable pour reconstituer l'historique.
+
+---
+
+## 12. Gestion des livraisons
+
+### Modèle Delivery
+
+| Champ | Rôle |
+|---|---|
+| `orderId` | Lien commande |
+| `riderId` | Livreur assigné |
+| `status` | DeliveryStatus |
+| `pickupAt` / `pickupAddress` / `pickupLat`/`pickupLng` | Ramassage chez vendeur |
+| `dropoffAt` / `dropoffAddress` / `dropoffLat`/`dropoffLng` | Dépose |
+| `mode` | EXPRESS / STANDARD |
+| `codCollected` | Espèces collectées (cas COD) |
+
+### Machine d'états
 
 ```
 PENDING_ASSIGNMENT → ASSIGNED → PICKUP_IN_PROGRESS → IN_TRANSIT → DELIVERED → CONFIRMED
+                                                                       ↓
+                                                                   RETURNED
 ```
 
-| Statut | Qui agit | Description |
-|--------|----------|-------------|
-| `PENDING_ASSIGNMENT` | Admin | Livraison créée, en attente d'un rider |
-| `ASSIGNED` | Admin | Rider assigné |
-| `PICKUP_IN_PROGRESS` | Rider | Le rider est en route vers le vendeur |
-| `IN_TRANSIT` | Rider | Le rider a récupéré la pièce, en route vers le client |
-| `DELIVERED` | Rider | Le rider a livré la pièce |
-| `CONFIRMED` | Client | Le client confirme la réception |
-| `RETURNED` | Rider | Retour de la pièce (client absent, litige) |
+### Endpoints admin
 
-### Protocole client absent
-
-Si le client est absent à la livraison, le rider peut signaler l'absence via `POST /deliveries/:id/client-absent`. Le champ `clientAbsent` est mis à `true` sur la livraison.
-
-**Procédure recommandée :**
-1. Le rider tente de livrer
-2. Si client absent, le rider signale via l'application
-3. L'admin est notifié
-4. Contacter le client par téléphone
-5. Reprogrammer la livraison ou procéder au retour
-
-### Suivi GPS
-
-Les riders mettent à jour leur position GPS en temps réel via `POST /deliveries/:id/location`. Les coordonnées `riderLat` et `riderLng` sont stockées et consultables.
-
-### Collecte COD (Cash on Delivery)
-
-Si la commande est en paiement à la livraison, le rider collecte le montant en espèces ou mobile money auprès du client. Le montant COD est indiqué dans le champ `codAmount` de la livraison.
+Pas d'écran dédié pour l'instant — supervision via les pages commande et vendeur. Endpoints REST sous `/api/v1/delivery/*` accessibles à l'admin pour debug.
 
 ---
 
-## 7. Gestion des litiges
+## 13. Retours et litiges
 
-### Consulter les litiges
+### Litiges (modèle Dispute)
 
-Les litiges sont ouverts par les acheteurs (mécaniciens) via l'application. Seul l'initiateur de la commande peut ouvrir un litige.
+Existait depuis mars 2026. Champs : `orderId`, `openerId` (acheteur), `reason`, `status` (OPEN / IN_REVIEW / RESOLVED_BUYER / RESOLVED_SELLER), `resolutionNote`, `resolvedAt`, `resolvedBy`.
 
-**API :** `GET /api/v1/reviews/disputes/order/:orderId`
+Endpoints : `POST /api/v1/reviews/disputes` (ouverture), `PATCH /api/v1/admin/disputes/:id/resolve` (résolution admin).
 
-Chaque litige contient :
-- **Raison** — Description du problème (5 à 2000 caractères)
-- **Preuves** — Liste d'URLs de photos/documents
-- **Statut** — OPEN, UNDER_REVIEW, RESOLVED_BUYER, RESOLVED_SELLER, CLOSED
-- **Date d'ouverture**
+### Retours structurés (modèle ReturnOrder)
 
-### Résoudre un litige
+Section nouvelle — chantier 8, déployé mai 2026. Différent du litige : c'est un retour planifié sous garantie ou rétractation 48h.
 
-**API :** `POST /api/v1/reviews/disputes/:disputeId/resolve`
+| Champ | Rôle |
+|---|---|
+| `orderId` | Commande d'origine |
+| `requesterId` | User initiateur |
+| `reason` | DEFECTIVE / WRONG_PART / CHANGED_MIND |
+| `status` | REQUESTED / APPROVED / PICKUP_SCHEDULED / RECEIVED / INSPECTED / REFUNDED / REJECTED |
+| `refundAmount` (FCFA) | Montant à rembourser |
+| `inspectionNotes` | Diagnostic après réception |
+| `createdAt` / `resolvedAt` | |
 
-**Corps de la requête :**
-```json
-{
-  "resolution": "Après examen des preuves, la pièce envoyée ne correspond pas à la commande. Remboursement intégral accordé à l'acheteur.",
-  "inFavorOf": "buyer"
-}
-```
-
-**Paramètre `inFavorOf` :**
-
-| Valeur | Effet |
-|--------|-------|
-| `buyer` | Résolution en faveur de l'acheteur → statut `RESOLVED_BUYER` |
-| `seller` | Résolution en faveur du vendeur → statut `RESOLVED_SELLER` |
-
-**Bonnes pratiques pour la résolution de litiges :**
-
-1. **Examiner les preuves** fournies par l'acheteur (photos, descriptions)
-2. **Contacter le vendeur** pour obtenir sa version
-3. **Vérifier l'historique** de la commande (événements, transitions de statut)
-4. **Rédiger une résolution claire** expliquant la décision et les raisons
-5. **Choisir la partie favorisée** (buyer ou seller)
-
-**Conséquences de la résolution :**
-- **En faveur de l'acheteur** → Initier un remboursement via le système de séquestre
-- **En faveur du vendeur** → Libérer les fonds séquestrés au vendeur
-
-### Statuts des litiges
-
-| Statut | Description |
-|--------|-------------|
-| `OPEN` | Litige ouvert, en attente de traitement |
-| `UNDER_REVIEW` | En cours d'examen (réservé pour usage futur) |
-| `RESOLVED_BUYER` | Résolu en faveur de l'acheteur |
-| `RESOLVED_SELLER` | Résolu en faveur du vendeur |
-| `CLOSED` | Fermé (réservé pour usage futur) |
+Workflow :
+1. Acheteur ouvre un retour (`POST /api/v1/returns`)
+2. Admin valide ou rejette (`PATCH /api/v1/admin/returns/:id/decide`)
+3. Si validé → pickup planifié, livreur récupère
+4. Réception et inspection
+5. Remboursement ou rejet final
 
 ---
 
-## 8. Notifications
+## 14. Paiements et escrow
 
-### Envoyer une notification
+### Modèle EscrowTransaction
 
-**API :** `POST /api/v1/notifications/send`
+| Champ | Rôle |
+|---|---|
+| `orderId` | |
+| `amount` (FCFA) | Montant gardé en séquestre |
+| `status` | HELD / RELEASED / REFUNDED |
+| `heldAt` / `releasedAt` / `refundedAt` | |
+| `payoutVendorRef` | ID externe du payout au vendeur |
 
-**Corps de la requête :**
-```json
-{
-  "to": "+2250700000000",
-  "channel": "whatsapp",
-  "message": "Votre commande a été traitée. Merci de votre confiance."
-}
-```
+### Cycle
 
-**Canaux disponibles :**
+1. **Order paid** → `EscrowTransaction.status = HELD`
+2. **Delivery confirmed by buyer** (manuellement ou auto 48h) → `RELEASED` → payout vendeur déclenché
+3. **Litige résolu en faveur de l'acheteur** → `REFUNDED` (remboursement intégral ou partiel selon décision)
 
-| Canal | Statut | Description |
-|-------|--------|-------------|
-| `whatsapp` | Actif | Envoi via WhatsApp Business API |
-| `sms` | Stub (non configuré) | Envoi par SMS — intégration future |
-| `push` | Stub (non configuré) | Notification push PWA — intégration future |
+### Webhook CinetPay
 
-### Notifications automatiques prédéfinies
+Endpoint : `POST /api/v1/payment/webhook`
 
-Le système envoie automatiquement des notifications WhatsApp lors de certains événements :
+- Vérification HMAC signature
+- Idempotent : `paymentRef` traité une seule fois
+- Met à jour `Order.status = PAID` et crée `EscrowTransaction`
 
-| Événement | Destinataire | Message |
-|-----------|--------------|---------|
-| Commande payée (`PAID`) | Propriétaire | "Votre commande est confirmée. Le vendeur prépare votre pièce." |
-| Vendeur confirme (`VENDOR_CONFIRMED`) | Propriétaire | "Le vendeur a confirmé votre commande. Livraison en préparation." |
-| Expédition (`DISPATCHED`) | Propriétaire | "Votre commande a été expédiée! Un livreur est en route." |
-| Livraison (`DELIVERED`) | Propriétaire | "Votre commande a été livrée. Confirmez la réception." |
-| Annulation (`CANCELLED`) | Propriétaire | "Votre commande a été annulée." |
-| Nouvelle commande | Vendeur | "Nouvelle commande : X pièce(s). Confirmez dans les 45 minutes." |
-| Stock critique | Vendeur | "Stock critique : [pièce] est en rupture." |
-| Assignation livraison | Rider | "Nouvelle livraison assignée. Récupérez à : [adresse]" |
+### Méthodes de paiement supportées
 
-### Préférences de notification des utilisateurs
+- ORANGE_MONEY
+- MTN_MOMO
+- WAVE
+- COD (Cash on Delivery — le livreur encaisse)
 
-Chaque utilisateur peut configurer ses préférences de notification :
-- **WhatsApp** — activé par défaut
-- **SMS** — désactivé par défaut
-- **Push PWA** — désactivé par défaut
+### Configuration
 
-Les préférences sont gérées via `GET/PUT /api/v1/notifications/preferences`.
+Variables d'environnement à renseigner en prod :
+- `CINETPAY_API_KEY`
+- `CINETPAY_SITE_ID`
+- `CINETPAY_SECRET`
+- `CINETPAY_NOTIFY_URL` (webhook public)
 
 ---
 
-## 9. Cycle de vie d'une commande
+## 15. Notifications et messagerie
 
-### Flux complet
+### Préférences utilisateur
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                                                                  │
-│  MÉCANICIEN crée la commande                                     │
-│  └─► DRAFT                                                       │
-│       │                                                          │
-│       ├──► PROPRIÉTAIRE choisit le paiement                      │
-│       │    ├──► Mobile Money → PENDING_PAYMENT → PAID            │
-│       │    └──► COD (≤75k FCFA) → PAID directement              │
-│       │                                                          │
-│       └──► ANNULATION possible (acheteur)                        │
-│                                                                  │
-│  VENDEUR confirme dans les 45 min                                │
-│  └─► VENDOR_CONFIRMED                                            │
-│       │                                                          │
-│       └──► ANNULATION possible (acheteur)                        │
-│                                                                  │
-│  ADMIN crée la livraison + assigne un rider                      │
-│  └─► DISPATCHED                                                  │
-│       │                                                          │
-│  RIDER récupère la pièce                                         │
-│  └─► IN_TRANSIT                                                  │
-│       │                                                          │
-│  RIDER livre                                                     │
-│  └─► DELIVERED                                                   │
-│       │                                                          │
-│       ├──► CLIENT confirme réception → CONFIRMED → COMPLETED     │
-│       └──► Auto-complétée après 48h → COMPLETED                  │
-│                                                                  │
-│  COMPLETED = fonds libérés au vendeur                            │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
-```
+Modèle `NotificationPreference` (un par `User`) :
+- `whatsapp` / `sms` / `email` (booléens)
+- `orderUpdates` / `marketing` / `disputes` (granularité)
 
-### Transitions de statut autorisées
+Endpoint : `PATCH /api/v1/notifications/preferences`
 
-| De | Vers | Qui |
-|----|------|-----|
-| DRAFT | PENDING_PAYMENT | Système (mobile money) |
-| DRAFT | PAID | Système (COD) |
-| DRAFT | CANCELLED | Acheteur |
-| PENDING_PAYMENT | PAID | Système (webhook CinetPay) |
-| PENDING_PAYMENT | CANCELLED | Acheteur |
-| PAID | VENDOR_CONFIRMED | Vendeur |
-| PAID | CANCELLED | Acheteur |
-| VENDOR_CONFIRMED | DISPATCHED | Admin |
-| VENDOR_CONFIRMED | CANCELLED | Acheteur |
-| DISPATCHED | IN_TRANSIT | Rider |
-| IN_TRANSIT | DELIVERED | Rider |
-| DELIVERED | CONFIRMED | Client |
-| DELIVERED | COMPLETED | Système (48h auto) |
-| CONFIRMED | COMPLETED | Système |
+### Bot WhatsApp
 
-### Points d'intervention de l'admin
+Module `apps/api/src/modules/whatsapp/` — Meta WhatsApp Cloud API v18.0.
 
-1. **Surveiller les commandes `PAID` sans confirmation vendeur** → Relancer le vendeur après 30 min
-2. **Créer la livraison** quand la commande passe à `VENDOR_CONFIRMED`
-3. **Assigner un rider** pour la livraison
-4. **Gérer les annulations** si la livraison est déjà en cours (statut > VENDOR_CONFIRMED = annulation impossible)
-5. **Résoudre les litiges** ouverts par les acheteurs
+- Webhook : `POST /api/v1/whatsapp/webhook`
+- Vérification HMAC SHA-256 (header `X-Hub-Signature-256`)
+- Body raw capté par un content type parser scoped au plugin (cf. `CLAUDE.md` — bug connu si on l'enregistre globalement)
+- Templates : voir `docs/whatsapp-templates.md`
+
+### SMS / Email
+
+Envoi via le module `notification`. Templates dans `apps/api/src/modules/notification/templates/`.
+
+### Envoyer une notification manuelle
+
+Endpoint admin : `POST /api/v1/admin/notifications/send`
+- Body : `{ userId, channel, template, params }`
+- Cas d'usage : escalade litige, relance KYC, communication ad hoc
 
 ---
 
-## 10. Système de paiement et séquestre
+## 16. Exports CSV et données
 
-### Méthodes de paiement
+Endpoint unique : `GET /api/v1/admin/export?entity={vendors|clients|orders|catalog}`
 
-| Méthode | Code | Description |
-|---------|------|-------------|
-| Orange Money | `ORANGE_MONEY` | Paiement mobile via Orange |
-| MTN Mobile Money | `MTN_MOMO` | Paiement mobile via MTN |
-| Wave | `WAVE` | Paiement mobile via Wave |
-| Paiement à la livraison | `COD` | Espèces ou mobile money à la livraison (max 75 000 FCFA) |
+- Renvoie un CSV horodaté en `Content-Disposition: attachment`
+- Charset UTF-8 avec BOM pour compatibilité Excel français
+- Toutes les colonnes consolidées sans filtre (export brut)
 
-### Séquestre (Escrow)
-
-Le système de séquestre protège les deux parties :
-
-1. **Création** — Quand le paiement est confirmé (webhook CinetPay), un séquestre est créé au statut `HELD`
-2. **Libération** — Quand la commande est `COMPLETED`, les fonds sont libérés au vendeur (`RELEASED`)
-3. **Remboursement** — En cas d'annulation ou de litige en faveur de l'acheteur, les fonds sont remboursés (`REFUNDED`)
-
-**Statuts du séquestre :**
-
-| Statut | Description |
-|--------|-------------|
-| `HELD` | Fonds en séquestre — commande en cours |
-| `RELEASED` | Fonds libérés au vendeur — commande terminée |
-| `REFUNDED` | Fonds remboursés à l'acheteur — annulation/litige |
-
-**Gardes de sécurité :**
-- Un séquestre ne peut être libéré **ou** remboursé qu'une seule fois
-- Toute tentative de double opération retourne une erreur `ESCROW_ALREADY_PROCESSED`
-
-### Consulter un séquestre
-
-**API :** `GET /api/v1/payments/orders/:orderId/escrow`
+Implémentation : `exportCsv()` dans `apps/api/src/modules/admin/admin.service.ts`.
 
 ---
 
-## 11. Référence API rapide
+## 17. Référence API admin
 
-### Endpoints réservés à l'admin
+Préfixe : `/api/v1/admin`. Toutes ces routes ont `requireAuth + requireRole('ADMIN')`.
 
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/api/v1/admin/dashboard` | Statistiques plateforme |
-| GET | `/api/v1/admin/users?page=&limit=` | Liste utilisateurs |
-| GET | `/api/v1/admin/orders?page=&limit=&status=` | Liste commandes |
-| GET | `/api/v1/admin/vendors?page=&limit=` | Liste vendeurs |
-| PATCH | `/api/v1/users/:userId/roles` | Modifier rôles utilisateur |
-| POST | `/api/v1/deliveries` | Créer une livraison |
-| GET | `/api/v1/deliveries/pending` | Livraisons en attente |
-| POST | `/api/v1/deliveries/:id/assign` | Assigner un rider |
-| POST | `/api/v1/reviews/disputes/:id/resolve` | Résoudre un litige |
-| POST | `/api/v1/notifications/send` | Envoyer une notification |
+### Dashboard
 
-### En-têtes requis
+| Méthode | Path | Description |
+|---|---|---|
+| GET | `/dashboard` | Stats de base |
+| GET | `/overview` | KPI complets + graphique mensuel + top vendeurs |
 
-```
-Authorization: Bearer <votre-token-jwt>
-Content-Type: application/json
-```
+### Utilisateurs
 
-### Format de réponse
+| Méthode | Path | Description |
+|---|---|---|
+| GET | `/users` | Liste tous les utilisateurs (paginé) |
+| GET | `/clients/list` | Recherche/filtre |
+| GET | `/clients/:id/detail` | Détail client |
 
-**Succès :**
-```json
-{
-  "data": { ... }
-}
-```
+### Vendeurs
 
-**Erreur :**
-```json
-{
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Description en français",
-    "statusCode": 400
-  }
-}
-```
+| Méthode | Path | Description |
+|---|---|---|
+| GET | `/vendors` | Liste paginée |
+| GET | `/vendors/list` | Recherche/filtre |
+| GET | `/vendors/:id/detail` | Détail vendeur |
+| POST | `/vendors/:id/recompute-score` | Recalcul score |
+| POST | `/vendors/recompute-scores` | Recalcul global |
 
-### Codes d'erreur courants
+### Catalogue
 
-| Code | HTTP | Description |
-|------|------|-------------|
-| `AUTH_MISSING_TOKEN` | 401 | Token Bearer manquant |
-| `AUTH_INVALID_TOKEN` | 401 | Token expiré ou invalide |
-| `AUTH_INSUFFICIENT_ROLE` | 403 | Rôle ADMIN requis |
-| `ORDER_NOT_FOUND` | 404 | Commande introuvable |
-| `ORDER_INVALID_TRANSITION` | 409 | Transition de statut invalide |
-| `DELIVERY_NOT_FOUND` | 404 | Livraison introuvable |
-| `DELIVERY_ALREADY_ASSIGNED` | 400 | Livraison déjà assignée à un rider |
-| `ESCROW_NOT_FOUND` | 404 | Séquestre introuvable |
-| `ESCROW_ALREADY_PROCESSED` | 400 | Séquestre déjà libéré/remboursé |
-| `VENDOR_NOT_FOUND` | 404 | Profil vendeur introuvable |
+| Méthode | Path | Description |
+|---|---|---|
+| GET | `/catalog` | Liste sans pagination |
+| GET | `/catalog/list` | Recherche/filtre |
 
----
+### Entreprises
 
-## 12. FAQ et dépannage
+| Méthode | Path | Description |
+|---|---|---|
+| GET | `/enterprises/list` | Liste |
+| GET | `/enterprises/:id/detail` | Détail |
+| GET | `/enterprise/members` | Liste des membres (contexte ENTERPRISE) |
 
-### Q : Je ne vois pas le tableau de bord admin
+### Liaisons
 
-**R :** Vérifiez que votre compte possède le rôle `ADMIN`. Contactez un autre administrateur pour qu'il vous attribue le rôle via `PATCH /api/v1/users/:userId/roles`.
+| Méthode | Path | Description |
+|---|---|---|
+| GET | `/liaisons` | Liste avec stats |
+| GET | `/liaisons/:id` | Détail (vendeurs + 50 dernières pièces) |
+| GET | `/liaisons/:id/activity?page=&limit=` | Journal d'audit paginé |
 
-### Q : Un vendeur ne peut pas publier ses pièces
+### Commandes
 
-**R :** Vérifiez que :
-1. Le profil vendeur est au statut `ACTIVE` (pas `PENDING_ACTIVATION`)
-2. Les deux garanties (RETURN_48H et WARRANTY_30D) ont été signées
-3. Le document KYC a été soumis
+| Méthode | Path | Description |
+|---|---|---|
+| GET | `/orders` | Liste avec filtre statut |
 
-### Q : Une commande est bloquée au statut PAID
+### Exports
 
-**R :** Le vendeur n'a pas encore confirmé. Procédure :
-1. Vérifier depuis combien de temps la commande est en `PAID`
-2. Si > 45 minutes, contacter le vendeur par téléphone ou WhatsApp
-3. Si le vendeur ne répond pas, envisager l'annulation et le remboursement
-
-### Q : Comment annuler une commande en cours de livraison ?
-
-**R :** Les commandes au statut `DISPATCHED`, `IN_TRANSIT` ou `DELIVERED` **ne peuvent pas être annulées** automatiquement. Le cycle de vie interdit cette transition. Si nécessaire :
-1. Contacter le rider pour arrêter la livraison
-2. Signaler un litige
-3. Résoudre le litige en faveur de l'acheteur pour déclencher le remboursement
-
-### Q : Comment rembourser un client ?
-
-**R :** Le remboursement se fait via le système de séquestre :
-1. Ouvrir un litige (ou en recevoir un de l'acheteur)
-2. Résoudre le litige avec `inFavorOf: "buyer"`
-3. Le statut du séquestre passera de `HELD` à `REFUNDED`
-
-> **Note :** Le remboursement effectif sur le compte mobile money du client nécessite actuellement une intervention manuelle via le back-office CinetPay.
-
-### Q : Un rider signale "client absent"
-
-**R :** Voir la section [Protocole client absent](#protocole-client-absent). Contacter le client, reprogrammer la livraison ou procéder au retour de la pièce.
-
-### Q : Comment ajouter un nouveau rider ?
-
-**R :**
-1. Le rider se connecte avec son numéro de téléphone (compte créé automatiquement avec le rôle MECHANIC par défaut)
-2. L'admin modifie ses rôles pour ajouter `RIDER` : `PATCH /api/v1/users/:userId/roles` avec `{ "roles": ["MECHANIC", "RIDER"] }`
-3. Le rider peut maintenant voir ses livraisons dans l'onglet `/rider`
-
-### Q : Comment surveiller les performances des riders ?
-
-**R :** Consultez les évaluations des riders via `GET /api/v1/reviews/rider/:riderId`. La note moyenne et le nombre d'avis sont calculés automatiquement.
+| Méthode | Path | Description |
+|---|---|---|
+| GET | `/export?entity=...` | CSV |
 
 ---
 
-*Manuel généré le 2026-03-01 — Pièces v0.1.0*
-*Pour toute question technique, consultez la [documentation technique](./index.md).*
+## 18. Référence schéma de données
+
+Liste exhaustive des modèles Prisma (`packages/shared/prisma/schema.prisma`). Tous mappés en snake_case en DB.
+
+### Identité et auth
+- `User` — utilisateur + roles
+- `DataDeletionRequest` — demandes ARTCI
+
+### Activité
+- `ActivityLog` — audit append-only (nouveau mai 2026)
+
+### Catalogue
+- `Vendor` + `VendorKyc` + `VendorGuaranteeSignature`
+- `CatalogItem` + `CatalogItemPhoto` + `CatalogItemFitment` (nouveau)
+- `SearchSynonym` — synonymes pour la recherche
+
+### Commandes
+- `Order` + `OrderItem` + `OrderEvent`
+- `Delivery`
+- `EscrowTransaction`
+- `Dispute`
+- `ReturnOrder` (nouveau mai 2026)
+- `SellerReview` + `DeliveryReview`
+
+### Flottes
+- `Enterprise` + `EnterpriseMember`
+- `Vehicle` + relations vers VehicleMake/Model/Generation/Engine
+- `MaintenanceCenter` (nouveau)
+- `MaintenanceSchedule` (nouveau)
+- `EnterpriseBufferStock` (nouveau)
+
+### Référentiels (ingest)
+- `VehicleMake` / `VehicleModel` / `VehicleGeneration` / `VehicleEngine`
+- `PartReference` / `PartReferenceFitment` / `PartCategory`
+- `CompetitorVendor` (OSM)
+- `MarketPriceObservation`
+
+### Infra
+- `Job` — queue async (image variants, AI identify)
+- `NotificationPreference`
+
+---
+
+## 19. FAQ et dépannage
+
+**Q. Un admin n'apparaît pas dans la liste Liaisons.**
+R. Vérifier que `'LIAISON'` est bien dans le tableau `users.roles`. Si ce n'est pas le cas, mettre à jour via `PATCH /api/v1/users/:id/roles` — la logique ajoute automatiquement LIAISON quand ADMIN est dans la liste. Si l'admin existait avant mai 2026, un backfill SQL a été appliqué le 27 mai 2026 :
+```sql
+UPDATE users
+SET roles = array_append(roles, 'LIAISON'::"Role")
+WHERE 'ADMIN' = ANY(roles) AND NOT 'LIAISON' = ANY(roles);
+```
+
+**Q. Une commission semble bloquée à 1000 FCFA alors que le Liaison a entré 500.**
+R. C'est le plancher de sécurité `max(1000, 5 % × prix)`. Le serveur clamp automatiquement au minimum (cf. §7). C'est volontaire.
+
+**Q. La page Liaisons est vide.**
+R. Vérifier qu'il y a bien des utilisateurs avec `'LIAISON'` dans leur tableau `roles`. La table `activity_logs` n'est alimentée qu'après le déploiement du commit du 27 mai 2026 — les actions Liaison antérieures à cette date ne seront pas tracées rétroactivement.
+
+**Q. Comment voir TOUTES les actions Liaison sur la plateforme (cross-Liaison) ?**
+R. Endpoint pas encore exposé — il faut requêter directement `activity_logs` :
+```sql
+SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 200;
+```
+On pourra ajouter `GET /api/v1/admin/activity` si le besoin se confirme.
+
+**Q. Un vendeur est en PENDING_ACTIVATION depuis 3 semaines. Pourquoi ?**
+R. Soit le KYC n'a pas été validé, soit les garanties ne sont pas signées (`vendor_guarantee_signatures` doit avoir 2 lignes : RETURN_48H et WARRANTY_30D). Vérifier sur la page détail vendeur (`/admin/vendors/:id/detail`).
+
+**Q. Le webhook CinetPay ne marque pas la commande comme PAID.**
+R. Vérifier (1) que l'URL `CINETPAY_NOTIFY_URL` pointe bien vers `https://pieces.ci/api/v1/payment/webhook`, (2) que la signature HMAC est valide, (3) que `paymentRef` n'a pas déjà été traité (idempotence). Logs : `event: PAYMENT_WEBHOOK_RECEIVED`.
+
+**Q. Le scoring d'un vendeur n'est pas à jour.**
+R. Le recalcul est cron quotidien. Force immédiat : `POST /api/v1/admin/vendors/:id/recompute-score`.
+
+**Q. L'export CSV est en anglais ou les accents sont cassés.**
+R. Le CSV est UTF-8 avec BOM. Excel français doit l'ouvrir correctement ; si problème, Data → Importer données externes → choisir UTF-8.
+
+**Q. Une migration n'a pas été appliquée en prod.**
+R. La prod utilise Prisma Postgres (pas Supabase — cf. `db-architecture` mémoire). Render lance `prisma migrate deploy` au démarrage du service `pieces-api`. Si des migrations restent en `not applied` après deploy, ouvrir les logs Render pour voir l'échec, ou appliquer manuellement via `prisma db execute --file ...` puis `prisma migrate resolve --applied <name>`.
+
+**Q. Comment ajouter un nouveau type d'action à tracer dans le journal d'audit ?**
+R. (1) Ajouter le code à `ActivityAction` dans `apps/api/src/lib/activityLog.ts`, (2) appeler `recordActivity({...})` dans le handler de route concerné, (3) ajouter le libellé français dans `ACTION_LABELS` de `apps/web/app/(auth)/admin/liaisons/[id]/page.tsx`.
+
+**Q. Comment ajouter une page dans la sidebar admin ?**
+R. Éditer `NAV` dans `apps/web/app/(auth)/admin/layout.tsx`. La page est protégée automatiquement par le guard d'auth/role du layout.
+
+---
+
+## Annexes
+
+- **Topologie de déploiement** : Web sur Cloudflare Worker (auto-déploi sur push main), API sur Render (auto-déploi sur push, `prisma migrate deploy` au boot), DB applicative sur Prisma Postgres (`db.prisma.io`), DB auth sur Supabase.
+- **Source de vérité design** : `DESIGN.md` à la racine du repo.
+- **Build des docs PDF/DOCX** : `bash docs/_template/build.sh` (voir `docs/_template/README.md`).
+
+---
+
+*Document interne Pièces — version 2.0 · Mai 2026. À mettre à jour à chaque livraison majeure de nouvelle fonctionnalité admin.*
