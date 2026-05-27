@@ -56,6 +56,8 @@ DOCS=(
   "pricing-flotte-2026-05|Étude interne|Pricing Pro Flotte & Express Abidjan · Mai 2026"
   "brochure-commerciale-entreprises-2026-05-27|Brochure commerciale|Édition Entreprises — Pro Flotte 3 niveaux · 27 mai 2026"
   "pricing-flotte-2026-05-27|Étude interne|Packaging Pro Flotte 3 niveaux · 27 mai 2026"
+  "brochure-vtc-grand-compte-2026-05|Brochure commerciale|Édition VTC grand compte (confidentielle) · Mai 2026"
+  "offre-vtc-6000-vehicules-2026-05|Offre commerciale|VTC 6 000 véhicules · Mai 2026 · PCS-VTC-2026-05-001"
 )
 
 # Filter to the slugs given on the command line, if any
