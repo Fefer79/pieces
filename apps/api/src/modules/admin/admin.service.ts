@@ -583,3 +583,137 @@ export async function getEnterpriseMembers(enterpriseUserId: string) {
   // Placeholder: In full implementation, Enterprise model with member relations
   return { members: [], total: 0 }
 }
+
+// ---------------------------------------------------------------------------
+// Liaisons admin oversight
+// ---------------------------------------------------------------------------
+
+export async function getAdminLiaisonsList() {
+  const liaisons = await prisma.user.findMany({
+    where: { roles: { has: 'LIAISON' } },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      roles: true,
+      activeContext: true,
+      createdAt: true,
+      _count: {
+        select: {
+          managedVendors: true,
+          liaisonCatalogItems: true,
+          activityLogs: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  // For pending acceptance, we need a separate count per liaison
+  const pendingByLiaison = await prisma.catalogItem.groupBy({
+    by: ['createdByLiaisonId'],
+    where: {
+      createdByLiaisonId: { not: null },
+      commissionAcceptedAt: null,
+    },
+    _count: { _all: true },
+  })
+
+  const pendingMap = new Map<string, number>()
+  for (const row of pendingByLiaison) {
+    if (row.createdByLiaisonId) pendingMap.set(row.createdByLiaisonId, row._count._all)
+  }
+
+  return liaisons.map((l) => ({
+    id: l.id,
+    name: l.name,
+    phone: l.phone,
+    email: l.email,
+    roles: l.roles,
+    activeContext: l.activeContext,
+    createdAt: l.createdAt,
+    stats: {
+      vendors: l._count.managedVendors,
+      parts: l._count.liaisonCatalogItems,
+      activities: l._count.activityLogs,
+      pendingAcceptance: pendingMap.get(l.id) ?? 0,
+    },
+  }))
+}
+
+export async function getAdminLiaisonDetail(liaisonId: string) {
+  const liaison = await prisma.user.findFirst({
+    where: { id: liaisonId, roles: { has: 'LIAISON' } },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      roles: true,
+      activeContext: true,
+      createdAt: true,
+      managedVendors: {
+        select: {
+          id: true,
+          shopName: true,
+          contactName: true,
+          phone: true,
+          status: true,
+          commune: true,
+          createdAt: true,
+          _count: { select: { catalogItems: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+      liaisonCatalogItems: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          commissionAmount: true,
+          commissionAcceptedAt: true,
+          status: true,
+          createdAt: true,
+          vendor: { select: { id: true, shopName: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      },
+    },
+  })
+
+  if (!liaison) {
+    throw new AppError('LIAISON_NOT_FOUND', 404, { message: 'Liaison introuvable' })
+  }
+
+  return liaison
+}
+
+export async function getAdminLiaisonActivity(
+  liaisonId: string,
+  page = 1,
+  limit = 50,
+) {
+  const skip = (page - 1) * limit
+
+  const [items, total] = await Promise.all([
+    prisma.activityLog.findMany({
+      where: { actorId: liaisonId },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        action: true,
+        targetType: true,
+        targetId: true,
+        payload: true,
+        createdAt: true,
+      },
+    }),
+    prisma.activityLog.count({ where: { actorId: liaisonId } }),
+  ])
+
+  return { items, total, page, totalPages: Math.ceil(total / limit) }
+}

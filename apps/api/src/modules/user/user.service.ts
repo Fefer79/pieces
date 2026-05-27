@@ -111,15 +111,20 @@ export async function updateRoles(targetUserId: string, roles: Role[]) {
     throw new AppError('USER_NOT_FOUND', 404)
   }
 
+  // Admins are always also Liaisons (oversight implies field capability).
+  const effectiveRoles = parsed.data.roles.includes('ADMIN' as Role) && !parsed.data.roles.includes('LIAISON' as Role)
+    ? [...parsed.data.roles, 'LIAISON' as Role]
+    : parsed.data.roles
+
   const newActiveContext =
-    user.activeContext && parsed.data.roles.includes(user.activeContext as Role)
+    user.activeContext && effectiveRoles.includes(user.activeContext as Role)
       ? user.activeContext
-      : parsed.data.roles[0]
+      : effectiveRoles[0]
 
   const updated = await prisma.user.update({
     where: { id: targetUserId },
     data: {
-      roles: parsed.data.roles,
+      roles: effectiveRoles,
       activeContext: newActiveContext,
     },
     select: { id: true, phone: true, roles: true, activeContext: true },

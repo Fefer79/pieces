@@ -156,3 +156,22 @@ export const transitionReturnSchema = z.object({
   resolutionNote: z.string().max(2000).nullable().optional(),
   refundAmount: z.number().int().min(0).nullable().optional(),
 })
+
+export const createBufferStockSchema = z.object({
+  catalogItemId: z.string().uuid(),
+  targetQty: z.number().int().min(1).max(100_000),
+  currentQty: z.number().int().min(0).max(100_000).optional(),
+  autoReplenish: z.boolean().optional(),
+  notes: z.string().max(500).nullable().optional(),
+})
+
+export const updateBufferStockSchema = z.object({
+  targetQty: z.number().int().min(0).max(100_000).optional(),
+  currentQty: z.number().int().min(0).max(100_000).optional(),
+  autoReplenish: z.boolean().optional(),
+  notes: z.string().max(500).nullable().optional(),
+})
+
+export const adjustBufferStockSchema = z.object({
+  delta: z.number().int(),
+})

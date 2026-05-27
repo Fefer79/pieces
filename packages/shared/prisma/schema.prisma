@@ -269,6 +269,7 @@ model CatalogItem {
   commissionAcceptedAt DateTime?         @map("commission_accepted_at")
   photos               CatalogItemPhoto[]
   fitments             CatalogItemFitment[]
+  bufferStockEntries   EnterpriseBufferStock[]
   createdAt            DateTime          @default(now()) @map("created_at")
   updatedAt            DateTime          @updatedAt @map("updated_at")
 
@@ -358,9 +359,28 @@ model Enterprise {
   vehicles            Vehicle[]
   orders              Order[]
   maintenanceCenters  MaintenanceCenter[]
+  bufferStock         EnterpriseBufferStock[]
 
   @@map("enterprises")
   @@index([slug], name: "idx_enterprises_slug")
+}
+
+model EnterpriseBufferStock {
+  id              String      @id @default(uuid())
+  enterpriseId    String      @map("enterprise_id")
+  enterprise      Enterprise  @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  catalogItemId   String      @map("catalog_item_id")
+  catalogItem     CatalogItem @relation(fields: [catalogItemId], references: [id])
+  targetQty       Int         @map("target_qty")
+  currentQty      Int         @default(0) @map("current_qty")
+  autoReplenish   Boolean     @default(false) @map("auto_replenish")
+  notes           String?
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  @@map("enterprise_buffer_stock")
+  @@unique([enterpriseId, catalogItemId], name: "uq_enterprise_buffer_item")
+  @@index([enterpriseId], name: "idx_buffer_stock_enterprise")
 }
 
 model MaintenanceCenter {

@@ -10,7 +10,18 @@ import {
   createMaintenanceCenterSchema,
   updateMaintenanceCenterSchema,
   setVehicleHomeCenterSchema,
+  createBufferStockSchema,
+  updateBufferStockSchema,
+  adjustBufferStockSchema,
 } from 'shared/validators'
+import {
+  listBufferStock,
+  createBufferStock,
+  updateBufferStock,
+  adjustBufferStock,
+  deleteBufferStock,
+  type BufferStockInput,
+} from './bufferStock.service.js'
 import {
   listCenters,
   getCenter,
@@ -221,6 +232,93 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
         vehicleId: string
       }
       const data = await getEnterpriseVehicle(enterpriseId, request.user.id, vehicleId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/buffer-stock',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await listBufferStock(enterpriseId, request.user.id)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/buffer-stock',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(createBufferStockSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await createBufferStock(
+        enterpriseId,
+        request.user.id,
+        request.body as BufferStockInput,
+      )
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/:enterpriseId/buffer-stock/:id',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(updateBufferStockSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, id } = request.params as { enterpriseId: string; id: string }
+      const data = await updateBufferStock(
+        enterpriseId,
+        request.user.id,
+        id,
+        request.body as Partial<Omit<BufferStockInput, 'catalogItemId'>>,
+      )
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/buffer-stock/:id/adjust',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(adjustBufferStockSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, id } = request.params as { enterpriseId: string; id: string }
+      const { delta } = request.body as { delta: number }
+      const data = await adjustBufferStock(enterpriseId, request.user.id, id, delta)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.delete(
+    '/:enterpriseId/buffer-stock/:id',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId, id } = request.params as { enterpriseId: string; id: string }
+      const data = await deleteBufferStock(enterpriseId, request.user.id, id)
       return reply.send({ data })
     },
   )

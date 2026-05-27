@@ -15,6 +15,9 @@ import {
   getAdminClientDetail,
   getAdminEnterprisesList,
   getAdminEnterpriseDetail,
+  getAdminLiaisonsList,
+  getAdminLiaisonDetail,
+  getAdminLiaisonActivity,
   exportCsv,
 } from './admin.service.js'
 import { recomputeVendorScore, recomputeAllVendorScores } from '../vendor/vendorScore.service.js'
@@ -256,6 +259,50 @@ export async function adminRoutes(fastify: FastifyInstance) {
         .header('content-disposition', `attachment; filename="${entity}-${Date.now()}.csv"`)
         .status(200)
         .send(csv)
+    },
+  )
+
+  // Liaisons oversight
+  fastify.get(
+    '/liaisons',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], description: 'Liste des Liaisons + stats', security: [{ BearerAuth: [] }] },
+    },
+    async (_request, reply) => {
+      const result = await getAdminLiaisonsList()
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/liaisons/:id',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], description: 'Détail d\'un Liaison', security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const result = await getAdminLiaisonDetail(id)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/liaisons/:id/activity',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], description: 'Journal d\'activité d\'un Liaison', security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const query = request.query as { page?: string; limit?: string }
+      const result = await getAdminLiaisonActivity(
+        id,
+        Number(query.page) || 1,
+        Number(query.limit) || 50,
+      )
+      return reply.status(200).send({ data: result })
     },
   )
 

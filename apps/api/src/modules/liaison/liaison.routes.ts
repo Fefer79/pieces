@@ -6,6 +6,7 @@ import {
   liaisonUpdatePartSchema,
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
+import { recordActivity } from '../../lib/activityLog.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
 import {
   createVendorByLiaison,
@@ -74,6 +75,14 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
         liaisonId: request.user.id,
         vendorId: result.id,
       })
+      await recordActivity({
+        actorId: request.user.id,
+        actorRole: request.user.activeContext ?? 'LIAISON',
+        action: 'LIAISON_VENDOR_CREATED',
+        targetType: 'Vendor',
+        targetId: result.id,
+        payload: { shopName: result.shopName, phone: result.phone },
+      })
       return reply.status(201).send({ data: result })
     },
   )
@@ -109,6 +118,14 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const result = await updateLiaisonVendor(request.user.id, id, request.body)
+      await recordActivity({
+        actorId: request.user.id,
+        actorRole: request.user.activeContext ?? 'LIAISON',
+        action: 'LIAISON_VENDOR_UPDATED',
+        targetType: 'Vendor',
+        targetId: id,
+        payload: { changedFields: Object.keys((request.body ?? {}) as Record<string, unknown>) },
+      })
       return reply.status(200).send({ data: result })
     },
   )
@@ -149,6 +166,19 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
         liaisonId: request.user.id,
         vendorId: id,
         partId: result.id,
+      })
+      await recordActivity({
+        actorId: request.user.id,
+        actorRole: request.user.activeContext ?? 'LIAISON',
+        action: 'LIAISON_PART_CREATED',
+        targetType: 'CatalogItem',
+        targetId: result.id,
+        payload: {
+          vendorId: id,
+          name: result.name,
+          price: result.price,
+          commissionAmount: result.commissionAmount,
+        },
       })
       return reply.status(201).send({ data: result })
     },
@@ -191,6 +221,17 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
         vendorId: id,
         partId,
       })
+      await recordActivity({
+        actorId: request.user.id,
+        actorRole: request.user.activeContext ?? 'LIAISON',
+        action: 'LIAISON_PART_UPDATED',
+        targetType: 'CatalogItem',
+        targetId: partId,
+        payload: {
+          vendorId: id,
+          changedFields: Object.keys((request.body ?? {}) as Record<string, unknown>),
+        },
+      })
       return reply.status(200).send({ data: result })
     },
   )
@@ -213,6 +254,14 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
         liaisonId: request.user.id,
         vendorId: id,
         partId,
+      })
+      await recordActivity({
+        actorId: request.user.id,
+        actorRole: request.user.activeContext ?? 'LIAISON',
+        action: 'LIAISON_COMMISSION_ACCEPTED',
+        targetType: 'CatalogItem',
+        targetId: partId,
+        payload: { vendorId: id, commissionAmount: result.commissionAmount },
       })
       return reply.status(200).send({ data: result })
     },
