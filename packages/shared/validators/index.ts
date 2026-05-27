@@ -36,4 +36,8 @@ export {
   updateVehicleSchema,
   updateMileageSchema,
   csvImportRowSchema,
+  maintenanceKindSchema,
+  createMaintenanceScheduleSchema,
+  updateMaintenanceScheduleSchema,
+  maintenanceScheduleParamsSchema,
 } from './enterprise'

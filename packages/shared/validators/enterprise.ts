@@ -60,3 +60,37 @@ export const updateMileageSchema = z.object({
 })
 
 export const csvImportRowSchema = fleetVehicleSchema
+
+export const maintenanceKindSchema = z.enum([
+  'OIL_CHANGE',
+  'OIL_FILTER',
+  'AIR_FILTER',
+  'FUEL_FILTER',
+  'CABIN_FILTER',
+  'BRAKE_PADS_FRONT',
+  'BRAKE_PADS_REAR',
+  'TIMING_BELT',
+  'TIRES',
+  'COOLANT',
+  'TRANSMISSION_FLUID',
+  'OTHER',
+])
+
+export const createMaintenanceScheduleSchema = z.object({
+  kind: maintenanceKindSchema,
+  label: z.string().max(80).nullable().optional(),
+  intervalKm: z.number().int().min(100).max(500_000),
+  warningKm: z.number().int().min(0).max(50_000).optional(),
+  lastDoneAtKm: z.number().int().nonnegative().nullable().optional(),
+  lastDoneAt: z.string().datetime().nullable().optional(),
+  enabled: z.boolean().optional(),
+  notes: z.string().max(500).nullable().optional(),
+})
+
+export const updateMaintenanceScheduleSchema = createMaintenanceScheduleSchema.partial()
+
+export const maintenanceScheduleParamsSchema = z.object({
+  enterpriseId: z.string().uuid(),
+  vehicleId: z.string().uuid(),
+  scheduleId: z.string().uuid(),
+})

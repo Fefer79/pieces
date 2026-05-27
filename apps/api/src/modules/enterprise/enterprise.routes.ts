@@ -5,7 +5,17 @@ import {
   fleetVehicleSchema,
   updateVehicleSchema,
   updateMileageSchema,
+  createMaintenanceScheduleSchema,
+  updateMaintenanceScheduleSchema,
 } from 'shared/validators'
+import {
+  listSchedules,
+  createSchedule,
+  updateSchedule,
+  deleteSchedule,
+  markScheduleDone,
+  type ScheduleInput,
+} from './maintenance.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth } from '../../plugins/auth.js'
 import {
@@ -198,6 +208,115 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
         vehicleId: string
       }
       const data = await getEnterpriseVehicle(enterpriseId, request.user.id, vehicleId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/vehicles/:vehicleId/schedules',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId, vehicleId } = request.params as {
+        enterpriseId: string
+        vehicleId: string
+      }
+      const data = await listSchedules(enterpriseId, request.user.id, vehicleId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/vehicles/:vehicleId/schedules',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(createMaintenanceScheduleSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, vehicleId } = request.params as {
+        enterpriseId: string
+        vehicleId: string
+      }
+      const data = await createSchedule(
+        enterpriseId,
+        request.user.id,
+        vehicleId,
+        request.body as ScheduleInput,
+      )
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/:enterpriseId/vehicles/:vehicleId/schedules/:scheduleId',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(updateMaintenanceScheduleSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, vehicleId, scheduleId } = request.params as {
+        enterpriseId: string
+        vehicleId: string
+        scheduleId: string
+      }
+      const data = await updateSchedule(
+        enterpriseId,
+        request.user.id,
+        vehicleId,
+        scheduleId,
+        request.body as Partial<ScheduleInput>,
+      )
+      return reply.send({ data })
+    },
+  )
+
+  fastify.delete(
+    '/:enterpriseId/vehicles/:vehicleId/schedules/:scheduleId',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId, vehicleId, scheduleId } = request.params as {
+        enterpriseId: string
+        vehicleId: string
+        scheduleId: string
+      }
+      await deleteSchedule(enterpriseId, request.user.id, vehicleId, scheduleId)
+      return reply.send({ data: { deleted: true } })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/vehicles/:vehicleId/schedules/:scheduleId/done',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId, vehicleId, scheduleId } = request.params as {
+        enterpriseId: string
+        vehicleId: string
+        scheduleId: string
+      }
+      const body = (request.body as { atKm?: number } | undefined) ?? {}
+      const data = await markScheduleDone(
+        enterpriseId,
+        request.user.id,
+        vehicleId,
+        scheduleId,
+        body.atKm,
+      )
       return reply.send({ data })
     },
   )
