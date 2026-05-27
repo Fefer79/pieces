@@ -61,6 +61,7 @@ import {
   getVehicleAnalytics,
 } from './vehicle.service.js'
 import { getEnterpriseDashboard, exportEnterpriseOrdersCsv } from './dashboard.service.js'
+import { getSubscriptionForMember } from './subscription.service.js'
 import type { VehicleUsageType, EnterpriseMemberRole } from '@prisma/client'
 
 export async function enterpriseRoutes(fastify: FastifyInstance) {
@@ -677,6 +678,19 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { enterpriseId } = request.params as { enterpriseId: string }
       const data = await getEnterpriseDashboard(enterpriseId, request.user.id)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/subscription',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Abonnement actif + tarif estimé' },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await getSubscriptionForMember(enterpriseId, request.user.id)
       return reply.send({ data })
     },
   )

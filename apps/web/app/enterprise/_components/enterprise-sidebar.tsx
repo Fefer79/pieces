@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: '/enterprise/centers', label: 'Centres', icon: CentersIcon },
   { href: '/enterprise/returns', label: 'Retours', icon: ReturnsIcon },
   { href: '/enterprise/buffer-stock', label: 'Stock tampon', icon: StockIcon },
+  { href: '/enterprise/billing', label: 'Abonnement', icon: BillingIcon },
 ] as const
 
 export function EnterpriseSidebar() {
@@ -147,6 +148,16 @@ function StockIcon({ active }: { active: boolean }) {
       <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
       <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
       <line x1="12" y1="22.08" x2="12" y2="12" />
+    </svg>
+  )
+}
+
+function BillingIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+      <line x1="6" y1="15" x2="10" y2="15" />
     </svg>
   )
 }

@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
+import { assertMember } from './enterprise.service.js'
 
 export type SubscriptionTier = 'FREE' | 'PRO_FLOTTE' | 'PRO_FLOTTE_PLUS'
 export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED'
@@ -211,6 +212,21 @@ export async function listSubscriptionsForEnterprise(enterpriseId: string) {
       events: { orderBy: { createdAt: 'desc' }, take: 50 },
     },
   })
+}
+
+/**
+ * Member-facing read: any enterprise member can see their current
+ * subscription + pricing breakdown computed from live vehicle count.
+ */
+export async function getSubscriptionForMember(enterpriseId: string, userId: string) {
+  await assertMember(enterpriseId, userId)
+  const [sub, vehicleCount] = await Promise.all([
+    getCurrentSubscription(enterpriseId),
+    prisma.vehicle.count({ where: { enterpriseId } }),
+  ])
+  const tier = (sub?.trialExpired ? 'FREE' : (sub?.tier as SubscriptionTier | undefined)) ?? 'FREE'
+  const pricing = computeMonthlyAmount(tier, vehicleCount)
+  return { subscription: sub, pricing }
 }
 
 export const SUBSCRIPTION_CONSTANTS = {

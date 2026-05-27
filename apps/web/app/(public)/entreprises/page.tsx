@@ -155,6 +155,12 @@ export default function EntreprisesPage() {
             Démarrer l&apos;essai 30 jours
           </Link>
           <Link
+            href="/entreprises/calculateur-roi"
+            className="rounded-md border border-border-strong bg-card px-5 py-2.5 text-sm font-semibold text-ink hover:bg-surface"
+          >
+            Calculer votre ROI
+          </Link>
+          <Link
             href="/entreprises/guide"
             className="rounded-md border border-border-strong bg-card px-5 py-2.5 text-sm font-semibold text-ink hover:bg-surface"
           >
