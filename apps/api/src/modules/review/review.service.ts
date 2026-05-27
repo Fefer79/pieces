@@ -1,5 +1,27 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
+import { recomputeVendorScore } from '../vendor/vendorScore.service.js'
+
+function rescoreVendor(vendorId: string) {
+  void recomputeVendorScore(vendorId).catch(() => {
+    // Best-effort
+  })
+}
+
+function rescoreOrderVendors(orderId: string) {
+  void (async () => {
+    try {
+      const items = await prisma.orderItem.findMany({
+        where: { orderId },
+        select: { vendorId: true },
+        distinct: ['vendorId'],
+      })
+      await Promise.all(items.map((i) => recomputeVendorScore(i.vendorId)))
+    } catch {
+      // Best-effort
+    }
+  })()
+}
 
 // H5 fix: Verify reviewer is the order initiator (buyer)
 export async function createSellerReview(reviewerId: string, data: {
@@ -29,7 +51,7 @@ export async function createSellerReview(reviewerId: string, data: {
     throw new AppError('REVIEW_ORDER_NOT_COMPLETED', 400, { message: 'La commande doit être livrée pour évaluer' })
   }
 
-  return prisma.sellerReview.create({
+  const review = await prisma.sellerReview.create({
     data: {
       orderId: data.orderId,
       vendorId: data.vendorId,
@@ -38,6 +60,8 @@ export async function createSellerReview(reviewerId: string, data: {
       comment: data.comment,
     },
   })
+  rescoreVendor(data.vendorId)
+  return review
 }
 
 export async function createDeliveryReview(reviewerId: string, data: {
@@ -137,9 +161,11 @@ export async function openDispute(openedBy: string, orderId: string, reason: str
     throw new AppError('DISPUTE_NOT_ORDER_PARTY', 403, { message: 'Seul un participant de la commande peut ouvrir un litige' })
   }
 
-  return prisma.dispute.create({
+  const dispute = await prisma.dispute.create({
     data: { orderId, openedBy, reason },
   })
+  rescoreOrderVendors(orderId)
+  return dispute
 }
 
 // H4 fix: Verify user is involved in the order or is admin

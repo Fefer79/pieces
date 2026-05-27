@@ -9,6 +9,9 @@ const NAV_ITEMS = [
   { href: '/enterprise/members', label: 'Membres', icon: MembersIcon },
   { href: '/enterprise/orders', label: 'Commandes', icon: OrdersIcon },
   { href: '/enterprise/search', label: 'Recherche', icon: SearchIcon },
+  { href: '/enterprise/centers', label: 'Centres', icon: CentersIcon },
+  { href: '/enterprise/returns', label: 'Retours', icon: ReturnsIcon },
+  { href: '/enterprise/buffer-stock', label: 'Stock tampon', icon: StockIcon },
 ] as const
 
 export function EnterpriseSidebar() {
@@ -115,6 +118,35 @@ function SearchIcon({ active }: { active: boolean }) {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+function CentersIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21h18" />
+      <path d="M5 21V7l7-4 7 4v14" />
+      <path d="M9 21V12h6v9" />
+    </svg>
+  )
+}
+
+function ReturnsIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 14 4 9 9 4" />
+      <path d="M20 20v-7a4 4 0 00-4-4H4" />
+    </svg>
+  )
+}
+
+function StockIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#002366' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+      <line x1="12" y1="22.08" x2="12" y2="12" />
     </svg>
   )
 }

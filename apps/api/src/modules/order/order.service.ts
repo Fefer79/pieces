@@ -2,6 +2,26 @@ import { randomBytes } from 'crypto'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { canTransition } from './order.stateMachine.js'
+import { recomputeVendorScore } from '../vendor/vendorScore.service.js'
+
+const DELIVERED_STATUSES = new Set(['DELIVERED', 'CONFIRMED', 'COMPLETED'])
+
+// Fire-and-forget rescore for every vendor referenced by an order's items.
+// Errors are swallowed: a scoring miss should never break the parent flow.
+function rescoreOrderVendors(orderId: string) {
+  void (async () => {
+    try {
+      const items = await prisma.orderItem.findMany({
+        where: { orderId },
+        select: { vendorId: true },
+        distinct: ['vendorId'],
+      })
+      await Promise.all(items.map((i) => recomputeVendorScore(i.vendorId)))
+    } catch {
+      // Swallow — scoring is best-effort.
+    }
+  })()
+}
 
 const COD_MAX_AMOUNT = 75_000
 
@@ -187,6 +207,10 @@ export async function transitionOrder(
     },
     include: { items: true },
   })
+
+  if (DELIVERED_STATUSES.has(toStatus)) {
+    rescoreOrderVendors(orderId)
+  }
 
   return updated
 }
