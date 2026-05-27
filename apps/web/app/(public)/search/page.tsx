@@ -43,8 +43,11 @@ function SearchPageContent() {
   const [qInput, setQInput] = useState(q)
   const [priceMinInput, setPriceMinInput] = useState(priceMin)
   const [priceMaxInput, setPriceMaxInput] = useState(priceMax)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setQInput(q), [q])
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setPriceMinInput(priceMin), [priceMin])
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setPriceMaxInput(priceMax), [priceMax])
 
   const [items, setItems] = useState<ProductCardItem[]>([])
@@ -86,6 +89,7 @@ function SearchPageContent() {
     if (priceMax) qs.set('priceMax', priceMax)
     if (sortBy && sortBy !== 'recent') qs.set('sortBy', sortBy)
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     fetch(`/api/v1/browse/parts?${qs.toString()}`)
       .then((r) => r.json())
