@@ -20,9 +20,25 @@ import {
   getAdminLiaisonActivity,
   exportCsv,
 } from './admin.service.js'
+import { prisma } from '../../lib/prisma.js'
 import { recomputeVendorScore, recomputeAllVendorScores } from '../vendor/vendorScore.service.js'
+import {
+  createSubscription,
+  updateSubscription,
+  listSubscriptionsForEnterprise,
+  getCurrentSubscription,
+  computeMonthlyAmount,
+  type SubscriptionTier,
+  type SubscriptionStatus,
+  type BillingCycle,
+} from '../enterprise/subscription.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { adminListQuerySchema, adminExportQuerySchema } from 'shared/validators'
+import {
+  adminListQuerySchema,
+  adminExportQuerySchema,
+  createSubscriptionSchema,
+  updateSubscriptionSchema,
+} from 'shared/validators'
 
 export async function adminRoutes(fastify: FastifyInstance) {
   // Story 9.2: Admin dashboard stats
@@ -238,6 +254,87 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const data = await recomputeAllVendorScores()
       request.log.info({ event: 'VENDOR_SCORES_BATCH_RECOMPUTED', count: data.count })
       return reply.status(200).send({ data })
+    },
+  )
+
+  // Subscriptions admin (Phase 1 — manual activation)
+  fastify.get(
+    '/enterprises/:id/subscriptions',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Historique des abonnements d\'une entreprise' },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await listSubscriptionsForEnterprise(id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/enterprises/:id/subscription',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Abonnement actif d\'une entreprise + tarif estimé selon nb véhicules' },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const sub = await getCurrentSubscription(id)
+      const vehicleCount = await prisma.vehicle.count({ where: { enterpriseId: id } })
+      const tier = sub?.tier ?? 'FREE'
+      const pricing = computeMonthlyAmount(tier as SubscriptionTier, vehicleCount)
+      return reply.status(200).send({ data: { subscription: sub, pricing } })
+    },
+  )
+
+  fastify.post(
+    '/enterprises/:id/subscriptions',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Crée un abonnement pour une entreprise (annule l\'actif précédent)',
+        body: zodToFastify(createSubscriptionSchema),
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const body = request.body as {
+        tier: SubscriptionTier
+        billingCycle?: BillingCycle
+        startTrial?: boolean
+        trialDays?: number
+        notes?: string | null
+      }
+      const userId = (request as { user?: { id?: string } }).user?.id
+      const sub = await createSubscription(id, { ...body, actorUserId: userId })
+      request.log.info({ event: 'SUBSCRIPTION_CREATED', enterpriseId: id, subscriptionId: sub.id, tier: sub.tier })
+      return reply.status(201).send({ data: sub })
+    },
+  )
+
+  fastify.patch(
+    '/subscriptions/:subscriptionId',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Modifie un abonnement (tier, status, cycle, notes)',
+        body: zodToFastify(updateSubscriptionSchema),
+      },
+    },
+    async (request, reply) => {
+      const { subscriptionId } = request.params as { subscriptionId: string }
+      const body = request.body as {
+        tier?: SubscriptionTier
+        status?: SubscriptionStatus
+        billingCycle?: BillingCycle
+        notes?: string | null
+      }
+      const userId = (request as { user?: { id?: string } }).user?.id
+      const sub = await updateSubscription(subscriptionId, { ...body, actorUserId: userId })
+      request.log.info({ event: 'SUBSCRIPTION_UPDATED', subscriptionId })
+      return reply.status(200).send({ data: sub })
     },
   )
 

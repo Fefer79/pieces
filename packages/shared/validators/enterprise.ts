@@ -175,3 +175,26 @@ export const updateBufferStockSchema = z.object({
 export const adjustBufferStockSchema = z.object({
   delta: z.number().int(),
 })
+
+// ---------------------------------------------------------------------------
+// Subscription packaging (Pro Flotte 3 niveaux — phase 1 fondations)
+// ---------------------------------------------------------------------------
+
+export const subscriptionTierSchema = z.enum(['FREE', 'PRO_FLOTTE', 'CONTINUITE'])
+export const subscriptionStatusSchema = z.enum(['TRIALING', 'ACTIVE', 'SUSPENDED', 'CANCELLED'])
+export const billingCycleSchema = z.enum(['MONTHLY', 'ANNUAL'])
+
+export const createSubscriptionSchema = z.object({
+  tier: subscriptionTierSchema,
+  billingCycle: billingCycleSchema.default('MONTHLY'),
+  startTrial: z.boolean().optional(),
+  trialDays: z.number().int().min(1).max(90).optional(),
+  notes: z.string().max(500).nullable().optional(),
+})
+
+export const updateSubscriptionSchema = z.object({
+  tier: subscriptionTierSchema.optional(),
+  status: subscriptionStatusSchema.optional(),
+  billingCycle: billingCycleSchema.optional(),
+  notes: z.string().max(500).nullable().optional(),
+})

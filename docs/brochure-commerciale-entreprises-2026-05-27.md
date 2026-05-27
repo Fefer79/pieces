@@ -11,10 +11,10 @@ Pièces se construit en trois étages indépendants. Chacun répond à un besoin
 | GRATUIT | PRO FLOTTE | PLAN CONTINUITÉ |
 |---|---|---|
 | Pièces.ci | Pièces Pro Flotte | Plan Continuité |
-| 0 F | 5 000 F / véhicule / mois | Pro Flotte + 10 000 F / mois forfait flotte |
+| 0 F | 5 000 F / véhicule / mois | 10 000 F / véhicule / mois |
 | Achetez mieux. La marketplace de référence pour vos pièces auto avec confiance intermédiée. | Pilotez votre flotte. L'analytique qui révèle où part votre budget, l'automatisation qui anticipe les pannes, et la facturation normalisée DGI. | Tout Pro Flotte + ne perdez plus une journée. SLA monétisé, livraisons 3 h chrono, assistance dédiée. |
 
-Pro Flotte et Continuité se choisissent selon votre besoin. Le **Plan Continuité inclut systématiquement toutes les fonctionnalités de Pro Flotte** : c'est une extension d'urgence pour les flottes qui ne peuvent pas se permettre une immobilisation. Vous pouvez aussi rester en gratuit aussi longtemps que vous voulez — pas de gating par taille de flotte.
+Pro Flotte et Continuité se choisissent selon votre besoin. Le **Plan Continuité inclut intégralement Pro Flotte** : c'est un abonnement unique à 10 000 F/véhicule/mois (paliers dégressifs identiques à Pro Flotte) qui ajoute la couche urgence — pas un cumul. Vous pouvez aussi rester en gratuit aussi longtemps que vous voulez — pas de gating par taille de flotte.
 
 ## Pour qui ?
 Vous exploitez 5 véhicules ou plus en Côte d'Ivoire et l'entretien est devenu un casse-tête ?
@@ -88,12 +88,12 @@ Le ROI de Pro Flotte, en clair
 
 Pour une flotte de 50 véhicules, l'abonnement Pro Flotte est remboursé en 3 semaines d'économies pièces. À 100 véhicules, c'est moins de 2 semaines. Le reste de l'année est marge positive.
 
-## Niveau 3 — Plan Continuité · Pro Flotte + 10 000 F / mois forfait flotte
+## Niveau 3 — Plan Continuité · 10 000 F / véhicule / mois
 « Tout Pro Flotte, et ne perdez plus une journée. »
 
 Le Plan Continuité **inclut intégralement Pro Flotte** (toute l'intelligence flotte, l'automatisation, la facturation normalisée et le service) et y ajoute la couche urgence ci-dessous. Un véhicule immobilisé coûte 30 000 à 50 000 FCFA par jour à un transporteur ou un taxi — la couche urgence transforme cette exposition en une promesse opérationnelle chiffrée.
 
-**Tarification** : votre abonnement Pro Flotte par véhicule (5 000 F dégressif selon paliers) **+** 10 000 F/mois forfait flotte pour la couche urgence. Exemple flotte 20 véhicules : 100 000 F + 10 000 F = **110 000 F/mois tout compris**.
+**Tarification** : un abonnement unique à **10 000 F / véhicule / mois**, avec les mêmes paliers dégressifs que Pro Flotte (1–20 : 10 000 F ; 21–50 : 8 000 F ; 51–100 : 6 000 F ; 100+ : tarif négocié). Continuité remplace Pro Flotte — vous ne cumulez pas les deux. Exemple flotte 20 véhicules : **200 000 F/mois tout compris**, vs 100 000 F en Pro Flotte seul.
 ## À Abidjan
 - Livraison 3 h chrono garantie quand la pièce est en stock chez un vendeur partenaire
 - 5 livraisons express incluses par mois — au-delà, 1 500 F par livraison supplémentaire

@@ -360,9 +360,78 @@ model Enterprise {
   orders              Order[]
   maintenanceCenters  MaintenanceCenter[]
   bufferStock         EnterpriseBufferStock[]
+  subscriptions       EnterpriseSubscription[]
 
   @@map("enterprises")
   @@index([slug], name: "idx_enterprises_slug")
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO_FLOTTE
+  CONTINUITE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+enum SubscriptionEventKind {
+  CREATED
+  TRIAL_STARTED
+  TRIAL_ENDED
+  ACTIVATED
+  SUSPENDED
+  REACTIVATED
+  CANCELLED
+  TIER_CHANGED
+  CYCLE_CHANGED
+  ROI_GUARANTEE_INVOKED
+  SLA_BREACH
+}
+
+model EnterpriseSubscription {
+  id                String             @id @default(uuid())
+  enterpriseId      String             @map("enterprise_id")
+  enterprise        Enterprise         @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  tier              SubscriptionTier
+  status            SubscriptionStatus @default(TRIALING)
+  billingCycle      BillingCycle       @default(MONTHLY) @map("billing_cycle")
+  trialEndsAt       DateTime?          @map("trial_ends_at")
+  startedAt         DateTime           @default(now()) @map("started_at")
+  currentPeriodEnd  DateTime?          @map("current_period_end")
+  cancelledAt       DateTime?          @map("cancelled_at")
+  notes             String?
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  events EnterpriseSubscriptionEvent[]
+
+  @@map("enterprise_subscriptions")
+  @@index([enterpriseId], name: "idx_enterprise_subs_enterprise")
+  @@index([status], name: "idx_enterprise_subs_status")
+}
+
+model EnterpriseSubscriptionEvent {
+  id             String                 @id @default(uuid())
+  subscriptionId String                 @map("subscription_id")
+  subscription   EnterpriseSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  kind           SubscriptionEventKind
+  payload        Json?
+  actorUserId    String?                @map("actor_user_id")
+  createdAt      DateTime               @default(now()) @map("created_at")
+
+  @@map("enterprise_subscription_events")
+  @@index([subscriptionId], name: "idx_subscription_events_sub")
+  @@index([kind], name: "idx_subscription_events_kind")
 }
 
 model EnterpriseBufferStock {

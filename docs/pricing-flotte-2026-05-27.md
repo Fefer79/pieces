@@ -18,9 +18,9 @@ Trois niveaux, trois promesses. Le Plan Continuité est désormais une **extensi
 |---|---|---|
 | Gratuit « Pièces.ci » | Achetez mieux. La marketplace, la confiance, la transaction sécurisée. | Commission fournisseur (5-10 %). |
 | Étage 1 « Pro Flotte » | Pilotez votre flotte. Analytique, prévention, automatisation, conformité fiscale. | Abonnement par véhicule. Revenu récurrent prévisible. |
-| Étage 2 « Plan Continuité » = Pro Flotte + urgence | Tout Pro Flotte + ne perdez plus une journée. SLA monétisé, assistance dédiée. | Pro Flotte par véhicule + forfait flotte 10 000 F/mois pour la couche urgence. |
+| Étage 2 « Plan Continuité » = Pro Flotte + urgence | Tout Pro Flotte + ne perdez plus une journée. SLA monétisé, assistance dédiée. | 10 000 F / véhicule / mois (paliers dégressifs identiques à Pro Flotte). Continuité **remplace** Pro Flotte, pas en plus. |
 
-Continuité inclut systématiquement Pro Flotte. On ne peut pas prendre Continuité sans Pro Flotte — l'urgence n'a de sens que sur une flotte déjà pilotée (alertes prédictives, stock tampon, fiches véhicule). Le bundling est volontaire à ce niveau ; pour le reste, le client garde la liberté de rester en gratuit ou de monter en Pro Flotte sans Continuité.
+Continuité inclut systématiquement Pro Flotte — c'est un abonnement unique à 10 000 F/véhicule/mois (paliers dégressifs : 8 000 F au-delà de 20 véhicules, 6 000 F au-delà de 50). On ne peut pas prendre Continuité sans Pro Flotte (l'urgence n'a de sens que sur une flotte déjà pilotée). Pour le reste, le client reste libre de rester en gratuit ou de prendre Pro Flotte sans Continuité.
 
 ## Packaging détaillé
 ## Gratuit — « Pièces.ci »
@@ -60,10 +60,10 @@ Objectif : monétiser la valeur réelle livrée aux flottes structurées via ré
 - Support prioritaire première réponse < 4 h ouvrées
 - Revue trimestrielle de flotte (30 min) avec Liaison Pièces
 
-## Étage 2 — « Plan Continuité » · Pro Flotte + 10 000 F / mois forfaitaire flotte
-Objectif : vendre de l'assurance opérationnelle **en sus** du pilotage Pro Flotte. Le Plan Continuité inclut systématiquement toutes les fonctionnalités de Pro Flotte (intelligence flotte, automatisation, facturation normalisée, service) et y ajoute la couche urgence ci-dessous.
+## Étage 2 — « Plan Continuité » · 10 000 F / véhicule / mois
+Objectif : vendre une assurance opérationnelle adossée au pilotage Pro Flotte. Le Plan Continuité inclut systématiquement toutes les fonctionnalités de Pro Flotte (intelligence flotte, automatisation, facturation normalisée, service) et y ajoute la couche urgence ci-dessous.
 
-Tarification : abonnement Pro Flotte par véhicule (5 000 F dégressif) **+** forfait flotte Plan Continuité 10 000 F/mois. Exemple flotte 20 véhicules : 100 000 F (Pro Flotte) + 10 000 F (Continuité) = 110 000 F/mois.
+Tarification unique : **10 000 F / véhicule / mois**, paliers dégressifs alignés sur Pro Flotte (1–20 véh : 10 000 F ; 21–50 : 8 000 F ; 51–100 : 6 000 F ; 100+ : tarif négocié). C'est un seul abonnement qui remplace Pro Flotte — il n'y a pas de cumul. Exemple flotte 20 véhicules : 200 000 F/mois (vs 100 000 F en Pro Flotte seul).
 
 Couche urgence ajoutée :
 - Abidjan : livraison 3 h chrono, 5 livraisons express incluses, +1 500 F au-delà
@@ -84,7 +84,7 @@ C'est le killer feature avec le témoignage chiffré le plus fort (« 3 Hilux, 4
 #### Garantie pièce et workflow retours en gratuit.
 Indispensables à la confiance marketplace. Les paywaller bloquerait l'adoption — personne ne commande la première fois s'il ne se sent pas protégé.
 #### Plan Continuité élargi hors Abidjan, et adossé à Pro Flotte.
-Le marché potentiel triple sans coût marginal significatif. Transporteurs interurbains et BTP en région deviennent adressables. Le forfait à 10 000 F reste tenable car la majorité des clients n'utiliseront l'urgence que rarement. Le fait que Continuité **inclue** Pro Flotte aligne l'incitatif client (qui n'aurait pas de raison de prendre Continuité sans la couche pilotage en dessous) et stabilise l'ARPU de Pièces (Continuité = ARPU Pro Flotte + 10 000 F, jamais moins).
+Le marché potentiel triple sans coût marginal significatif. Transporteurs interurbains et BTP en région deviennent adressables. Le doublement du ticket par véhicule (Pro Flotte 5 000 F → Continuité 10 000 F) reste justifié par la valeur de l'immobilisation évitée (30–50 000 F/jour pour un transporteur). Le fait que Continuité **inclue** Pro Flotte aligne l'incitatif client (le pilotage est inséparable de l'urgence) et stabilise l'ARPU de Pièces (toute flotte Continuité paie 2× la base Pro Flotte au véhicule).
 
 #### Facturation normalisée et optimisation fiscale en Pro Flotte.
 Killer feature côté DAF/comptable. La facturation normalisée DGI est obligatoire pour les entreprises au régime du réel ; sans plateforme, chaque fournisseur émet sa propre facture (qualité variable, conformité incertaine). Pièces consolide et garantit la conformité. L'argument déplace la décision d'achat de l'atelier vers la direction financière — celle qui signe l'abonnement.
@@ -106,7 +106,7 @@ Cash up-front, churn réduit, prévisibilité revenue. Plus engageant qu'un trim
 Saisir budget pièces annuel  économie projetée 20-30 %  coût Pro Flotte calculé selon paliers  ROI net affiché. Pour 20 véhicules à 8 M F/an : économie 1,6 M F – abonnement 1,2 M F = +400 000 F net. Transforme l'achat en évidence arithmétique.
 
 ## Modélisation revenu
-Hypothèses : 100 % des flottes payantes prennent au moins Pro Flotte (sinon elles restent en gratuit, sans revenu abonnement). Plan Continuité = Pro Flotte + 10 000 F/mois forfait flotte, donc toute flotte Continuité contribue au revenu Pro Flotte. Taux d adoption Continuité : 50 % des flottes ≥ 10 véhicules, 30 % des flottes < 10. Revenus en plus de la commission marketplace existante.
+Hypothèses : 100 % des flottes payantes prennent au moins Pro Flotte (sinon elles restent en gratuit, sans revenu abonnement). Plan Continuité remplace Pro Flotte avec un ticket par véhicule doublé (10 000 F vs 5 000 F). Taux d'adoption Continuité : 50 % des flottes ≥ 10 véhicules, 30 % des flottes < 10. Revenus en plus de la commission marketplace existante.
 
 ## Par taille de flotte (pricing dégressif appliqué)
 
