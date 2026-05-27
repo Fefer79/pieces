@@ -38,13 +38,34 @@ model User {
   sellerReviews        SellerReview[] @relation("SellerReviewer")
   deliveryReviews      DeliveryReview[] @relation("DeliveryReviewer")
   disputes             Dispute[] @relation("DisputeOpener")
+  returnRequests       ReturnOrder[] @relation("ReturnOrderRequester")
   notificationPreference NotificationPreference?
   managedVendors       Vendor[]      @relation("VendorManagedByLiaison")
   liaisonCatalogItems  CatalogItem[] @relation("CatalogItemCreatedByLiaison")
+  activityLogs         ActivityLog[]
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  actorId    String   @map("actor_id")
+  actorRole  Role     @map("actor_role")
+  action     String
+  targetType String   @map("target_type")
+  targetId   String?  @map("target_id")
+  payload    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+  @@index([actorId, createdAt(sort: Desc)], name: "idx_activity_logs_actor")
+  @@index([action, createdAt(sort: Desc)], name: "idx_activity_logs_action")
+  @@index([targetType, targetId], name: "idx_activity_logs_target")
+  @@index([createdAt(sort: Desc)], name: "idx_activity_logs_created_at")
 }
 
 enum DeletionRequestStatus {
@@ -456,6 +477,56 @@ enum DisputeStatus {
   CLOSED
 }
 
+enum ReturnReason {
+  DEFECTIVE
+  WRONG_PART
+  NOT_AS_DESCRIBED
+  NO_LONGER_NEEDED
+  OTHER
+}
+
+enum ReturnStatus {
+  REQUESTED
+  ACCEPTED
+  PICKED_UP
+  INSPECTED
+  REFUNDED
+  REJECTED
+  CANCELLED
+}
+
+model ReturnOrder {
+  id              String       @id @default(uuid())
+  orderId         String       @map("order_id")
+  order           Order        @relation(fields: [orderId], references: [id])
+  orderItemId     String?      @map("order_item_id")
+  enterpriseId    String?      @map("enterprise_id")
+  requestedById   String       @map("requested_by_id")
+  requestedBy     User         @relation("ReturnOrderRequester", fields: [requestedById], references: [id])
+  reason          ReturnReason
+  description     String?
+  pickupAddress   String?      @map("pickup_address")
+  pickupContactName  String?   @map("pickup_contact_name")
+  pickupContactPhone String?   @map("pickup_contact_phone")
+  status          ReturnStatus @default(REQUESTED)
+  refundAmount    Int?         @map("refund_amount")
+  evidence        String[]     @default([])
+  requestedAt     DateTime     @default(now()) @map("requested_at")
+  acceptedAt      DateTime?    @map("accepted_at")
+  pickedUpAt      DateTime?    @map("picked_up_at")
+  inspectedAt     DateTime?    @map("inspected_at")
+  refundedAt      DateTime?    @map("refunded_at")
+  rejectedAt      DateTime?    @map("rejected_at")
+  cancelledAt     DateTime?    @map("cancelled_at")
+  resolutionNote  String?      @map("resolution_note")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@map("return_orders")
+  @@index([orderId], name: "idx_return_orders_order")
+  @@index([enterpriseId, status], name: "idx_return_orders_enterprise_status")
+  @@index([status], name: "idx_return_orders_status")
+}
+
 model SellerReview {
   id        String   @id @default(uuid())
   orderId   String   @map("order_id")
@@ -541,6 +612,7 @@ model Order {
   delivery        Delivery?
   sellerReviews   SellerReview[]
   disputes        Dispute[]
+  returns         ReturnOrder[]
 
   @@map("orders")
   @@index([initiatorId], name: "idx_orders_initiator")

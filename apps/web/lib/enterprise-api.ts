@@ -41,6 +41,28 @@ export async function enterpriseFetch<T = unknown>(
   return { ok: true, data: body.data as T }
 }
 
+export async function apiFetch<T = unknown>(
+  path: string,
+  init?: RequestInit,
+): Promise<FetchResult<T>> {
+  const token = await getToken()
+  if (!token) return { ok: false, message: 'Session expirée. Reconnectez-vous.' }
+
+  const headers: Record<string, string> = {
+    ...(init?.headers as Record<string, string> | undefined),
+    Authorization: `Bearer ${token}`,
+  }
+  if (!(init?.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  const res = await fetch(`/api/v1${path}`, { ...init, headers })
+  if (res.status === 204) return { ok: true, data: undefined as unknown as T }
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) return { ok: false, message: body?.error?.message ?? 'Erreur serveur' }
+  return { ok: true, data: body.data as T }
+}
+
 export async function enterpriseDownload(path: string): Promise<Blob | null> {
   const token = await getToken()
   if (!token) return null

@@ -117,3 +117,42 @@ export const updateMaintenanceCenterSchema = createMaintenanceCenterSchema.parti
 export const setVehicleHomeCenterSchema = z.object({
   homeCenterId: z.string().uuid().nullable(),
 })
+
+export const returnReasonSchema = z.enum([
+  'DEFECTIVE',
+  'WRONG_PART',
+  'NOT_AS_DESCRIBED',
+  'NO_LONGER_NEEDED',
+  'OTHER',
+])
+
+export const returnStatusSchema = z.enum([
+  'REQUESTED',
+  'ACCEPTED',
+  'PICKED_UP',
+  'INSPECTED',
+  'REFUNDED',
+  'REJECTED',
+  'CANCELLED',
+])
+
+export const createReturnOrderSchema = z.object({
+  orderId: z.string().uuid(),
+  orderItemId: z.string().uuid().nullable().optional(),
+  reason: returnReasonSchema,
+  description: z.string().max(2000).nullable().optional(),
+  pickupAddress: z.string().max(500).nullable().optional(),
+  pickupContactName: z.string().max(120).nullable().optional(),
+  pickupContactPhone: z
+    .string()
+    .regex(/^\+225\d{10}$/, 'Format attendu : +225XXXXXXXXXX')
+    .nullable()
+    .optional(),
+  evidence: z.array(z.string().url()).max(10).optional(),
+})
+
+export const transitionReturnSchema = z.object({
+  toStatus: returnStatusSchema,
+  resolutionNote: z.string().max(2000).nullable().optional(),
+  refundAmount: z.number().int().min(0).nullable().optional(),
+})
