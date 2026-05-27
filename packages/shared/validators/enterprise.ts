@@ -17,8 +17,11 @@ export const enterpriseMemberRoleSchema = z.enum([
 
 export const createEnterpriseSchema = z.object({
   name: z.string().min(2, 'Le nom est requis'),
-  address: z.string().min(1).optional(),
-  rccm: z.string().min(1).optional(),
+  commune: z.string().min(1, 'La commune est requise'),
+  address: z.string().optional(),
+  lat: z.number().min(-90).max(90).optional(),
+  lng: z.number().min(-180).max(180).optional(),
+  rccm: z.string().optional(),
 })
 
 export const inviteMemberSchema = z.object({

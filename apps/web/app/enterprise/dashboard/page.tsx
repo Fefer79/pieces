@@ -1,7 +1,10 @@
 'use client'
+/* eslint-disable react-hooks/set-state-in-effect, react/no-unescaped-entities */
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
 import {
   enterpriseFetch,
   enterpriseDownload,
@@ -10,6 +13,11 @@ import {
   type Enterprise,
   type DashboardData,
 } from '@/lib/enterprise-api'
+
+const VendorMapPicker = dynamic(
+  () => import('@/components/vendor-map-picker').then((m) => m.VendorMapPicker),
+  { ssr: false, loading: () => <div className="h-[280px] rounded-md bg-surface" /> },
+)
 
 function formatFcfa(n: number) {
   return `${n.toLocaleString('fr-FR')} FCFA`
@@ -176,24 +184,30 @@ function StatCard({ label, value }: { label: string; value: string }) {
 
 function CreateEnterprisePrompt({ onCreated }: { onCreated: (e: Enterprise) => void }) {
   const [name, setName] = useState('')
+  const [commune, setCommune] = useState('')
   const [address, setAddress] = useState('')
   const [rccm, setRccm] = useState('')
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [showMap, setShowMap] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!commune) { setError('La commune est requise.'); return }
     setSubmitting(true)
     setError(null)
+    const payload: Record<string, unknown> = { name, commune }
+    if (address) payload.address = address
+    if (rccm) payload.rccm = rccm
+    if (coords) { payload.lat = coords.lat; payload.lng = coords.lng }
+
     const res = await enterpriseFetch<Enterprise>('/', {
       method: 'POST',
-      body: JSON.stringify({ name, address: address || undefined, rccm: rccm || undefined }),
+      body: JSON.stringify(payload),
     })
     setSubmitting(false)
-    if (!res.ok) {
-      setError(res.message)
-      return
-    }
+    if (!res.ok) { setError(res.message); return }
     onCreated(res.data)
   }
 
@@ -201,9 +215,7 @@ function CreateEnterprisePrompt({ onCreated }: { onCreated: (e: Enterprise) => v
     <div className="p-6 lg:p-8">
       <div className="mb-6">
         <h1 className="font-display text-3xl text-ink">Créer mon entreprise</h1>
-        <p className="mt-1 text-sm text-muted">
-          Avant de gérer votre flotte, créez votre entreprise. Vous en serez le propriétaire.
-        </p>
+        <p className="mt-1 text-sm text-muted">Première étape pour gérer votre flotte.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-md space-y-4 rounded-md border border-border bg-card p-6">
@@ -220,17 +232,67 @@ function CreateEnterprisePrompt({ onCreated }: { onCreated: (e: Enterprise) => v
             placeholder="Ex. Transports Yopougon SARL"
           />
         </div>
+
         <div>
-          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Adresse</label>
+          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            Commune *
+          </label>
+          <select
+            required
+            value={commune}
+            onChange={(e) => setCommune(e.target.value)}
+            className="mt-1 w-full rounded-sm border border-border bg-white px-3 py-2 text-sm text-ink"
+          >
+            <option value="">— Choisissez —</option>
+            {ABIDJAN_COMMUNES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            Adresse précise <span className="text-muted/60">(facultatif)</span>
+          </label>
           <input
             type="text"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
+            placeholder="Quartier, rue, repère…"
             className="mt-1 w-full rounded-sm border border-border bg-white px-3 py-2 text-sm text-ink"
           />
         </div>
+
         <div>
-          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">RCCM</label>
+          <button
+            type="button"
+            onClick={() => setShowMap((v) => !v)}
+            className="text-sm font-medium text-ink-2 hover:underline"
+          >
+            {showMap ? '− Masquer la carte' : '+ Préciser la position sur la carte'}
+          </button>
+          {coords && !showMap && (
+            <p className="mt-1 text-xs text-muted tabular">
+              Position : {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+            </p>
+          )}
+          {showMap && (
+            <div className="mt-2">
+              <VendorMapPicker
+                lat={coords?.lat ?? null}
+                lng={coords?.lng ?? null}
+                onChange={setCoords}
+                height={280}
+              />
+              <p className="mt-1 text-xs text-muted">
+                Cliquez sur la carte pour placer un repère exact.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            RCCM <span className="text-muted/60">(facultatif)</span>
+          </label>
           <input
             type="text"
             value={rccm}
@@ -238,7 +300,9 @@ function CreateEnterprisePrompt({ onCreated }: { onCreated: (e: Enterprise) => v
             className="mt-1 w-full rounded-sm border border-border bg-white px-3 py-2 text-sm text-ink"
           />
         </div>
+
         {error && <div className="text-sm text-red-600">{error}</div>}
+
         <button
           type="submit"
           disabled={submitting}

@@ -13,6 +13,7 @@ export const catalogItemParamsSchema = z.object({
 })
 
 export const partConditionSchema = z.enum(['NEW', 'USED', 'REFURBISHED'])
+export const partSourceSchema = z.enum(['OEM', 'AFTERMARKET', 'COMPATIBLE'])
 
 export const MIN_COMMISSION_FCFA = 1000
 export const MIN_COMMISSION_RATE = 0.05
@@ -31,6 +32,7 @@ export const updateCatalogItemSchema = z.object({
   vehicleCompatibility: z.string().max(200).nullable().optional(),
   price: z.number().int().min(0).optional(),
   condition: partConditionSchema.optional(),
+  partSource: partSourceSchema.nullable().optional(),
   warrantyMonths: z.number().int().min(0).max(120).optional(),
   commissionAmount: z.number().int().min(0).optional(),
   commissionAccepted: z.boolean().optional(),

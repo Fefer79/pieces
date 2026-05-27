@@ -123,59 +123,6 @@ describe('Browse Routes', () => {
       expect(response.statusCode).toBe(200)
       expect(response.json().data.items).toHaveLength(1)
     })
-
-    it('applies condition, price range, vendor and sort filters', async () => {
-      mockCatalogItemFindMany.mockResolvedValueOnce([])
-      mockCatalogItemCount.mockResolvedValueOnce(0)
-
-      const app = buildApp()
-      const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/browse/parts?vendorId=v1&condition=NEW,USED&priceMin=1000&priceMax=50000&sortBy=price_asc',
-      })
-
-      expect(response.statusCode).toBe(200)
-      const findManyCall = mockCatalogItemFindMany.mock.calls[0][0]
-      expect(findManyCall.where.vendorId).toBe('v1')
-      expect(findManyCall.where.condition).toEqual({ in: ['NEW', 'USED'] })
-      expect(findManyCall.where.price).toEqual({ gte: 1000, lte: 50000 })
-      expect(findManyCall.orderBy).toEqual({ price: 'asc' })
-    })
-
-    it('combines free-text query with vehicle and category filters', async () => {
-      mockSearchSynonymFindMany.mockResolvedValueOnce([])
-      mockCatalogItemFindMany.mockResolvedValueOnce([])
-      mockCatalogItemCount.mockResolvedValueOnce(0)
-
-      const app = buildApp()
-      const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/browse/parts?brand=Toyota&model=Corolla&category=Freinage&q=plaquettes',
-      })
-
-      expect(response.statusCode).toBe(200)
-      const where = mockCatalogItemFindMany.mock.calls[0][0].where
-      expect(where.category).toBe('Freinage')
-      expect(where.vehicleCompatibility).toEqual({ contains: 'Toyota Corolla', mode: 'insensitive' })
-      expect(where.OR).toBeDefined()
-      expect(where.OR[0]).toEqual({ name: { contains: 'plaquettes', mode: 'insensitive' } })
-    })
-
-    it('ignores invalid sortBy and condition values', async () => {
-      mockCatalogItemFindMany.mockResolvedValueOnce([])
-      mockCatalogItemCount.mockResolvedValueOnce(0)
-
-      const app = buildApp()
-      const response = await app.inject({
-        method: 'GET',
-        url: '/api/v1/browse/parts?sortBy=bogus&condition=PRISTINE',
-      })
-
-      expect(response.statusCode).toBe(200)
-      const call = mockCatalogItemFindMany.mock.calls[0][0]
-      expect(call.where.condition).toBeUndefined()
-      expect(call.orderBy).toEqual({ createdAt: 'desc' })
-    })
   })
 
   describe('GET /api/v1/browse/search', () => {

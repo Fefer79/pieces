@@ -1,7 +1,5 @@
 'use client'
 
-import { useAuth } from '@/lib/auth-context'
-
 export type CategoryTile = {
   id: string
   title: string
@@ -20,23 +18,18 @@ export function CategoryCarousel({
   tiles: CategoryTile[]
   heading?: string
 }) {
-  const { user } = useAuth()
-  const isAdmin = user?.roles.includes('ADMIN') ?? false
-
   return (
     <section aria-label={heading}>
       <div className="mb-3 flex items-baseline justify-between px-1 md:mb-4">
         <h2 className="font-display text-lg tracking-[-0.01em] text-ink md:text-2xl">
           {heading}
         </h2>
-        {isAdmin && (
-          <a
-            href="/catalogue"
-            className="text-xs font-medium text-accent hover:text-accent-hover md:text-sm"
-          >
-            Tout voir →
-          </a>
-        )}
+        <a
+          href="/catalogue"
+          className="text-xs font-medium text-accent hover:text-accent-hover md:text-sm"
+        >
+          Tout voir →
+        </a>
       </div>
 
       <div

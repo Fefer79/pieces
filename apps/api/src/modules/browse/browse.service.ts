@@ -63,20 +63,11 @@ export function getCategories() {
   return [...PART_CATEGORIES]
 }
 
-export type PartCondition = 'NEW' | 'USED' | 'REFURBISHED'
-export type SortBy = 'recent' | 'price_asc' | 'price_desc'
-
 export interface BrowsePartsFilters {
   brand?: string
   model?: string
   year?: number
   category?: string
-  q?: string
-  vendorId?: string
-  condition?: PartCondition[]
-  priceMin?: number
-  priceMax?: number
-  sortBy?: SortBy
   page?: number
   limit?: number
 }
@@ -96,21 +87,6 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
     where.category = filters.category
   }
 
-  if (filters.vendorId) {
-    where.vendorId = filters.vendorId
-  }
-
-  if (filters.condition && filters.condition.length > 0) {
-    where.condition = { in: filters.condition }
-  }
-
-  if (filters.priceMin !== undefined || filters.priceMax !== undefined) {
-    const priceFilter: Record<string, number> = {}
-    if (filters.priceMin !== undefined) priceFilter.gte = filters.priceMin
-    if (filters.priceMax !== undefined) priceFilter.lte = filters.priceMax
-    where.price = priceFilter
-  }
-
   // Filter by vehicle compatibility (text matching)
   if (filters.brand) {
     const compatParts: string[] = [filters.brand]
@@ -120,33 +96,10 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
     where.vehicleCompatibility = { contains: compatQuery, mode: 'insensitive' }
   }
 
-  // Free-text query (combined with all other filters via AND)
-  if (filters.q && filters.q.trim().length >= 2) {
-    let correctedQuery = filters.q.toLowerCase().trim()
-    const synonyms = await prisma.searchSynonym.findMany()
-    for (const syn of synonyms) {
-      if (correctedQuery.includes(syn.typo)) {
-        correctedQuery = correctedQuery.replace(syn.typo, syn.correction)
-      }
-    }
-    where.OR = [
-      { name: { contains: correctedQuery, mode: 'insensitive' } },
-      { category: { contains: correctedQuery, mode: 'insensitive' } },
-      { oemReference: { contains: correctedQuery, mode: 'insensitive' } },
-    ]
-  }
-
-  const orderBy =
-    filters.sortBy === 'price_asc'
-      ? { price: 'asc' as const }
-      : filters.sortBy === 'price_desc'
-        ? { price: 'desc' as const }
-        : { createdAt: 'desc' as const }
-
   const [items, total] = await Promise.all([
     prisma.catalogItem.findMany({
       where,
-      orderBy,
+      orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
       select: {
@@ -154,6 +107,7 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
         name: true,
         category: true,
         condition: true,
+        partSource: true,
         oemReference: true,
         vehicleCompatibility: true,
         price: true,
@@ -212,6 +166,7 @@ export async function searchParts(query: string, filters: { category?: string; p
         name: true,
         category: true,
         condition: true,
+        partSource: true,
         oemReference: true,
         vehicleCompatibility: true,
         price: true,

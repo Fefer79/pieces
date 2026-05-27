@@ -4,9 +4,19 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Button } from '@/components/ui/button'
-import { ProductCard, type ProductCardItem } from '@/components/ui/product-card'
+import { Price } from '@/components/ui/price'
+import { ConditionChip, PartSourceChip, type Condition, type PartSource } from '@/components/ui/chip'
 
-type CatalogItem = ProductCardItem
+interface CatalogItem {
+  id: string
+  name: string | null
+  category: string | null
+  condition: string | null
+  partSource: string | null
+  price: number | null
+  imageThumbUrl: string | null
+  vendor: { shopName: string }
+}
 
 export default function CataloguePage() {
   const { vehicle, clearVehicle } = useSelectedVehicle()
@@ -217,7 +227,44 @@ export default function CataloguePage() {
         {items.length > 0 && (
           <ul className="mt-5 divide-y divide-border rounded-md border border-border bg-card">
             {items.map((item) => (
-              <ProductCard key={item.id} item={item} />
+              <li
+                key={item.id}
+                className="flex gap-3 px-3 py-3 transition-colors hover:bg-surface"
+              >
+                <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
+                  {item.imageThumbUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.imageThumbUrl}
+                      alt={item.name ?? ''}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-xs text-muted-2">
+                      —
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-ink">
+                    {item.name ?? 'Pièce'}
+                  </p>
+                  <p className="truncate text-xs text-muted">
+                    {item.category ?? '—'} · {item.vendor.shopName}
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    {item.condition && (
+                      <ConditionChip condition={item.condition as Condition} />
+                    )}
+                    {item.partSource && (
+                      <PartSourceChip source={item.partSource as PartSource} />
+                    )}
+                  </div>
+                </div>
+                {item.price != null && (
+                  <Price amount={item.price} className="self-center text-sm" />
+                )}
+              </li>
             ))}
           </ul>
         )}
