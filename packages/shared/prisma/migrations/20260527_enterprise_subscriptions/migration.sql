@@ -2,7 +2,7 @@
 -- Foundation only: data model + audit trail. Activation is manual via admin UI.
 -- No payment integration in this phase.
 
-CREATE TYPE "SubscriptionTier" AS ENUM ('FREE', 'PRO_FLOTTE', 'CONTINUITE');
+CREATE TYPE "SubscriptionTier" AS ENUM ('FREE', 'PRO_FLOTTE', 'PRO_FLOTTE_PLUS');
 CREATE TYPE "SubscriptionStatus" AS ENUM ('TRIALING', 'ACTIVE', 'SUSPENDED', 'CANCELLED');
 CREATE TYPE "BillingCycle" AS ENUM ('MONTHLY', 'ANNUAL');
 CREATE TYPE "SubscriptionEventKind" AS ENUM (

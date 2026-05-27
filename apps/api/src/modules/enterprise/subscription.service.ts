@@ -1,7 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 
-export type SubscriptionTier = 'FREE' | 'PRO_FLOTTE' | 'CONTINUITE'
+export type SubscriptionTier = 'FREE' | 'PRO_FLOTTE' | 'PRO_FLOTTE_PLUS'
 export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED'
 export type BillingCycle = 'MONTHLY' | 'ANNUAL'
 
@@ -9,28 +9,16 @@ const ACTIVE_STATUSES: SubscriptionStatus[] = ['TRIALING', 'ACTIVE']
 const DEFAULT_TRIAL_DAYS = 30
 const ANNUAL_MONTHS_BILLED = 10 // payer 10 mois pour 12 = 2 mois offerts
 
-// Paliers dégressifs par véhicule (FCFA / véhicule / mois)
-// Continuité = Pro Flotte × 2 à chaque palier (mêmes seuils 1–20 / 21–50 / 51–100).
-const PALIERS: Record<'PRO_FLOTTE' | 'CONTINUITE', ReadonlyArray<{ upTo: number; price: number }>> = {
-  PRO_FLOTTE: [
-    { upTo: 20, price: 5_000 },
-    { upTo: 50, price: 4_000 },
-    { upTo: 100, price: 3_000 },
-  ],
-  CONTINUITE: [
-    { upTo: 20, price: 10_000 },
-    { upTo: 50, price: 8_000 },
-    { upTo: 100, price: 6_000 },
-  ],
+// Prix flat par véhicule (FCFA / véhicule / mois). Pas de paliers dégressifs.
+const PRICE_PER_VEHICLE: Record<SubscriptionTier, number> = {
+  FREE: 0,
+  PRO_FLOTTE: 5_000,
+  PRO_FLOTTE_PLUS: 10_000,
 }
 
 export function priceForVehicleCount(tier: SubscriptionTier, n: number): number {
   if (tier === 'FREE' || n <= 0) return 0
-  const grid = PALIERS[tier]
-  for (const p of grid) {
-    if (n <= p.upTo) return p.price
-  }
-  return grid[grid.length - 1]!.price // 100+ : tarif négocié — par défaut palier le plus bas
+  return PRICE_PER_VEHICLE[tier]
 }
 
 export interface MonthlyAmountBreakdown {
@@ -42,7 +30,7 @@ export interface MonthlyAmountBreakdown {
 }
 
 export function computeMonthlyAmount(tier: SubscriptionTier, vehicleCount: number): MonthlyAmountBreakdown {
-  const pricePerVehicle = priceForVehicleCount(tier, vehicleCount)
+  const pricePerVehicle = PRICE_PER_VEHICLE[tier]
   const monthlyTotal = pricePerVehicle * Math.max(0, vehicleCount)
   return {
     tier,
@@ -53,11 +41,11 @@ export function computeMonthlyAmount(tier: SubscriptionTier, vehicleCount: numbe
   }
 }
 
-// Hiérarchie d'inclusion : CONTINUITE > PRO_FLOTTE > FREE
+// Hiérarchie d'inclusion : PRO_FLOTTE_PLUS > PRO_FLOTTE > FREE
 const TIER_RANK: Record<SubscriptionTier, number> = {
   FREE: 0,
   PRO_FLOTTE: 1,
-  CONTINUITE: 2,
+  PRO_FLOTTE_PLUS: 2,
 }
 
 export function tierIncludes(actual: SubscriptionTier, required: SubscriptionTier): boolean {
@@ -74,7 +62,6 @@ export async function getCurrentSubscription(enterpriseId: string) {
     orderBy: { createdAt: 'desc' },
   })
   if (!sub) return null
-  // Auto-expire trial (lazy: state stays TRIALING in DB until cron flips it)
   if (sub.status === 'TRIALING' && sub.trialEndsAt && sub.trialEndsAt < now) {
     return { ...sub, status: 'TRIALING' as const, trialExpired: true }
   }
@@ -119,7 +106,6 @@ export async function createSubscription(enterpriseId: string, input: CreateSubs
     throw new AppError('ENTERPRISE_NOT_FOUND', 404, { message: 'Entreprise introuvable' })
   }
 
-  // Cancel any currently active subscription before creating a new one
   await prisma.enterpriseSubscription.updateMany({
     where: { enterpriseId, status: { in: ACTIVE_STATUSES } },
     data: { status: 'CANCELLED', cancelledAt: new Date() },
@@ -154,7 +140,7 @@ export async function createSubscription(enterpriseId: string, input: CreateSubs
       data: {
         subscriptionId: sub.id,
         kind: 'TRIAL_STARTED',
-        payload: { trialEndsAt },
+        payload: { trialEndsAt: trialEndsAt?.toISOString() ?? null },
         actorUserId: input.actorUserId ?? null,
       },
     })
@@ -227,9 +213,8 @@ export async function listSubscriptionsForEnterprise(enterpriseId: string) {
   })
 }
 
-// Constants exported for tests / pricing display
 export const SUBSCRIPTION_CONSTANTS = {
   DEFAULT_TRIAL_DAYS,
   ANNUAL_MONTHS_BILLED,
-  PALIERS,
+  PRICE_PER_VEHICLE,
 }

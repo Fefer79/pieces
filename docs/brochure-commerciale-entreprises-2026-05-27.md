@@ -1,5 +1,5 @@
 # Pièces Entreprises — Brochure commerciale
-Édition de mai 2026 — packaging Pro Flotte à trois niveaux
+Édition de mai 2026 — packaging Flotte Pro à trois niveaux
 
 La plateforme pour les gestionnaires de flotte qui veulent reprendre le contrôle de leur budget pièces et entretien.
 
@@ -8,13 +8,13 @@ La plateforme pour les gestionnaires de flotte qui veulent reprendre le contrôl
 Trois niveaux, une seule plateforme
 Pièces se construit en trois étages indépendants. Chacun répond à un besoin distinct ; chacun se prend séparément. Vous montez en étage uniquement quand la valeur que vous y trouvez le justifie.
 
-| GRATUIT | PRO FLOTTE | PLAN CONTINUITÉ |
+| GRATUIT | FLOTTE PRO | FLOTTE PRO + |
 |---|---|---|
-| Pièces.ci | Pièces Pro Flotte | Plan Continuité |
+| Pièces.ci | Pièces Flotte Pro | Pièces Flotte Pro + |
 | 0 F | 5 000 F / véhicule / mois | 10 000 F / véhicule / mois |
-| Achetez mieux. La marketplace de référence pour vos pièces auto avec confiance intermédiée. | Pilotez votre flotte. L'analytique qui révèle où part votre budget, l'automatisation qui anticipe les pannes, et la facturation normalisée DGI. | Tout Pro Flotte + ne perdez plus une journée. SLA monétisé, livraisons 3 h chrono, assistance dédiée. |
+| Achetez mieux. La marketplace de référence pour vos pièces auto avec confiance intermédiée. | Pilotez votre flotte. L'analytique qui révèle où part votre budget, l'automatisation qui anticipe les pannes, et la facturation normalisée DGI. | Tout Flotte Pro + ne perdez plus une journée. SLA monétisé, livraisons 3 h chrono, assistance dédiée. |
 
-Pro Flotte et Continuité se choisissent selon votre besoin. Le **Plan Continuité inclut intégralement Pro Flotte** : c'est un abonnement unique à 10 000 F/véhicule/mois (paliers dégressifs identiques à Pro Flotte) qui ajoute la couche urgence — pas un cumul. Vous pouvez aussi rester en gratuit aussi longtemps que vous voulez — pas de gating par taille de flotte.
+Flotte Pro et Flotte Pro + se choisissent selon votre besoin. **Flotte Pro + inclut intégralement Flotte Pro** : c'est un abonnement unique à 10 000 F/véhicule/mois (prix flat, pas de paliers) qui ajoute la couche urgence — pas un cumul. Vous pouvez aussi rester en gratuit aussi longtemps que vous voulez — pas de gating par taille de flotte.
 
 ## Pour qui ?
 Vous exploitez 5 véhicules ou plus en Côte d'Ivoire et l'entretien est devenu un casse-tête ?
@@ -50,7 +50,7 @@ La marketplace de référence pour vos pièces auto. Vous arrêtez de surpayer e
 
 Pièces se rémunère sur la commission fournisseur. Vous ne payez strictement rien pour utiliser la marketplace.
 
-## Niveau 2 — Pièces Pro Flotte · 5 000 F / véhicule / mois
+## Niveau 2 — Pièces Flotte Pro · 5 000 F / véhicule / mois
 « Pilotez votre flotte. »
 
 L'analytique qui révèle où part votre budget pièce par pièce, véhicule par véhicule. L'automatisation qui anticipe les pannes plutôt que d'y réagir. Tout ce qui transforme un parc subi en parc piloté.
@@ -78,22 +78,22 @@ L'analytique qui révèle où part votre budget pièce par pièce, véhicule par
 - Support prioritaire avec première réponse sous 4 h ouvrées
 - Revue trimestrielle de flotte avec un Liaison Pièces (30 min)
 
-Le ROI de Pro Flotte, en clair
+Le ROI de Flotte Pro, en clair
 
-| 10 véhicules | Pro Flotte  600 000 F | typique  30 M F | (20-30 %)  6 à 9 M F | minimum  +5,4 M F |
+| 10 véhicules | Flotte Pro 600 000 F | typique 30 M F | (20-30 %) 6 à 9 M F | minimum +5,4 M F |
 |---|---|---|---|---|
 | 20 véhicules | 1,2 M F | 60 M F | 12 à 18 M F | +10,8 M F |
 | 50 véhicules | 2,4 M F | 150 M F | 30 à 45 M F | +27,6 M F |
 | 100 véhicules | 3,6 M F | 300 M F | 60 à 90 M F | +56,4 M F |
 
-Pour une flotte de 50 véhicules, l'abonnement Pro Flotte est remboursé en 3 semaines d'économies pièces. À 100 véhicules, c'est moins de 2 semaines. Le reste de l'année est marge positive.
+Pour une flotte de 50 véhicules, l'abonnement Flotte Pro est remboursé en 3 semaines d'économies pièces. À 100 véhicules, c'est moins de 2 semaines. Le reste de l'année est marge positive.
 
-## Niveau 3 — Plan Continuité · 10 000 F / véhicule / mois
-« Tout Pro Flotte, et ne perdez plus une journée. »
+## Niveau 3 — Pièces Flotte Pro + · 10 000 F / véhicule / mois
+« Tout Flotte Pro, et ne perdez plus une journée. »
 
-Le Plan Continuité **inclut intégralement Pro Flotte** (toute l'intelligence flotte, l'automatisation, la facturation normalisée et le service) et y ajoute la couche urgence ci-dessous. Un véhicule immobilisé coûte 30 000 à 50 000 FCFA par jour à un transporteur ou un taxi — la couche urgence transforme cette exposition en une promesse opérationnelle chiffrée.
+Flotte Pro + **inclut intégralement Flotte Pro** (toute l'intelligence flotte, l'automatisation, la facturation normalisée et le service) et y ajoute la couche urgence ci-dessous. Un véhicule immobilisé coûte 30 000 à 50 000 FCFA par jour à un transporteur ou un taxi — la couche urgence transforme cette exposition en une promesse opérationnelle chiffrée.
 
-**Tarification** : un abonnement unique à **10 000 F / véhicule / mois**, avec les mêmes paliers dégressifs que Pro Flotte (1–20 : 10 000 F ; 21–50 : 8 000 F ; 51–100 : 6 000 F ; 100+ : tarif négocié). Continuité remplace Pro Flotte — vous ne cumulez pas les deux. Exemple flotte 20 véhicules : **200 000 F/mois tout compris**, vs 100 000 F en Pro Flotte seul.
+**Tarification** : un abonnement unique à **10 000 F / véhicule / mois**, prix flat (pas de paliers). Flotte Pro + remplace Flotte Pro — vous ne cumulez pas les deux. Exemple flotte 20 véhicules : **200 000 F/mois tout compris**, vs 100 000 F en Flotte Pro seul.
 ## À Abidjan
 - Livraison 3 h chrono garantie quand la pièce est en stock chez un vendeur partenaire
 - 5 livraisons express incluses par mois — au-delà, 1 500 F par livraison supplémentaire
@@ -111,9 +111,9 @@ Le Plan Continuité **inclut intégralement Pro Flotte** (toute l'intelligence f
 
 ## Récapitulatif des fonctionnalités par niveau
 
-Rappel : **Plan Continuité = Pro Flotte + couche urgence**, donc toute fonctionnalité Pro Flotte est aussi disponible en Continuité.
+Rappel : **Flotte Pro + = Flotte Pro + couche urgence**, donc toute fonctionnalité Flotte Pro est aussi disponible en Flotte Pro +.
 
-| Fonctionnalité | Gratuit | Pro Flotte | Plan Continuité |
+| Fonctionnalité | Gratuit | Flotte Pro | Flotte Pro + |
 |---|---|---|---|
 | **Marketplace & confiance** |  |  |  |
 | Catalogue compatibilité véhicule | ✓ | ✓ | ✓ |
@@ -152,32 +152,26 @@ Rappel : **Plan Continuité = Pro Flotte + couche urgence**, donc toute fonction
 | Revue trimestrielle avec un Liaison Pièces | — | ✓ | ✓ |
 
 Nos engagements commerciaux
-## Essai 30 jours sur Pro Flotte
-À l'inscription, toutes les fonctionnalités Pro Flotte sont activées 30 jours gratuitement et sans engagement. Vous voyez la valeur avant de décider. À J+30, vous choisissez : continuer avec Pro Flotte, ou repasser sur le niveau gratuit.
+## Essai 30 jours sur Flotte Pro
+À l'inscription, toutes les fonctionnalités Flotte Pro sont activées 30 jours gratuitement et sans engagement. Vous voyez la valeur avant de décider. À J+30, vous choisissez : continuer avec Flotte Pro, ou repasser sur le niveau gratuit.
 ## Garantie ROI à 3 mois
-Si à 3 mois Pro Flotte ne vous a pas fait économiser au moins l'équivalent de l'abonnement, vous repassez en gratuit et nous vous remboursons la dernière mensualité. Nous prenons le risque.
-## Pricing dégressif par paliers
-
-1 à 20 véhicules	5 000 F
-
-51 à 100 véhicules	3 000 F
-
+Si à 3 mois Flotte Pro ne vous a pas fait économiser au moins l'équivalent de l'abonnement, vous repassez en gratuit et nous vous remboursons la dernière mensualité. Nous prenons le risque.
 ## Paiement annuel = 2 mois offerts
-Payer Pro Flotte annuellement d'avance vous fait gagner l'équivalent de 2 mois (16,7 % de remise effective). Cash up-front pour vous, prévisibilité pour nous. Idéal pour les services administratifs et les flottes structurées.
+Payer Flotte Pro annuellement d'avance vous fait gagner l'équivalent de 2 mois (16,7 % de remise effective). Cash up-front pour vous, prévisibilité pour nous. Idéal pour les services administratifs et les flottes structurées.
 ## Calculateur ROI à l'inscription
-Avant même de saisir vos véhicules, indiquez votre budget pièces annuel. Pièces calcule en temps réel l'économie projetée, le coût Pro Flotte adapté à votre taille, et le ROI net. La décision devient une évidence arithmétique.
+Avant même de saisir vos véhicules, indiquez votre budget pièces annuel. Pièces calcule en temps réel l'économie projetée, le coût Flotte Pro (5 000 F × véhicules), et le ROI net. La décision devient une évidence arithmétique.
 
 ## Notre modèle économique, en transparence totale
 
 Commission marketplace	Prélevée auprès du fournisseur sur chaque commande (5–10 %). C'est notre revenu de base, présent quel que soit votre niveau.
 
-Plan Continuité	Forfait mensuel flotte. Couvre les surcoûts logistiques de l'urgence et de l'assistance dédiée.
+Flotte Pro +	10 000 F / véhicule / mois. Couvre les surcoûts logistiques de l'urgence et de l'assistance dédiée.
 
 Pas de marge cachée sur les pièces. Pas de frais d'entrée. Pas de droit de regard sur vos commandes hors plateforme. Notre incitatif est aligné sur le vôtre : plus vous économisez, plus vous restez.
 
 ## Ce que ça change concrètement — projection sur 100 véhicules
 
-| Indicateur | Sans Pièces | Avec Pro Flotte |
+| Indicateur | Sans Pièces | Avec Flotte Pro |
 |---|---|---|
 | Visibilité véhicule par véhicule | Aucune | Complète, temps réel |
 | Comparaison prix multi-fournisseurs | Manuelle, lente | Instantanée |
@@ -187,19 +181,19 @@ Pas de marge cachée sur les pièces. Pas de frais d'entrée. Pas de droit de re
 | Rupture de stock critique | 2–3 / mois | 0 (auto-replenish) |
 | Économie projetée | Référence | 20 à 30 % du budget pièces |
 
-Sur 300 M FCFA de budget annuel, l'économie cible est de 60 à 90 M FCFA par an, pour un investissement Pro Flotte de 3,6 M FCFA. Le ROI net minimum est de +56 M FCFA.
+Sur 300 M FCFA de budget annuel, l'économie cible est de 60 à 90 M FCFA par an, pour un investissement Flotte Pro de 6,0 M FCFA (100 véhicules × 5 000 F × 12 mois). Le ROI net minimum est de +54 M FCFA.
 
 ## Comment démarrer
 - Créez votre compte entreprise sur pieces.ci (signature en ligne, RCCM facultatif).
 - Importez le CSV de votre flotte (format simple : marque, modèle, année, plaque, km).
-- Activation automatique de l'essai Pro Flotte 30 jours — toutes les fonctionnalités, sans carte bancaire.
+- Activation automatique de l'essai Flotte Pro 30 jours — toutes les fonctionnalités, sans carte bancaire.
 - Déclarez vos centres de maintenance et rattachez vos véhicules.
 - Invitez vos membres (gestionnaires, mécaniciens, comptables) avec rôles distincts.
 - Mettez en place le stock tampon sur 5 à 10 références critiques.
-- À J+30, choisissez : continuer en Pro Flotte, revenir au gratuit, ou ajouter Plan Continuité. Délai moyen de mise en route : 48 h ouvrées.
+- À J+30, choisissez : continuer en Flotte Pro, revenir au gratuit, ou passer en Flotte Pro +. Délai moyen de mise en route : 48 h ouvrées.
 
 ## Contact
 Pièces.ci — Marketplace pièces auto et solutions flotte Abidjan, Côte d'Ivoire
 fernando.kouame@gmail.com
 
-Brochure éditée à partir du packaging Pro Flotte au 27 mai 2026. Pour les conditions générales d'utilisation, voir pieces.ci/cgu.
+Brochure éditée à partir du packaging Flotte Pro au 27 mai 2026. Pour les conditions générales d'utilisation, voir pieces.ci/cgu.

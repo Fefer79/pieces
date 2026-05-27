@@ -54,28 +54,29 @@ beforeEach(() => {
   enterpriseFindUnique.mockReset()
 })
 
-describe('paliers dégressifs', () => {
+describe('prix flat par véhicule', () => {
   it('FREE returns 0 regardless of count', () => {
     expect(priceForVehicleCount('FREE', 1)).toBe(0)
     expect(priceForVehicleCount('FREE', 200)).toBe(0)
   })
 
-  it('Pro Flotte: 5 000 / 4 000 / 3 000 selon palier', () => {
+  it('Flotte Pro: 5 000 F flat à tous les volumes', () => {
     expect(priceForVehicleCount('PRO_FLOTTE', 1)).toBe(5_000)
     expect(priceForVehicleCount('PRO_FLOTTE', 20)).toBe(5_000)
-    expect(priceForVehicleCount('PRO_FLOTTE', 21)).toBe(4_000)
-    expect(priceForVehicleCount('PRO_FLOTTE', 50)).toBe(4_000)
-    expect(priceForVehicleCount('PRO_FLOTTE', 51)).toBe(3_000)
-    expect(priceForVehicleCount('PRO_FLOTTE', 100)).toBe(3_000)
-    expect(priceForVehicleCount('PRO_FLOTTE', 250)).toBe(3_000) // 100+ tarif négocié
+    expect(priceForVehicleCount('PRO_FLOTTE', 100)).toBe(5_000)
+    expect(priceForVehicleCount('PRO_FLOTTE', 500)).toBe(5_000)
   })
 
-  it('Continuité: 10 000 / 8 000 / 6 000 selon palier', () => {
-    expect(priceForVehicleCount('CONTINUITE', 1)).toBe(10_000)
-    expect(priceForVehicleCount('CONTINUITE', 20)).toBe(10_000)
-    expect(priceForVehicleCount('CONTINUITE', 21)).toBe(8_000)
-    expect(priceForVehicleCount('CONTINUITE', 51)).toBe(6_000)
-    expect(priceForVehicleCount('CONTINUITE', 100)).toBe(6_000)
+  it('Flotte Pro +: 10 000 F flat à tous les volumes', () => {
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 1)).toBe(10_000)
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 20)).toBe(10_000)
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 100)).toBe(10_000)
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 500)).toBe(10_000)
+  })
+
+  it('zero or negative count returns 0', () => {
+    expect(priceForVehicleCount('PRO_FLOTTE', 0)).toBe(0)
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', -5)).toBe(0)
   })
 })
 
@@ -87,15 +88,15 @@ describe('computeMonthlyAmount', () => {
     expect(r.annualTotal).toBe(1_000_000) // 10 mois facturés
   })
 
-  it('Continuité 20 véhicules = 200 000 F (Pro Flotte ×2)', () => {
-    const r = computeMonthlyAmount('CONTINUITE', 20)
+  it('Flotte Pro + 20 véhicules = 200 000 F (Flotte Pro ×2)', () => {
+    const r = computeMonthlyAmount('PRO_FLOTTE_PLUS', 20)
     expect(r.pricePerVehicle).toBe(10_000)
     expect(r.monthlyTotal).toBe(200_000)
   })
 
-  it('Continuité 50 véhicules palier 21–50 = 8 000 × 50 = 400 000 F', () => {
-    const r = computeMonthlyAmount('CONTINUITE', 50)
-    expect(r.monthlyTotal).toBe(400_000)
+  it('Flotte Pro + 50 véhicules = 10 000 × 50 = 500 000 F (prix flat)', () => {
+    const r = computeMonthlyAmount('PRO_FLOTTE_PLUS', 50)
+    expect(r.monthlyTotal).toBe(500_000)
   })
 
   it('FREE = 0', () => {
@@ -104,15 +105,15 @@ describe('computeMonthlyAmount', () => {
 })
 
 describe('tierIncludes', () => {
-  it('CONTINUITE includes everything', () => {
-    expect(tierIncludes('CONTINUITE', 'FREE')).toBe(true)
-    expect(tierIncludes('CONTINUITE', 'PRO_FLOTTE')).toBe(true)
-    expect(tierIncludes('CONTINUITE', 'CONTINUITE')).toBe(true)
+  it('PRO_FLOTTE_PLUS includes everything', () => {
+    expect(tierIncludes('PRO_FLOTTE_PLUS', 'FREE')).toBe(true)
+    expect(tierIncludes('PRO_FLOTTE_PLUS', 'PRO_FLOTTE')).toBe(true)
+    expect(tierIncludes('PRO_FLOTTE_PLUS', 'PRO_FLOTTE_PLUS')).toBe(true)
   })
   it('PRO_FLOTTE includes FREE only', () => {
     expect(tierIncludes('PRO_FLOTTE', 'FREE')).toBe(true)
     expect(tierIncludes('PRO_FLOTTE', 'PRO_FLOTTE')).toBe(true)
-    expect(tierIncludes('PRO_FLOTTE', 'CONTINUITE')).toBe(false)
+    expect(tierIncludes('PRO_FLOTTE', 'PRO_FLOTTE_PLUS')).toBe(false)
   })
   it('FREE only includes itself', () => {
     expect(tierIncludes('FREE', 'FREE')).toBe(true)
@@ -137,11 +138,11 @@ describe('currentTier & gating', () => {
 
   it('TRIALING is active until trialEndsAt', async () => {
     subFindFirst.mockResolvedValue({
-      tier: 'CONTINUITE',
+      tier: 'PRO_FLOTTE_PLUS',
       status: 'TRIALING',
       trialEndsAt: new Date(Date.now() + 86_400_000),
     })
-    expect(await currentTier('ent-1')).toBe('CONTINUITE')
+    expect(await currentTier('ent-1')).toBe('PRO_FLOTTE_PLUS')
   })
 
   it('TRIALING expired falls back to FREE', async () => {
@@ -155,12 +156,12 @@ describe('currentTier & gating', () => {
 
   it('hasActiveTier honors hierarchy', async () => {
     subFindFirst.mockResolvedValue({
-      tier: 'CONTINUITE',
+      tier: 'PRO_FLOTTE_PLUS',
       status: 'ACTIVE',
       trialEndsAt: null,
     })
     expect(await hasActiveTier('ent-1', 'PRO_FLOTTE')).toBe(true)
-    expect(await hasActiveTier('ent-1', 'CONTINUITE')).toBe(true)
+    expect(await hasActiveTier('ent-1', 'PRO_FLOTTE_PLUS')).toBe(true)
   })
 
   it('requireActiveTier throws 402 when missing', async () => {
@@ -222,10 +223,10 @@ describe('updateSubscription', () => {
       status: 'ACTIVE',
       billingCycle: 'MONTHLY',
     })
-    subUpdate.mockResolvedValue({ id: 'sub-1', tier: 'CONTINUITE' })
+    subUpdate.mockResolvedValue({ id: 'sub-1', tier: 'PRO_FLOTTE_PLUS' })
     eventCreate.mockResolvedValue({})
 
-    await updateSubscription('sub-1', { tier: 'CONTINUITE' })
+    await updateSubscription('sub-1', { tier: 'PRO_FLOTTE_PLUS' })
     const kinds = eventCreate.mock.calls.map((c) => (c[0] as { data: { kind: string } }).data.kind)
     expect(kinds).toContain('TIER_CHANGED')
   })

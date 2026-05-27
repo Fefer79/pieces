@@ -180,7 +180,7 @@ export const adjustBufferStockSchema = z.object({
 // Subscription packaging (Pro Flotte 3 niveaux — phase 1 fondations)
 // ---------------------------------------------------------------------------
 
-export const subscriptionTierSchema = z.enum(['FREE', 'PRO_FLOTTE', 'CONTINUITE'])
+export const subscriptionTierSchema = z.enum(['FREE', 'PRO_FLOTTE', 'PRO_FLOTTE_PLUS'])
 export const subscriptionStatusSchema = z.enum(['TRIALING', 'ACTIVE', 'SUSPENDED', 'CANCELLED'])
 export const billingCycleSchema = z.enum(['MONTHLY', 'ANNUAL'])
 

@@ -369,7 +369,7 @@ model Enterprise {
 enum SubscriptionTier {
   FREE
   PRO_FLOTTE
-  CONTINUITE
+  PRO_FLOTTE_PLUS
 }
 
 enum SubscriptionStatus {
