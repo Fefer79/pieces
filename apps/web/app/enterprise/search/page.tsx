@@ -17,6 +17,8 @@ interface CompareOffer {
   id: string
   vendorId: string
   vendorName: string
+  vendorRating: number | null
+  vendorOrdersDelivered: number
   price: number | null
   condition: string | null
   partSource: string | null
@@ -287,6 +289,12 @@ export default function EnterpriseSearchPage() {
             {groups.map((g) => {
               const open = expandedGroup === g.groupKey
               const cheapest = g.offers[0]
+              const topRated = g.offers
+                .filter((o) => o.vendorRating != null)
+                .reduce<CompareOffer | null>(
+                  (best, o) => (best == null || (o.vendorRating ?? 0) > (best.vendorRating ?? 0) ? o : best),
+                  null,
+                )
               return (
                 <li
                   key={g.groupKey}
@@ -330,6 +338,7 @@ export default function EnterpriseSearchPage() {
                         <thead className="bg-surface/50">
                           <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
                             <th className="px-4 py-2 font-medium">Fournisseur</th>
+                            <th className="px-4 py-2 font-medium">Note</th>
                             <th className="px-4 py-2 font-medium">État</th>
                             <th className="px-4 py-2 font-medium">Garantie</th>
                             <th className="px-4 py-2 font-medium text-right">Prix</th>
@@ -345,6 +354,23 @@ export default function EnterpriseSearchPage() {
                                   <span className="ml-2 rounded-full bg-[#148C50]/10 px-2 py-0.5 font-mono text-[10px] text-[#148C50]">
                                     Meilleur prix
                                   </span>
+                                )}
+                                {topRated && o.id === topRated.id && o.id !== cheapest?.id && (
+                                  <span className="ml-2 rounded-full bg-[#1E3A8A]/10 px-2 py-0.5 font-mono text-[10px] text-[#1E3A8A]">
+                                    Mieux noté
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-2 text-muted">
+                                {o.vendorRating != null ? (
+                                  <span className="tabular text-ink">
+                                    {Math.round(o.vendorRating)}/100
+                                    <span className="ml-1 font-mono text-[10px] text-muted-2">
+                                      ({o.vendorOrdersDelivered})
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="font-mono text-[10px] text-muted-2">N/A</span>
                                 )}
                               </td>
                               <td className="px-4 py-2 text-muted">

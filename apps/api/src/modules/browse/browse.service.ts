@@ -145,6 +145,8 @@ export interface CompareOffer {
   id: string
   vendorId: string
   vendorName: string
+  vendorRating: number | null
+  vendorOrdersDelivered: number
   price: number | null
   condition: string | null
   partSource: string | null
@@ -212,7 +214,14 @@ export async function compareParts(filters: BrowsePartsFilters & { oem?: string 
       warrantyMonths: true,
       inStock: true,
       imageThumbUrl: true,
-      vendor: { select: { id: true, shopName: true } },
+      vendor: {
+        select: {
+          id: true,
+          shopName: true,
+          aggregateRating: true,
+          ordersDelivered: true,
+        },
+      },
     },
     take: 500,
   })
@@ -228,6 +237,8 @@ export async function compareParts(filters: BrowsePartsFilters & { oem?: string 
       id: item.id,
       vendorId: item.vendor.id,
       vendorName: item.vendor.shopName,
+      vendorRating: item.vendor.aggregateRating,
+      vendorOrdersDelivered: item.vendor.ordersDelivered,
       price: item.price,
       condition: item.condition,
       partSource: item.partSource,

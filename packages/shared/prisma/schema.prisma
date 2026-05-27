@@ -165,6 +165,12 @@ model Vendor {
 
   deliveryZones String[]         @default([]) @map("delivery_zones")
 
+  ordersDelivered  Int       @default(0) @map("orders_delivered")
+  disputesOpened   Int       @default(0) @map("disputes_opened")
+  avgReviewRating  Float?    @map("avg_review_rating")
+  aggregateRating  Float?    @map("aggregate_rating")
+  scoreUpdatedAt   DateTime? @map("score_updated_at")
+
   kyc                 VendorKyc?
   guaranteeSignatures VendorGuaranteeSignature[]
   catalogItems        CatalogItem[]

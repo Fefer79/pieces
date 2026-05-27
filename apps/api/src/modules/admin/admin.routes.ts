@@ -17,6 +17,7 @@ import {
   getAdminEnterpriseDetail,
   exportCsv,
 } from './admin.service.js'
+import { recomputeVendorScore, recomputeAllVendorScores } from '../vendor/vendorScore.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { adminListQuerySchema, adminExportQuerySchema } from 'shared/validators'
 
@@ -206,6 +207,33 @@ export async function adminRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const data = await getAdminEnterpriseDetail(id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.post(
+    '/vendors/:id/recompute-score',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Recalcule le score agrégé d\'un vendeur' },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await recomputeVendorScore(id)
+      request.log.info({ event: 'VENDOR_SCORE_RECOMPUTED', vendorId: id })
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.post(
+    '/vendors/recompute-scores',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Recalcule tous les scores vendeurs (batch)' },
+    },
+    async (request, reply) => {
+      const data = await recomputeAllVendorScores()
+      request.log.info({ event: 'VENDOR_SCORES_BATCH_RECOMPUTED', count: data.count })
       return reply.status(200).send({ data })
     },
   )
