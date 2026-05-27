@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { getBrands, getModels, getYears, getCategories, browseParts, searchParts, decodeVin } from './browse.service.js'
+import { getBrands, getModels, getYears, getCategories, browseParts, searchParts, compareParts, decodeVin } from './browse.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { vinDecodeSchema } from 'shared/validators'
 
@@ -81,6 +81,27 @@ export async function browseRoutes(fastify: FastifyInstance) {
         category: query.category,
         page: query.page ? parseInt(query.page, 10) : undefined,
         limit: query.limit ? parseInt(query.limit, 10) : undefined,
+      })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/compare',
+    {
+      schema: {
+        tags: ['Browse'],
+        description: 'Regroupe les pièces compatibles par référence OEM (ou nom) avec les offres multi-fournisseurs',
+      },
+    },
+    async (request, reply) => {
+      const query = request.query as { brand?: string; model?: string; year?: string; category?: string; oem?: string }
+      const result = await compareParts({
+        brand: query.brand,
+        model: query.model,
+        year: query.year ? parseInt(query.year, 10) : undefined,
+        category: query.category,
+        oem: query.oem,
       })
       return reply.status(200).send({ data: result })
     },

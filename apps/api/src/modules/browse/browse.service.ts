@@ -141,6 +141,135 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
   }
 }
 
+export interface CompareOffer {
+  id: string
+  vendorId: string
+  vendorName: string
+  price: number | null
+  condition: string | null
+  partSource: string | null
+  warrantyMonths: number | null
+  inStock: boolean
+  imageThumbUrl: string | null
+}
+
+export interface CompareGroup {
+  groupKey: string
+  oemReference: string | null
+  name: string | null
+  category: string | null
+  offerCount: number
+  minPrice: number | null
+  offers: CompareOffer[]
+}
+
+function normalizeName(s: string | null | undefined): string {
+  return (s ?? '').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+export async function compareParts(filters: BrowsePartsFilters & { oem?: string } = {}) {
+  const where: Record<string, unknown> = {
+    status: 'PUBLISHED',
+    inStock: true,
+    vendor: { status: 'ACTIVE' },
+  }
+
+  if (filters.category) where.category = filters.category
+  if (filters.oem) where.oemReference = { equals: filters.oem, mode: 'insensitive' }
+
+  if (filters.brand) {
+    const compatParts: string[] = [filters.brand]
+    if (filters.model) compatParts.push(filters.model)
+    if (filters.year) compatParts.push(String(filters.year))
+    const compatQuery = compatParts.join(' ')
+
+    const fitmentWhere: Record<string, unknown> = { brand: { equals: filters.brand, mode: 'insensitive' } }
+    if (filters.model) {
+      fitmentWhere.OR = [{ model: null }, { model: { equals: filters.model, mode: 'insensitive' } }]
+    }
+    if (filters.year) {
+      fitmentWhere.AND = [
+        { OR: [{ yearFrom: null }, { yearFrom: { lte: filters.year } }] },
+        { OR: [{ yearTo: null }, { yearTo: { gte: filters.year } }] },
+      ]
+    }
+    where.OR = [
+      { fitments: { some: fitmentWhere } },
+      { vehicleCompatibility: { contains: compatQuery, mode: 'insensitive' } },
+    ]
+  }
+
+  const items = await prisma.catalogItem.findMany({
+    where,
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      oemReference: true,
+      condition: true,
+      partSource: true,
+      price: true,
+      warrantyMonths: true,
+      inStock: true,
+      imageThumbUrl: true,
+      vendor: { select: { id: true, shopName: true } },
+    },
+    take: 500,
+  })
+
+  const groups = new Map<string, CompareGroup>()
+  for (const item of items) {
+    const groupKey = item.oemReference
+      ? `oem:${item.oemReference.toUpperCase()}`
+      : `name:${normalizeName(item.name)}`
+    if (!groupKey || groupKey === 'name:') continue
+
+    const offer: CompareOffer = {
+      id: item.id,
+      vendorId: item.vendor.id,
+      vendorName: item.vendor.shopName,
+      price: item.price,
+      condition: item.condition,
+      partSource: item.partSource,
+      warrantyMonths: item.warrantyMonths,
+      inStock: item.inStock,
+      imageThumbUrl: item.imageThumbUrl,
+    }
+
+    const existing = groups.get(groupKey)
+    if (existing) {
+      existing.offers.push(offer)
+      existing.offerCount += 1
+      if (offer.price != null && (existing.minPrice == null || offer.price < existing.minPrice)) {
+        existing.minPrice = offer.price
+      }
+    } else {
+      groups.set(groupKey, {
+        groupKey,
+        oemReference: item.oemReference,
+        name: item.name,
+        category: item.category,
+        offerCount: 1,
+        minPrice: offer.price,
+        offers: [offer],
+      })
+    }
+  }
+
+  const result = Array.from(groups.values()).map((g) => {
+    g.offers.sort((a, b) => {
+      const ap = a.price ?? Number.POSITIVE_INFINITY
+      const bp = b.price ?? Number.POSITIVE_INFINITY
+      return ap - bp
+    })
+    return g
+  })
+
+  result.sort((a, b) => b.offerCount - a.offerCount)
+
+  return { groups: result, total: result.length }
+}
+
 export async function searchParts(query: string, filters: { category?: string; page?: number; limit?: number } = {}) {
   const page = filters.page ?? 1
   const limit = Math.min(filters.limit ?? 20, 100)

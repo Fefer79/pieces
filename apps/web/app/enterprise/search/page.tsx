@@ -13,9 +13,34 @@ interface SearchResult {
   vendor: { shopName: string }
 }
 
+interface CompareOffer {
+  id: string
+  vendorId: string
+  vendorName: string
+  price: number | null
+  condition: string | null
+  partSource: string | null
+  warrantyMonths: number | null
+  inStock: boolean
+  imageThumbUrl: string | null
+}
+
+interface CompareGroup {
+  groupKey: string
+  oemReference: string | null
+  name: string | null
+  category: string | null
+  offerCount: number
+  minPrice: number | null
+  offers: CompareOffer[]
+}
+
 export default function EnterpriseSearchPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
+  const [groups, setGroups] = useState<CompareGroup[]>([])
+  const [grouped, setGrouped] = useState(false)
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null)
   const [searching, setSearching] = useState(false)
 
   // Vehicle filter state
@@ -48,31 +73,45 @@ export default function EnterpriseSearchPage() {
   }, [selectedYear])
 
   const handleSearch = useCallback(
-    async (q: string, brand: string, model: string, year: string) => {
+    async (q: string, brand: string, model: string, year: string, useGrouped: boolean) => {
       const hasVehicle = Boolean(brand)
       const hasText = q.trim().length >= 2
       if (!hasVehicle && !hasText) {
         setResults([])
+        setGroups([])
         return
       }
       setSearching(true)
       try {
-        let url: string
-        if (hasVehicle) {
+        if (useGrouped && hasVehicle) {
           const params = new URLSearchParams()
           params.set('brand', brand)
           if (model) params.set('model', model)
           if (year) params.set('year', year)
-          if (hasText) params.set('q', q)
-          url = `/api/v1/browse/parts?${params.toString()}`
+          const res = await fetch(`/api/v1/browse/compare?${params.toString()}`)
+          const body = await res.json()
+          setGroups(body.data?.groups ?? [])
+          setResults([])
         } else {
-          url = `/api/v1/browse/search?q=${encodeURIComponent(q)}`
+          let url: string
+          if (hasVehicle) {
+            const params = new URLSearchParams()
+            params.set('brand', brand)
+            if (model) params.set('model', model)
+            if (year) params.set('year', year)
+            if (hasText) params.set('q', q)
+            url = `/api/v1/browse/parts?${params.toString()}`
+          } else {
+            url = `/api/v1/browse/search?q=${encodeURIComponent(q)}`
+          }
+          const res = await fetch(url)
+          const body = await res.json()
+          setResults(body.data?.items ?? [])
+          setGroups([])
         }
-        const res = await fetch(url)
-        const body = await res.json()
-        setResults(body.data?.items ?? [])
       } catch {
         setResults([])
+        setGroups([])
       } finally {
         setSearching(false)
       }
@@ -82,11 +121,11 @@ export default function EnterpriseSearchPage() {
 
   useEffect(() => {
     const timer = setTimeout(
-      () => handleSearch(searchQuery, selectedBrand, selectedModel, selectedYear),
+      () => handleSearch(searchQuery, selectedBrand, selectedModel, selectedYear, grouped),
       300,
     )
     return () => clearTimeout(timer)
-  }, [searchQuery, selectedBrand, selectedModel, selectedYear, handleSearch])
+  }, [searchQuery, selectedBrand, selectedModel, selectedYear, grouped, handleSearch])
 
   const resetFilters = () => {
     setSelectedBrand('')
@@ -95,6 +134,8 @@ export default function EnterpriseSearchPage() {
     setSelectedMotor('')
     setSearchQuery('')
     setResults([])
+    setGroups([])
+    setExpandedGroup(null)
   }
 
   const filterInput =
@@ -181,6 +222,19 @@ export default function EnterpriseSearchPage() {
             </select>
           </div>
 
+          <label className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              checked={grouped}
+              onChange={(e) => setGrouped(e.target.checked)}
+              disabled={!selectedBrand}
+              className="h-4 w-4"
+            />
+            <span className={selectedBrand ? '' : 'opacity-50'}>
+              Comparer par référence
+            </span>
+          </label>
+
           <button
             onClick={resetFilters}
             className="w-full rounded-md border border-border-strong bg-card px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
@@ -199,16 +253,18 @@ export default function EnterpriseSearchPage() {
             </div>
             <h1 className="mt-1 font-display text-3xl text-ink">Recherche de pièces</h1>
           </div>
-          {results.length > 0 && (
+          {(results.length > 0 || groups.length > 0) && (
             <p className="font-mono text-xs tabular text-muted">
-              {results.length} résultat{results.length > 1 ? 's' : ''}
+              {grouped
+                ? `${groups.length} référence${groups.length > 1 ? 's' : ''}`
+                : `${results.length} résultat${results.length > 1 ? 's' : ''}`}
             </p>
           )}
         </div>
 
         {searching && <p className="text-sm text-muted">Recherche en cours…</p>}
 
-        {!searching && results.length === 0 && searchQuery.trim().length < 2 && !selectedBrand && (
+        {!searching && results.length === 0 && groups.length === 0 && searchQuery.trim().length < 2 && !selectedBrand && (
           <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-border-strong bg-card py-16 text-center">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-2">
               <circle cx="11" cy="11" r="8" />
@@ -219,11 +275,111 @@ export default function EnterpriseSearchPage() {
           </div>
         )}
 
-        {!searching && results.length === 0 && (searchQuery.trim().length >= 2 || selectedBrand) && (
+        {!searching && results.length === 0 && groups.length === 0 && (searchQuery.trim().length >= 2 || selectedBrand) && (
           <div className="rounded-md border border-dashed border-border-strong bg-card p-10 text-center">
             <p className="text-sm font-medium text-ink">Aucun résultat</p>
             <p className="mt-1 text-xs text-muted">Essayez d&apos;élargir les filtres ou un autre terme.</p>
           </div>
+        )}
+
+        {grouped && groups.length > 0 && (
+          <ul className="space-y-3">
+            {groups.map((g) => {
+              const open = expandedGroup === g.groupKey
+              const cheapest = g.offers[0]
+              return (
+                <li
+                  key={g.groupKey}
+                  className="overflow-hidden rounded-md border border-border bg-card"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setExpandedGroup(open ? null : g.groupKey)}
+                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-surface"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-semibold text-ink">
+                        {g.name ?? 'Pièce'}
+                      </h3>
+                      <p className="mt-0.5 text-xs text-muted">
+                        {g.oemReference ? `Réf. ${g.oemReference}` : 'Sans réf. OEM'}
+                        {g.category ? ` · ${g.category}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex flex-shrink-0 items-center gap-4">
+                      <div className="text-right">
+                        <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+                          Dès
+                        </div>
+                        {g.minPrice != null ? (
+                          <Price amount={g.minPrice} className="text-base font-semibold text-ink" />
+                        ) : (
+                          <span className="text-sm text-muted">—</span>
+                        )}
+                      </div>
+                      <span className="rounded-full bg-surface px-2.5 py-1 font-mono text-[11px] tabular text-ink">
+                        {g.offerCount} offre{g.offerCount > 1 ? 's' : ''}
+                      </span>
+                      <span className="text-muted-2">{open ? '▲' : '▼'}</span>
+                    </div>
+                  </button>
+
+                  {open && (
+                    <div className="border-t border-border">
+                      <table className="w-full text-sm">
+                        <thead className="bg-surface/50">
+                          <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
+                            <th className="px-4 py-2 font-medium">Fournisseur</th>
+                            <th className="px-4 py-2 font-medium">État</th>
+                            <th className="px-4 py-2 font-medium">Garantie</th>
+                            <th className="px-4 py-2 font-medium text-right">Prix</th>
+                            <th className="px-4 py-2 font-medium">Dispo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {g.offers.map((o) => (
+                            <tr key={o.id} className="border-t border-border">
+                              <td className="px-4 py-2 text-ink">
+                                {o.vendorName}
+                                {o.id === cheapest?.id && (
+                                  <span className="ml-2 rounded-full bg-[#148C50]/10 px-2 py-0.5 font-mono text-[10px] text-[#148C50]">
+                                    Meilleur prix
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-2 text-muted">
+                                {o.condition === 'NEW' && 'Neuf'}
+                                {o.condition === 'USED' && 'Occasion'}
+                                {o.condition === 'REFURBISHED' && 'Ré-usiné'}
+                                {!o.condition && '—'}
+                              </td>
+                              <td className="px-4 py-2 text-muted">
+                                {o.warrantyMonths != null ? `${o.warrantyMonths} mois` : '—'}
+                              </td>
+                              <td className="px-4 py-2 text-right">
+                                {o.price != null ? (
+                                  <Price amount={o.price} className="font-semibold text-ink" />
+                                ) : (
+                                  <span className="text-muted">—</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-2">
+                                {o.inStock ? (
+                                  <span className="text-[#148C50]">✓ Stock</span>
+                                ) : (
+                                  <span className="text-muted-2">Épuisé</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
         )}
 
         {results.length > 0 && (
