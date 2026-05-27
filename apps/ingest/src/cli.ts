@@ -2,8 +2,9 @@ import { parseArgs } from 'node:util'
 import { ingestOsmAbidjan } from './pipeline/competitor.ts'
 import { ingestNhtsaVehicles } from './pipeline/vehicles.ts'
 import { enrichVehicleYears } from './pipeline/vehicle-years.ts'
+import { ingestFrenchModels } from './pipeline/french-models.ts'
 
-type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year'
+type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models'
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
@@ -34,6 +35,12 @@ async function main(): Promise<void> {
     case 'nhtsa-year': {
       console.log(`[ingest] nhtsa year enrichment ${dryRun ? '(dry-run)' : ''}`)
       const stats = await enrichVehicleYears({ dryRun })
+      console.log('[ingest] done', stats)
+      break
+    }
+    case 'french-models': {
+      console.log(`[ingest] french supplementary models ${dryRun ? '(dry-run)' : ''}`)
+      const stats = await ingestFrenchModels({ dryRun })
       console.log('[ingest] done', stats)
       break
     }
