@@ -10,6 +10,7 @@ interface PartItem {
   category: string | null
   condition: string | null
   price: number | null
+  commissionAmount: number | null
   status: string
   inStock: boolean
   imageThumbUrl: string | null
@@ -166,11 +167,24 @@ export default function LiaisonPartsPage() {
                       </p>
                     )}
                   </div>
-                  {p.price != null && (
-                    <p className="self-center text-sm font-medium text-ink">
-                      {p.price.toLocaleString('fr-FR')} F
-                    </p>
-                  )}
+                  <div className="flex flex-col items-end justify-center gap-1">
+                    {p.price != null && (
+                      <p className="text-sm font-medium text-ink">
+                        {p.price.toLocaleString('fr-FR')} F
+                      </p>
+                    )}
+                    {p.commissionAmount != null && (
+                      <p className="text-[11px] text-muted-2">
+                        com. {p.commissionAmount.toLocaleString('fr-FR')} F
+                      </p>
+                    )}
+                    <Link
+                      href={`/liaison/vendors/${p.vendor.id}/parts/${p.id}/edit`}
+                      className="text-xs font-medium text-ink-2 hover:underline"
+                    >
+                      Modifier
+                    </Link>
+                  </div>
                 </div>
               </li>
             )

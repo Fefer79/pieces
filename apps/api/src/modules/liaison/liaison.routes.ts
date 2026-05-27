@@ -3,6 +3,7 @@ import {
   liaisonCreateVendorSchema,
   liaisonUpdateVendorSchema,
   liaisonCreatePartSchema,
+  liaisonUpdatePartSchema,
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
@@ -12,6 +13,8 @@ import {
   getLiaisonVendor,
   updateLiaisonVendor,
   createPartForVendor,
+  getLiaisonPart,
+  updatePartForVendor,
   listVendorParts,
   listLiaisonParts,
   getLiaisonDashboard,
@@ -147,6 +150,47 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
         partId: result.id,
       })
       return reply.status(201).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/vendors/:id/parts/:partId',
+    {
+      schema: {
+        tags: ['Liaison'],
+        description: 'Détail d\'une pièce gérée',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const { id, partId } = request.params as { id: string; partId: string }
+      const result = await getLiaisonPart(request.user.id, id, partId)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.patch(
+    '/vendors/:id/parts/:partId',
+    {
+      schema: {
+        tags: ['Liaison'],
+        description: 'Modifier une pièce du catalogue d\'un vendeur géré',
+        body: zodToFastify(liaisonUpdatePartSchema),
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const { id, partId } = request.params as { id: string; partId: string }
+      const result = await updatePartForVendor(request.user.id, id, partId, request.body)
+      request.log.info({
+        event: 'LIAISON_PART_UPDATED',
+        liaisonId: request.user.id,
+        vendorId: id,
+        partId,
+      })
+      return reply.status(200).send({ data: result })
     },
   )
 

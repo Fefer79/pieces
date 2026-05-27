@@ -4,8 +4,10 @@ import {
   liaisonCreateVendorSchema,
   liaisonUpdateVendorSchema,
   liaisonCreatePartSchema,
+  liaisonUpdatePartSchema,
+  minCommissionFor,
 } from 'shared/validators'
-import type { CatalogItemStatus } from '@prisma/client'
+import type { CatalogItemStatus, Prisma } from '@prisma/client'
 
 const VENDOR_DETAIL_SELECT = {
   id: true,
@@ -175,6 +177,10 @@ export async function createPartForVendor(
     })
   }
 
+  const price = parsed.data.price ?? 0
+  const minRequired = minCommissionFor(price)
+  const commissionAmount = Math.max(parsed.data.commissionAmount ?? minRequired, minRequired)
+
   return prisma.catalogItem.create({
     data: {
       vendorId,
@@ -186,6 +192,7 @@ export async function createPartForVendor(
       price: parsed.data.price,
       condition: parsed.data.condition,
       warrantyMonths: parsed.data.warrantyMonths,
+      commissionAmount,
       inStock: parsed.data.inStock,
       imageOriginalUrl: parsed.data.imageOriginalUrl,
       status: 'PUBLISHED',
@@ -198,9 +205,112 @@ export async function createPartForVendor(
       category: true,
       condition: true,
       price: true,
+      commissionAmount: true,
       status: true,
       inStock: true,
       createdAt: true,
+    },
+  })
+}
+
+export async function getLiaisonPart(liaisonId: string, vendorId: string, partId: string) {
+  const part = await prisma.catalogItem.findFirst({
+    where: {
+      id: partId,
+      vendorId,
+      vendor: { managedByLiaisonId: liaisonId },
+    },
+    select: {
+      id: true,
+      vendorId: true,
+      name: true,
+      category: true,
+      oemReference: true,
+      vehicleCompatibility: true,
+      price: true,
+      condition: true,
+      warrantyMonths: true,
+      commissionAmount: true,
+      commissionAcceptedAt: true,
+      inStock: true,
+      status: true,
+      imageThumbUrl: true,
+      imageOriginalUrl: true,
+      createdAt: true,
+    },
+  })
+
+  if (!part) {
+    throw new AppError('LIAISON_PART_NOT_FOUND', 404, {
+      message: 'Pièce introuvable ou non gérée par cette liaison',
+    })
+  }
+
+  return part
+}
+
+export async function updatePartForVendor(
+  liaisonId: string,
+  vendorId: string,
+  partId: string,
+  body: unknown,
+) {
+  const parsed = liaisonUpdatePartSchema.safeParse(body)
+  if (!parsed.success) {
+    throw new AppError('LIAISON_PART_INVALID', 422, {
+      message: parsed.error.issues[0]?.message ?? 'Données invalides',
+    })
+  }
+
+  const part = await prisma.catalogItem.findFirst({
+    where: {
+      id: partId,
+      vendorId,
+      vendor: { managedByLiaisonId: liaisonId },
+    },
+    select: { id: true, price: true, commissionAmount: true },
+  })
+
+  if (!part) {
+    throw new AppError('LIAISON_PART_NOT_FOUND', 404, {
+      message: 'Pièce introuvable ou non gérée par cette liaison',
+    })
+  }
+
+  const updateData: Prisma.CatalogItemUpdateInput = {}
+  const d = parsed.data
+  if (d.name !== undefined) updateData.name = d.name
+  if (d.category !== undefined) updateData.category = d.category
+  if (d.oemReference !== undefined) updateData.oemReference = d.oemReference
+  if (d.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = d.vehicleCompatibility
+  if (d.condition !== undefined) updateData.condition = d.condition
+  if (d.warrantyMonths !== undefined) updateData.warrantyMonths = d.warrantyMonths
+  if (d.inStock !== undefined) updateData.inStock = d.inStock
+  if (d.price !== undefined) {
+    updateData.price = d.price
+    updateData.priceUpdatedAt = new Date()
+  }
+
+  if (d.commissionAmount !== undefined || d.price !== undefined) {
+    const effectivePrice = d.price ?? part.price ?? 0
+    const minRequired = minCommissionFor(effectivePrice)
+    const proposed = d.commissionAmount ?? part.commissionAmount ?? minRequired
+    updateData.commissionAmount = Math.max(proposed, minRequired)
+  }
+
+  return prisma.catalogItem.update({
+    where: { id: partId },
+    data: updateData,
+    select: {
+      id: true,
+      vendorId: true,
+      name: true,
+      category: true,
+      condition: true,
+      price: true,
+      commissionAmount: true,
+      status: true,
+      inStock: true,
     },
   })
 }
@@ -224,6 +334,7 @@ export async function listVendorParts(liaisonId: string, vendorId: string) {
       category: true,
       condition: true,
       price: true,
+      commissionAmount: true,
       status: true,
       inStock: true,
       imageThumbUrl: true,
@@ -243,6 +354,7 @@ export async function listLiaisonParts(liaisonId: string) {
       category: true,
       condition: true,
       price: true,
+      commissionAmount: true,
       status: true,
       inStock: true,
       imageThumbUrl: true,

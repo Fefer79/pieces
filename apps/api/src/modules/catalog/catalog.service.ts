@@ -76,10 +76,9 @@ export async function uploadPartImage(
 
   // Upload serial/QR photo to R2 if provided
   let serialPhotoUrl: string | null = null
-  let serialPhotoKey: string | null = null
   if (extras.serialPhoto) {
     const spExt = extras.serialPhoto.mimeType.split('/')[1] ?? 'jpg'
-    serialPhotoKey = `catalog/${vendor.id}/${timestamp}_serial_${extras.serialPhoto.fileName.replace(/[^a-zA-Z0-9._-]/g, '')}.${spExt}`
+    const serialPhotoKey = `catalog/${vendor.id}/${timestamp}_serial_${extras.serialPhoto.fileName.replace(/[^a-zA-Z0-9._-]/g, '')}.${spExt}`
     serialPhotoUrl = await uploadToR2(serialPhotoKey, extras.serialPhoto.buffer, extras.serialPhoto.mimeType)
   }
 
@@ -300,16 +299,10 @@ export async function updateItem(
     }
   }
 
-  // Commission: validate >= max(1000, 5% × effective price)
   if (data.commissionAmount !== undefined) {
     const effectivePrice = data.price ?? item.price ?? 0
     const minRequired = minCommissionFor(effectivePrice)
-    if (data.commissionAmount < minRequired) {
-      throw new AppError('COMMISSION_TOO_LOW', 422, {
-        message: `Commission minimale pour ce prix : ${minRequired} FCFA`,
-      })
-    }
-    updateData.commissionAmount = data.commissionAmount
+    updateData.commissionAmount = Math.max(data.commissionAmount, minRequired)
   }
 
   if (data.commissionAccepted === true) {
@@ -361,21 +354,21 @@ export async function publishItem(userId: string, itemId: string) {
     throw new AppError('CATALOG_COMMISSION_REQUIRED', 422, { message: 'Une commission est obligatoire pour publier' })
   }
 
-  if (item.commissionAmount < minCommissionFor(item.price)) {
-    throw new AppError('COMMISSION_TOO_LOW', 422, {
-      message: `Commission insuffisante (min ${minCommissionFor(item.price)} FCFA)`,
-    })
-  }
-
   if (!item.commissionAcceptedAt) {
     throw new AppError('CATALOG_COMMISSION_NOT_ACCEPTED', 422, {
       message: 'Vous devez accepter explicitement la commission pour publier',
     })
   }
 
+  const minRequired = minCommissionFor(item.price)
+  const finalCommission = Math.max(item.commissionAmount, minRequired)
+
   return prisma.catalogItem.update({
     where: { id: itemId },
-    data: { status: 'PUBLISHED' },
+    data: {
+      status: 'PUBLISHED',
+      ...(finalCommission !== item.commissionAmount && { commissionAmount: finalCommission }),
+    },
   })
 }
 

@@ -23,7 +23,7 @@ export { vinDecodeSchema, createVehicleSchema } from './browse'
 export { createOrderSchema, confirmOrderSchema, cancelOrderSchema } from './order'
 export { createSellerReviewSchema, createDeliveryReviewSchema, openDisputeSchema, resolveDisputeSchema } from './review'
 export { updatePreferencesSchema, sendNotificationSchema } from './notification'
-export { liaisonCreateVendorSchema, liaisonUpdateVendorSchema, liaisonCreatePartSchema } from './liaison'
+export { liaisonCreateVendorSchema, liaisonUpdateVendorSchema, liaisonCreatePartSchema, liaisonUpdatePartSchema } from './liaison'
 export {
   vehicleUsageTypeSchema,
   enterpriseMemberRoleSchema,

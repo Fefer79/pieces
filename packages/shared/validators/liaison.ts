@@ -47,6 +47,19 @@ export const liaisonCreatePartSchema = z.object({
   price: z.number().int().min(1).optional(),
   condition: z.enum(['NEW', 'USED', 'REFURBISHED']),
   warrantyMonths: z.number().int().min(0).max(60).optional(),
+  commissionAmount: z.number().int().min(0).optional(),
   inStock: z.boolean().default(true),
   imageOriginalUrl: z.string().url().optional(),
+})
+
+export const liaisonUpdatePartSchema = z.object({
+  name: z.string().min(2).max(120).optional(),
+  category: z.string().min(2).max(80).nullable().optional(),
+  oemReference: z.string().max(80).nullable().optional(),
+  vehicleCompatibility: z.string().max(255).nullable().optional(),
+  price: z.number().int().min(1).optional(),
+  condition: z.enum(['NEW', 'USED', 'REFURBISHED']).optional(),
+  warrantyMonths: z.number().int().min(0).max(60).nullable().optional(),
+  commissionAmount: z.number().int().min(0).optional(),
+  inStock: z.boolean().optional(),
 })
