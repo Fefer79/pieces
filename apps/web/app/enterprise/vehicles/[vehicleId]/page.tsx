@@ -16,6 +16,27 @@ type VehicleDetail = FleetVehicle & {
   }[]
 }
 
+interface VehicleAnalytics {
+  vehicleId: string
+  totalSpend: number
+  ytdSpend: number
+  spendByMonth: { month: string; total: number }[]
+  items: {
+    id: string
+    orderId: string
+    orderPaidAt: string | null
+    name: string
+    category: string | null
+    priceSnapshot: number
+    quantity: number
+    lineTotal: number
+    vendorShopName: string
+  }[]
+  peerCount: number
+  avgSpendForSimilar: number | null
+  outlierFlag: boolean
+}
+
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: 'Brouillon',
   PENDING_PAYMENT: 'En attente',
@@ -36,6 +57,7 @@ export default function VehicleDetailPage() {
 
   const [enterpriseId, setEnterpriseId] = useState<string | null>(null)
   const [vehicle, setVehicle] = useState<VehicleDetail | null>(null)
+  const [analytics, setAnalytics] = useState<VehicleAnalytics | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [mileageInput, setMileageInput] = useState('')
 
@@ -43,10 +65,14 @@ export default function VehicleDetailPage() {
 
   async function load() {
     if (!enterpriseId) return
-    const res = await enterpriseFetch<VehicleDetail>(`/${enterpriseId}/vehicles/${vehicleId}`)
-    if (!res.ok) { setError(res.message); return }
-    setVehicle(res.data)
-    setMileageInput(res.data.mileage != null ? String(res.data.mileage) : '')
+    const [vRes, aRes] = await Promise.all([
+      enterpriseFetch<VehicleDetail>(`/${enterpriseId}/vehicles/${vehicleId}`),
+      enterpriseFetch<VehicleAnalytics>(`/${enterpriseId}/vehicles/${vehicleId}/analytics`),
+    ])
+    if (!vRes.ok) { setError(vRes.message); return }
+    setVehicle(vRes.data)
+    setMileageInput(vRes.data.mileage != null ? String(vRes.data.mileage) : '')
+    if (aRes.ok) setAnalytics(aRes.data)
   }
 
   useEffect(() => { load() /* eslint-disable-next-line */ }, [enterpriseId, vehicleId])
@@ -95,6 +121,88 @@ export default function VehicleDetailPage() {
           Supprimer
         </button>
       </div>
+
+      {analytics && (
+        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Kpi label="Dépense totale" value={`${analytics.totalSpend.toLocaleString('fr-FR')} F`} />
+          <Kpi label="Année en cours" value={`${analytics.ytdSpend.toLocaleString('fr-FR')} F`} />
+          <Kpi
+            label="Moyenne flotte similaire"
+            value={
+              analytics.avgSpendForSimilar != null
+                ? `${analytics.avgSpendForSimilar.toLocaleString('fr-FR')} F`
+                : `— (${analytics.peerCount} pairs)`
+            }
+            hint={
+              analytics.peerCount < 3
+                ? 'Pas assez de pairs (min. 3)'
+                : `Basé sur ${analytics.peerCount} véhicules`
+            }
+          />
+          <div
+            className={`rounded-md border p-3 ${
+              analytics.outlierFlag
+                ? 'border-red-300 bg-red-50'
+                : 'border-border bg-card'
+            }`}
+          >
+            <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+              Statut
+            </div>
+            <div className={`mt-1 text-sm font-semibold ${analytics.outlierFlag ? 'text-red-700' : 'text-ink'}`}>
+              {analytics.outlierFlag ? '🚨 Coût élevé' : '✓ Dans la moyenne'}
+            </div>
+            {analytics.outlierFlag && analytics.avgSpendForSimilar != null && (
+              <div className="mt-1 text-[11px] text-red-700">
+                {Math.round((analytics.totalSpend / analytics.avgSpendForSimilar) * 100) / 100}× la moyenne
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {analytics && analytics.spendByMonth.some((m) => m.total > 0) && (
+        <div className="mb-4 rounded-md border border-border bg-card p-4">
+          <h2 className="mb-3 font-display text-lg text-ink">Dépense par mois (12 mois)</h2>
+          <MonthlyBars data={analytics.spendByMonth} />
+        </div>
+      )}
+
+      {analytics && analytics.items.length > 0 && (
+        <div className="mb-4 rounded-md border border-border bg-card p-4">
+          <h2 className="mb-3 font-display text-lg text-ink">Pièces achetées ({analytics.items.length})</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-surface/50">
+                <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
+                  <th className="px-2 py-2 font-medium">Date</th>
+                  <th className="px-2 py-2 font-medium">Pièce</th>
+                  <th className="px-2 py-2 font-medium">Catégorie</th>
+                  <th className="px-2 py-2 font-medium">Fournisseur</th>
+                  <th className="px-2 py-2 font-medium text-right">Qté</th>
+                  <th className="px-2 py-2 font-medium text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {analytics.items.map((it) => (
+                  <tr key={it.id} className="border-t border-border">
+                    <td className="px-2 py-2 font-mono text-[11px] text-muted">
+                      {it.orderPaidAt ? new Date(it.orderPaidAt).toLocaleDateString('fr-FR') : '—'}
+                    </td>
+                    <td className="px-2 py-2 text-ink">{it.name}</td>
+                    <td className="px-2 py-2 text-muted">{it.category ?? '—'}</td>
+                    <td className="px-2 py-2 text-muted">{it.vendorShopName}</td>
+                    <td className="px-2 py-2 text-right tabular">{it.quantity}</td>
+                    <td className="px-2 py-2 text-right font-semibold tabular text-ink">
+                      {it.lineTotal.toLocaleString('fr-FR')} F
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Info card */}
@@ -157,6 +265,38 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between border-b border-border pb-1.5 last:border-0">
       <dt className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{label}</dt>
       <dd className="text-ink">{value}</dd>
+    </div>
+  )
+}
+
+function Kpi({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="rounded-md border border-border bg-card p-3">
+      <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-ink tabular">{value}</div>
+      {hint && <div className="mt-1 text-[11px] text-muted">{hint}</div>}
+    </div>
+  )
+}
+
+function MonthlyBars({ data }: { data: { month: string; total: number }[] }) {
+  const max = Math.max(...data.map((d) => d.total), 1)
+  return (
+    <div className="flex items-end gap-1 h-32">
+      {data.map((d) => {
+        const h = max > 0 ? Math.max(2, Math.round((d.total / max) * 100)) : 2
+        const label = d.month.slice(5) + '/' + d.month.slice(2, 4)
+        return (
+          <div key={d.month} className="flex flex-1 flex-col items-center gap-1">
+            <div
+              title={`${d.month} : ${d.total.toLocaleString('fr-FR')} F`}
+              className="w-full rounded-sm bg-ink-2/70"
+              style={{ height: `${h}%` }}
+            />
+            <span className="font-mono text-[9px] text-muted">{label}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }

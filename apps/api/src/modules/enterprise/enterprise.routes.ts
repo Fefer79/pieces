@@ -24,6 +24,7 @@ import {
   updateMileage,
   deleteEnterpriseVehicle,
   importVehiclesFromCsv,
+  getVehicleAnalytics,
 } from './vehicle.service.js'
 import { getEnterpriseDashboard, exportEnterpriseOrdersCsv } from './dashboard.service.js'
 import type { VehicleUsageType, EnterpriseMemberRole } from '@prisma/client'
@@ -197,6 +198,22 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
         vehicleId: string
       }
       const data = await getEnterpriseVehicle(enterpriseId, request.user.id, vehicleId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/vehicles/:vehicleId/analytics',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId, vehicleId } = request.params as {
+        enterpriseId: string
+        vehicleId: string
+      }
+      const data = await getVehicleAnalytics(enterpriseId, request.user.id, vehicleId)
       return reply.send({ data })
     },
   )

@@ -125,6 +125,115 @@ export async function updateMileage(
   return updateEnterpriseVehicle(enterpriseId, userId, vehicleId, { mileage })
 }
 
+export async function getVehicleAnalytics(
+  enterpriseId: string,
+  userId: string,
+  vehicleId: string,
+) {
+  await assertMember(enterpriseId, userId)
+
+  const vehicle = await prisma.vehicle.findFirst({
+    where: { id: vehicleId, enterpriseId },
+    select: { id: true, brand: true, model: true, year: true, mileage: true },
+  })
+  if (!vehicle) throw new AppError('VEHICLE_NOT_FOUND', 404)
+
+  // Paid orders + items for this vehicle
+  const orders = await prisma.order.findMany({
+    where: { vehicleId, enterpriseId, paidAt: { not: null } },
+    select: {
+      id: true,
+      paidAt: true,
+      createdAt: true,
+      totalAmount: true,
+      items: {
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          priceSnapshot: true,
+          quantity: true,
+          vendorShopName: true,
+          imageThumbUrl: true,
+          createdAt: true,
+        },
+      },
+    },
+    orderBy: { paidAt: 'desc' },
+  })
+
+  const now = new Date()
+  const yearStart = new Date(now.getFullYear(), 0, 1)
+  const totalSpend = orders.reduce((s, o) => s + o.totalAmount, 0)
+  const ytdSpend = orders
+    .filter((o) => o.paidAt && o.paidAt >= yearStart)
+    .reduce((s, o) => s + o.totalAmount, 0)
+
+  // Last 12 months
+  const spendByMonth: { month: string; total: number }[] = []
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const next = new Date(now.getFullYear(), now.getMonth() - i + 1, 1)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const total = orders
+      .filter((o) => o.paidAt && o.paidAt >= d && o.paidAt < next)
+      .reduce((s, o) => s + o.totalAmount, 0)
+    spendByMonth.push({ month: key, total })
+  }
+
+  // Flatten items with order paidAt for the history table
+  const items = orders.flatMap((o) =>
+    o.items.map((it) => ({
+      ...it,
+      orderId: o.id,
+      orderPaidAt: o.paidAt,
+      lineTotal: it.priceSnapshot * it.quantity,
+    })),
+  )
+
+  // Peers: same enterprise, same brand+model, year ±2 (excluding self)
+  const peers = await prisma.vehicle.findMany({
+    where: {
+      enterpriseId,
+      id: { not: vehicleId },
+      brand: vehicle.brand,
+      model: vehicle.model,
+      year: { gte: vehicle.year - 2, lte: vehicle.year + 2 },
+    },
+    select: { id: true },
+  })
+  const peerIds = peers.map((p) => p.id)
+
+  let avgSpendForSimilar: number | null = null
+  let outlierFlag = false
+  if (peerIds.length >= 3) {
+    const peerAgg = await prisma.order.groupBy({
+      by: ['vehicleId'],
+      where: { vehicleId: { in: peerIds }, paidAt: { not: null } },
+      _sum: { totalAmount: true },
+    })
+    if (peerAgg.length > 0) {
+      const totals = peerAgg.map((p) => p._sum.totalAmount ?? 0)
+      const sum = totals.reduce((s, n) => s + n, 0)
+      avgSpendForSimilar = Math.round(sum / peerAgg.length)
+      if (avgSpendForSimilar > 0 && totalSpend > avgSpendForSimilar * 1.5) {
+        outlierFlag = true
+      }
+    }
+  }
+
+  return {
+    vehicleId,
+    totalSpend,
+    ytdSpend,
+    spendByMonth,
+    items,
+    peerCount: peerIds.length,
+    avgSpendForSimilar,
+    outlierFlag,
+  }
+}
+
 export async function deleteEnterpriseVehicle(
   enterpriseId: string,
   userId: string,
