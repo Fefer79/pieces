@@ -73,6 +73,7 @@
 Analyses détaillées exhaustives de zones spécifiques :
 
 - [Manuel d'utilisation administrateur](./deep-dive-manuel-administrateur.md) — Guide complet pour les administrateurs de la plateforme (dashboard, utilisateurs, vendeurs, commandes, livraisons, litiges, notifications, paiements) — Généré 2026-03-01
+- [Manuel d'utilisation Liaison](./deep-dive-manuel-liaison.md) — SOP pour les Liaisons terrain (démarchage vendeurs, onboarding KYC, ajout pièces, négociation et agrément commission, coordination commandes) — Rédigé 2026-05-27
 - [Manuel d'utilisation vendeur](./deep-dive-manuel-vendeur.md) — Guide complet pour les vendeurs (onboarding KYC, garanties, catalogue IA, commandes, livraisons, escrow, avis, zones de livraison) — Généré 2026-03-01
 - [Manuel d'utilisation mécanicien](./deep-dive-manuel-mecanicien.md) — Guide complet pour les mécaniciens (recherche, photo IA, VIN, garage, commande tripartite, livraison, évaluations, litiges) — Généré 2026-03-01
 - [Manuel d'utilisation livreur](./deep-dive-manuel-livreur.md) — Guide complet pour les livreurs (assignations, ramassage, transit, livraison, COD, client absent, GPS, avis) — Généré 2026-03-01
@@ -105,6 +106,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 ### Opérationnel
 
 - [Templates WhatsApp](./whatsapp-templates.md) — Templates de messages WhatsApp Business
+- [Brochure commerciale Pièces](./brochure-commerciale-pieces.md) — Présentation tous publics des services (mécanicien, propriétaire, vendeur, livreur, entreprise, WhatsApp) et comment y accéder — Rédigée 2026-05-27
 
 ### Rétrospectives (`_bmad-output/implementation-artifacts/`)
 
