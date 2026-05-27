@@ -295,7 +295,11 @@ export async function updatePartForVendor(
     const effectivePrice = d.price ?? part.price ?? 0
     const minRequired = minCommissionFor(effectivePrice)
     const proposed = d.commissionAmount ?? part.commissionAmount ?? minRequired
-    updateData.commissionAmount = Math.max(proposed, minRequired)
+    const finalCommission = Math.max(proposed, minRequired)
+    updateData.commissionAmount = finalCommission
+    if (finalCommission !== part.commissionAmount) {
+      updateData.commissionAcceptedAt = null
+    }
   }
 
   return prisma.catalogItem.update({
@@ -309,8 +313,46 @@ export async function updatePartForVendor(
       condition: true,
       price: true,
       commissionAmount: true,
+      commissionAcceptedAt: true,
       status: true,
       inStock: true,
+    },
+  })
+}
+
+export async function acceptCommissionByLiaison(
+  liaisonId: string,
+  vendorId: string,
+  partId: string,
+) {
+  const part = await prisma.catalogItem.findFirst({
+    where: {
+      id: partId,
+      vendorId,
+      vendor: { managedByLiaisonId: liaisonId },
+    },
+    select: { id: true, commissionAmount: true, commissionAcceptedAt: true },
+  })
+
+  if (!part) {
+    throw new AppError('LIAISON_PART_NOT_FOUND', 404, {
+      message: 'Pièce introuvable ou non gérée par cette liaison',
+    })
+  }
+
+  if (part.commissionAmount == null) {
+    throw new AppError('COMMISSION_NOT_SET', 422, {
+      message: 'Aucune commission renseignée sur cette pièce',
+    })
+  }
+
+  return prisma.catalogItem.update({
+    where: { id: partId },
+    data: { commissionAcceptedAt: new Date() },
+    select: {
+      id: true,
+      commissionAmount: true,
+      commissionAcceptedAt: true,
     },
   })
 }
@@ -335,6 +377,7 @@ export async function listVendorParts(liaisonId: string, vendorId: string) {
       condition: true,
       price: true,
       commissionAmount: true,
+      commissionAcceptedAt: true,
       status: true,
       inStock: true,
       imageThumbUrl: true,
@@ -355,6 +398,7 @@ export async function listLiaisonParts(liaisonId: string) {
       condition: true,
       price: true,
       commissionAmount: true,
+      commissionAcceptedAt: true,
       status: true,
       inStock: true,
       imageThumbUrl: true,
@@ -377,18 +421,22 @@ export async function listLiaisonParts(liaisonId: string) {
 }
 
 export async function getLiaisonDashboard(liaisonId: string) {
-  const [vendorTotal, vendorActive, partTotal, partsByStatus] = await Promise.all([
-    prisma.vendor.count({ where: { managedByLiaisonId: liaisonId } }),
-    prisma.vendor.count({
-      where: { managedByLiaisonId: liaisonId, status: 'ACTIVE' },
-    }),
-    prisma.catalogItem.count({ where: { createdByLiaisonId: liaisonId } }),
-    prisma.catalogItem.groupBy({
-      by: ['status'],
-      where: { createdByLiaisonId: liaisonId },
-      _count: { status: true },
-    }),
-  ])
+  const [vendorTotal, vendorActive, partTotal, partsByStatus, partsPendingAcceptance] =
+    await Promise.all([
+      prisma.vendor.count({ where: { managedByLiaisonId: liaisonId } }),
+      prisma.vendor.count({
+        where: { managedByLiaisonId: liaisonId, status: 'ACTIVE' },
+      }),
+      prisma.catalogItem.count({ where: { createdByLiaisonId: liaisonId } }),
+      prisma.catalogItem.groupBy({
+        by: ['status'],
+        where: { createdByLiaisonId: liaisonId },
+        _count: { status: true },
+      }),
+      prisma.catalogItem.count({
+        where: { createdByLiaisonId: liaisonId, commissionAcceptedAt: null },
+      }),
+    ])
 
   const countByStatus = (s: CatalogItemStatus) =>
     partsByStatus.find((p) => p.status === s)?._count.status ?? 0
@@ -404,6 +452,7 @@ export async function getLiaisonDashboard(liaisonId: string) {
       published: countByStatus('PUBLISHED'),
       draft: countByStatus('DRAFT'),
       archived: countByStatus('ARCHIVED'),
+      pendingAcceptance: partsPendingAcceptance,
     },
   }
 }

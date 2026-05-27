@@ -15,6 +15,7 @@ import {
   createPartForVendor,
   getLiaisonPart,
   updatePartForVendor,
+  acceptCommissionByLiaison,
   listVendorParts,
   listLiaisonParts,
   getLiaisonDashboard,
@@ -186,6 +187,29 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
       const result = await updatePartForVendor(request.user.id, id, partId, request.body)
       request.log.info({
         event: 'LIAISON_PART_UPDATED',
+        liaisonId: request.user.id,
+        vendorId: id,
+        partId,
+      })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/vendors/:id/parts/:partId/accept-commission',
+    {
+      schema: {
+        tags: ['Liaison'],
+        description: 'Marquer la commission comme agréée par le vendeur',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const { id, partId } = request.params as { id: string; partId: string }
+      const result = await acceptCommissionByLiaison(request.user.id, id, partId)
+      request.log.info({
+        event: 'LIAISON_COMMISSION_ACCEPTED',
         liaisonId: request.user.id,
         vendorId: id,
         partId,

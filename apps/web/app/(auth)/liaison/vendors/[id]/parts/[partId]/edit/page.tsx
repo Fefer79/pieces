@@ -5,10 +5,12 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { liaisonFetch } from '@/lib/liaison-api'
 import { LiaisonPartForm, type PartFormInitial } from '@/components/LiaisonPartForm'
+import { CommissionBadge } from '@/components/CommissionBadge'
 
 interface PartDetail extends PartFormInitial {
   id: string
   vendorId: string
+  commissionAcceptedAt: string | null
 }
 
 export default function EditPartPage() {
@@ -19,6 +21,8 @@ export default function EditPartPage() {
   const [initial, setInitial] = useState<PartDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [accepting, setAccepting] = useState(false)
+  const [acceptError, setAcceptError] = useState<string | null>(null)
 
   useEffect(() => {
     liaisonFetch<PartDetail>(`/vendors/${vendorId}/parts/${partId}`).then((r) => {
@@ -27,6 +31,22 @@ export default function EditPartPage() {
       setLoading(false)
     })
   }, [vendorId, partId])
+
+  const handleAccept = async () => {
+    if (!initial) return
+    setAccepting(true)
+    setAcceptError(null)
+    const r = await liaisonFetch<{ commissionAcceptedAt: string }>(
+      `/vendors/${vendorId}/parts/${partId}/accept-commission`,
+      { method: 'POST' },
+    )
+    setAccepting(false)
+    if (!r.ok) {
+      setAcceptError(r.message)
+      return
+    }
+    setInitial({ ...initial, commissionAcceptedAt: r.data.commissionAcceptedAt })
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 lg:px-6">
@@ -48,12 +68,52 @@ export default function EditPartPage() {
         </p>
       )}
       {initial && (
-        <LiaisonPartForm
-          mode="edit"
-          vendorId={vendorId}
-          partId={partId}
-          initial={initial}
-        />
+        <>
+          <div className="mb-5 rounded-md border border-border bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted">
+                  Commission
+                </p>
+                <p className="mt-1 text-sm text-ink">
+                  {initial.commissionAmount != null
+                    ? `${initial.commissionAmount.toLocaleString('fr-FR')} FCFA`
+                    : 'Non renseignée'}
+                </p>
+                <div className="mt-2">
+                  <CommissionBadge
+                    acceptedAt={initial.commissionAcceptedAt}
+                    size="sm"
+                  />
+                </div>
+              </div>
+              {!initial.commissionAcceptedAt && initial.commissionAmount != null && (
+                <button
+                  type="button"
+                  onClick={handleAccept}
+                  disabled={accepting}
+                  className="rounded-md bg-[#148C50] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                  style={{ minHeight: 44 }}
+                >
+                  {accepting ? '…' : 'Marquer agréée'}
+                </button>
+              )}
+            </div>
+            {acceptError && (
+              <p className="mt-2 text-xs text-[#D32F2F]">{acceptError}</p>
+            )}
+            <p className="mt-3 text-[11px] text-muted-2">
+              Modifier le montant ci-dessous remet l&apos;agrément à zéro.
+            </p>
+          </div>
+
+          <LiaisonPartForm
+            mode="edit"
+            vendorId={vendorId}
+            partId={partId}
+            initial={initial}
+          />
+        </>
       )}
     </div>
   )

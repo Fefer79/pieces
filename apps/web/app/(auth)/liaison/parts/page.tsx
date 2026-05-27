@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { liaisonFetch } from '@/lib/liaison-api'
+import { CommissionBadge } from '@/components/CommissionBadge'
 
 interface PartItem {
   id: string
@@ -11,6 +12,7 @@ interface PartItem {
   condition: string | null
   price: number | null
   commissionAmount: number | null
+  commissionAcceptedAt: string | null
   status: string
   inStock: boolean
   imageThumbUrl: string | null
@@ -178,6 +180,7 @@ export default function LiaisonPartsPage() {
                         com. {p.commissionAmount.toLocaleString('fr-FR')} F
                       </p>
                     )}
+                    <CommissionBadge acceptedAt={p.commissionAcceptedAt} />
                     <Link
                       href={`/liaison/vendors/${p.vendor.id}/parts/${p.id}/edit`}
                       className="text-xs font-medium text-ink-2 hover:underline"

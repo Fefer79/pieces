@@ -6,7 +6,13 @@ import { liaisonFetch } from '@/lib/liaison-api'
 
 interface Dashboard {
   vendors: { total: number; active: number; pending: number }
-  parts: { total: number; published: number; draft: number; archived: number }
+  parts: {
+    total: number
+    published: number
+    draft: number
+    archived: number
+    pendingAcceptance: number
+  }
 }
 
 export default function LiaisonDashboardPage() {
@@ -41,10 +47,16 @@ export default function LiaisonDashboardPage() {
 
       {data && (
         <>
-          <section className="grid gap-3 sm:grid-cols-3">
+          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label="Vendeurs" value={data.vendors.total} sub={`${data.vendors.active} actifs`} />
-            <Stat label="En attente" value={data.vendors.pending} sub="signature garanties" />
+            <Stat label="Vendeurs en attente" value={data.vendors.pending} sub="signature garanties" />
             <Stat label="Pièces saisies" value={data.parts.total} sub={`${data.parts.published} publiées`} />
+            <Stat
+              label="Commissions à agréer"
+              value={data.parts.pendingAcceptance}
+              sub="accord vendeur manquant"
+              accent={data.parts.pendingAcceptance > 0}
+            />
           </section>
 
           <section className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -78,13 +90,33 @@ export default function LiaisonDashboardPage() {
   )
 }
 
-function Stat({ label, value, sub }: { label: string; value: number; sub: string }) {
+function Stat({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string
+  value: number
+  sub: string
+  accent?: boolean
+}) {
   return (
-    <div className="rounded-md border border-border bg-card p-4">
+    <div
+      className={`rounded-md border p-4 ${
+        accent
+          ? 'border-accent/40 bg-[rgba(255,107,0,0.06)]'
+          : 'border-border bg-card'
+      }`}
+    >
       <p className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted">
         {label}
       </p>
-      <p className="mt-1 font-display text-3xl text-ink">{value}</p>
+      <p
+        className={`mt-1 font-display text-3xl ${accent ? 'text-accent' : 'text-ink'}`}
+      >
+        {value}
+      </p>
       <p className="mt-0.5 text-xs text-muted">{sub}</p>
     </div>
   )
