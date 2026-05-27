@@ -26,7 +26,9 @@ export async function recordActivity(params: RecordParams): Promise<void> {
         action: params.action,
         targetType: params.targetType,
         targetId: params.targetId ?? null,
-        payload: (params.payload ?? undefined) as Prisma.InputJsonValue | undefined,
+        ...(params.payload !== undefined && {
+          payload: params.payload as Prisma.InputJsonValue,
+        }),
       },
     })
   } catch {
