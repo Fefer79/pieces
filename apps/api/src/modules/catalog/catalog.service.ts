@@ -541,3 +541,68 @@ export async function listPhotos(userId: string, itemId: string) {
     orderBy: { position: 'asc' },
   })
 }
+
+export interface FitmentInput {
+  brand: string
+  model?: string | null
+  yearFrom?: number | null
+  yearTo?: number | null
+  engine?: string | null
+}
+
+export async function listFitments(itemId: string) {
+  return prisma.catalogItemFitment.findMany({
+    where: { catalogItemId: itemId },
+    orderBy: [{ brand: 'asc' }, { model: 'asc' }, { yearFrom: 'asc' }],
+  })
+}
+
+export async function replaceFitments(userId: string, itemId: string, fitments: FitmentInput[]) {
+  await assertVendorOwnsItem(userId, itemId)
+  return prisma.$transaction(async (tx) => {
+    await tx.catalogItemFitment.deleteMany({ where: { catalogItemId: itemId } })
+    if (fitments.length > 0) {
+      await tx.catalogItemFitment.createMany({
+        data: fitments.map((f) => ({
+          catalogItemId: itemId,
+          brand: f.brand,
+          model: f.model ?? null,
+          yearFrom: f.yearFrom ?? null,
+          yearTo: f.yearTo ?? null,
+          engine: f.engine ?? null,
+        })),
+      })
+    }
+    return tx.catalogItemFitment.findMany({
+      where: { catalogItemId: itemId },
+      orderBy: [{ brand: 'asc' }, { model: 'asc' }, { yearFrom: 'asc' }],
+    })
+  })
+}
+
+export async function addFitment(userId: string, itemId: string, fitment: FitmentInput) {
+  await assertVendorOwnsItem(userId, itemId)
+  return prisma.catalogItemFitment.create({
+    data: {
+      catalogItemId: itemId,
+      brand: fitment.brand,
+      model: fitment.model ?? null,
+      yearFrom: fitment.yearFrom ?? null,
+      yearTo: fitment.yearTo ?? null,
+      engine: fitment.engine ?? null,
+    },
+  })
+}
+
+export async function deleteFitment(userId: string, itemId: string, fitmentId: string) {
+  await assertVendorOwnsItem(userId, itemId)
+  const fitment = await prisma.catalogItemFitment.findUnique({
+    where: { id: fitmentId },
+    select: { id: true, catalogItemId: true },
+  })
+  if (!fitment || fitment.catalogItemId !== itemId) {
+    throw new AppError('FITMENT_NOT_FOUND', 404, { message: 'Compatibilité introuvable' })
+  }
+  await prisma.catalogItemFitment.delete({ where: { id: fitmentId } })
+  return { deleted: true }
+}

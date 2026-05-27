@@ -180,6 +180,7 @@ export async function createPartForVendor(
   const price = parsed.data.price ?? 0
   const minRequired = minCommissionFor(price)
   const commissionAmount = Math.max(parsed.data.commissionAmount ?? minRequired, minRequired)
+  const fitments = parsed.data.fitments ?? []
 
   return prisma.catalogItem.create({
     data: {
@@ -197,6 +198,17 @@ export async function createPartForVendor(
       imageOriginalUrl: parsed.data.imageOriginalUrl,
       status: 'PUBLISHED',
       aiGenerated: false,
+      ...(fitments.length > 0 && {
+        fitments: {
+          create: fitments.map((f) => ({
+            brand: f.brand,
+            model: f.model ?? null,
+            yearFrom: f.yearFrom ?? null,
+            yearTo: f.yearTo ?? null,
+            engine: f.engine ?? null,
+          })),
+        },
+      }),
     },
     select: {
       id: true,
@@ -237,6 +249,17 @@ export async function getLiaisonPart(liaisonId: string, vendorId: string, partId
       imageThumbUrl: true,
       imageOriginalUrl: true,
       createdAt: true,
+      fitments: {
+        select: {
+          id: true,
+          brand: true,
+          model: true,
+          yearFrom: true,
+          yearTo: true,
+          engine: true,
+        },
+        orderBy: [{ brand: 'asc' }, { model: 'asc' }, { yearFrom: 'asc' }],
+      },
     },
   })
 
@@ -302,21 +325,41 @@ export async function updatePartForVendor(
     }
   }
 
-  return prisma.catalogItem.update({
-    where: { id: partId },
-    data: updateData,
-    select: {
-      id: true,
-      vendorId: true,
-      name: true,
-      category: true,
-      condition: true,
-      price: true,
-      commissionAmount: true,
-      commissionAcceptedAt: true,
-      status: true,
-      inStock: true,
-    },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.catalogItem.update({
+      where: { id: partId },
+      data: updateData,
+      select: {
+        id: true,
+        vendorId: true,
+        name: true,
+        category: true,
+        condition: true,
+        price: true,
+        commissionAmount: true,
+        commissionAcceptedAt: true,
+        status: true,
+        inStock: true,
+      },
+    })
+
+    if (d.fitments !== undefined) {
+      await tx.catalogItemFitment.deleteMany({ where: { catalogItemId: partId } })
+      if (d.fitments.length > 0) {
+        await tx.catalogItemFitment.createMany({
+          data: d.fitments.map((f) => ({
+            catalogItemId: partId,
+            brand: f.brand,
+            model: f.model ?? null,
+            yearFrom: f.yearFrom ?? null,
+            yearTo: f.yearTo ?? null,
+            engine: f.engine ?? null,
+          })),
+        })
+      }
+    }
+
+    return updated
   })
 }
 

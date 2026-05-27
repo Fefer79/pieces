@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock, retryImageJob, addPhoto, removePhoto, reorderPhotos, listPhotos, type UpdateCatalogItemData } from './catalog.service.js'
+import { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock, retryImageJob, addPhoto, removePhoto, reorderPhotos, listPhotos, listFitments, replaceFitments, addFitment, deleteFitment, type UpdateCatalogItemData, type FitmentInput } from './catalog.service.js'
 import { AppError } from '../../lib/appError.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema, photoParamsSchema, reorderPhotosSchema } from 'shared/validators'
+import { catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema, photoParamsSchema, reorderPhotosSchema, fitmentSchema, fitmentParamsSchema, replaceFitmentsSchema } from 'shared/validators'
 
 export async function catalogRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -259,6 +259,85 @@ export async function catalogRoutes(fastify: FastifyInstance) {
       const { photoIds } = request.body as { photoIds: string[] }
       const data = await reorderPhotos(request.user.id, id, photoIds)
       request.log.info({ event: 'CATALOG_PHOTOS_REORDERED', userId: request.user.id, itemId: id })
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/items/:id/fitments',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Liste les compatibilités véhicule d\'une fiche',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await listFitments(id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.put(
+    '/items/:id/fitments',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Remplace la liste des compatibilités véhicule',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+        body: zodToFastify(replaceFitmentsSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const { fitments } = request.body as { fitments: FitmentInput[] }
+      const data = await replaceFitments(request.user.id, id, fitments)
+      request.log.info({ event: 'CATALOG_FITMENTS_REPLACED', userId: request.user.id, itemId: id, count: data.length })
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.post(
+    '/items/:id/fitments',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Ajoute une compatibilité véhicule',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(catalogItemParamsSchema),
+        body: zodToFastify(fitmentSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const body = request.body as FitmentInput
+      const data = await addFitment(request.user.id, id, body)
+      request.log.info({ event: 'CATALOG_FITMENT_ADDED', userId: request.user.id, itemId: id, fitmentId: data.id })
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.delete(
+    '/items/:id/fitments/:fitmentId',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Supprime une compatibilité véhicule',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(fitmentParamsSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const { id, fitmentId } = request.params as { id: string; fitmentId: string }
+      const data = await deleteFitment(request.user.id, id, fitmentId)
+      request.log.info({ event: 'CATALOG_FITMENT_REMOVED', userId: request.user.id, itemId: id, fitmentId })
       return reply.status(200).send({ data })
     },
   )

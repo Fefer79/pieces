@@ -87,13 +87,29 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
     where.category = filters.category
   }
 
-  // Filter by vehicle compatibility (text matching)
+  // Filter by vehicle compatibility — prefer structured fitments,
+  // fallback to legacy free-text vehicleCompatibility for items not yet migrated.
   if (filters.brand) {
     const compatParts: string[] = [filters.brand]
     if (filters.model) compatParts.push(filters.model)
     if (filters.year) compatParts.push(String(filters.year))
     const compatQuery = compatParts.join(' ')
-    where.vehicleCompatibility = { contains: compatQuery, mode: 'insensitive' }
+
+    const fitmentWhere: Record<string, unknown> = { brand: { equals: filters.brand, mode: 'insensitive' } }
+    if (filters.model) {
+      fitmentWhere.OR = [{ model: null }, { model: { equals: filters.model, mode: 'insensitive' } }]
+    }
+    if (filters.year) {
+      fitmentWhere.AND = [
+        { OR: [{ yearFrom: null }, { yearFrom: { lte: filters.year } }] },
+        { OR: [{ yearTo: null }, { yearTo: { gte: filters.year } }] },
+      ]
+    }
+
+    where.OR = [
+      { fitments: { some: fitmentWhere } },
+      { vehicleCompatibility: { contains: compatQuery, mode: 'insensitive' } },
+    ]
   }
 
   const [items, total] = await Promise.all([

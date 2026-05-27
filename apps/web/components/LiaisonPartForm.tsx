@@ -26,11 +26,20 @@ const COMMON_CATEGORIES = [
   'Allumage',
 ]
 
+export interface FitmentEntry {
+  brand: string
+  model?: string | null
+  yearFrom?: number | null
+  yearTo?: number | null
+  engine?: string | null
+}
+
 export interface PartFormInitial {
   name?: string
   category?: string | null
   oemReference?: string | null
   vehicleCompatibility?: string | null
+  fitments?: FitmentEntry[]
   price?: number | null
   condition?: Condition
   warrantyMonths?: number | null
@@ -63,6 +72,37 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
     initial?.commissionAmount != null ? String(initial.commissionAmount) : '',
   )
   const [inStock, setInStock] = useState(initial?.inStock ?? true)
+  const [fitments, setFitments] = useState<FitmentEntry[]>(initial?.fitments ?? [])
+  const [fitBrand, setFitBrand] = useState('')
+  const [fitModel, setFitModel] = useState('')
+  const [fitYearFrom, setFitYearFrom] = useState('')
+  const [fitYearTo, setFitYearTo] = useState('')
+  const [fitEngine, setFitEngine] = useState('')
+
+  const addFitment = () => {
+    const brand = fitBrand.trim()
+    if (brand.length < 1) return
+    const yf = fitYearFrom ? Number(fitYearFrom) : null
+    const yt = fitYearTo ? Number(fitYearTo) : null
+    if (yf != null && yt != null && yf > yt) return
+    setFitments((prev) => [
+      ...prev,
+      {
+        brand,
+        model: fitModel.trim() || null,
+        yearFrom: yf,
+        yearTo: yt,
+        engine: fitEngine.trim() || null,
+      },
+    ])
+    setFitBrand('')
+    setFitModel('')
+    setFitYearFrom('')
+    setFitYearTo('')
+    setFitEngine('')
+  }
+  const removeFitment = (idx: number) =>
+    setFitments((prev) => prev.filter((_, i) => i !== idx))
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -90,6 +130,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
       warrantyMonths: warrantyMonths ? Number(warrantyMonths) : undefined,
       commissionAmount: commission ? Number(commission) : undefined,
       inStock,
+      fitments,
     }
 
     const path =
@@ -203,13 +244,91 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
         />
       </Field>
 
-      <Field label="Compatibilité véhicule" hint="Marque · modèle · année">
+      <Field label="Compatibilité véhicule (texte libre)" hint="Conservé pour la recherche plein-texte">
         <input
           value={vehicleCompatibility ?? ''}
           onChange={(e) => setVehicleCompatibility(e.target.value)}
           className="liaison-input"
           placeholder="Ex : Toyota Hilux 2010-2015"
         />
+      </Field>
+
+      <Field
+        label="Compatibilités structurées"
+        hint="Une ou plusieurs lignes marque + modèle + années + moteur (optionnels)"
+      >
+        {fitments.length > 0 && (
+          <ul className="mb-2 space-y-1.5">
+            {fitments.map((f, idx) => (
+              <li
+                key={`${f.brand}-${f.model ?? ''}-${f.yearFrom ?? ''}-${idx}`}
+                className="flex items-center justify-between rounded-md bg-card px-3 py-2 text-sm ring-1 ring-border"
+              >
+                <span className="truncate text-ink">
+                  <strong>{f.brand}</strong>
+                  {f.model ? ` · ${f.model}` : ''}
+                  {f.yearFrom || f.yearTo
+                    ? ` · ${f.yearFrom ?? '…'}–${f.yearTo ?? '…'}`
+                    : ''}
+                  {f.engine ? ` · ${f.engine}` : ''}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeFitment(idx)}
+                  className="ml-2 text-xs text-[#D32F2F] hover:underline"
+                >
+                  Retirer
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <input
+            value={fitBrand}
+            onChange={(e) => setFitBrand(e.target.value)}
+            className="liaison-input"
+            placeholder="Marque*"
+          />
+          <input
+            value={fitModel}
+            onChange={(e) => setFitModel(e.target.value)}
+            className="liaison-input"
+            placeholder="Modèle"
+          />
+          <input
+            type="number"
+            value={fitYearFrom}
+            onChange={(e) => setFitYearFrom(e.target.value)}
+            className="liaison-input"
+            placeholder="Année min"
+            min={1950}
+            max={2100}
+          />
+          <input
+            type="number"
+            value={fitYearTo}
+            onChange={(e) => setFitYearTo(e.target.value)}
+            className="liaison-input"
+            placeholder="Année max"
+            min={1950}
+            max={2100}
+          />
+          <input
+            value={fitEngine}
+            onChange={(e) => setFitEngine(e.target.value)}
+            className="liaison-input"
+            placeholder="Moteur"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={addFitment}
+          disabled={fitBrand.trim().length < 1}
+          className="mt-2 rounded-md bg-card px-3 py-2 text-sm text-ink ring-1 ring-border disabled:opacity-50"
+        >
+          + Ajouter une compatibilité
+        </button>
       </Field>
 
       <Field label="Garantie (mois)">

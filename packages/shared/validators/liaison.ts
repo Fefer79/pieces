@@ -39,11 +39,23 @@ export const liaisonUpdateVendorSchema = z.object({
   deliveryZones: z.array(z.enum(ABIDJAN_COMMUNES)).optional(),
 })
 
+const liaisonFitmentSchema = z.object({
+  brand: z.string().min(1).max(60),
+  model: z.string().min(1).max(80).nullable().optional(),
+  yearFrom: z.number().int().min(1950).max(2100).nullable().optional(),
+  yearTo: z.number().int().min(1950).max(2100).nullable().optional(),
+  engine: z.string().min(1).max(60).nullable().optional(),
+}).refine(
+  (v) => v.yearFrom == null || v.yearTo == null || v.yearFrom <= v.yearTo,
+  { message: 'yearFrom doit être inférieur ou égal à yearTo', path: ['yearFrom'] },
+)
+
 export const liaisonCreatePartSchema = z.object({
   name: z.string().min(2).max(120),
   category: z.string().min(2).max(80).optional(),
   oemReference: z.string().max(80).optional(),
   vehicleCompatibility: z.string().max(255).optional(),
+  fitments: z.array(liaisonFitmentSchema).max(50).optional(),
   price: z.number().int().min(1).optional(),
   condition: z.enum(['NEW', 'USED', 'REFURBISHED']),
   warrantyMonths: z.number().int().min(0).max(60).optional(),
@@ -57,6 +69,7 @@ export const liaisonUpdatePartSchema = z.object({
   category: z.string().min(2).max(80).nullable().optional(),
   oemReference: z.string().max(80).nullable().optional(),
   vehicleCompatibility: z.string().max(255).nullable().optional(),
+  fitments: z.array(liaisonFitmentSchema).max(50).optional(),
   price: z.number().int().min(1).optional(),
   condition: z.enum(['NEW', 'USED', 'REFURBISHED']).optional(),
   warrantyMonths: z.number().int().min(0).max(60).nullable().optional(),

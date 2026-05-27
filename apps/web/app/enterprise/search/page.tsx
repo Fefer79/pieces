@@ -47,27 +47,46 @@ export default function EnterpriseSearchPage() {
     setSelectedMotor('')
   }, [selectedYear])
 
-  const handleSearch = useCallback(async (q: string) => {
-    if (q.trim().length < 2) {
-      setResults([])
-      return
-    }
-    setSearching(true)
-    try {
-      const res = await fetch(`/api/v1/browse/search?q=${encodeURIComponent(q)}`)
-      const body = await res.json()
-      setResults(body.data?.items ?? [])
-    } catch {
-      setResults([])
-    } finally {
-      setSearching(false)
-    }
-  }, [])
+  const handleSearch = useCallback(
+    async (q: string, brand: string, model: string, year: string) => {
+      const hasVehicle = Boolean(brand)
+      const hasText = q.trim().length >= 2
+      if (!hasVehicle && !hasText) {
+        setResults([])
+        return
+      }
+      setSearching(true)
+      try {
+        let url: string
+        if (hasVehicle) {
+          const params = new URLSearchParams()
+          params.set('brand', brand)
+          if (model) params.set('model', model)
+          if (year) params.set('year', year)
+          if (hasText) params.set('q', q)
+          url = `/api/v1/browse/parts?${params.toString()}`
+        } else {
+          url = `/api/v1/browse/search?q=${encodeURIComponent(q)}`
+        }
+        const res = await fetch(url)
+        const body = await res.json()
+        setResults(body.data?.items ?? [])
+      } catch {
+        setResults([])
+      } finally {
+        setSearching(false)
+      }
+    },
+    [],
+  )
 
   useEffect(() => {
-    const timer = setTimeout(() => handleSearch(searchQuery), 300)
+    const timer = setTimeout(
+      () => handleSearch(searchQuery, selectedBrand, selectedModel, selectedYear),
+      300,
+    )
     return () => clearTimeout(timer)
-  }, [searchQuery, handleSearch])
+  }, [searchQuery, selectedBrand, selectedModel, selectedYear, handleSearch])
 
   const resetFilters = () => {
     setSelectedBrand('')
@@ -189,21 +208,21 @@ export default function EnterpriseSearchPage() {
 
         {searching && <p className="text-sm text-muted">Recherche en cours…</p>}
 
-        {!searching && searchQuery.trim().length < 2 && results.length === 0 && (
+        {!searching && results.length === 0 && searchQuery.trim().length < 2 && !selectedBrand && (
           <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-border-strong bg-card py-16 text-center">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-2">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <p className="mt-4 text-sm font-medium text-ink">Saisissez un terme pour rechercher des pièces</p>
-            <p className="mt-1 text-xs text-muted">Utilisez les filtres à gauche pour affiner vos résultats</p>
+            <p className="mt-4 text-sm font-medium text-ink">Sélectionnez un véhicule ou saisissez un terme</p>
+            <p className="mt-1 text-xs text-muted">Filtre véhicule = pièces compatibles. Texte = recherche libre.</p>
           </div>
         )}
 
-        {!searching && searchQuery.trim().length >= 2 && results.length === 0 && (
+        {!searching && results.length === 0 && (searchQuery.trim().length >= 2 || selectedBrand) && (
           <div className="rounded-md border border-dashed border-border-strong bg-card p-10 text-center">
-            <p className="text-sm font-medium text-ink">Aucun résultat pour «&nbsp;{searchQuery}&nbsp;»</p>
-            <p className="mt-1 text-xs text-muted">Essayez un autre terme ou modifiez vos filtres</p>
+            <p className="text-sm font-medium text-ink">Aucun résultat</p>
+            <p className="mt-1 text-xs text-muted">Essayez d&apos;élargir les filtres ou un autre terme.</p>
           </div>
         )}
 

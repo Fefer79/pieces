@@ -51,6 +51,26 @@ export const reorderPhotosSchema = z.object({
   photoIds: z.array(z.string().uuid()).min(1).max(MAX_PHOTOS_PER_ITEM),
 })
 
+export const fitmentSchema = z.object({
+  brand: z.string().min(1).max(60),
+  model: z.string().min(1).max(80).nullable().optional(),
+  yearFrom: z.number().int().min(1950).max(2100).nullable().optional(),
+  yearTo: z.number().int().min(1950).max(2100).nullable().optional(),
+  engine: z.string().min(1).max(60).nullable().optional(),
+}).refine(
+  (v) => v.yearFrom == null || v.yearTo == null || v.yearFrom <= v.yearTo,
+  { message: 'yearFrom doit être inférieur ou égal à yearTo', path: ['yearFrom'] },
+)
+
+export const fitmentParamsSchema = z.object({
+  id: z.string().uuid(),
+  fitmentId: z.string().uuid(),
+})
+
+export const replaceFitmentsSchema = z.object({
+  fitments: z.array(fitmentSchema).max(50),
+})
+
 export const adminListQuerySchema = z.object({
   q: z.string().max(200).optional(),
   status: z.string().max(40).optional(),

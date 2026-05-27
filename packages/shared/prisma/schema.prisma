@@ -241,12 +241,30 @@ model CatalogItem {
   commissionAmount     Int?              @map("commission_amount")
   commissionAcceptedAt DateTime?         @map("commission_accepted_at")
   photos               CatalogItemPhoto[]
+  fitments             CatalogItemFitment[]
   createdAt            DateTime          @default(now()) @map("created_at")
   updatedAt            DateTime          @updatedAt @map("updated_at")
 
   @@map("catalog_items")
   @@index([vendorId, status], name: "idx_catalog_items_vendor_status")
   @@index([createdByLiaisonId], name: "idx_catalog_items_created_by_liaison")
+  @@index([oemReference, partSource, condition], name: "idx_catalog_items_oem_group")
+}
+
+model CatalogItemFitment {
+  id            String      @id @default(uuid())
+  catalogItemId String      @map("catalog_item_id")
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  brand         String
+  model         String?
+  yearFrom      Int?        @map("year_from")
+  yearTo        Int?        @map("year_to")
+  engine        String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@map("catalog_item_fitments")
+  @@index([brand, model], name: "idx_fitments_brand_model")
+  @@index([catalogItemId], name: "idx_fitments_item")
 }
 
 model CatalogItemPhoto {
@@ -552,4 +570,230 @@ model NotificationPreference {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("notification_preferences")
+}
+
+// ============================================================================
+// INGEST — canonical vehicle reference (Chantier 1)
+// ============================================================================
+
+enum FuelType {
+  PETROL
+  DIESEL
+  HYBRID
+  ELECTRIC
+  LPG
+  CNG
+  OTHER
+}
+
+enum BodyType {
+  SEDAN
+  HATCHBACK
+  SUV
+  PICKUP
+  VAN
+  TRUCK
+  COUPE
+  WAGON
+  CONVERTIBLE
+  MOTORCYCLE
+  OTHER
+}
+
+model VehicleMake {
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
+  country      String?
+  popularityCi Int      @default(0) @map("popularity_ci")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  models VehicleModel[]
+
+  @@map("vehicle_makes")
+  @@index([slug], name: "idx_vehicle_makes_slug")
+}
+
+model VehicleModel {
+  id        String   @id @default(uuid())
+  makeId    String   @map("make_id")
+  make      VehicleMake @relation(fields: [makeId], references: [id], onDelete: Cascade)
+  name      String
+  slug      String
+  yearStart Int?     @map("year_start")
+  yearEnd   Int?     @map("year_end")
+  bodyType  BodyType? @map("body_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  generations VehicleGeneration[]
+
+  @@map("vehicle_models")
+  @@unique([makeId, slug], name: "uq_vehicle_model_make_slug")
+  @@index([makeId], name: "idx_vehicle_models_make")
+}
+
+model VehicleGeneration {
+  id        String   @id @default(uuid())
+  modelId   String   @map("model_id")
+  model     VehicleModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  code      String?
+  yearStart Int      @map("year_start")
+  yearEnd   Int?     @map("year_end")
+  bodyType  BodyType? @map("body_type")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  engines VehicleEngine[]
+
+  @@map("vehicle_generations")
+  @@index([modelId, yearStart], name: "idx_vehicle_generations_model_year")
+}
+
+model VehicleEngine {
+  id            String   @id @default(uuid())
+  generationId  String   @map("generation_id")
+  generation    VehicleGeneration @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  code          String?
+  displacementCc Int?    @map("displacement_cc")
+  fuelType      FuelType? @map("fuel_type")
+  powerKw       Int?     @map("power_kw")
+  oemRefs       String[] @default([]) @map("oem_refs")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  partFitments PartReferenceFitment[]
+
+  @@map("vehicle_engines")
+  @@index([generationId], name: "idx_vehicle_engines_generation")
+  @@index([code], name: "idx_vehicle_engines_code")
+}
+
+// ============================================================================
+// INGEST — parts reference + market price (Chantier 2)
+// ============================================================================
+
+model PartCategory {
+  id        String   @id @default(uuid())
+  parentId  String?  @map("parent_id")
+  parent    PartCategory? @relation("PartCategoryTree", fields: [parentId], references: [id])
+  children  PartCategory[] @relation("PartCategoryTree")
+  name      String
+  slug      String   @unique
+  oemGroup  String?  @map("oem_group")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  references PartReference[]
+
+  @@map("part_categories")
+  @@index([parentId], name: "idx_part_categories_parent")
+}
+
+model PartReference {
+  id         String   @id @default(uuid())
+  oemNumber  String?  @map("oem_number")
+  categoryId String?  @map("category_id")
+  category   PartCategory? @relation(fields: [categoryId], references: [id])
+  name       String
+  brand      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  fitments     PartReferenceFitment[]
+  observations MarketPriceObservation[]
+
+  @@map("part_references")
+  @@unique([oemNumber, brand], name: "uq_part_ref_oem_brand")
+  @@index([categoryId], name: "idx_part_references_category")
+  @@index([oemNumber], name: "idx_part_references_oem")
+}
+
+model PartReferenceFitment {
+  id              String   @id @default(uuid())
+  partReferenceId String   @map("part_reference_id")
+  partReference   PartReference @relation(fields: [partReferenceId], references: [id], onDelete: Cascade)
+  vehicleEngineId String   @map("vehicle_engine_id")
+  vehicleEngine   VehicleEngine @relation(fields: [vehicleEngineId], references: [id], onDelete: Cascade)
+
+  @@map("part_reference_fitments")
+  @@unique([partReferenceId, vehicleEngineId], name: "uq_part_ref_fitment")
+  @@index([vehicleEngineId], name: "idx_part_ref_fitments_engine")
+}
+
+enum IngestSource {
+  HAUTOPARTS_3H
+  MAPA_CI
+  JUMIA_CI
+  COINAFRIQUE_CI
+  ANNUAIRE_CI
+  OSM
+  GOOGLE_PLACES
+  NHTSA
+  WIKIPEDIA
+  PARTSOUQ
+  MANUAL
+}
+
+model MarketPriceObservation {
+  id              String   @id @default(uuid())
+  partReferenceId String?  @map("part_reference_id")
+  partReference   PartReference? @relation(fields: [partReferenceId], references: [id])
+  rawTitle        String   @map("raw_title")
+  source          IngestSource
+  sourceUrl       String?  @map("source_url")
+  sourceItemId    String?  @map("source_item_id")
+  vendorName      String?  @map("vendor_name")
+  priceFcfa       Int?     @map("price_fcfa")
+  currency        String   @default("XOF")
+  condition       PartCondition?
+  partSource      PartSource? @map("part_source")
+  observedAt      DateTime @default(now()) @map("observed_at")
+
+  @@map("market_price_observations")
+  @@unique([source, sourceItemId], name: "uq_market_price_source_item")
+  @@index([partReferenceId], name: "idx_market_price_part_ref")
+  @@index([source, observedAt], name: "idx_market_price_source_time")
+}
+
+// ============================================================================
+// INGEST — competitor cartography (Chantier 3 / Phase 4)
+// ============================================================================
+
+enum CompetitorType {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum CompetitorSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+model CompetitorVendor {
+  id             String   @id @default(uuid())
+  name           String
+  type           CompetitorType
+  websiteUrl     String?  @map("website_url")
+  phone          String?
+  whatsapp       String?
+  email          String?
+  address        String?
+  zone           String?
+  commune        String?
+  lat            Float?
+  lng            Float?
+  osmId          String?  @unique @map("osm_id")
+  gmapsPlaceId   String?  @unique @map("gmaps_place_id")
+  specialties    String[] @default([])
+  estimatedSize  CompetitorSize? @map("estimated_size")
+  rating         Float?
+  reviewsCount   Int?     @map("reviews_count")
+  notes          String?
+  observedAt     DateTime @default(now()) @map("observed_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("competitor_vendors")
+  @@index([type, zone], name: "idx_competitor_vendors_type_zone")
+  @@index([commune], name: "idx_competitor_vendors_commune")
 }
