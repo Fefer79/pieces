@@ -93,7 +93,32 @@ export type FleetVehicle = {
   usageType: 'TRANSPORT' | 'CHANTIER' | 'LIVRAISON' | 'DIRECTION' | 'AUTRE' | null
   groupName: string | null
   photoUrl: string | null
+  homeCenterId: string | null
+  homeCenter: {
+    id: string
+    name: string
+    commune: string | null
+    deliveryDayOfWeek: number | null
+  } | null
   createdAt: string
+}
+
+export type MaintenanceCenter = {
+  id: string
+  enterpriseId: string
+  name: string
+  commune: string | null
+  address: string | null
+  lat: number | null
+  lng: number | null
+  contactName: string | null
+  contactPhone: string | null
+  deliveryDayOfWeek: number | null
+  active: boolean
+  notes: string | null
+  vehiclesCount: number
+  createdAt: string
+  updatedAt: string
 }
 
 export type DashboardData = {

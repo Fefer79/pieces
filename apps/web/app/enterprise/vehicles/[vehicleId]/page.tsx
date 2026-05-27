@@ -4,7 +4,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { enterpriseFetch, getActiveEnterpriseId, type FleetVehicle } from '@/lib/enterprise-api'
+import { enterpriseFetch, getActiveEnterpriseId, type FleetVehicle, type MaintenanceCenter } from '@/lib/enterprise-api'
+
+const DAY_LABEL: Record<number, string> = {
+  0: 'Dimanche', 1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi',
+}
 
 type VehicleDetail = FleetVehicle & {
   orders: {
@@ -124,6 +128,7 @@ export default function VehicleDetailPage() {
   const [newKind, setNewKind] = useState<MaintenanceKind>('OIL_CHANGE')
   const [newInterval, setNewInterval] = useState('5000')
   const [newLastDoneKm, setNewLastDoneKm] = useState('')
+  const [centers, setCenters] = useState<MaintenanceCenter[]>([])
   const [error, setError] = useState<string | null>(null)
   const [mileageInput, setMileageInput] = useState('')
 
@@ -131,16 +136,28 @@ export default function VehicleDetailPage() {
 
   async function load() {
     if (!enterpriseId) return
-    const [vRes, aRes, sRes] = await Promise.all([
+    const [vRes, aRes, sRes, cRes] = await Promise.all([
       enterpriseFetch<VehicleDetail>(`/${enterpriseId}/vehicles/${vehicleId}`),
       enterpriseFetch<VehicleAnalytics>(`/${enterpriseId}/vehicles/${vehicleId}/analytics`),
       enterpriseFetch<MaintenanceSchedule[]>(`/${enterpriseId}/vehicles/${vehicleId}/schedules`),
+      enterpriseFetch<MaintenanceCenter[]>(`/${enterpriseId}/centers`),
     ])
     if (!vRes.ok) { setError(vRes.message); return }
     setVehicle(vRes.data)
     setMileageInput(vRes.data.mileage != null ? String(vRes.data.mileage) : '')
     if (aRes.ok) setAnalytics(aRes.data)
     if (sRes.ok) setSchedules(sRes.data)
+    if (cRes.ok) setCenters(cRes.data)
+  }
+
+  async function handleHomeCenterChange(centerId: string) {
+    if (!enterpriseId) return
+    const res = await enterpriseFetch(`/${enterpriseId}/vehicles/${vehicleId}/home-center`, {
+      method: 'PATCH',
+      body: JSON.stringify({ homeCenterId: centerId || null }),
+    })
+    if (!res.ok) { setError(res.message); return }
+    load()
   }
 
   async function handleCreateSchedule(e: React.FormEvent) {
@@ -430,7 +447,39 @@ export default function VehicleDetailPage() {
             <Row label="Groupe" value={vehicle.groupName ?? '—'} />
             <Row label="Kilométrage" value={vehicle.mileage != null ? `${vehicle.mileage.toLocaleString('fr-FR')} km` : '—'} />
             <Row label="MAJ km" value={vehicle.mileageUpdatedAt ? new Date(vehicle.mileageUpdatedAt).toLocaleDateString('fr-FR') : '—'} />
+            <Row
+              label="Centre attitré"
+              value={
+                vehicle.homeCenter
+                  ? `${vehicle.homeCenter.name}${
+                      vehicle.homeCenter.deliveryDayOfWeek != null
+                        ? ` · ${DAY_LABEL[vehicle.homeCenter.deliveryDayOfWeek]}`
+                        : ''
+                    }`
+                  : '— Non assigné'
+              }
+            />
           </dl>
+
+          {centers.length > 0 && (
+            <div className="mt-4 border-t border-border pt-4">
+              <label className="block font-mono text-[10px] uppercase tracking-[0.08em] text-muted mb-1">
+                Changer le centre attitré
+              </label>
+              <select
+                value={vehicle.homeCenterId ?? ''}
+                onChange={(e) => handleHomeCenterChange(e.target.value)}
+                className="w-full rounded-sm border border-border bg-white px-3 py-2 text-sm"
+              >
+                <option value="">— Aucun —</option>
+                {centers.filter((c) => c.active).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}{c.commune ? ` (${c.commune})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <form onSubmit={handleMileageSubmit} className="mt-5 flex gap-2 border-t border-border pt-4">
             <input

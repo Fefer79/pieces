@@ -40,4 +40,7 @@ export {
   createMaintenanceScheduleSchema,
   updateMaintenanceScheduleSchema,
   maintenanceScheduleParamsSchema,
+  createMaintenanceCenterSchema,
+  updateMaintenanceCenterSchema,
+  setVehicleHomeCenterSchema,
 } from './enterprise'

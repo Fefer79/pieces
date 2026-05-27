@@ -7,7 +7,19 @@ import {
   updateMileageSchema,
   createMaintenanceScheduleSchema,
   updateMaintenanceScheduleSchema,
+  createMaintenanceCenterSchema,
+  updateMaintenanceCenterSchema,
+  setVehicleHomeCenterSchema,
 } from 'shared/validators'
+import {
+  listCenters,
+  getCenter,
+  createCenter,
+  updateCenter,
+  deleteCenter,
+  setVehicleHomeCenter,
+  type CenterInput,
+} from './center.service.js'
 import {
   listSchedules,
   createSchedule,
@@ -209,6 +221,123 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
         vehicleId: string
       }
       const data = await getEnterpriseVehicle(enterpriseId, request.user.id, vehicleId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/centers',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await listCenters(enterpriseId, request.user.id)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/centers',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(createMaintenanceCenterSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await createCenter(
+        enterpriseId,
+        request.user.id,
+        request.body as CenterInput,
+      )
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/centers/:centerId',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId, centerId } = request.params as {
+        enterpriseId: string
+        centerId: string
+      }
+      const data = await getCenter(enterpriseId, request.user.id, centerId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/:enterpriseId/centers/:centerId',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(updateMaintenanceCenterSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, centerId } = request.params as {
+        enterpriseId: string
+        centerId: string
+      }
+      const data = await updateCenter(
+        enterpriseId,
+        request.user.id,
+        centerId,
+        request.body as Partial<CenterInput>,
+      )
+      return reply.send({ data })
+    },
+  )
+
+  fastify.delete(
+    '/:enterpriseId/centers/:centerId',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { enterpriseId, centerId } = request.params as {
+        enterpriseId: string
+        centerId: string
+      }
+      const data = await deleteCenter(enterpriseId, request.user.id, centerId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/:enterpriseId/vehicles/:vehicleId/home-center',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(setVehicleHomeCenterSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, vehicleId } = request.params as {
+        enterpriseId: string
+        vehicleId: string
+      }
+      const { homeCenterId } = request.body as { homeCenterId: string | null }
+      const data = await setVehicleHomeCenter(
+        enterpriseId,
+        request.user.id,
+        vehicleId,
+        homeCenterId,
+      )
       return reply.send({ data })
     },
   )

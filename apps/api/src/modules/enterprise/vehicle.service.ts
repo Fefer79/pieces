@@ -29,6 +29,10 @@ const SELECT = {
   usageType: true,
   groupName: true,
   photoUrl: true,
+  homeCenterId: true,
+  homeCenter: {
+    select: { id: true, name: true, commune: true, deliveryDayOfWeek: true },
+  },
   createdAt: true,
   updatedAt: true,
 } as const

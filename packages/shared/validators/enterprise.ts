@@ -94,3 +94,26 @@ export const maintenanceScheduleParamsSchema = z.object({
   vehicleId: z.string().uuid(),
   scheduleId: z.string().uuid(),
 })
+
+export const createMaintenanceCenterSchema = z.object({
+  name: z.string().min(2).max(120),
+  commune: z.string().max(80).nullable().optional(),
+  address: z.string().max(255).nullable().optional(),
+  lat: z.number().min(-90).max(90).nullable().optional(),
+  lng: z.number().min(-180).max(180).nullable().optional(),
+  contactName: z.string().max(120).nullable().optional(),
+  contactPhone: z
+    .string()
+    .regex(/^\+225\d{10}$/, 'Format attendu : +225XXXXXXXXXX')
+    .nullable()
+    .optional(),
+  deliveryDayOfWeek: z.number().int().min(0).max(6).nullable().optional(),
+  active: z.boolean().optional(),
+  notes: z.string().max(500).nullable().optional(),
+})
+
+export const updateMaintenanceCenterSchema = createMaintenanceCenterSchema.partial()
+
+export const setVehicleHomeCenterSchema = z.object({
+  homeCenterId: z.string().uuid().nullable(),
+})

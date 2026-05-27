@@ -333,12 +333,36 @@ model Enterprise {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  members  EnterpriseMember[]
-  vehicles Vehicle[]
-  orders   Order[]
+  members             EnterpriseMember[]
+  vehicles            Vehicle[]
+  orders              Order[]
+  maintenanceCenters  MaintenanceCenter[]
 
   @@map("enterprises")
   @@index([slug], name: "idx_enterprises_slug")
+}
+
+model MaintenanceCenter {
+  id              String     @id @default(uuid())
+  enterpriseId    String     @map("enterprise_id")
+  enterprise      Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  name            String
+  commune         String?
+  address         String?
+  lat             Float?
+  lng             Float?
+  contactName     String?    @map("contact_name")
+  contactPhone    String?    @map("contact_phone")
+  deliveryDayOfWeek Int?     @map("delivery_day_of_week")
+  active          Boolean    @default(true)
+  notes           String?
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  vehicles Vehicle[] @relation("VehicleHomeCenter")
+
+  @@map("maintenance_centers")
+  @@index([enterpriseId], name: "idx_maintenance_centers_enterprise")
 }
 
 model EnterpriseMember {
@@ -393,11 +417,13 @@ model MaintenanceSchedule {
 }
 
 model Vehicle {
-  id               String            @id @default(uuid())
-  userId           String?           @map("user_id")
-  user             User?             @relation(fields: [userId], references: [id])
-  enterpriseId     String?           @map("enterprise_id")
-  enterprise       Enterprise?       @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  id               String             @id @default(uuid())
+  userId           String?            @map("user_id")
+  user             User?              @relation(fields: [userId], references: [id])
+  enterpriseId     String?            @map("enterprise_id")
+  enterprise       Enterprise?        @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  homeCenterId     String?            @map("home_center_id")
+  homeCenter       MaintenanceCenter? @relation("VehicleHomeCenter", fields: [homeCenterId], references: [id], onDelete: SetNull)
   brand            String
   model            String
   year             Int
@@ -419,6 +445,7 @@ model Vehicle {
   @@index([userId], name: "idx_vehicles_user")
   @@index([enterpriseId], name: "idx_vehicles_enterprise")
   @@index([plate], name: "idx_vehicles_plate")
+  @@index([homeCenterId], name: "idx_vehicles_home_center")
 }
 
 enum DisputeStatus {
