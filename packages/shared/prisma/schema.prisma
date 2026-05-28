@@ -187,7 +187,7 @@ model Vendor {
   deliveryZones String[]         @default([]) @map("delivery_zones")
 
   isExternal     Boolean @default(false) @map("is_external")
-  externalSource String? @map("external_source")
+  externalSource String? @unique @map("external_source")
 
   ordersDelivered  Int       @default(0) @map("orders_delivered")
   disputesOpened   Int       @default(0) @map("disputes_opened")

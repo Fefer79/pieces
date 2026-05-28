@@ -12,14 +12,16 @@ async function main(): Promise<void> {
     options: {
       source: { type: 'string', short: 's' },
       'dry-run': { type: 'boolean', default: false },
+      commit: { type: 'boolean', default: false },
       limit: { type: 'string' },
     },
   })
   const source = values.source as SourceName | undefined
   const dryRun = values['dry-run'] ?? false
+  const commit = values.commit ?? false
   const limit = values.limit ? Number.parseInt(values.limit, 10) : undefined
   if (!source) {
-    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h> [--dry-run] [--limit=N]')
+    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h> [--dry-run|--commit] [--limit=N]')
     process.exit(1)
   }
   switch (source) {
@@ -48,8 +50,10 @@ async function main(): Promise<void> {
       break
     }
     case '3h': {
-      console.log(`[ingest] 3h autoparts ${dryRun ? '(dry-run)' : ''}${limit ? ` limit=${limit}` : ''}`)
-      const stats = await ingestThreeH({ dryRun: dryRun || true, limit })
+      const effectiveDryRun = commit ? false : true
+      const mode = commit ? '(commit)' : '(dry-run)'
+      console.log(`[ingest] 3h autoparts ${mode}${limit ? ` limit=${limit}` : ''}`)
+      const stats = await ingestThreeH({ dryRun: effectiveDryRun, limit })
       console.log('[ingest] done', stats)
       break
     }
