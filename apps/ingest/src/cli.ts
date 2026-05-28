@@ -4,8 +4,9 @@ import { ingestNhtsaVehicles } from './pipeline/vehicles.ts'
 import { enrichVehicleYears } from './pipeline/vehicle-years.ts'
 import { ingestFrenchModels } from './pipeline/french-models.ts'
 import { ingestThreeH } from './pipeline/three-h.ts'
+import { ingestGlobalAutoVehicles } from './pipeline/global-auto-vehicles.ts'
 
-type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models' | '3h'
+type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models' | '3h' | 'global-auto-vehicles'
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
@@ -21,7 +22,7 @@ async function main(): Promise<void> {
   const commit = values.commit ?? false
   const limit = values.limit ? Number.parseInt(values.limit, 10) : undefined
   if (!source) {
-    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h> [--dry-run|--commit] [--limit=N]')
+    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h|global-auto-vehicles> [--dry-run|--commit] [--limit=N]')
     process.exit(1)
   }
   switch (source) {
@@ -54,6 +55,14 @@ async function main(): Promise<void> {
       const mode = commit ? '(commit)' : '(dry-run)'
       console.log(`[ingest] 3h autoparts ${mode}${limit ? ` limit=${limit}` : ''}`)
       const stats = await ingestThreeH({ dryRun: effectiveDryRun, limit })
+      console.log('[ingest] done', stats)
+      break
+    }
+    case 'global-auto-vehicles': {
+      const effectiveDryRun = commit ? false : true
+      const mode = commit ? '(commit)' : '(dry-run)'
+      console.log(`[ingest] global-auto vehicles ${mode}`)
+      const stats = await ingestGlobalAutoVehicles({ dryRun: effectiveDryRun })
       console.log('[ingest] done', stats)
       break
     }
