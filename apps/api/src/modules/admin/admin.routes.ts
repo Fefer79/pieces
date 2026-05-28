@@ -18,6 +18,8 @@ import {
   getAdminLiaisonsList,
   getAdminLiaisonDetail,
   getAdminLiaisonActivity,
+  getAdminExternalImports,
+  getAdminExternalImportStats,
   exportCsv,
 } from './admin.service.js'
 import { prisma } from '../../lib/prisma.js'
@@ -139,6 +141,34 @@ export async function adminRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const data = await getAdminCatalogList(request.query as Record<string, never>)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/external-imports/list',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Liste paginée des CatalogItems issus de sources externes (scrapers)',
+        querystring: zodToFastify(adminListQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const data = await getAdminExternalImports(request.query as Record<string, never>)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/external-imports/stats',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Compteurs par source externe (total, withOem, lastImportAt)' },
+    },
+    async (_request, reply) => {
+      const data = await getAdminExternalImportStats()
       return reply.status(200).send({ data })
     },
   )

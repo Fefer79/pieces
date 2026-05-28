@@ -29,7 +29,11 @@ vi.mock('../../lib/prisma.js', () => ({
       count: vi.fn().mockResolvedValue(0),
     },
     vendor: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]), count: vi.fn().mockResolvedValue(0) },
-    catalogItem: { findMany: vi.fn(), count: vi.fn() },
+    catalogItem: {
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+      groupBy: vi.fn().mockResolvedValue([]),
+    },
     searchSynonym: { findMany: vi.fn() },
     userVehicle: { findMany: vi.fn(), count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), delete: vi.fn() },
     order: {
@@ -143,6 +147,64 @@ describe('Admin Routes', () => {
       })
 
       expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('GET /api/v1/admin/external-imports/list', () => {
+    it('returns 200 with paginated list for admin', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/external-imports/list',
+        headers: mockAuth('ADMIN'),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data).toHaveProperty('items')
+      expect(response.json().data).toHaveProperty('pagination')
+    })
+
+    it('returns 403 for non-admin', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/external-imports/list',
+        headers: mockAuth('MECHANIC'),
+      })
+      expect(response.statusCode).toBe(403)
+    })
+
+    it('returns 401 without auth', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/external-imports/list',
+      })
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('GET /api/v1/admin/external-imports/stats', () => {
+    it('returns 200 with sources array for admin', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/external-imports/stats',
+        headers: mockAuth('ADMIN'),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data).toHaveProperty('sources')
+    })
+
+    it('returns 403 for non-admin', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/external-imports/stats',
+        headers: mockAuth('SELLER'),
+      })
+      expect(response.statusCode).toBe(403)
     })
   })
 })

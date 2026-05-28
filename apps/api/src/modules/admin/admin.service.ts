@@ -227,6 +227,8 @@ interface AdminListQuery {
   status?: string
   vendorId?: string
   role?: string
+  source?: 'HAUTOPARTS_3H' | 'MAPA_CI' | 'JUMIA_CI' | 'COINAFRIQUE_CI' | 'ANNUAIRE_CI' | 'GLOBAL_AUTO_CI' | 'OSM' | 'GOOGLE_PLACES' | 'NHTSA' | 'WIKIPEDIA' | 'PARTSOUQ' | 'MANUAL'
+  hasOem?: 'true' | 'false'
   page?: number
   limit?: number
 }
@@ -716,4 +718,90 @@ export async function getAdminLiaisonActivity(
   ])
 
   return { items, total, page, totalPages: Math.ceil(total / limit) }
+}
+
+export async function getAdminExternalImports(query: AdminListQuery) {
+  const page = query.page ?? 1
+  const limit = Math.min(query.limit ?? 50, 200)
+  const skip = (page - 1) * limit
+
+  const validStatuses = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const
+  const where: Prisma.CatalogItemWhereInput = {
+    externalSource: query.source ?? { not: null },
+  }
+  if (query.status && validStatuses.includes(query.status as typeof validStatuses[number])) {
+    where.status = query.status as typeof validStatuses[number]
+  }
+  if (query.hasOem === 'true') where.oemReference = { not: null }
+  if (query.hasOem === 'false') where.oemReference = null
+  if (query.q) {
+    where.OR = [
+      { name: { contains: query.q, mode: 'insensitive' } },
+      { category: { contains: query.q, mode: 'insensitive' } },
+      { oemReference: { contains: query.q, mode: 'insensitive' } },
+      { externalSourceId: { contains: query.q, mode: 'insensitive' } },
+    ]
+  }
+
+  const [items, total] = await Promise.all([
+    prisma.catalogItem.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        oemReference: true,
+        price: true,
+        status: true,
+        condition: true,
+        partSource: true,
+        inStock: true,
+        imageOriginalUrl: true,
+        externalSource: true,
+        externalSourceId: true,
+        externalSourceUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        vendor: { select: { id: true, shopName: true, isExternal: true } },
+      },
+    }),
+    prisma.catalogItem.count({ where }),
+  ])
+
+  return { items, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+}
+
+export async function getAdminExternalImportStats() {
+  const grouped = await prisma.catalogItem.groupBy({
+    by: ['externalSource'],
+    where: { externalSource: { not: null } },
+    _count: { _all: true },
+    _max: { updatedAt: true },
+  })
+
+  const withOemGrouped = await prisma.catalogItem.groupBy({
+    by: ['externalSource'],
+    where: { externalSource: { not: null }, oemReference: { not: null } },
+    _count: { _all: true },
+  })
+  const withOemBySource = new Map(
+    withOemGrouped.map((g) => [g.externalSource, g._count._all]),
+  )
+
+  const sources = grouped.map((g) => {
+    const total = g._count._all
+    const withOem = withOemBySource.get(g.externalSource) ?? 0
+    return {
+      source: g.externalSource,
+      total,
+      withOem,
+      withoutOem: total - withOem,
+      lastImportAt: g._max.updatedAt,
+    }
+  })
+
+  return { sources }
 }
