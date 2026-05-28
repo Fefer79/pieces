@@ -19,7 +19,7 @@ const config: NextConfig = {
   // overrides via .env.local (process.env populated before next.config runs).
   // Supabase anon key is public by design (RLS protects data).
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? 'https://api.pieces.ci',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? 'https://pieces-api.onrender.com',
     NEXT_PUBLIC_SUPABASE_URL:
       process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://rlhkjgdpynjrfsveweuq.supabase.co',
     NEXT_PUBLIC_SUPABASE_ANON_KEY:
@@ -27,7 +27,15 @@ const config: NextConfig = {
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsaGtqZ2RweW5qcmZzdmV3ZXVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMzMwNjksImV4cCI6MjA4NzkwOTA2OX0.IICYtpt-gODiNw_ySSyg-hhScWJl2P-yRIx_GI0fAFo',
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001'
+    // En prod, la GH var `NEXT_PUBLIC_API_URL` est passée au build. Sans elle, on
+    // tombe sur l'API Render. Local dev surchage avec http://127.0.0.1:3001 via
+    // .env.local (process.env est lu avant next.config). Eviter `api.pieces.ci`
+    // qui n'est pas configuré en DNS.
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === 'development'
+        ? 'http://127.0.0.1:3001'
+        : 'https://pieces-api.onrender.com')
     return [
       {
         source: '/api/:path*',
