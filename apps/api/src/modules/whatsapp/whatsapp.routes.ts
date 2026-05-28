@@ -93,13 +93,13 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
         const session = getSession(from)
 
         // Handle session-based responses first
-        if (session && session.type === 'disambiguation') {
-          await handleDisambiguationResponse(from, text, session.data.category!, vehicleFilter)
+        if (session && session.type === 'disambiguation' && session.data.category) {
+          await handleDisambiguationResponse(from, text, session.data.category, vehicleFilter)
           return reply.status(200).send({ status: 'ok' })
         }
 
-        if (session && session.type === 'selection') {
-          const handled = await handleSelectionResponse(from, text, session.data.items!, user?.id)
+        if (session && session.type === 'selection' && session.data.items) {
+          const handled = await handleSelectionResponse(from, text, session.data.items, user?.id)
           if (handled) {
             return reply.status(200).send({ status: 'ok' })
           }
@@ -231,8 +231,9 @@ async function handleSelectionResponse(
     return false // Not a selection — let normal command handler process it
   }
 
+  const selectedItem = items[num - 1]
+  if (!selectedItem) return false
   clearSession(from)
-  const selectedItem = items[num - 1]!
   const price = selectedItem.price ?? 0
 
   if (price >= getOrderThreshold()) {

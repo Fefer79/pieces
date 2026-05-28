@@ -13,6 +13,7 @@ const mockCatalogItemCount = vi.fn()
 const mockCatalogItemFindFirst = vi.fn()
 const mockCatalogItemUpdate = vi.fn()
 const mockJobCreate = vi.fn()
+const mockJobFindFirst = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -34,6 +35,7 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     job: {
       create: (...args: unknown[]) => mockJobCreate(...args),
+      findFirst: (...args: unknown[]) => mockJobFindFirst(...args),
     },
   },
 }))
@@ -74,7 +76,7 @@ describe('catalog.service', () => {
           }),
         }),
       )
-      expect(mockJobCreate).toHaveBeenCalledTimes(2)
+      expect(mockJobCreate).toHaveBeenCalledTimes(1)
     })
 
     it('throws VENDOR_NOT_FOUND when no vendor', async () => {
@@ -250,7 +252,14 @@ describe('catalog.service', () => {
     it('publishes a draft item with price', async () => {
       mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
       mockCatalogItemFindFirst.mockResolvedValueOnce({
-        id: 'item-1', vendorId: 'vendor-1', status: 'DRAFT', price: 5000,
+        id: 'item-1',
+        vendorId: 'vendor-1',
+        status: 'DRAFT',
+        price: 5000,
+        condition: 'NEUF',
+        warrantyMonths: 6,
+        commissionAmount: 500,
+        commissionAcceptedAt: new Date(),
       })
       mockCatalogItemUpdate.mockResolvedValueOnce({
         id: 'item-1', status: 'PUBLISHED',

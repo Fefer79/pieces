@@ -309,10 +309,11 @@ export async function importVehiclesFromCsv(
   await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
 
   const rows = parseCsv(csv)
-  if (rows.length === 0) {
+  const [headerRow] = rows
+  if (!headerRow) {
     throw new AppError('CSV_EMPTY', 400, { message: 'Fichier CSV vide' })
   }
-  const header = rows[0]!.map((h) => h.trim().toLowerCase())
+  const header = headerRow.map((h) => h.trim().toLowerCase())
   const mapping: (keyof VehicleInput | null)[] = header.map((col) => COLUMN_ALIASES[col] ?? null)
 
   if (!mapping.includes('brand') || !mapping.includes('model') || !mapping.includes('year')) {
@@ -325,8 +326,8 @@ export async function importVehiclesFromCsv(
   const valid: VehicleInput[] = []
 
   for (let i = 1; i < rows.length; i++) {
-    const row = rows[i]!
-    if (row.every((c) => c.trim() === '')) continue
+    const row = rows[i]
+    if (!row || row.every((c) => c.trim() === '')) continue
     const obj: Record<string, string> = {}
     for (let c = 0; c < row.length; c++) {
       const key = mapping[c]

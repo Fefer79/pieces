@@ -9,9 +9,11 @@ export async function sendOtp(input: { phone?: string; email?: string }) {
     throw new AppError('AUTH_INVALID_INPUT', 400, { message: parsed.error.issues[0]?.message })
   }
 
-  const otpPayload = parsed.data.phone
-    ? { phone: parsed.data.phone }
-    : { email: parsed.data.email! }
+  const { phone, email } = parsed.data
+  if (!phone && !email) {
+    throw new AppError('AUTH_INVALID_INPUT', 400, { message: 'phone or email required' })
+  }
+  const otpPayload = phone ? { phone } : { email: email as string }
 
   const { error } = await supabaseAdmin.auth.signInWithOtp(otpPayload)
 
@@ -28,10 +30,14 @@ export async function verifyOtp(input: { phone?: string; email?: string; token: 
     throw new AppError('AUTH_INVALID_INPUT', 400, { message: parsed.error.issues[0]?.message })
   }
 
-  const isPhone = !!parsed.data.phone
+  const { phone, email, token } = parsed.data
+  if (!phone && !email) {
+    throw new AppError('AUTH_INVALID_INPUT', 400, { message: 'phone or email required' })
+  }
+  const isPhone = !!phone
   const verifyPayload = isPhone
-    ? { phone: parsed.data.phone!, token: parsed.data.token, type: 'sms' as const }
-    : { email: parsed.data.email!, token: parsed.data.token, type: 'email' as const }
+    ? { phone: phone as string, token, type: 'sms' as const }
+    : { email: email as string, token, type: 'email' as const }
 
   const { data, error } = await supabaseAdmin.auth.verifyOtp(verifyPayload)
 
@@ -47,8 +53,8 @@ export async function verifyOtp(input: { phone?: string; email?: string; token: 
   }
 
   const upsertData = isPhone
-    ? { phone: parsed.data.phone!, email: data.user.email ?? undefined }
-    : { email: parsed.data.email!, phone: data.user.phone ?? undefined }
+    ? { phone: phone as string, email: data.user.email ?? undefined }
+    : { email: email as string, phone: data.user.phone ?? undefined }
 
   const user = await prisma.user.upsert({
     where: { supabaseId: data.user.id },

@@ -10,7 +10,7 @@ const COLOR_BORDER = '#E5E7EB'
 const TVA_RATE_DEFAULT = 18
 
 function fcfa(n: number): string {
-  return `${n.toLocaleString('fr-FR').replace(/ /g, ' ')} FCFA`
+  return `${n.toLocaleString('fr-FR').replace(/\u00A0/g, ' ')} FCFA`
 }
 
 function dateFr(d: Date): string {

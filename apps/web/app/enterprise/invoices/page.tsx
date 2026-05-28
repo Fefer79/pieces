@@ -59,6 +59,7 @@ export default function EnterpriseInvoicesPage() {
 
   useEffect(() => {
     const id = getActiveEnterpriseId()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage read, client-only
     setEnterprise(id ? { status: 'ready', id } : { status: 'no-enterprise' })
   }, [])
 

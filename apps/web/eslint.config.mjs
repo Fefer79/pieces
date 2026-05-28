@@ -3,7 +3,12 @@ import nextConfig from 'eslint-config-next'
 const eslintConfig = [
   ...nextConfig,
   {
-    ignores: ['public/sw.js', 'public/swe-worker-*.js'],
+    ignores: [
+      'public/sw*.js',           // service workers (générés par Serwist)
+      'public/swe-worker-*.js',
+      '.open-next/**',           // build OpenNext pour Cloudflare Workers
+      '.next/**',                // build Next.js
+    ],
   },
   {
     rules: {

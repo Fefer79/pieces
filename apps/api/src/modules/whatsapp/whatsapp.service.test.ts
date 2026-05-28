@@ -211,7 +211,7 @@ describe('whatsapp.service', () => {
 
     it('throws on media URL fetch failure', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce({ ok: false }))
-      await expect(downloadWhatsAppMedia('img-bad')).rejects.toThrow('Failed to get media URL')
+      await expect(downloadWhatsAppMedia('img-bad')).rejects.toThrow('WHATSAPP_MEDIA_URL_FAILED')
     })
   })
 })

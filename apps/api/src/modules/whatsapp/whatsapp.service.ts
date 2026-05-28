@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { prisma } from '../../lib/prisma.js'
+import { AppError } from '../../lib/appError.js'
 
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID
@@ -65,21 +66,21 @@ export async function findUserByWhatsApp(waNumber: string) {
 // ---------- Media Download ----------
 
 export async function downloadWhatsAppMedia(imageId: string): Promise<Buffer> {
-  if (!WHATSAPP_TOKEN) throw new Error('WhatsApp not configured')
+  if (!WHATSAPP_TOKEN) throw new AppError('WHATSAPP_NOT_CONFIGURED', 500, { message: 'WhatsApp not configured' })
 
   // Step 1: Get media URL
   const mediaRes = await fetch(`https://graph.facebook.com/${GRAPH_API_VERSION}/${imageId}`, {
     headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` },
   })
-  if (!mediaRes.ok) throw new Error('Failed to get media URL')
+  if (!mediaRes.ok) throw new AppError('WHATSAPP_MEDIA_URL_FAILED', 502, { message: 'Failed to get media URL' })
   const mediaData = (await mediaRes.json()) as { url?: string }
-  if (!mediaData.url) throw new Error('No media URL returned')
+  if (!mediaData.url) throw new AppError('WHATSAPP_NO_MEDIA_URL', 502, { message: 'No media URL returned' })
 
   // Step 2: Download the image
   const imageRes = await fetch(mediaData.url, {
     headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` },
   })
-  if (!imageRes.ok) throw new Error('Failed to download media')
+  if (!imageRes.ok) throw new AppError('WHATSAPP_MEDIA_DOWNLOAD_FAILED', 502, { message: 'Failed to download media' })
   return Buffer.from(await imageRes.arrayBuffer())
 }
 

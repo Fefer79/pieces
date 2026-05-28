@@ -46,6 +46,7 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     job: {
       create: (...args: unknown[]) => mockJobCreate(...args),
+      findFirst: vi.fn().mockResolvedValue(null),
     },
     $transaction: (fn: (tx: unknown) => Promise<unknown>) => mockTransaction(fn),
   },
@@ -275,7 +276,14 @@ describe('Catalog Routes', () => {
       mockAuthUser()
       mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
       mockCatalogItemFindFirst.mockResolvedValueOnce({
-        id: '00000000-0000-0000-0000-000000000001', vendorId: 'vendor-1', status: 'DRAFT', price: 5000,
+        id: '00000000-0000-0000-0000-000000000001',
+        vendorId: 'vendor-1',
+        status: 'DRAFT',
+        price: 5000,
+        condition: 'NEUF',
+        warrantyMonths: 6,
+        commissionAmount: 500,
+        commissionAcceptedAt: new Date(),
       })
       mockCatalogItemUpdate.mockResolvedValueOnce({
         id: '00000000-0000-0000-0000-000000000001', status: 'PUBLISHED',

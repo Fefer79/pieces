@@ -67,6 +67,7 @@ export default function EnterpriseBillingPage() {
   useEffect(() => {
     const id = getActiveEnterpriseId()
     if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage read, client-only
       setError('Aucune entreprise active. Créez ou sélectionnez une entreprise.')
       return
     }

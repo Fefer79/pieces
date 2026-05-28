@@ -8,7 +8,7 @@ const COLOR_ACCENT = '#002366'
 const COLOR_BORDER = '#E5E7EB'
 
 function fcfa(amount: number): string {
-  return `${amount.toLocaleString('fr-FR').replace(/ /g, ' ')} FCFA`
+  return `${amount.toLocaleString('fr-FR').replace(/\u00A0/g, ' ')} FCFA`
 }
 
 function dateFr(d: Date): string {
@@ -99,7 +99,7 @@ export async function generateDevisPdf(orderId: string, requesterId: string): Pr
       doc.font('Helvetica').fontSize(10).fillColor(COLOR_MUTED)
       let yv = 158
       if (order.vehicle.plate) { doc.text(`Plaque : ${order.vehicle.plate}`, 320, yv); yv += 13 }
-      if (order.vehicle.vin) { doc.text(`VIN : ${order.vehicle.vin}`, 320, yv); yv += 13 }
+      if (order.vehicle.vin) { doc.text(`VIN : ${order.vehicle.vin}`, 320, yv) }
     }
 
     y = Math.max(y, 210)
