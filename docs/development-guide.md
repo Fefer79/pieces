@@ -213,14 +213,28 @@ Push/PR sur main → lint → test → build (séquentiel)
 - `pnpm install --frozen-lockfile`
 - Les 3 jobs sont parallèles (lint, test), build attend lint+test
 
-### Déploiement API (`deploy-api.yml`)
+### Déploiement API (Render Blueprint)
 
 ```
-Push sur main (paths: apps/api/**, packages/shared/**) → Fly.io
+Push sur main → Render auto-deploy (via render.yaml)
 ```
 
-- `flyctl deploy --config apps/api/fly.toml`
-- Secret : `FLY_API_TOKEN`
+- Blueprint déclaré dans `render.yaml` à la racine : service `pieces-api`, runtime Node 22, région Frankfurt, plan starter.
+- Build : `pnpm install --frozen-lockfile && pnpm -F shared db:generate && pnpm -F api build`
+- Start : `pnpm -F shared exec prisma migrate deploy && pnpm -F api start`
+- Healthcheck : `/healthz`
+- Secrets (configurés côté Render UI, `sync: false` dans le blueprint) : `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+- URL : `https://pieces-api.onrender.com`
+
+### Déploiement Web (`deploy-web.yml`)
+
+```
+Push sur main → Cloudflare Workers (via OpenNext)
+```
+
+- `pnpm -F web run deploy` → `opennextjs-cloudflare build && opennextjs-cloudflare deploy`
+- Secret : `CLOUDFLARE_API_TOKEN`
+- Variables repo : `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ---
 

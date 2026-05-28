@@ -175,6 +175,9 @@ preHandler: [requireAuth, requireConsent]
 ## Déploiement
 
 - **CI :** GitHub Actions (lint → test → build)
-- **Déploiement :** Fly.io via `flyctl deploy`
-- **Trigger :** Push sur `main` touchant `apps/api/**` ou `packages/shared/**`
-- **Build :** esbuild (bundling en un seul fichier `dist/server.js`)
+- **Déploiement :** Render (blueprint déclaré dans `render.yaml` à la racine, service `pieces-api`, région Frankfurt, plan starter)
+- **Trigger :** auto-deploy de Render à chaque push sur `main` (via l'intégration GitHub côté Render)
+- **Build :** `pnpm install --frozen-lockfile && pnpm -F shared db:generate && pnpm -F api build` (esbuild → `dist/server.js`)
+- **Start :** `pnpm -F shared exec prisma migrate deploy && pnpm -F api start` (migrations Prisma appliquées au démarrage)
+- **Healthcheck :** `/healthz` (configuré dans `render.yaml`)
+- **URL :** `https://pieces-api.onrender.com`
