@@ -20,9 +20,19 @@ Workspace de scraping et import pour pieces.ci. Pipeline ETL hors API/web.
 ## Lancer un ingest
 
 ```bash
-pnpm -F ingest ingest --source=osm --bbox=abidjan
-pnpm -F ingest ingest --source=3h --dry-run
+pnpm -F ingest ingest --source=osm
+pnpm -F ingest ingest --source=nhtsa
+pnpm -F ingest ingest --source=french-models
+pnpm -F ingest ingest --source=3h --dry-run --limit=10   # dump JSON dans data/raw/
+pnpm -F ingest ingest --source=3h --dry-run              # full crawl ~247 produits
 ```
+
+Le pipeline 3H utilise le JSON-LD `schema.org/Product` exposé par Rank Math SEO :
+extract des 2 product-sitemaps → fetch chaque fiche → parse JSON-LD → normalize
+(name, prix XOF, brand, OEM ref via SKU, condition, image). Sortie en `data/raw/3hautoparts-YYYY-MM-DD.json`.
+
+L'étape **load en DB** n'est pas encore branchée — elle nécessite la migration
+Prisma `Vendor.isExternal` + `CatalogItem.externalSource/Url/Id` (Étape 2).
 
 ## Architecture
 
