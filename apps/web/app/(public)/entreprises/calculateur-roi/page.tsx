@@ -10,12 +10,15 @@ const PRICE_PER_VEHICLE = {
 
 type Tier = keyof typeof PRICE_PER_VEHICLE
 
+// Référence pour la suggestion "Estimer pour VTC"
+const VTC_BUDGET_PER_VEHICLE = 1_000_000 // FCFA / véhicule / an
+
 function fmtFcfa(n: number): string {
+  if (!Number.isFinite(n)) return '—'
   if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} M FCFA`
   return `${Math.round(n).toLocaleString('fr-FR')} FCFA`
 }
 
-// Bénéfices qualitatifs propres à chaque tier — montrés sur les cartes
 const TIER_BENEFITS: Record<Tier, string[]> = {
   PRO_FLOTTE: [
     'Détection des véhicules « gouffres »',
@@ -33,16 +36,12 @@ const TIER_BENEFITS: Record<Tier, string[]> = {
 }
 
 interface TierResult {
-  monthlyCost: number
   annualCost: number
   annualCostBilledAnnual: number
   partsSaving: number
   downtimeSaving: number
   grossSaving: number
   netAnnual: number
-  netMonthly: number
-  roiRatio: number
-  paybackDays: number
 }
 
 function computeTier(
@@ -50,44 +49,44 @@ function computeTier(
   vehicles: number,
   budget: number,
   savingRate: number,
-  downtimeDaysSaved: number,
+  downtimeDays: number,
   revenuePerOffRoadDay: number,
 ): TierResult {
   const pricePerVeh = PRICE_PER_VEHICLE[tier]
-  const monthlyCost = pricePerVeh * vehicles
-  const annualCost = monthlyCost * 12
-  const annualCostBilledAnnual = monthlyCost * 10 // 2 mois offerts en paiement annuel
+  const annualCost = pricePerVeh * vehicles * 12
+  const annualCostBilledAnnual = pricePerVeh * vehicles * 10 // 2 mois offerts
 
   const partsSaving = budget * savingRate
   // Le downtime ne s'applique qu'à Pro+ (3 h chrono / J+1 / concierge)
-  const downtimeSaving = tier === 'PRO_FLOTTE_PLUS' ? vehicles * downtimeDaysSaved * revenuePerOffRoadDay : 0
+  const downtimeSaving = tier === 'PRO_FLOTTE_PLUS' ? vehicles * downtimeDays * revenuePerOffRoadDay : 0
   const grossSaving = partsSaving + downtimeSaving
   const netAnnual = grossSaving - annualCost
-  const netMonthly = grossSaving / 12 - monthlyCost
-  const roiRatio = annualCost > 0 ? grossSaving / annualCost : Infinity
-  const paybackDays = grossSaving > 0 ? (annualCost / grossSaving) * 365 : Infinity
 
-  return { monthlyCost, annualCost, annualCostBilledAnnual, partsSaving, downtimeSaving, grossSaving, netAnnual, netMonthly, roiRatio, paybackDays }
+  return { annualCost, annualCostBilledAnnual, partsSaving, downtimeSaving, grossSaving, netAnnual }
 }
 
 export default function CalculateurRoiPage() {
   const [vehicles, setVehicles] = useState(20)
-  const [budget, setBudget] = useState(60_000_000)
+  const [budget, setBudget] = useState(20_000_000)
   const [savingRate, setSavingRate] = useState(0.20)
-  const [downtimeDaysSaved, setDowntimeDaysSaved] = useState(2)
+  const [downtimeDays, setDowntimeDays] = useState(4)
   const [revenuePerOffRoadDay, setRevenuePerOffRoadDay] = useState(25_000)
 
   const pro = useMemo(
-    () => computeTier('PRO_FLOTTE', vehicles, budget, savingRate, downtimeDaysSaved, revenuePerOffRoadDay),
-    [vehicles, budget, savingRate, downtimeDaysSaved, revenuePerOffRoadDay],
+    () => computeTier('PRO_FLOTTE', vehicles, budget, savingRate, downtimeDays, revenuePerOffRoadDay),
+    [vehicles, budget, savingRate, downtimeDays, revenuePerOffRoadDay],
   )
   const plus = useMemo(
-    () => computeTier('PRO_FLOTTE_PLUS', vehicles, budget, savingRate, downtimeDaysSaved, revenuePerOffRoadDay),
-    [vehicles, budget, savingRate, downtimeDaysSaved, revenuePerOffRoadDay],
+    () => computeTier('PRO_FLOTTE_PLUS', vehicles, budget, savingRate, downtimeDays, revenuePerOffRoadDay),
+    [vehicles, budget, savingRate, downtimeDays, revenuePerOffRoadDay],
   )
 
   const winner: Tier = plus.netAnnual > pro.netAnnual ? 'PRO_FLOTTE_PLUS' : 'PRO_FLOTTE'
   const diff = Math.abs(plus.netAnnual - pro.netAnnual)
+
+  function estimateBudgetForVtc() {
+    setBudget(Math.max(1, vehicles) * VTC_BUDGET_PER_VEHICLE)
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 lg:px-8 lg:py-16">
@@ -96,11 +95,11 @@ export default function CalculateurRoiPage() {
           Calculateur ROI Flotte Pro
         </div>
         <h1 className="mt-2 font-display text-4xl text-ink lg:text-5xl">
-          Flotte Pro ou Flotte Pro + : lequel rapporte le plus à votre flotte ?
+          Flotte Pro ou Flotte Pro + : lequel vous rapporte le plus ?
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted">
-          Saisissez votre flotte, votre budget et le coût d&apos;un véhicule immobilisé.
-          Le calculateur compare côte-à-côte les deux abonnements et désigne le plus rentable.
+          Renseignez votre flotte et vos hypothèses. Le calculateur compare les deux abonnements
+          et désigne celui qui vous rapporte le plus net après abonnement.
         </p>
       </header>
 
@@ -108,22 +107,46 @@ export default function CalculateurRoiPage() {
       <section className="mt-10 rounded-xl border border-border bg-card p-6">
         <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Vos paramètres</div>
         <div className="mt-4 grid gap-5 lg:grid-cols-2">
-          <Field label={`Nombre de véhicules : ${vehicles}`}>
+          <Field label="Nombre de véhicules">
             <input
-              type="range" min={1} max={200} step={1} value={vehicles}
-              onChange={(e) => setVehicles(Number(e.target.value))}
-              className="w-full accent-[var(--color-accent)]"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              step={1}
+              value={vehicles}
+              onChange={(e) => setVehicles(Math.max(0, Number(e.target.value) || 0))}
+              className="w-full rounded-md border border-border-strong bg-card px-3 py-2 font-mono tabular-nums text-base text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
+              placeholder="Ex. 20"
             />
-            <Scale labels={['1', '50', '100', '200']} />
+            <Hint>Saisissez le nombre exact de véhicules dans votre flotte.</Hint>
           </Field>
 
-          <Field label={`Budget pièces annuel : ${fmtFcfa(budget)}`}>
-            <input
-              type="range" min={1_000_000} max={500_000_000} step={1_000_000} value={budget}
-              onChange={(e) => setBudget(Number(e.target.value))}
-              className="w-full accent-[var(--color-accent)]"
-            />
-            <Scale labels={['1 M', '50 M', '200 M', '500 M']} />
+          <Field label="Budget pièces annuel (FCFA)">
+            <div className="flex gap-2">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={100_000}
+                value={budget}
+                onChange={(e) => setBudget(Math.max(0, Number(e.target.value) || 0))}
+                className="w-full rounded-md border border-border-strong bg-card px-3 py-2 font-mono tabular-nums text-base text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
+                placeholder="Ex. 20000000"
+              />
+              <button
+                type="button"
+                onClick={estimateBudgetForVtc}
+                className="shrink-0 whitespace-nowrap rounded-md border border-border-strong bg-surface px-3 py-2 text-xs font-medium text-ink hover:bg-card"
+                title={`${VTC_BUDGET_PER_VEHICLE.toLocaleString('fr-FR')} F × véhicules`}
+              >
+                Estimer pour VTC
+              </button>
+            </div>
+            <Hint>
+              {budget > 0 ? `Soit ${fmtFcfa(budget)}. ` : ''}
+              Pas sûr ? Pour un VTC en Côte d&apos;Ivoire, comptez en moyenne{' '}
+              <strong>1 M F / véhicule / an</strong>. Cliquez sur « Estimer pour VTC ».
+            </Hint>
           </Field>
 
           <Field label={`Économie projetée sur les pièces : ${Math.round(savingRate * 100)} %`}>
@@ -139,16 +162,17 @@ export default function CalculateurRoiPage() {
             </Hint>
           </Field>
 
-          <Field label={`Jours d'immobilisation évités par véhicule / an : ${downtimeDaysSaved}`}>
+          <Field label={`Jours d'immobilisation par manque de pièces : ${downtimeDays} jour${downtimeDays > 1 ? 's' : ''} / véhicule / an`}>
             <input
-              type="range" min={0} max={10} step={1} value={downtimeDaysSaved}
-              onChange={(e) => setDowntimeDaysSaved(Number(e.target.value))}
+              type="range" min={0} max={10} step={1} value={downtimeDays}
+              onChange={(e) => setDowntimeDays(Number(e.target.value))}
               className="w-full accent-[var(--color-accent)]"
             />
             <Scale labels={['0', '3', '6', '10']} />
             <Hint>
-              Combien de jours par véhicule la livraison 3 h chrono / J+1 garantie / concierge vous
-              fait gagner par an. <strong>Pro + uniquement.</strong>
+              Moyenne observée chez les flottes ivoiriennes : <strong>3 à 5 jours / véhicule / an</strong>.
+              VTC fortement sollicités ou flottes BTP : jusqu&apos;à 8 jours. Flotte Pro + supprime ces
+              jours grâce à la 3 h chrono Abidjan / J+1 garantie / concierge.
             </Hint>
           </Field>
 
@@ -186,7 +210,7 @@ export default function CalculateurRoiPage() {
             </div>
             <h2 className="mt-1 font-display text-2xl text-ink">
               {winner === 'PRO_FLOTTE_PLUS'
-                ? `Flotte Pro + dégage ${fmtFcfa(diff)} de plus / an pour votre flotte.`
+                ? `Flotte Pro + vous rapporte ${fmtFcfa(diff)} de plus / an.`
                 : diff < 1
                   ? 'Flotte Pro et Flotte Pro + se valent sur ces hypothèses.'
                   : `Flotte Pro reste le plus rentable : ${fmtFcfa(diff)} de plus / an.`}
@@ -224,47 +248,6 @@ export default function CalculateurRoiPage() {
         />
       </section>
 
-      {/* Detailed comparison table */}
-      <section className="mt-10">
-        <h2 className="font-display text-2xl text-ink">Comparaison détaillée</h2>
-        <p className="mt-1 text-sm text-muted">Tous les chiffres sont annuels sauf indication.</p>
-        <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-surface text-left">
-                <th className="px-4 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                  Poste
-                </th>
-                <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink">
-                  Flotte Pro
-                </th>
-                <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink">
-                  Flotte Pro +
-                </th>
-                <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                  Écart
-                </th>
-              </tr>
-            </thead>
-            <tbody className="font-mono tabular-nums">
-              <Row label="Prix / véhicule / mois" pro="5 000 F" plus="10 000 F" diff="+ 5 000 F" />
-              <Row label="Abonnement mensuel" pro={fmtFcfa(pro.monthlyCost)} plus={fmtFcfa(plus.monthlyCost)} diff={fmtFcfa(plus.monthlyCost - pro.monthlyCost)} />
-              <Row label="Abonnement annuel (mensuel)" pro={fmtFcfa(pro.annualCost)} plus={fmtFcfa(plus.annualCost)} diff={fmtFcfa(plus.annualCost - pro.annualCost)} />
-              <Row label="Abonnement annuel (paiement annuel, −2 mois)" pro={fmtFcfa(pro.annualCostBilledAnnual)} plus={fmtFcfa(plus.annualCostBilledAnnual)} diff={fmtFcfa(plus.annualCostBilledAnnual - pro.annualCostBilledAnnual)} />
-              <SectionRow label="Économies projetées / an" />
-              <Row label="• Économie pièces" pro={fmtFcfa(pro.partsSaving)} plus={fmtFcfa(plus.partsSaving)} diff="—" />
-              <Row label="• Économie downtime (3 h chrono / J+1)" pro="—" plus={fmtFcfa(plus.downtimeSaving)} diff={fmtFcfa(plus.downtimeSaving)} highlight={plus.downtimeSaving > 0} />
-              <Row label="Total économies brutes" pro={fmtFcfa(pro.grossSaving)} plus={fmtFcfa(plus.grossSaving)} diff={fmtFcfa(plus.grossSaving - pro.grossSaving)} />
-              <SectionRow label="Résultat" />
-              <Row label="Net annuel après abonnement" pro={fmtFcfa(pro.netAnnual)} plus={fmtFcfa(plus.netAnnual)} diff={fmtFcfa(plus.netAnnual - pro.netAnnual)} bold tone={plus.netAnnual - pro.netAnnual >= 0 ? 'pos' : 'neg'} />
-              <Row label="Net mensuel" pro={fmtFcfa(pro.netMonthly)} plus={fmtFcfa(plus.netMonthly)} diff={fmtFcfa(plus.netMonthly - pro.netMonthly)} />
-              <Row label="ROI sur l'abonnement" pro={Number.isFinite(pro.roiRatio) ? `×${pro.roiRatio.toFixed(1)}` : '∞'} plus={Number.isFinite(plus.roiRatio) ? `×${plus.roiRatio.toFixed(1)}` : '∞'} diff="—" />
-              <Row label="Payback (jours)" pro={Number.isFinite(pro.paybackDays) ? `${Math.round(pro.paybackDays)} j` : '—'} plus={Number.isFinite(plus.paybackDays) ? `${Math.round(plus.paybackDays)} j` : '—'} diff="—" />
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       {/* Qualitative benefits beyond the numbers */}
       <section className="mt-10 grid gap-5 lg:grid-cols-2">
         <BenefitCard title="Au-delà du chiffrage — Flotte Pro" benefits={TIER_BENEFITS.PRO_FLOTTE} />
@@ -278,9 +261,8 @@ export default function CalculateurRoiPage() {
       <p className="mt-10 text-xs text-muted">
         Hypothèses : abonnement Flotte Pro 5 000 F/véh/mois, Flotte Pro + 10 000 F/véh/mois.
         Économie pièces appliquée au budget pièces annuel (s&apos;applique aux deux tiers).
-        Économie downtime = véhicules × jours évités/an × manque à gagner/jour, comptée
-        uniquement pour Flotte Pro + (3 h chrono Abidjan, J+1 hors Abidjan, concierge).
-        Payback = 365 × abonnement annuel / économie annuelle brute.
+        Économie downtime = véhicules × jours d&apos;immobilisation × manque à gagner / jour,
+        comptée uniquement pour Flotte Pro + (3 h chrono Abidjan, J+1 hors Abidjan, concierge).
         Paiement annuel = 10 mois facturés (2 mois offerts).
       </p>
     </div>
@@ -333,14 +315,12 @@ function TierCard({
 
       <div className="mt-5 border-t border-border pt-4">
         <div className="font-display text-3xl text-ink">{fmtFcfa(result.netAnnual)}</div>
-        <div className="text-sm text-muted">Net annuel, après abonnement</div>
+        <div className="text-sm text-muted">Gain net annuel estimé après abonnement</div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat label="Abonnement / an" value={fmtFcfa(result.annualCost)} />
         <Stat label="Économies / an" value={fmtFcfa(result.grossSaving)} />
-        <Stat label="ROI" value={Number.isFinite(result.roiRatio) ? `× ${result.roiRatio.toFixed(1)}` : '∞'} />
-        <Stat label="Payback" value={Number.isFinite(result.paybackDays) ? `${Math.round(result.paybackDays)} jours` : '—'} />
       </div>
 
       {result.downtimeSaving > 0 && (
@@ -374,34 +354,6 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">{label}</div>
       <div className="mt-0.5 font-mono tabular-nums text-sm font-medium text-ink">{value}</div>
     </div>
-  )
-}
-
-function SectionRow({ label }: { label: string }) {
-  return (
-    <tr className="bg-surface/50">
-      <td colSpan={4} className="px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-ink">
-        {label}
-      </td>
-    </tr>
-  )
-}
-
-function Row({
-  label, pro, plus, diff, bold, highlight, tone,
-}: {
-  label: string; pro: string; plus: string; diff: string
-  bold?: boolean; highlight?: boolean; tone?: 'pos' | 'neg'
-}) {
-  const toneCls = tone === 'pos' ? 'text-success-fg' : tone === 'neg' ? 'text-error-fg' : 'text-ink'
-  const rowCls = highlight ? 'border-t border-border bg-accent/5' : 'border-t border-border'
-  return (
-    <tr className={rowCls}>
-      <td className={`px-4 py-2.5 ${bold ? 'font-semibold text-ink' : 'font-sans text-ink'}`}>{label}</td>
-      <td className={`px-4 py-2.5 text-right ${bold ? 'font-semibold ' + toneCls : 'text-ink'}`}>{pro}</td>
-      <td className={`px-4 py-2.5 text-right ${bold ? 'font-semibold ' + toneCls : 'text-ink'}`}>{plus}</td>
-      <td className={`px-4 py-2.5 text-right ${bold ? 'font-semibold ' + toneCls : 'text-muted'}`}>{diff}</td>
-    </tr>
   )
 }
 
