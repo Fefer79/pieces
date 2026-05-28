@@ -10,7 +10,7 @@ import { Bar, Line } from 'react-chartjs-2'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler)
 
-type TooltipCtx = { dataset: { label?: string }; parsed: { y: number } }
+type TooltipCtx = { dataset: { label?: string }; parsed: { y: number | null } }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants — prix officiels Flotte Pro / Flotte Pro +
@@ -319,7 +319,7 @@ export default function AdminFinancesPage() {
               }}
               options={{
                 responsive: true,
-                plugins: { legend: { position: 'top' as const }, tooltip: { callbacks: { label: (c: TooltipCtx) => `${c.dataset.label}: ${fmtFcfaFull(c.parsed.y)}` } } },
+                plugins: { legend: { position: 'top' as const }, tooltip: { callbacks: { label: (c: TooltipCtx) => `${c.dataset.label}: ${fmtFcfaFull(c.parsed.y ?? 0)}` } } },
                 scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { callback: (v: string | number) => fmtFcfa(Number(v)) } } },
               }}
             />
@@ -338,7 +338,7 @@ export default function AdminFinancesPage() {
               }}
               options={{
                 responsive: true,
-                plugins: { legend: { position: 'top' as const }, tooltip: { callbacks: { label: (c: TooltipCtx) => `${c.dataset.label}: ${fmtFcfaFull(c.parsed.y)}` } } },
+                plugins: { legend: { position: 'top' as const }, tooltip: { callbacks: { label: (c: TooltipCtx) => `${c.dataset.label}: ${fmtFcfaFull(c.parsed.y ?? 0)}` } } },
                 scales: { y: { ticks: { callback: (v: string | number) => fmtFcfa(Number(v)) } } },
               }}
             />
@@ -355,7 +355,7 @@ export default function AdminFinancesPage() {
               }}
               options={{
                 responsive: true,
-                plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c: TooltipCtx) => fmtFcfaFull(c.parsed.y) } } },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c: TooltipCtx) => fmtFcfaFull(c.parsed.y ?? 0) } } },
                 scales: { y: { ticks: { callback: (v: string | number) => fmtFcfa(Number(v)) } } },
               }}
             />
