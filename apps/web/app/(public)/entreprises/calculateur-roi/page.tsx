@@ -36,12 +36,16 @@ const TIER_BENEFITS: Record<Tier, string[]> = {
 }
 
 interface TierResult {
+  monthlyCost: number
   annualCost: number
   annualCostBilledAnnual: number
   partsSaving: number
   downtimeSaving: number
   grossSaving: number
   netAnnual: number
+  netMonthly: number
+  roiRatio: number
+  paybackDays: number
 }
 
 function computeTier(
@@ -53,16 +57,20 @@ function computeTier(
   revenuePerOffRoadDay: number,
 ): TierResult {
   const pricePerVeh = PRICE_PER_VEHICLE[tier]
-  const annualCost = pricePerVeh * vehicles * 12
-  const annualCostBilledAnnual = pricePerVeh * vehicles * 10 // 2 mois offerts
+  const monthlyCost = pricePerVeh * vehicles
+  const annualCost = monthlyCost * 12
+  const annualCostBilledAnnual = monthlyCost * 10 // 2 mois offerts
 
   const partsSaving = budget * savingRate
   // Le downtime ne s'applique qu'à Pro+ (3 h chrono / J+1 / concierge)
   const downtimeSaving = tier === 'PRO_FLOTTE_PLUS' ? vehicles * downtimeDays * revenuePerOffRoadDay : 0
   const grossSaving = partsSaving + downtimeSaving
   const netAnnual = grossSaving - annualCost
+  const netMonthly = grossSaving / 12 - monthlyCost
+  const roiRatio = annualCost > 0 ? grossSaving / annualCost : Infinity
+  const paybackDays = grossSaving > 0 ? (annualCost / grossSaving) * 365 : Infinity
 
-  return { annualCost, annualCostBilledAnnual, partsSaving, downtimeSaving, grossSaving, netAnnual }
+  return { monthlyCost, annualCost, annualCostBilledAnnual, partsSaving, downtimeSaving, grossSaving, netAnnual, netMonthly, roiRatio, paybackDays }
 }
 
 export default function CalculateurRoiPage() {
@@ -248,6 +256,47 @@ export default function CalculateurRoiPage() {
         />
       </section>
 
+      {/* Detailed comparison table */}
+      <section className="mt-10">
+        <h2 className="font-display text-2xl text-ink">Comparaison détaillée</h2>
+        <p className="mt-1 text-sm text-muted">Tous les chiffres sont annuels sauf indication.</p>
+        <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-surface text-left">
+                <th className="px-4 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                  Poste
+                </th>
+                <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink">
+                  Flotte Pro
+                </th>
+                <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink">
+                  Flotte Pro +
+                </th>
+                <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                  Écart
+                </th>
+              </tr>
+            </thead>
+            <tbody className="font-mono tabular-nums">
+              <Row label="Prix / véhicule / mois" pro="5 000 F" plus="10 000 F" diff="+ 5 000 F" />
+              <Row label="Abonnement mensuel" pro={fmtFcfa(pro.monthlyCost)} plus={fmtFcfa(plus.monthlyCost)} diff={fmtFcfa(plus.monthlyCost - pro.monthlyCost)} />
+              <Row label="Abonnement annuel (mensuel)" pro={fmtFcfa(pro.annualCost)} plus={fmtFcfa(plus.annualCost)} diff={fmtFcfa(plus.annualCost - pro.annualCost)} />
+              <Row label="Abonnement annuel (paiement annuel, −2 mois)" pro={fmtFcfa(pro.annualCostBilledAnnual)} plus={fmtFcfa(plus.annualCostBilledAnnual)} diff={fmtFcfa(plus.annualCostBilledAnnual - pro.annualCostBilledAnnual)} />
+              <SectionRow label="Économies projetées / an" />
+              <Row label="• Économie pièces" pro={fmtFcfa(pro.partsSaving)} plus={fmtFcfa(plus.partsSaving)} diff="—" />
+              <Row label="• Économie downtime (3 h chrono / J+1)" pro="—" plus={fmtFcfa(plus.downtimeSaving)} diff={fmtFcfa(plus.downtimeSaving)} highlight={plus.downtimeSaving > 0} />
+              <Row label="Total économies brutes" pro={fmtFcfa(pro.grossSaving)} plus={fmtFcfa(plus.grossSaving)} diff={fmtFcfa(plus.grossSaving - pro.grossSaving)} />
+              <SectionRow label="Résultat" />
+              <Row label="Net annuel après abonnement" pro={fmtFcfa(pro.netAnnual)} plus={fmtFcfa(plus.netAnnual)} diff={fmtFcfa(plus.netAnnual - pro.netAnnual)} bold tone={plus.netAnnual - pro.netAnnual >= 0 ? 'pos' : 'neg'} />
+              <Row label="Net mensuel" pro={fmtFcfa(pro.netMonthly)} plus={fmtFcfa(plus.netMonthly)} diff={fmtFcfa(plus.netMonthly - pro.netMonthly)} />
+              <Row label="ROI sur l'abonnement" pro={Number.isFinite(pro.roiRatio) ? `×${pro.roiRatio.toFixed(1)}` : '∞'} plus={Number.isFinite(plus.roiRatio) ? `×${plus.roiRatio.toFixed(1)}` : '∞'} diff="—" />
+              <Row label="Payback (jours)" pro={Number.isFinite(pro.paybackDays) ? `${Math.round(pro.paybackDays)} j` : '—'} plus={Number.isFinite(plus.paybackDays) ? `${Math.round(plus.paybackDays)} j` : '—'} diff="—" />
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* Qualitative benefits beyond the numbers */}
       <section className="mt-10 grid gap-5 lg:grid-cols-2">
         <BenefitCard title="Au-delà du chiffrage — Flotte Pro" benefits={TIER_BENEFITS.PRO_FLOTTE} />
@@ -263,6 +312,7 @@ export default function CalculateurRoiPage() {
         Économie pièces appliquée au budget pièces annuel (s&apos;applique aux deux tiers).
         Économie downtime = véhicules × jours d&apos;immobilisation × manque à gagner / jour,
         comptée uniquement pour Flotte Pro + (3 h chrono Abidjan, J+1 hors Abidjan, concierge).
+        Payback = 365 × abonnement annuel / économie annuelle brute.
         Paiement annuel = 10 mois facturés (2 mois offerts).
       </p>
     </div>
@@ -321,6 +371,8 @@ function TierCard({
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat label="Abonnement / an" value={fmtFcfa(result.annualCost)} />
         <Stat label="Économies / an" value={fmtFcfa(result.grossSaving)} />
+        <Stat label="ROI" value={Number.isFinite(result.roiRatio) ? `× ${result.roiRatio.toFixed(1)}` : '∞'} />
+        <Stat label="Payback" value={Number.isFinite(result.paybackDays) ? `${Math.round(result.paybackDays)} jours` : '—'} />
       </div>
 
       {result.downtimeSaving > 0 && (
@@ -354,6 +406,34 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">{label}</div>
       <div className="mt-0.5 font-mono tabular-nums text-sm font-medium text-ink">{value}</div>
     </div>
+  )
+}
+
+function SectionRow({ label }: { label: string }) {
+  return (
+    <tr className="bg-surface/50">
+      <td colSpan={4} className="px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-ink">
+        {label}
+      </td>
+    </tr>
+  )
+}
+
+function Row({
+  label, pro, plus, diff, bold, highlight, tone,
+}: {
+  label: string; pro: string; plus: string; diff: string
+  bold?: boolean; highlight?: boolean; tone?: 'pos' | 'neg'
+}) {
+  const toneCls = tone === 'pos' ? 'text-success-fg' : tone === 'neg' ? 'text-error-fg' : 'text-ink'
+  const rowCls = highlight ? 'border-t border-border bg-accent/5' : 'border-t border-border'
+  return (
+    <tr className={rowCls}>
+      <td className={`px-4 py-2.5 ${bold ? 'font-semibold text-ink' : 'font-sans text-ink'}`}>{label}</td>
+      <td className={`px-4 py-2.5 text-right ${bold ? 'font-semibold ' + toneCls : 'text-ink'}`}>{pro}</td>
+      <td className={`px-4 py-2.5 text-right ${bold ? 'font-semibold ' + toneCls : 'text-ink'}`}>{plus}</td>
+      <td className={`px-4 py-2.5 text-right ${bold ? 'font-semibold ' + toneCls : 'text-muted'}`}>{diff}</td>
+    </tr>
   )
 }
 
