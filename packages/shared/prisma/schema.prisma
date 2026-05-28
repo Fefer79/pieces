@@ -186,6 +186,9 @@ model Vendor {
 
   deliveryZones String[]         @default([]) @map("delivery_zones")
 
+  isExternal     Boolean @default(false) @map("is_external")
+  externalSource String? @map("external_source")
+
   ordersDelivered  Int       @default(0) @map("orders_delivered")
   disputesOpened   Int       @default(0) @map("disputes_opened")
   avgReviewRating  Float?    @map("avg_review_rating")
@@ -267,6 +270,9 @@ model CatalogItem {
   priceAlertFlag       Boolean           @default(false) @map("price_alert_flag")
   commissionAmount     Int?              @map("commission_amount")
   commissionAcceptedAt DateTime?         @map("commission_accepted_at")
+  externalSource       String?           @map("external_source")
+  externalSourceId     String?           @map("external_source_id")
+  externalSourceUrl    String?           @map("external_source_url")
   photos               CatalogItemPhoto[]
   fitments             CatalogItemFitment[]
   bufferStockEntries   EnterpriseBufferStock[]
@@ -277,6 +283,7 @@ model CatalogItem {
   @@index([vendorId, status], name: "idx_catalog_items_vendor_status")
   @@index([createdByLiaisonId], name: "idx_catalog_items_created_by_liaison")
   @@index([oemReference, partSource, condition], name: "idx_catalog_items_oem_group")
+  @@unique([externalSource, externalSourceId], name: "uq_catalog_items_external")
 }
 
 model CatalogItemFitment {
