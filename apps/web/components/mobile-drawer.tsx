@@ -105,16 +105,28 @@ export function MobileDrawer() {
           </p>
           <ul className="space-y-1">
             {isAdmin && (
-              <li>
-                <a
-                  href="/admin"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center justify-between rounded-md border border-ink-2 bg-[rgba(0,35,102,0.04)] px-3 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
-                >
-                  <span>Administration</span>
-                  <span>→</span>
-                </a>
-              </li>
+              <>
+                <li>
+                  <a
+                    href="/admin"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between rounded-md border border-ink-2 bg-[rgba(0,35,102,0.04)] px-3 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
+                  >
+                    <span>Administration</span>
+                    <span>→</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/liaison"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between rounded-md border border-ink-2 bg-[rgba(0,35,102,0.04)] px-3 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
+                  >
+                    <span>Liaison</span>
+                    <span>→</span>
+                  </a>
+                </li>
+              </>
             )}
             {(isAuthenticated ? AUTH_LINKS : PUBLIC_LINKS).map((link) => (
               <li key={link.href + link.label}>

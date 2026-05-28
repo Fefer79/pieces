@@ -18,7 +18,12 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean, isA
     ]
   }
 
-  const adminItem: NavItem[] = isAdmin ? [{ href: '/admin', label: 'Administration' }] : []
+  const adminItem: NavItem[] = isAdmin
+    ? [
+        { href: '/admin', label: 'Administration' },
+        { href: '/liaison', label: 'Liaison' },
+      ]
+    : []
 
   switch (activeContext) {
     case 'SELLER':
@@ -55,6 +60,7 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean, isA
       return [
         { href: '/', label: 'Accueil' },
         { href: '/admin', label: 'Administration' },
+        { href: '/liaison', label: 'Liaison' },
         { href: '/dashboard', label: 'Tableau de bord' },
         { href: '/profile', label: 'Profil' },
       ]

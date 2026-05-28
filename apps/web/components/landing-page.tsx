@@ -66,14 +66,22 @@ export function LandingPage({ children }: { children?: ReactNode }) {
               </div>
             )}
 
-            {/* Admin link */}
+            {/* Admin + Liaison links */}
             {isAdmin && (
-              <a
-                href="/admin"
-                className="rounded-md border border-ink-2 px-4 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
-              >
-                Admin
-              </a>
+              <>
+                <a
+                  href="/admin"
+                  className="rounded-md border border-ink-2 px-4 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
+                >
+                  Admin
+                </a>
+                <a
+                  href="/liaison"
+                  className="rounded-md border border-ink-2 px-4 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
+                >
+                  Liaison
+                </a>
+              </>
             )}
 
             {/* CTA */}
