@@ -889,6 +889,8 @@ model VehicleMake {
   slug         String   @unique
   country      String?
   popularityCi Int      @default(0) @map("popularity_ci")
+  externalSource   String? @map("external_source")
+  externalSourceId String? @map("external_source_id")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -896,6 +898,7 @@ model VehicleMake {
 
   @@map("vehicle_makes")
   @@index([slug], name: "idx_vehicle_makes_slug")
+  @@unique([externalSource, externalSourceId], name: "uq_vehicle_makes_external")
 }
 
 model VehicleModel {
@@ -907,6 +910,8 @@ model VehicleModel {
   yearStart Int?     @map("year_start")
   yearEnd   Int?     @map("year_end")
   bodyType  BodyType? @map("body_type")
+  externalSource   String? @map("external_source")
+  externalSourceId String? @map("external_source_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -914,6 +919,7 @@ model VehicleModel {
 
   @@map("vehicle_models")
   @@unique([makeId, slug], name: "uq_vehicle_model_make_slug")
+  @@unique([externalSource, externalSourceId], name: "uq_vehicle_models_external")
   @@index([makeId], name: "idx_vehicle_models_make")
 }
 
@@ -925,11 +931,14 @@ model VehicleGeneration {
   yearStart Int      @map("year_start")
   yearEnd   Int?     @map("year_end")
   bodyType  BodyType? @map("body_type")
+  externalSource   String? @map("external_source")
+  externalSourceId String? @map("external_source_id")
   createdAt DateTime @default(now()) @map("created_at")
 
   engines VehicleEngine[]
 
   @@map("vehicle_generations")
+  @@unique([externalSource, externalSourceId], name: "uq_vehicle_generations_external")
   @@index([modelId, yearStart], name: "idx_vehicle_generations_model_year")
 }
 
@@ -942,11 +951,14 @@ model VehicleEngine {
   fuelType      FuelType? @map("fuel_type")
   powerKw       Int?     @map("power_kw")
   oemRefs       String[] @default([]) @map("oem_refs")
+  externalSource   String? @map("external_source")
+  externalSourceId String? @map("external_source_id")
   createdAt     DateTime @default(now()) @map("created_at")
 
   partFitments PartReferenceFitment[]
 
   @@map("vehicle_engines")
+  @@unique([externalSource, externalSourceId], name: "uq_vehicle_engines_external")
   @@index([generationId], name: "idx_vehicle_engines_generation")
   @@index([code], name: "idx_vehicle_engines_code")
 }
@@ -978,6 +990,8 @@ model PartReference {
   category   PartCategory? @relation(fields: [categoryId], references: [id])
   name       String
   brand      String?
+  externalSource   String? @map("external_source")
+  externalSourceId String? @map("external_source_id")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
@@ -986,6 +1000,7 @@ model PartReference {
 
   @@map("part_references")
   @@unique([oemNumber, brand], name: "uq_part_ref_oem_brand")
+  @@unique([externalSource, externalSourceId], name: "uq_part_references_external")
   @@index([categoryId], name: "idx_part_references_category")
   @@index([oemNumber], name: "idx_part_references_oem")
 }
@@ -1008,6 +1023,7 @@ enum IngestSource {
   JUMIA_CI
   COINAFRIQUE_CI
   ANNUAIRE_CI
+  GLOBAL_AUTO_CI
   OSM
   GOOGLE_PLACES
   NHTSA
