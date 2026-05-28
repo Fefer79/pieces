@@ -39,34 +39,42 @@ function monthOptions(): { value: string; label: string }[] {
   return out
 }
 
+type EnterpriseRef =
+  | { status: 'loading' }
+  | { status: 'no-enterprise' }
+  | { status: 'ready'; id: string }
+
 export default function EnterpriseInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [period, setPeriod] = useState<string>(() => {
     const d = new Date()
     return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`
   })
-  const [enterpriseId, setEnterpriseId] = useState<string | null>(null)
+  const [enterprise, setEnterprise] = useState<EnterpriseRef>({ status: 'loading' })
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const months = monthOptions()
+  const enterpriseId = enterprise.status === 'ready' ? enterprise.id : null
+  const displayError = enterprise.status === 'no-enterprise' ? 'Aucune entreprise active.' : error
 
   useEffect(() => {
     const id = getActiveEnterpriseId()
-    if (!id) {
-      setError('Aucune entreprise active.')
-      setLoading(false)
-      return
-    }
-    setEnterpriseId(id)
+    setEnterprise(id ? { status: 'ready', id } : { status: 'no-enterprise' })
   }, [])
 
   useEffect(() => {
-    if (!enterpriseId) return
+    if (enterprise.status === 'loading') return
+    if (enterprise.status !== 'ready') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- terminal "no-enterprise" branch, no fetch to run
+      setLoading(false)
+      return
+    }
+    let cancelled = false
     const year = period.slice(0, 4)
     const month = period.slice(4, 6)
-    setLoading(true)
-    enterpriseFetch<Invoice[]>(`/${enterpriseId}/invoices?year=${year}&month=${month}`)
+    enterpriseFetch<Invoice[]>(`/${enterprise.id}/invoices?year=${year}&month=${month}`)
       .then((res) => {
+        if (cancelled) return
         if (res.ok) {
           setInvoices(res.data)
           setError(null)
@@ -74,8 +82,13 @@ export default function EnterpriseInvoicesPage() {
           setError(res.message)
         }
       })
-      .finally(() => setLoading(false))
-  }, [enterpriseId, period])
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [enterprise, period])
 
   async function download(path: string, filename: string) {
     if (!enterpriseId) return
@@ -115,8 +128,8 @@ export default function EnterpriseInvoicesPage() {
         Toutes vos factures DGI-compliant, consolidation mensuelle et export FEC pour votre comptable.
       </p>
 
-      {error && (
-        <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>
+      {displayError && (
+        <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{displayError}</div>
       )}
 
       {/* Period selector + actions */}
@@ -125,7 +138,10 @@ export default function EnterpriseInvoicesPage() {
           <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.08em] text-muted">Période</span>
           <select
             value={period}
-            onChange={(e) => setPeriod(e.target.value)}
+            onChange={(e) => {
+              setLoading(true)
+              setPeriod(e.target.value)
+            }}
             className="rounded-md border border-border bg-card px-3 py-2 text-sm"
           >
             {months.map((m) => (

@@ -62,6 +62,7 @@ export default function EnterpriseBillingPage() {
   const [data, setData] = useState<BillingData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [enterpriseId, setEnterpriseId] = useState<string | null>(null)
+  const [now] = useState(() => Date.now())
 
   useEffect(() => {
     const id = getActiveEnterpriseId()
@@ -93,7 +94,7 @@ export default function EnterpriseBillingPage() {
   const sub = data.subscription
   const daysLeft =
     sub?.trialEndsAt && !sub.trialExpired
-      ? Math.max(0, Math.ceil((new Date(sub.trialEndsAt).getTime() - Date.now()) / 86_400_000))
+      ? Math.max(0, Math.ceil((new Date(sub.trialEndsAt).getTime() - now) / 86_400_000))
       : null
 
   return (
