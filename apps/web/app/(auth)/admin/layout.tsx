@@ -9,6 +9,7 @@ type SupabaseClient = ReturnType<typeof createClient>
 
 const NAV = [
   { href: '/admin', label: 'Tableau de bord' },
+  { href: '/admin/finances', label: 'Modélisation' },
   { href: '/admin/parts', label: 'Pièces' },
   { href: '/admin/vendors', label: 'Vendeurs' },
   { href: '/admin/clients', label: 'Clients' },
