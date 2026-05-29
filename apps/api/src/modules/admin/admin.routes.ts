@@ -6,6 +6,11 @@ import {
   getAdminOrders,
   getAdminVendors,
   getAdminCatalog,
+  getAdminCatalogItem,
+  updateAdminCatalogItem,
+  addAdminPhoto,
+  removeAdminPhoto,
+  reorderAdminPhotos,
   getEnterpriseMembers,
   getAdminOverview,
   getAdminCatalogList,
@@ -23,6 +28,7 @@ import {
   exportCsv,
 } from './admin.service.js'
 import { prisma } from '../../lib/prisma.js'
+import { AppError } from '../../lib/appError.js'
 import { recomputeVendorScore, recomputeAllVendorScores } from '../vendor/vendorScore.service.js'
 import {
   createSubscription,
@@ -38,6 +44,8 @@ import { zodToFastify } from '../../lib/zodSchema.js'
 import {
   adminListQuerySchema,
   adminExportQuerySchema,
+  adminUpdateCatalogItemSchema,
+  reorderPhotosSchema,
   createSubscriptionSchema,
   updateSubscriptionSchema,
 } from 'shared/validators'
@@ -113,6 +121,98 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const query = request.query as { status?: string }
       const result = await getAdminCatalog(query.status)
       return reply.status(200).send({ data: result })
+    },
+  )
+
+  // Admin: single annonce detail (clickable row → view/edit)
+  fastify.get(
+    '/catalog/:id',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], description: 'Détail d\'une annonce (admin)', security: [{ BearerAuth: [] }] },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await getAdminCatalogItem(id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  // Admin: edit an annonce
+  fastify.patch(
+    '/catalog/:id',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Modifie une annonce (admin)',
+        body: zodToFastify(adminUpdateCatalogItemSchema),
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await updateAdminCatalogItem(id, request.body as Record<string, never>)
+      request.log.info({ event: 'ADMIN_CATALOG_ITEM_UPDATED', itemId: id })
+      return reply.status(200).send({ data })
+    },
+  )
+
+  // Admin: add a photo to an annonce
+  fastify.post(
+    '/catalog/:id/photos',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Ajoute une photo (max 3) à une annonce (admin)',
+        consumes: ['multipart/form-data'],
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const data = await addAdminPhoto(id, buffer, file.filename, file.mimetype)
+      request.log.info({ event: 'ADMIN_CATALOG_PHOTO_ADDED', itemId: id, photoId: data.id })
+      return reply.status(201).send({ data })
+    },
+  )
+
+  // Admin: remove a photo from an annonce
+  fastify.delete(
+    '/catalog/:id/photos/:photoId',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Supprime une photo d\'une annonce (admin)' },
+    },
+    async (request, reply) => {
+      const { id, photoId } = request.params as { id: string; photoId: string }
+      const data = await removeAdminPhoto(id, photoId)
+      request.log.info({ event: 'ADMIN_CATALOG_PHOTO_REMOVED', itemId: id, photoId })
+      return reply.status(200).send({ data })
+    },
+  )
+
+  // Admin: reorder photos of an annonce
+  fastify.patch(
+    '/catalog/:id/photos/reorder',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Réordonne les photos d\'une annonce (admin)',
+        body: zodToFastify(reorderPhotosSchema),
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const { photoIds } = request.body as { photoIds: string[] }
+      const data = await reorderAdminPhotos(id, photoIds)
+      request.log.info({ event: 'ADMIN_CATALOG_PHOTOS_REORDERED', itemId: id })
+      return reply.status(200).send({ data })
     },
   )
 

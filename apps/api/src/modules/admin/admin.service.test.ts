@@ -16,6 +16,8 @@ const mockDisputeCount = vi.fn()
 const mockCatalogFindMany = vi.fn()
 const mockCatalogCount = vi.fn()
 const mockCatalogGroupBy = vi.fn()
+const mockCatalogFindUnique = vi.fn()
+const mockCatalogUpdate = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: { auth: { getUser: vi.fn(), signInWithOtp: vi.fn(), verifyOtp: vi.fn() } },
@@ -43,6 +45,8 @@ vi.mock('../../lib/prisma.js', () => ({
       findMany: (...args: unknown[]) => mockCatalogFindMany(...args),
       count: (...args: unknown[]) => mockCatalogCount(...args),
       groupBy: (...args: unknown[]) => mockCatalogGroupBy(...args),
+      findUnique: (...args: unknown[]) => mockCatalogFindUnique(...args),
+      update: (...args: unknown[]) => mockCatalogUpdate(...args),
     },
   },
 }))
@@ -53,6 +57,8 @@ const {
   getEnterpriseMembers,
   getAdminExternalImports,
   getAdminExternalImportStats,
+  getAdminCatalogItem,
+  updateAdminCatalogItem,
 } = await import('./admin.service.js')
 
 describe('admin.service', () => {
@@ -177,6 +183,52 @@ describe('admin.service', () => {
       const result = await getAdminExternalImports({ page: 1, limit: 50 })
       expect(result.items).toHaveLength(1)
       expect(result.pagination).toEqual({ page: 1, limit: 50, total: 1, totalPages: 1 })
+    })
+  })
+
+  describe('getAdminCatalogItem', () => {
+    it('returns the item with vendor, photos and fitments', async () => {
+      const item = {
+        id: 'c1', name: 'Plaquette', vendor: { id: 'v1', shopName: 'Global Auto', isExternal: true },
+        photos: [], fitments: [],
+      }
+      mockCatalogFindUnique.mockResolvedValueOnce(item)
+
+      const result = await getAdminCatalogItem('c1')
+      expect(result).toBe(item)
+      const args = mockCatalogFindUnique.mock.calls[0][0]
+      expect(args.where).toEqual({ id: 'c1' })
+      expect(args.include.vendor.select).toMatchObject({ shopName: true, isExternal: true })
+    })
+
+    it('throws 404 when the item does not exist', async () => {
+      mockCatalogFindUnique.mockResolvedValueOnce(null)
+      await expect(getAdminCatalogItem('missing')).rejects.toMatchObject({ statusCode: 404 })
+    })
+  })
+
+  describe('updateAdminCatalogItem', () => {
+    it('updates only provided fields and stamps priceUpdatedAt when price changes', async () => {
+      mockCatalogFindUnique.mockResolvedValueOnce({ id: 'c1' }) // existence check
+      mockCatalogUpdate.mockResolvedValueOnce({ id: 'c1' })
+      mockCatalogFindUnique.mockResolvedValueOnce({ id: 'c1', price: 5000 }) // reload
+
+      await updateAdminCatalogItem('c1', { price: 5000, status: 'PUBLISHED' })
+
+      const args = mockCatalogUpdate.mock.calls[0][0]
+      expect(args.where).toEqual({ id: 'c1' })
+      expect(args.data.price).toBe(5000)
+      expect(args.data.status).toBe('PUBLISHED')
+      expect(args.data.priceUpdatedAt).toBeInstanceOf(Date)
+      expect(args.data).not.toHaveProperty('name')
+    })
+
+    it('throws 404 when updating a missing item', async () => {
+      mockCatalogFindUnique.mockResolvedValueOnce(null)
+      await expect(updateAdminCatalogItem('missing', { status: 'ARCHIVED' })).rejects.toMatchObject({
+        statusCode: 404,
+      })
+      expect(mockCatalogUpdate).not.toHaveBeenCalled()
     })
   })
 

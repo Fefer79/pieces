@@ -7,6 +7,7 @@ export {
   catalogItemFilterSchema,
   catalogItemParamsSchema,
   updateCatalogItemSchema,
+  adminUpdateCatalogItemSchema,
   toggleStockSchema,
   partConditionSchema,
   partSourceSchema,

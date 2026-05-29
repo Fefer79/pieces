@@ -408,6 +408,21 @@ export async function addPhoto(
   mimeType: string,
 ) {
   const { vendor } = await assertVendorOwnsItem(userId, itemId)
+  return addPhotoToItem(vendor.id, itemId, fileBuffer, fileName, mimeType)
+}
+
+/**
+ * Ownership-free photo upload core. Callers must authorize first.
+ * `vendorIdForKey` only scopes the R2 object key — it is not a permission check.
+ */
+export async function addPhotoToItem(
+  vendorIdForKey: string,
+  itemId: string,
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+) {
+  const vendor = { id: vendorIdForKey }
 
   if (fileBuffer.length > MAX_FILE_SIZE) {
     throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
@@ -462,7 +477,11 @@ export async function addPhoto(
 
 export async function removePhoto(userId: string, itemId: string, photoId: string) {
   await assertVendorOwnsItem(userId, itemId)
+  return removePhotoFromItem(itemId, photoId)
+}
 
+/** Ownership-free photo removal core. Callers must authorize first. */
+export async function removePhotoFromItem(itemId: string, photoId: string) {
   const photo = await prisma.catalogItemPhoto.findUnique({
     where: { id: photoId },
     select: { id: true, catalogItemId: true, position: true },
@@ -495,7 +514,11 @@ export async function removePhoto(userId: string, itemId: string, photoId: strin
 
 export async function reorderPhotos(userId: string, itemId: string, photoIds: string[]) {
   await assertVendorOwnsItem(userId, itemId)
+  return reorderItemPhotos(itemId, photoIds)
+}
 
+/** Ownership-free photo reorder core. Callers must authorize first. */
+export async function reorderItemPhotos(itemId: string, photoIds: string[]) {
   const existing = await prisma.catalogItemPhoto.findMany({
     where: { catalogItemId: itemId },
     select: { id: true },
