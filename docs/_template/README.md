@@ -14,7 +14,7 @@ Reusable template for all customer-facing and internal Pièces docs (manuels, br
 bash docs/_template/build.sh
 ```
 
-Run from anywhere in the repo. Rebuilds the 14 registered documents (manuels + brochures + SOP).
+Run from anywhere in the repo. Rebuilds every document registered in the `DOCS` array (manuels + brochures + offres + bibles internes).
 
 ## How to rebuild just one document
 
