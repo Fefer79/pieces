@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
-import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
+import { VehicleTypeSelector } from '@/components/vehicle-type-selector'
+import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
 
 const TABS = ['Photo', 'VIN', 'Sélection', 'WhatsApp'] as const
 type Tab = (typeof TABS)[number]
@@ -43,14 +43,8 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
   >([])
   const [searching, setSearching] = useState(false)
 
-  // Sélection dropdown state
-  const [selectedBrand, setSelectedBrand] = useState('')
-  const [selectedModel, setSelectedModel] = useState('')
-  const [selectedYear, setSelectedYear] = useState('')
-  const [selectedMotor, setSelectedMotor] = useState('')
-
   // Véhicule confirmé (persisté dans localStorage)
-  const { vehicle: persistedVehicle, setVehicle: persistVehicle, clearVehicle: clearPersistedVehicle } = useSelectedVehicle()
+  const { vehicle: persistedVehicle, clearVehicle: clearPersistedVehicle } = useSelectedVehicle()
   const vehicle = persistedVehicle ? {
     brand: persistedVehicle.brand,
     model: persistedVehicle.model,
@@ -61,54 +55,12 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
   // WhatsApp FAB state
   const [waMenuOpen, setWaMenuOpen] = useState(false)
 
-  const brandNames = Object.keys(VEHICLE_BRANDS).sort()
-  const brandData = selectedBrand ? VEHICLE_BRANDS[selectedBrand] : undefined
-  const models = brandData ? Object.keys(brandData.models).sort() : []
-  const modelYears =
-    brandData && selectedModel ? brandData.models[selectedModel] : undefined
-  const years = modelYears ? [...modelYears].sort((a, b) => b - a) : []
-  const engines =
-    selectedBrand && selectedModel
-      ? getEngines(selectedBrand, selectedModel)
-      : []
-
-  // Reset cascading selects
-  useEffect(() => {
-    setSelectedModel('')
-    setSelectedYear('')
-    setSelectedMotor('')
-  }, [selectedBrand])
-
-  useEffect(() => {
-    setSelectedYear('')
-    setSelectedMotor('')
-  }, [selectedModel])
-
-  useEffect(() => {
-    setSelectedMotor('')
-  }, [selectedYear])
-
-  const confirmVehicle = () => {
-    if (selectedBrand && selectedModel) {
-      persistVehicle({
-        brand: selectedBrand,
-        model: selectedModel,
-        year: selectedYear,
-        motor: selectedMotor,
-      })
-      setActiveTab('WhatsApp')
-    }
-  }
-
   const clearVehicle = () => {
     clearPersistedVehicle()
-    setSelectedBrand('')
-    setSelectedModel('')
-    setSelectedYear('')
-    setSelectedMotor('')
   }
 
-  // Text search
+  // Recherche texte — STRICTE sur le véhicule si sélectionné (endpoint /parts),
+  // sinon recherche globale (/search).
   const handleSearch = useCallback(async (q: string) => {
     if (q.trim().length < 2) {
       setSearchResults([])
@@ -116,9 +68,16 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
     }
     setSearching(true)
     try {
-      const res = await fetch(
-        `/api/v1/browse/search?q=${encodeURIComponent(q)}`,
-      )
+      let url: string
+      if (vehicle?.brand) {
+        const params = new URLSearchParams({ q, brand: vehicle.brand })
+        if (vehicle.model) params.set('model', vehicle.model)
+        if (vehicle.year) params.set('year', vehicle.year)
+        url = `/api/v1/browse/parts?${params.toString()}`
+      } else {
+        url = `/api/v1/browse/search?q=${encodeURIComponent(q)}`
+      }
+      const res = await fetch(url)
       const body = await res.json()
       setSearchResults(body.data?.items ?? [])
     } catch {
@@ -126,7 +85,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
     } finally {
       setSearching(false)
     }
-  }, [])
+  }, [vehicle?.brand, vehicle?.model, vehicle?.year])
 
   useEffect(() => {
     const timer = setTimeout(() => handleSearch(searchQuery), 300)
@@ -508,124 +467,22 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         {/* Logos tab — cascading dropdowns */}
         {activeTab === 'Sélection' && (
           <div className="py-4 lg:py-6">
-            <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              Sélectionnez votre véhicule
-            </p>
-
-            <div className="space-y-3 lg:grid lg:grid-cols-4 lg:gap-3 lg:space-y-0">
-            {/* Brand */}
-            <select
-              value={selectedBrand}
-              onChange={(e) => setSelectedBrand(e.target.value)}
-              className="w-full rounded-sm border border-border-strong bg-card px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)] disabled:opacity-50"
-              style={{ minHeight: 48 }}
-            >
-              <option value="">— Marque —</option>
-              {brandNames.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
-
-            {/* Model */}
-            <select
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              disabled={!selectedBrand}
-              className="w-full rounded-sm border border-border-strong bg-card px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)] disabled:opacity-50"
-              style={{ minHeight: 48 }}
-            >
-              <option value="">— Modèle —</option>
-              {models.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-
-            {/* Year */}
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              disabled={!selectedModel}
-              className="w-full rounded-sm border border-border-strong bg-card px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)] disabled:opacity-50"
-              style={{ minHeight: 48 }}
-            >
-              <option value="">— Année —</option>
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-
-            {/* Motorisation */}
-            <select
-              value={selectedMotor}
-              onChange={(e) => setSelectedMotor(e.target.value)}
-              disabled={!selectedYear || engines.length === 0}
-              className="w-full rounded-sm border border-border-strong bg-card px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)] disabled:opacity-50"
-              style={{ minHeight: 48 }}
-            >
-              <option value="">— Motorisation —</option>
-              {engines.map((eng) => (
-                <option key={eng} value={eng}>
-                  {eng}
-                </option>
-              ))}
-            </select>
-            </div>
-
-            {/* Confirmer */}
-            <div className="mt-4 lg:mt-5 lg:max-w-sm">
-              <Button
-                variant="accent"
-                size="lg"
-                block
-                onClick={confirmVehicle}
-                disabled={!selectedBrand || !selectedModel}
-              >
-                Confirmer le véhicule
-              </Button>
-            </div>
+            <VehicleTypeSelector onConfirmed={() => setActiveTab('WhatsApp')} />
 
             {/* Recherche par nom — visible après confirmation du véhicule */}
             {vehicle && (
               <>
-                <div className="mt-2 border-t border-border pt-4">
-                  <div
-                    className="flex min-h-[88px] items-center justify-between rounded-md border border-border bg-card py-3 pl-4"
-                    style={{ paddingRight: 10 }}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="mb-2 text-sm font-medium text-ink">
-                        Recherche par nom
-                      </p>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Nom, référence OEM..."
-                        className="w-full rounded-sm border border-border-strong bg-card px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
-                        style={{ minHeight: 48 }}
-                      />
-                    </div>
-                    <div className="ml-3 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent text-white">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        className="h-5 w-5"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
+                <div className="mt-4 border-t border-border pt-4">
+                  <p className="mb-2 text-sm font-medium text-ink">
+                    Recherche par nom
+                  </p>
+                  <PartSearchAutocomplete
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    onSubmit={setSearchQuery}
+                    vehicle={vehicle}
+                    placeholder="Nom de la pièce, référence OEM…"
+                  />
                 </div>
 
                 {searching && (

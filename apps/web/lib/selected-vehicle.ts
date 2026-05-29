@@ -1,11 +1,14 @@
 'use client'
 
 import { useCallback, useSyncExternalStore } from 'react'
+import type { VehicleTypeId } from 'shared/constants'
+import { DEFAULT_VEHICLE_TYPE } from 'shared/constants'
 
 const STORAGE_KEY = 'pieces_selected_vehicle'
 const EVENT = 'pieces:vehicle-changed'
 
 export interface SelectedVehicle {
+  type: VehicleTypeId
   brand: string
   model: string
   year: string
@@ -26,7 +29,8 @@ function parse(raw: string | null): SelectedVehicle | null {
   try {
     const parsed = JSON.parse(raw)
     if (parsed && typeof parsed === 'object' && parsed.brand && parsed.model) {
-      return parsed as SelectedVehicle
+      // Rétro-compat : véhicules persistés avant l'ajout du type → VOITURE.
+      return { type: parsed.type ?? DEFAULT_VEHICLE_TYPE, ...parsed } as SelectedVehicle
     }
   } catch {
     // ignore

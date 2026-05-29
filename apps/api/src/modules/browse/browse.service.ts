@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma.js'
-import { VEHICLE_BRANDS, BRAND_NAMES, PART_CATEGORIES } from 'shared/constants'
+import { VEHICLE_BRANDS, BRAND_NAMES, PART_CATEGORIES, UNIVERSAL_CATEGORIES } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
 
 export interface VinDecodeResult {
@@ -63,13 +63,57 @@ export function getCategories() {
   return [...PART_CATEGORIES]
 }
 
-export interface BrowsePartsFilters {
+export interface VehicleCompatibilityFilters {
   brand?: string
   model?: string
   year?: number
+}
+
+export interface BrowsePartsFilters extends VehicleCompatibilityFilters {
   category?: string
+  q?: string
   page?: number
   limit?: number
+}
+
+/**
+ * Clause Prisma de compatibilité véhicule STRICTE : ne matche que les pièces
+ * ayant un fitment structuré correspondant à la marque/modèle/année. Les pièces
+ * universelles (fluides, outillage, accessoires) restent toujours visibles.
+ * Retourne null si aucun véhicule n'est sélectionné (= pas de filtre véhicule).
+ */
+function buildVehicleCompatibilityClause(filters: VehicleCompatibilityFilters): Record<string, unknown> | null {
+  if (!filters.brand) return null
+
+  const fitmentWhere: Record<string, unknown> = { brand: { equals: filters.brand, mode: 'insensitive' } }
+  if (filters.model) {
+    fitmentWhere.OR = [{ model: null }, { model: { equals: filters.model, mode: 'insensitive' } }]
+  }
+  if (filters.year) {
+    fitmentWhere.AND = [
+      { OR: [{ yearFrom: null }, { yearFrom: { lte: filters.year } }] },
+      { OR: [{ yearTo: null }, { yearTo: { gte: filters.year } }] },
+    ]
+  }
+
+  return {
+    OR: [
+      { fitments: { some: fitmentWhere } },
+      { category: { in: [...UNIVERSAL_CATEGORIES] } },
+    ],
+  }
+}
+
+/** Clause texte libre (nom de pièce ou référence OEM). Null si < 2 caractères. */
+function buildTextClause(q?: string): Record<string, unknown> | null {
+  const term = q?.trim()
+  if (!term || term.length < 2) return null
+  return {
+    OR: [
+      { name: { contains: term, mode: 'insensitive' } },
+      { oemReference: { contains: term, mode: 'insensitive' } },
+    ],
+  }
 }
 
 export async function browseParts(filters: BrowsePartsFilters = {}) {
@@ -87,30 +131,13 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
     where.category = filters.category
   }
 
-  // Filter by vehicle compatibility — prefer structured fitments,
-  // fallback to legacy free-text vehicleCompatibility for items not yet migrated.
-  if (filters.brand) {
-    const compatParts: string[] = [filters.brand]
-    if (filters.model) compatParts.push(filters.model)
-    if (filters.year) compatParts.push(String(filters.year))
-    const compatQuery = compatParts.join(' ')
-
-    const fitmentWhere: Record<string, unknown> = { brand: { equals: filters.brand, mode: 'insensitive' } }
-    if (filters.model) {
-      fitmentWhere.OR = [{ model: null }, { model: { equals: filters.model, mode: 'insensitive' } }]
-    }
-    if (filters.year) {
-      fitmentWhere.AND = [
-        { OR: [{ yearFrom: null }, { yearFrom: { lte: filters.year } }] },
-        { OR: [{ yearTo: null }, { yearTo: { gte: filters.year } }] },
-      ]
-    }
-
-    where.OR = [
-      { fitments: { some: fitmentWhere } },
-      { vehicleCompatibility: { contains: compatQuery, mode: 'insensitive' } },
-    ]
-  }
+  // Filtrage strict : véhicule (fitments) + texte combinés en AND.
+  const and: Record<string, unknown>[] = []
+  const vehicleClause = buildVehicleCompatibilityClause(filters)
+  if (vehicleClause) and.push(vehicleClause)
+  const textClause = buildTextClause(filters.q)
+  if (textClause) and.push(textClause)
+  if (and.length > 0) where.AND = and
 
   const [items, total] = await Promise.all([
     prisma.catalogItem.findMany({
@@ -339,4 +366,38 @@ export async function searchParts(query: string, filters: { category?: string; p
     items,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   }
+}
+
+/**
+ * Suggestions de NOMS de pièces pour l'autocomplétion. Si un véhicule est passé,
+ * les suggestions sont restreintes aux pièces compatibles (mêmes règles strictes
+ * que browseParts) pour rester pertinentes.
+ */
+export async function suggestParts(
+  query: string,
+  filters: VehicleCompatibilityFilters = {},
+  limit = 8,
+): Promise<{ suggestions: string[] }> {
+  const term = query.trim()
+  if (term.length < 2) return { suggestions: [] }
+
+  const where: Record<string, unknown> = {
+    status: 'PUBLISHED',
+    inStock: true,
+    vendor: { status: 'ACTIVE' },
+    name: { contains: term, mode: 'insensitive' },
+  }
+
+  const vehicleClause = buildVehicleCompatibilityClause(filters)
+  if (vehicleClause) where.AND = [vehicleClause]
+
+  const rows = await prisma.catalogItem.findMany({
+    where,
+    select: { name: true },
+    distinct: ['name'],
+    orderBy: { name: 'asc' },
+    take: Math.min(limit, 20),
+  })
+
+  return { suggestions: rows.map((r) => r.name).filter((n): n is string => n != null) }
 }

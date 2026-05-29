@@ -3,6 +3,19 @@ import { randomUUID } from 'crypto'
 
 const prisma = new PrismaClient()
 
+// Mini-parser local du texte de compatibilité ("Marque Modèle AAAA-AAAA").
+// Le parser réutilisable complet vit dans ../constants/fitment.ts (backfill + API) ;
+// le seed reste volontairement auto-contenu (JS pur, pas d'import TS).
+function fitmentFromCompat(text) {
+  if (!text) return null
+  const m = text.trim().match(/^(.*?)\s+(\d{4})(?:-(\d{4}))?$/)
+  if (!m) return null
+  const [, vehicle, from, to] = m
+  const [brand, ...rest] = vehicle.trim().split(/\s+/)
+  if (!brand) return null
+  return { brand, model: rest.join(' ') || null, yearFrom: Number(from), yearTo: to ? Number(to) : null }
+}
+
 async function main() {
   console.log('Seeding database...\n')
 
@@ -293,6 +306,19 @@ async function main() {
   ])
 
   console.log(`✓ ${catalogItems.length} catalog items created`)
+
+  // ─── CATALOG ITEM FITMENTS ──────────────────────────────
+  // Convertit le texte legacy vehicleCompatibility en fitments structurés
+  // pour que le filtrage strict du parcours acheteur fonctionne en local/dev.
+  let fitmentCount = 0
+  for (const item of catalogItems) {
+    const f = fitmentFromCompat(item.vehicleCompatibility)
+    if (!f) continue
+    await prisma.catalogItemFitment.create({ data: { catalogItemId: item.id, ...f } })
+    fitmentCount += 1
+  }
+
+  console.log(`✓ ${fitmentCount} catalog item fitments created`)
 
   // ─── ORDERS ──────────────────────────────────────────────
   // Order 1: Completed order (mechanic1 for owner1)

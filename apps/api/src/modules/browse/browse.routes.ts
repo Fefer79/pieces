@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { getBrands, getModels, getYears, getCategories, browseParts, searchParts, compareParts, decodeVin } from './browse.service.js'
+import { getBrands, getModels, getYears, getCategories, browseParts, searchParts, suggestParts, compareParts, decodeVin } from './browse.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { vinDecodeSchema } from 'shared/validators'
 
@@ -73,14 +73,37 @@ export async function browseRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const query = request.query as { brand?: string; model?: string; year?: string; category?: string; page?: string; limit?: string }
+      const query = request.query as { brand?: string; model?: string; year?: string; category?: string; q?: string; page?: string; limit?: string }
       const result = await browseParts({
         brand: query.brand,
         model: query.model,
         year: query.year ? parseInt(query.year, 10) : undefined,
         category: query.category,
+        q: query.q,
         page: query.page ? parseInt(query.page, 10) : undefined,
         limit: query.limit ? parseInt(query.limit, 10) : undefined,
+      })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/suggest',
+    {
+      schema: {
+        tags: ['Browse'],
+        description: 'Suggestions de noms de pièces pour l\'autocomplétion (restreintes au véhicule si fourni)',
+      },
+    },
+    async (request, reply) => {
+      const query = request.query as { q?: string; brand?: string; model?: string; year?: string }
+      if (!query.q || query.q.trim().length < 2) {
+        return reply.status(200).send({ data: { suggestions: [] } })
+      }
+      const result = await suggestParts(query.q, {
+        brand: query.brand,
+        model: query.model,
+        year: query.year ? parseInt(query.year, 10) : undefined,
       })
       return reply.status(200).send({ data: result })
     },
