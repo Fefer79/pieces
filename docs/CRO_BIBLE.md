@@ -112,6 +112,15 @@ Chaque trimestre, la part de récurrent doit monter. C'est ce qui transforme un 
 - **Flotte Pro +** : 10 000 F / véhicule / mois (SLA 4h, urgence, support dédié).
 - **Pricing grand compte** : dégressif par volume (voir `pricing-flotte-2026-05-27.md`, `offre-vtc-6000-vehicules-2026-05.md`, `offre-btp-800-vehicules-2026-05.md`).
 
+### 4.1bis La donnée prix concurrent (nouveau, 2026-05-29)
+
+Depuis le 2026-05-29, le catalogue intègre **3 780 références prix de global-auto.online** (mises à jour via le scraper ingest, vendor « Global Auto », visibles publiquement). C'est notre **premier jeu de données prix concurrent live et structuré** — exploite-le :
+
+- **Benchmark de take rate** : sur les références où on a un prix concurrent en face, mesurer notre prix vendeur effectif vs le leur → ajuster la commission par catégorie sans casser la compétitivité.
+- **Détection de leakage prix** : alerter quand une de nos lignes est significativement au-dessus du concurrent sur la même pièce (risque de désintermédiation, cf. §6.4).
+- **Argument de vente flotte** : « voici l'écart de prix moyen vs le marché en ligne sur votre panier réel ».
+- Refresh périodique du scraper = la donnée reste fraîche (chantier ingest §3 CTO Bible).
+
 ### 4.2 Les sept leviers de pricing à tester
 
 1. **Take rate variable par catégorie de pièce** : marge plus élevée sur ré-usiné/OEM (valeur + garantie) que sur l'occasion importée bas prix. Teste 6% / 8% / 10% par segment.

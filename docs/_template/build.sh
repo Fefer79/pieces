@@ -60,9 +60,9 @@ DOCS=(
   "offre-vtc-6000-vehicules-2026-05|Offre commerciale|VTC 6 000 véhicules · Mai 2026 · PCS-VTC-2026-05-001"
   "brochure-btp-grand-compte-2026-05|Brochure commerciale|Édition BTP grand compte (confidentielle) · Mai 2026"
   "offre-btp-800-vehicules-2026-05|Offre commerciale|BTP 800 véhicules · Mai 2026 · PCS-BTP-2026-05-001"
-  "CTO_BIBLE|Document interne|Handover CTO · v1.0 · 28 mai 2026"
-  "CEO_BIBLE|Document interne|Handover CEO · v1.0 · 28 mai 2026"
-  "CRO_BIBLE|Document interne|Handover CRO · v1.0 · 28 mai 2026"
+  "CTO_BIBLE|Document interne|Handover CTO · v1.1 · 29 mai 2026"
+  "CEO_BIBLE|Document interne|Handover CEO · v1.1 · 29 mai 2026"
+  "CRO_BIBLE|Document interne|Handover CRO · v1.1 · 29 mai 2026"
 )
 
 # Filter to the slugs given on the command line, if any

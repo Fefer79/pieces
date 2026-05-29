@@ -65,7 +65,8 @@ Ajoute San Pedro, Bouaké, Yamoussoukro, Korhogo → **marché national ~210 Mds
 
 ### 3.1 Concurrents directs (marketplace pièces)
 
-- **Aucun acteur structuré à l'échelle nationale**. Quelques pages Facebook (« Pièces Auto Abidjan »), groupes WhatsApp informels, et tentatives ponctuelles e-commerce qui n'ont pas tenu.
+- **Aucun acteur structuré à l'échelle nationale**. Quelques pages Facebook (« Pièces Auto Abidjan »), groupes WhatsApp informels, et tentatives ponctuelles e-commerce qui n'ont pas tenu. Recensement à jour : ~48 acteurs Facebook dont 29 vendeurs pièces CI (`_bmad-output/planning-artifacts/facebook-vendeurs/`, 2026-05-29).
+- **global-auto.online** : le seul concurrent avec un vrai catalogue web structuré (API publique). On en a **miroité l'intégralité dans notre catalogue** au 2026-05-29 (3 780 références prix + arbre véhicules complet) — non comme cession à l'adversaire, mais comme **veille prix permanente + couverture catalogue jour 1**. Stratégiquement : on connaît leurs prix en continu, eux pas les nôtres.
 - **Jumia / Glovo / Yango Tech** : pas de catalogue pièces, pas d'expertise verticale. Ne sont pas une menace à court terme mais pourraient acquérir un acteur établi à 24-36 mois.
 
 ### 3.2 Concurrents indirects (flotte)

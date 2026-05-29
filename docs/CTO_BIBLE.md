@@ -53,7 +53,7 @@ Pièces est une **marketplace de pièces auto d'occasion à Abidjan** (Côte d'I
               │ pnpm ingest --commit
               │
    ┌──────────────────┐
-   │  apps/ingest     │  ← CLI tsx, scrapers (3H, OSM, NHTSA)
+   │  apps/ingest     │  ← CLI tsx, scrapers (global-auto API, 3H, OSM, NHTSA)
    └──────────────────┘
 
    Services externes côté API :
@@ -102,8 +102,9 @@ pieces/
 │   └── ingest/     # CLI pipeline d'ingestion
 │       ├── src/
 │       │   ├── cli.ts             ← `pnpm ingest --source 3h --commit`
-│       │   ├── sources/           ← three-h.ts, osm.ts, nhtsa.ts
-│       │   └── pipeline/          ← load.ts, normalize.ts
+│       │   ├── sources/           ← global-auto.ts, three-h.ts, osm.ts, nhtsa.ts (fetch + Zod amont)
+│       │   ├── normalizers/       ← mapping API amont → nos modèles
+│       │   └── pipeline/          ← orchestration (dry-run JSON dump | --commit DB)
 │       └── __fixtures__/
 ├── packages/
 │   └── shared/
@@ -324,7 +325,11 @@ Schéma complet : [`packages/shared/prisma/schema.prisma`](../packages/shared/pr
 
 **Enums clés** : `Role`, `OrderStatus`, `VendorStatus`, `CatalogItemStatus`, `PartCondition` (NEW/USED/REFURBISHED), `PartSource` (OEM/AFTERMARKET/COMPATIBLE), `DeliveryStatus`, `PaymentMethod` (ORANGE_MONEY/MTN_MOMO/WAVE/COD), `IngestSource`, `SubscriptionTier` (FREE/PRO_FLOTTE/PRO_FLOTTE_PLUS), `SubscriptionStatus`, `BillingCycle`.
 
-**Champ external source** : `Vendor.externalSource` + `Vendor.isExternal` permettent les "vendeurs fantômes" créés par l'ingest (1 par source externe via index unique). `CatalogItem.externalSource` + `CatalogItem.externalUrl` pour les pièces scrapées.
+**Champ external source** : `Vendor.externalSource` + `Vendor.isExternal` permettent les "vendeurs fantômes" créés par l'ingest (1 par source externe via index unique). `CatalogItem.externalSource` + `CatalogItem.externalSourceId` (clé d'upsert) + `CatalogItem.externalSourceUrl` pour les pièces scrapées. Idem sur le référentiel : `VehicleMake/Model/Generation/Engine` et `PartReference` ont chacun un index unique `(externalSource, externalSourceId)`.
+
+**Vendor terrain (Liaison)** : `Vendor.user_id` est désormais **nullable** (un vendeur informel onboardé par un agent n'a pas de compte). Champs ajoutés : `address`, `commune`, `lat`, `lng`, `managedByLiaisonId` (FK → `User`, `ON DELETE SET NULL`). Voir la migration `20260529_align_schema_drift` ci-dessous.
+
+> ⚠️ **Migration non encore commitée** : `packages/shared/prisma/migrations/20260529_align_schema_drift/` aligne la DB sur le `schema.prisma` (champs Vendor terrain + renommage de contraintes/index générés par Prisma : `uq_catalog_items_external` → `catalog_items_external_source_external_source_id_key`, etc.). Elle est **idempotente côté noms** mais touche des FK (`activity_logs`, `vendors`) — relire avant `migrate deploy`, et la commiter au repo (sinon le prochain CTO ne l'a pas).
 
 ---
 
@@ -348,21 +353,29 @@ Voir [`apps/ingest/`](../apps/ingest). CLI : `pnpm -F ingest ingest --source <na
 **Sans `--commit`** = dry-run (écrit un dump JSON sur disque, n'écrit pas en DB).
 **Avec `--commit`** = écrit en DB via `loadXxxItems()`.
 
-**Sources actuelles** :
-- `three-h` — 3H Autoparts (parser JSON-LD schema.org, scraper Cheerio).
-- `osm` — OpenStreetMap (cartographie vendeurs).
-- `nhtsa` — référentiel véhicules US.
+**Sources actuelles** (le `--source` CLI accepte exactement ces noms) :
+- `osm` — OpenStreetMap (cartographie vendeurs Abidjan, offline).
+- `nhtsa` — référentiel véhicules US (makes / models).
+- `nhtsa-year` — enrichissement années de production sur le référentiel NHTSA.
+- `french-models` — modèles supplémentaires (marché européen, complète NHTSA).
+- `3h` — 3H Autoparts (parser JSON-LD schema.org, scraper Cheerio). Code en place, **pas encore commit en prod**.
+- `global-auto-vehicles` — arbre véhicules global-auto.online via **API REST** (`globalautoback-production.up.railway.app/api`). ✅ **commit en prod 2026-05-29** : 49 makes / 2 219 models / 746 generations / 5 788 engines (source `GLOBAL_AUTO_CI`).
+- `global-auto-products` — catalogue pièces global-auto.online (même API, streaming paginé). ✅ **commit en prod 2026-05-29** : 3 780 `CatalogItem` PUBLISHED + 79 405 fitments sous le vendor shadow « Global Auto » (`+22500000099GA`).
 
-**Phases** (roadmap) :
-1. ✅ Référentiel véhicules (NHTSA, Wikipedia, OSM)
+**Phases** (roadmap, voir `_bmad-output/planning-artifacts/ingest-sources-recensement.md`) :
+1. ✅ Référentiel véhicules (NHTSA, french-models, OSM)
 2. ✅ Référentiel pièces (catégories, OEM)
-3. 🔄 Scrapers concurrents (3H done, Jumia / Coin Afrique / Hauto Parts à venir)
-4. ⏳ Cartographie concurrents (zones, offline)
-5. ⏳ Observations prix marché continues
+3. 🔄 Scrapers concurrents — **global-auto.online done (live)**, 3H en dry-run (code prêt), MAPA-CI / Jumia CI / CoinAfrique CI à venir.
+4. ✅ Cartographie concurrents (OSM offline)
+5. ⏳ Observations prix marché continues (refresh périodique des sources scrapées)
 
-**Pattern à suivre** : voir `apps/ingest/src/sources/competitor.ts` pour le pipeline canonique (fetch → normalize → load DB → vitest avec Prisma mocké).
+**Pattern à suivre** : voir `apps/ingest/src/pipeline/global-auto-vehicles.ts` (pipeline canonique le plus récent : fetch API → normalize → load DB upsert → vitest avec Prisma mocké). La séparation source/pipeline/normalizer est nette : `sources/` (fetch + schémas Zod de l'API amont), `normalizers/` (mapping vers nos modèles), `pipeline/` (orchestration + dump JSON dry-run ou commit DB).
 
-**Gotcha** : la CLI 3H avait un bug `dryRun || true` qui forçait toujours dry-run. Fixé fin mai 2026. Toujours tester `--commit` sur staging avant prod.
+**Gotchas ingest** :
+- La CLI 3H avait un bug `dryRun || true` qui forçait toujours dry-run. Fixé fin mai 2026. Toujours tester `--commit` sur staging avant prod.
+- **Collision de slugs véhicules** : `VehicleMake.slug` et `VehicleModel(makeId, slug)` ont des contraintes uniques **globales**. Une source externe ne peut PAS upsert naïvement keyé sur `(externalSource, externalSourceId)` — elle clasherait avec les rows seedées par NHTSA. Pattern correct (global-auto-vehicles) : `findFirst(by slug)` → `update` (backfill `externalSource` **seulement si NULL**, ne jamais clobber une autre source) sinon `create`.
+- **Sync fitments** : pour garder `CatalogItemFitment` aligné avec une source externe sans dupliquer → `deleteMany({catalogItemId})` puis `createMany`. Idempotent. ~80k rows en ~25 min via le pooler pour 3 784 items.
+- **Status des externals** : global-auto a été commit en **PUBLISHED** (choix produit explicite : 3 780 prix concurrents directement visibles aux mécaniciens). Aucun filtre `isExternal=false` côté public — la séparation interne/externe se fait par `status` (DRAFT invisible / PUBLISHED visible) et l'admin pilote depuis `/admin/external-imports`.
 
 ---
 
@@ -408,15 +421,18 @@ Si tu n'aimes pas BMAD, tu peux ignorer — rien ne casse. Mais les stories ouve
 ## 14. Activité récente & priorités probables
 
 Derniers gros chantiers (mai 2026) :
-- ✅ Ingest 3H Autoparts (DB load + flag `--commit` explicite)
-- ✅ Champs external source sur `Vendor` et `CatalogItem`
+- ✅ **Ingest global-auto.online live en prod (2026-05-29)** — référentiel véhicules (49 makes / 2 219 models / 746 generations / 5 788 engines) + 3 780 pièces PUBLISHED + 79 405 fitments, sous le vendor shadow « Global Auto ». Prix concurrents désormais visibles aux mécaniciens.
+- ✅ Ingest 3H Autoparts (code DB load + flag `--commit` explicite ; pas encore commit en prod)
+- ✅ Champs external source sur `Vendor`, `CatalogItem` et tout le référentiel véhicules
+- ✅ Vendor terrain : `user_id` nullable + `address/commune/lat/lng/managedByLiaisonId` (migration `20260529_align_schema_drift` — **à commiter**)
 - ✅ Page Liaison à côté du lien Admin pour les utilisateurs ADMIN
 - ✅ Fallback prod-safe pour le rewrite API web (`pieces-api.onrender.com`)
 - ✅ Module Enterprise (flotte) — abonnements, ROI calculator, buffer stock UI
 - ✅ Pricing flotte 2026-05 (docs commerciaux)
-- 🔄 Scrapers Jumia, Coin Afrique, Hauto Parts (phase 3 suite)
+- 🔄 Scrapers MAPA-CI, Jumia CI, CoinAfrique CI (phase 3 suite) ; étape 2 (commit prod) de 3H
 - ⏳ Submission FNE-CI (factures normalisées CI) — schema prêt, intégration à wirer
 - ⏳ Auto-replenish buffer stock entreprise (logique à implémenter, UI déjà là)
+- ⏳ Refresh périodique des sources scrapées (observations prix marché continues)
 
 ---
 
@@ -427,8 +443,11 @@ Derniers gros chantiers (mai 2026) :
 pnpm dev                              # tout en watch
 pnpm -F api dev                       # API seule
 pnpm -F web dev                       # web seule (turbopack)
-pnpm -F ingest ingest --source 3h     # ingest dry-run
+pnpm -F ingest ingest --source 3h     # ingest dry-run (dump JSON dans data/raw/)
 pnpm -F ingest ingest --source 3h --commit  # ingest écrit en DB
+pnpm -F ingest ingest --source global-auto-vehicles --commit   # arbre véhicules global-auto
+pnpm -F ingest ingest --source global-auto-products --commit   # pièces global-auto (+fitments)
+pnpm -F ingest ingest --source global-auto-products --limit 50 # test sur 50 produits
 
 # Build / test / lint
 pnpm build
