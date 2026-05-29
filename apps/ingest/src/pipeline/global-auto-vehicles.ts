@@ -50,51 +50,75 @@ export async function loadVehicleCatalog(
 ): Promise<{ makes: number; models: number; generations: number; engines: number }> {
   let upMakes = 0, upModels = 0, upGens = 0, upEngines = 0
 
-  // 1. Upsert makes — keyed by GLOBAL_AUTO_CI + ga.id
+  // 1. Makes — slug is globally unique, so NHTSA-seeded rows (no externalSource) collide
+  // with a naive upsert keyed by (externalSource, externalSourceId). Match by slug first,
+  // backfill externalSource only when null to avoid clobbering another source's claim.
   const makeIdByGa = new Map<number, string>()
   for (const m of data.makes) {
-    const row = await db.vehicleMake.upsert({
-      where: {
-        uq_vehicle_makes_external: {
+    const slug = slugify(m.name)
+    const existing = await db.vehicleMake.findFirst({ where: { slug } })
+    let id: string
+    if (existing) {
+      const patch: { name?: string; externalSource?: string; externalSourceId?: string } = {}
+      if (existing.name !== m.name) patch.name = m.name
+      if (existing.externalSource == null) {
+        patch.externalSource = EXTERNAL_SOURCE
+        patch.externalSourceId = String(m.id)
+      }
+      if (Object.keys(patch).length > 0) {
+        await db.vehicleMake.update({ where: { id: existing.id }, data: patch })
+      }
+      id = existing.id
+    } else {
+      const row = await db.vehicleMake.create({
+        data: {
+          name: m.name,
+          slug,
           externalSource: EXTERNAL_SOURCE,
           externalSourceId: String(m.id),
         },
-      },
-      create: {
-        name: m.name,
-        slug: slugify(m.name),
-        externalSource: EXTERNAL_SOURCE,
-        externalSourceId: String(m.id),
-      },
-      update: { name: m.name },
-    })
-    makeIdByGa.set(m.id, row.id)
+      })
+      id = row.id
+    }
+    makeIdByGa.set(m.id, id)
     upMakes += 1
   }
 
-  // 2. Upsert models
+  // 2. Models — slug is unique per (makeId, slug); same collision risk as makes.
   const modelIdByGa = new Map<number, string>()
   for (const [gaMakeId, models] of data.modelsByMake) {
     const localMakeId = makeIdByGa.get(gaMakeId)
     if (!localMakeId) continue
     for (const m of models) {
-      const row = await db.vehicleModel.upsert({
-        where: {
-          uq_vehicle_models_external: {
+      const slug = slugify(m.name)
+      const existing = await db.vehicleModel.findFirst({
+        where: { makeId: localMakeId, slug },
+      })
+      let id: string
+      if (existing) {
+        const patch: { name?: string; externalSource?: string; externalSourceId?: string } = {}
+        if (existing.name !== m.name) patch.name = m.name
+        if (existing.externalSource == null) {
+          patch.externalSource = EXTERNAL_SOURCE
+          patch.externalSourceId = String(m.id)
+        }
+        if (Object.keys(patch).length > 0) {
+          await db.vehicleModel.update({ where: { id: existing.id }, data: patch })
+        }
+        id = existing.id
+      } else {
+        const row = await db.vehicleModel.create({
+          data: {
+            makeId: localMakeId,
+            name: m.name,
+            slug,
             externalSource: EXTERNAL_SOURCE,
             externalSourceId: String(m.id),
           },
-        },
-        create: {
-          makeId: localMakeId,
-          name: m.name,
-          slug: slugify(m.name),
-          externalSource: EXTERNAL_SOURCE,
-          externalSourceId: String(m.id),
-        },
-        update: { name: m.name, makeId: localMakeId },
-      })
-      modelIdByGa.set(m.id, row.id)
+        })
+        id = row.id
+      }
+      modelIdByGa.set(m.id, id)
       upModels += 1
     }
   }

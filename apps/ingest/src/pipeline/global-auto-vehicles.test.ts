@@ -2,20 +2,48 @@ import { describe, it, expect, vi } from 'vitest'
 import { loadVehicleCatalog } from './global-auto-vehicles.ts'
 import type { GaMake, GaModel, GaSeries } from '../sources/global-auto.ts'
 
-function makeMockDb() {
-  const makeUpsert = vi.fn(({ create }) => ({ id: `local-make-${create.externalSourceId}` }))
-  const modelUpsert = vi.fn(({ create }) => ({ id: `local-model-${create.externalSourceId}` }))
+type ExistingRow = { id: string; name: string; slug: string; externalSource: string | null; makeId?: string }
+
+function makeMockDb(opts: { existingMakes?: ExistingRow[]; existingModels?: ExistingRow[] } = {}) {
+  const existingMakes = opts.existingMakes ?? []
+  const existingModels = opts.existingModels ?? []
+  const makeFind = vi.fn(({ where }: { where: { slug: string } }) =>
+    existingMakes.find((r) => r.slug === where.slug) ?? null,
+  )
+  const makeUpdate = vi.fn(({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
+    const row = existingMakes.find((r) => r.id === where.id)
+    if (row) Object.assign(row, data)
+    return row
+  })
+  const makeCreate = vi.fn(({ data }: { data: { name: string; slug: string; externalSourceId: string } }) => {
+    const row = { id: `local-make-${data.externalSourceId}`, name: data.name, slug: data.slug, externalSource: 'GLOBAL_AUTO_CI' }
+    existingMakes.push(row)
+    return row
+  })
+  const modelFind = vi.fn(({ where }: { where: { makeId: string; slug: string } }) =>
+    existingModels.find((r) => r.makeId === where.makeId && r.slug === where.slug) ?? null,
+  )
+  const modelUpdate = vi.fn(({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
+    const row = existingModels.find((r) => r.id === where.id)
+    if (row) Object.assign(row, data)
+    return row
+  })
+  const modelCreate = vi.fn(({ data }: { data: { name: string; slug: string; externalSourceId: string; makeId: string } }) => {
+    const row = { id: `local-model-${data.externalSourceId}`, name: data.name, slug: data.slug, makeId: data.makeId, externalSource: 'GLOBAL_AUTO_CI' }
+    existingModels.push(row)
+    return row
+  })
   const genUpsert = vi.fn(({ create }) => ({ id: `local-gen-${create.externalSourceId}` }))
   const engineUpsert = vi.fn(({ create }) => ({ id: `local-engine-${create.externalSourceId}` }))
   return {
     db: {
-      vehicleMake: { upsert: makeUpsert },
-      vehicleModel: { upsert: modelUpsert },
+      vehicleMake: { findFirst: makeFind, update: makeUpdate, create: makeCreate },
+      vehicleModel: { findFirst: modelFind, update: modelUpdate, create: modelCreate },
       vehicleGeneration: { upsert: genUpsert },
       vehicleEngine: { upsert: engineUpsert },
     },
-    makeUpsert,
-    modelUpsert,
+    makeFind, makeUpdate, makeCreate,
+    modelFind, modelUpdate, modelCreate,
     genUpsert,
     engineUpsert,
   }
@@ -39,8 +67,8 @@ const seriesByModel = new Map<number, GaSeries[]>([
 ])
 
 describe('loadVehicleCatalog', () => {
-  it('upserts every layer keyed by GLOBAL_AUTO_CI + upstream id', async () => {
-    const { db, makeUpsert, modelUpsert, genUpsert, engineUpsert } = makeMockDb()
+  it('creates every layer when no rows pre-exist', async () => {
+    const { db, makeCreate, modelCreate, genUpsert, engineUpsert } = makeMockDb()
     const result = await loadVehicleCatalog(
       {
         makes,
@@ -55,10 +83,70 @@ describe('loadVehicleCatalog', () => {
       db as any,
     )
     expect(result).toEqual({ makes: 2, models: 2, generations: 2, engines: 2 })
-    expect(makeUpsert).toHaveBeenCalledTimes(2)
-    expect(modelUpsert).toHaveBeenCalledTimes(2)
+    expect(makeCreate).toHaveBeenCalledTimes(2)
+    expect(modelCreate).toHaveBeenCalledTimes(2)
     expect(genUpsert).toHaveBeenCalledTimes(2)
     expect(engineUpsert).toHaveBeenCalledTimes(2)
+  })
+
+  it('backfills externalSource on a NHTSA-seeded make instead of creating a duplicate', async () => {
+    const existing: ExistingRow = { id: 'nhtsa-peugeot', name: 'Peugeot', slug: 'peugeot', externalSource: null }
+    const { db, makeCreate, makeUpdate } = makeMockDb({ existingMakes: [existing] })
+    await loadVehicleCatalog(
+      { makes: [peugeotMake], modelsByMake: new Map(), seriesByModel: new Map(), trims: [] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      db as any,
+    )
+    expect(makeCreate).not.toHaveBeenCalled()
+    expect(makeUpdate).toHaveBeenCalledTimes(1)
+    expect(makeUpdate.mock.calls[0][0].data).toMatchObject({
+      externalSource: 'GLOBAL_AUTO_CI',
+      externalSourceId: '1',
+    })
+  })
+
+  it('does not clobber a make already claimed by another externalSource', async () => {
+    const existing: ExistingRow = { id: 'nhtsa-peugeot', name: 'PEUGEOT', slug: 'peugeot', externalSource: 'NHTSA' }
+    const { db, makeUpdate } = makeMockDb({ existingMakes: [existing] })
+    await loadVehicleCatalog(
+      { makes: [peugeotMake], modelsByMake: new Map(), seriesByModel: new Map(), trims: [] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      db as any,
+    )
+    // name is identical so no patch is emitted at all
+    expect(makeUpdate).not.toHaveBeenCalled()
+  })
+
+  it('is idempotent: a second run on a fully-GLOBAL_AUTO_CI make emits no writes', async () => {
+    const existing: ExistingRow = { id: 'ga-peugeot', name: 'PEUGEOT', slug: 'peugeot', externalSource: 'GLOBAL_AUTO_CI' }
+    const { db, makeCreate, makeUpdate } = makeMockDb({ existingMakes: [existing] })
+    await loadVehicleCatalog(
+      { makes: [peugeotMake], modelsByMake: new Map(), seriesByModel: new Map(), trims: [] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      db as any,
+    )
+    expect(makeCreate).not.toHaveBeenCalled()
+    expect(makeUpdate).not.toHaveBeenCalled()
+  })
+
+  it('backfills externalSource on a NHTSA-seeded model under the same make', async () => {
+    const existingMake: ExistingRow = { id: 'nhtsa-peugeot', name: 'Peugeot', slug: 'peugeot', externalSource: null }
+    const existingModel: ExistingRow = { id: 'nhtsa-208', name: '208', slug: '208', makeId: 'nhtsa-peugeot', externalSource: null }
+    const { db, modelCreate, modelUpdate } = makeMockDb({
+      existingMakes: [existingMake],
+      existingModels: [existingModel],
+    })
+    await loadVehicleCatalog(
+      { makes: [peugeotMake], modelsByMake: new Map([[1, [peugeot208]]]), seriesByModel: new Map(), trims: [] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      db as any,
+    )
+    expect(modelCreate).not.toHaveBeenCalled()
+    expect(modelUpdate).toHaveBeenCalledTimes(1)
+    expect(modelUpdate.mock.calls[0][0].data).toMatchObject({
+      externalSource: 'GLOBAL_AUTO_CI',
+      externalSourceId: '10',
+    })
   })
 
   it('passes parsed series year_start/code and trim displacement/fuel/power to upsert', async () => {
