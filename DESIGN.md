@@ -193,10 +193,11 @@ Total              131 040 FCFA
 - 4 steps horizontaux desktop, 2×2 mobile.
 - States : `pending` (gris), `active` (border ink-2 + halo), `done` (background `neuf-bg` + check).
 
-### Onglets recherche `/browse`
-- 4 onglets : Photo IA · VIN · Véhicule · WhatsApp.
-- Active : background ink-2, texte blanc.
-- Desktop : grille 4-col. Mobile : grille 2×2.
+### Parcours d'accueil `/browse` (2 cartes)
+Structure en entonnoir, deux cartes empilées sous le carrousel promo :
+- **Carte 1 — « 1. Identifiez votre véhicule »** : 3 sous-onglets `Mon véhicule` (gauche, actif par défaut → sélecteur de type + cascade) · `Code VIN` · `WhatsApp`. Onglet actif : background ink-2, texte blanc (grille 3-col).
+- **Carte 2 — « 2. Trouvez votre pièce »** : barre de recherche à prédictions (nom **ou** réf. OEM, restreinte au véhicule) + bouton Photo IA. Résultats sous la barre.
+- **« Parcourir par catégorie »** (`CategoryCarousel`) : rendu **sous les cartes, uniquement après sélection d'un véhicule** ; tuiles scopées au véhicule (`/search?brand=&model=&year=&category=`). Plus affiché en permanence sous le carrousel.
 
 ### Payment methods (mobile money)
 - Cards 2×2.
@@ -278,5 +279,6 @@ Fragment HTML injecté en tête de chaque PDF : SVG « Pièces » en Gloock `#00
 | 2026-04-19 | Mobile money = brand colors accurate | Orange Money orange, MTN jaune, Wave bleu. Reconnaissance instantanée = conversion. |
 | 2026-05-29 | DESIGN.md réaligné sur le code réel | Réécriture après audit de `globals.css` (`@theme`), `layout.tsx` et `chip.tsx`. Corrections : Gloock chargé via `<link>` (pas next/font), DM Mono limité au poids 400, Instrument Sans variable. Dark mode marqué _(proposé)_ car non implémenté. Tokens documentés par nom utility. |
 | 2026-05-29 | Système documentaire intégré au design system | Section « Document & Print Design » ajoutée à partir de `docs/_template/` (style.css print, header SVG, pipeline Pandoc+Chrome). Mêmes polices/couleurs que le web. Écart relevé : README dit 14 docs, réalité = 25. |
+| 2026-05-29 | `/browse` réorganisé en 2 cartes (entonnoir) | Demande owner. Carte 1 « Identifiez votre véhicule » (Mon véhicule · VIN · WhatsApp, Mon véhicule à gauche) puis Carte 2 « Trouvez votre pièce » (recherche à prédictions + Photo IA). « Parcourir par catégorie » déplacé sous les cartes, conditionné à la sélection d'un véhicule (tuiles scopées). Remplace l'ancienne barre 4-onglets Photo·VIN·Véhicule·WhatsApp. |
 </content>
 </invoke>
