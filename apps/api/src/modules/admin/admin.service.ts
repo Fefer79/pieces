@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { Prisma } from '@prisma/client'
 import { AppError } from '../../lib/appError.js'
+import { addPhotoToItem, removePhotoFromItem, reorderItemPhotos } from '../catalog/catalog.service.js'
 
 // Story 9.1: Order history for user
 export async function getUserOrderHistory(userId: string, page = 1, limit = 20) {
@@ -123,6 +124,88 @@ export async function getAdminCatalog(status?: string) {
   })
 
   return { items, total: items.length }
+}
+
+// ---------------------------------------------------------------------------
+// Admin annonce detail + edit (clickable rows in the Annonces menu)
+// ---------------------------------------------------------------------------
+
+export async function getAdminCatalogItem(id: string) {
+  const item = await prisma.catalogItem.findUnique({
+    where: { id },
+    include: {
+      vendor: { select: { id: true, shopName: true, isExternal: true, externalSource: true } },
+      photos: { orderBy: { position: 'asc' } },
+      fitments: { orderBy: [{ brand: 'asc' }, { model: 'asc' }] },
+    },
+  })
+  if (!item) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Annonce introuvable' })
+  }
+  return item
+}
+
+interface AdminCatalogItemPatch {
+  name?: string | null
+  category?: string | null
+  oemReference?: string | null
+  price?: number | null
+  condition?: 'NEW' | 'USED' | 'REFURBISHED' | null
+  partSource?: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+  inStock?: boolean
+}
+
+export async function updateAdminCatalogItem(id: string, patch: AdminCatalogItemPatch) {
+  const exists = await prisma.catalogItem.findUnique({ where: { id }, select: { id: true } })
+  if (!exists) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Annonce introuvable' })
+  }
+
+  const data: Prisma.CatalogItemUpdateInput = {}
+  if (patch.name !== undefined) data.name = patch.name
+  if (patch.category !== undefined) data.category = patch.category
+  if (patch.oemReference !== undefined) data.oemReference = patch.oemReference
+  if (patch.condition !== undefined) data.condition = patch.condition
+  if (patch.partSource !== undefined) data.partSource = patch.partSource
+  if (patch.status !== undefined) data.status = patch.status
+  if (patch.inStock !== undefined) data.inStock = patch.inStock
+  if (patch.price !== undefined) {
+    data.price = patch.price
+    data.priceUpdatedAt = new Date()
+  }
+
+  await prisma.catalogItem.update({ where: { id }, data })
+  return getAdminCatalogItem(id)
+}
+
+/** Resolve an annonce's vendorId so the R2 key can be scoped, asserting it exists. */
+async function adminItemVendorId(id: string): Promise<string> {
+  const item = await prisma.catalogItem.findUnique({ where: { id }, select: { vendorId: true } })
+  if (!item) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Annonce introuvable' })
+  }
+  return item.vendorId
+}
+
+export async function addAdminPhoto(
+  itemId: string,
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+) {
+  const vendorId = await adminItemVendorId(itemId)
+  return addPhotoToItem(vendorId, itemId, fileBuffer, fileName, mimeType)
+}
+
+export async function removeAdminPhoto(itemId: string, photoId: string) {
+  await adminItemVendorId(itemId)
+  return removePhotoFromItem(itemId, photoId)
+}
+
+export async function reorderAdminPhotos(itemId: string, photoIds: string[]) {
+  await adminItemVendorId(itemId)
+  return reorderItemPhotos(itemId, photoIds)
 }
 
 // ---------------------------------------------------------------------------

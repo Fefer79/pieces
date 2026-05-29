@@ -42,6 +42,21 @@ export const toggleStockSchema = z.object({
   inStock: z.boolean(),
 })
 
+// Admin edit of an annonce — broader than the vendor self-service schema:
+// admins may also flip status/stock and clear descriptive fields.
+export const adminUpdateCatalogItemSchema = z
+  .object({
+    name: z.string().min(1).max(200).nullable().optional(),
+    category: z.string().min(1).max(100).nullable().optional(),
+    oemReference: z.string().max(100).nullable().optional(),
+    price: z.number().int().min(0).nullable().optional(),
+    condition: partConditionSchema.nullable().optional(),
+    partSource: partSourceSchema.nullable().optional(),
+    status: catalogItemStatusSchema.optional(),
+    inStock: z.boolean().optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: 'Aucun champ à modifier' })
+
 export const photoParamsSchema = z.object({
   id: z.string().uuid(),
   photoId: z.string().uuid(),

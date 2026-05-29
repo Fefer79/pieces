@@ -19,6 +19,7 @@ interface CatalogItem {
   category: string | null
   status: string
   imageThumbUrl: string | null
+  imageOriginalUrl: string | null
   suggestedPrice: number | null
   price: number | null
   qualityScore: number | null
@@ -27,7 +28,7 @@ interface CatalogItem {
   inStock: boolean
   priceAlertFlag: boolean
   createdAt: string
-  vendor: { id: string; businessName: string | null }
+  vendor: { id: string; shopName: string | null }
 }
 
 interface CatalogResponse {
@@ -164,13 +165,15 @@ export default function AdminCatalogPage() {
                 {data.items.map((item, idx) => (
                   <tr
                     key={item.id}
-                    className={`transition-colors hover:bg-surface ${idx > 0 ? 'border-t border-border' : ''}`}
+                    onClick={() => { window.location.href = `/admin/catalog/${item.id}` }}
+                    className={`cursor-pointer transition-colors hover:bg-surface ${idx > 0 ? 'border-t border-border' : ''}`}
                   >
                     <td className="px-3 py-3">
                       <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
-                        {item.imageThumbUrl ? (
+                        {item.imageThumbUrl ?? item.imageOriginalUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={item.imageThumbUrl}
+                            src={item.imageThumbUrl ?? item.imageOriginalUrl ?? ''}
                             alt={item.name ?? ''}
                             className="h-full w-full object-cover"
                           />
@@ -182,7 +185,9 @@ export default function AdminCatalogPage() {
                       </div>
                     </td>
                     <td className="max-w-[220px] truncate px-3 py-3 font-medium text-ink">
-                      {item.name ?? <span className="text-muted-2">Sans nom</span>}
+                      <a href={`/admin/catalog/${item.id}`} className="text-ink-2 hover:underline">
+                        {item.name ?? <span className="text-muted-2">Sans nom</span>}
+                      </a>
                       {item.qualityIssue && (
                         <span className="ml-1 text-warn-fg" title={item.qualityIssue}>⚠️</span>
                       )}
@@ -191,7 +196,7 @@ export default function AdminCatalogPage() {
                       )}
                     </td>
                     <td className="px-3 py-3 text-muted">{item.category ?? '—'}</td>
-                    <td className="px-3 py-3 text-muted">{item.vendor.businessName ?? '—'}</td>
+                    <td className="px-3 py-3 text-muted">{item.vendor.shopName ?? '—'}</td>
                     <td className="whitespace-nowrap px-3 py-3 text-right">
                       {item.price != null ? (
                         <Price amount={item.price} currency={false} />
