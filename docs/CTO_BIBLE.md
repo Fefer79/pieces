@@ -226,10 +226,39 @@ pnpm -F shared db:studio                            # Prisma Studio
 - Tout en parallèle via `turbo run`.
 
 ### Base de données prod
-- Hôte : **Prisma Postgres** (db.prisma.io), pas Supabase (rappel important).
+- Hôte : **Prisma Postgres** (`pooled.db.prisma.io:5432`), pas Supabase (rappel important).
 - Migrations : `pnpm -F shared exec prisma migrate deploy` (auto au boot Render).
 - Pour exécuter du SQL one-shot : `pnpm -F shared exec prisma db execute --file <fichier.sql> --schema packages/shared/prisma/schema.prisma`.
 - **PAS de Supabase MCP pour la prod** — Supabase n'a que l'auth.
+
+### ⚠️ Piège DATABASE_URL — deux Postgres en circulation
+Il existe **deux** Postgres dans la nature, et les `.env` du repo pointent sur le mauvais. À comprendre avant de toucher quoi que ce soit en DB.
+
+**Prod réelle (utilisée par l'API Render)** :
+- Provider : Prisma Postgres (managed, géré dans le dashboard Prisma Console).
+- Connection : `postgres://...@pooled.db.prisma.io:5432/postgres?sslmode=require`
+- La `DATABASE_URL` exacte n'est PAS dans le repo — elle est `sync: false` dans `render.yaml` et stockée uniquement dans le dashboard Render (service `pieces-api` → Environment).
+
+**Supabase legacy (`rlhkjgdpynjrfsveweuq`)** :
+- Hérite d'une époque où la prod était sur Supabase. **Plus utilisé par l'API**, mais Supabase fournit toujours l'auth (OTP SMS).
+- `apps/api/.env`, `packages/shared/.env`, `apps/ingest/.env` du repo pointent toujours sur ce Supabase. **Ces fichiers sont trompeurs et obsolètes côté DATABASE_URL.**
+
+**Conséquence** : si tu lances `prisma migrate deploy` ou un script ingest `--commit` depuis ta machine sans surcharger `DATABASE_URL`, tu écris **sur le Supabase, pas sur la prod**. C'est silencieux — aucune erreur, juste les données dans le mauvais Postgres.
+
+**Procédure correcte pour toute opération DB de prod** :
+```bash
+# Récupère d'abord la vraie URL depuis le dashboard Render et exporte-la
+export PROD_DB="postgres://...@pooled.db.prisma.io:5432/postgres?sslmode=require"
+
+# Puis toute commande Prisma ou ingest doit être préfixée
+DATABASE_URL="$PROD_DB" pnpm -F shared exec prisma migrate status
+DATABASE_URL="$PROD_DB" pnpm -F shared exec prisma migrate deploy
+DATABASE_URL="$PROD_DB" pnpm -F ingest ingest --source=<x> --commit
+```
+
+**Vérification rapide qu'on est bien sur la prod** : `psql $PROD_DB -c "select count(*) from vendors"` doit retourner > 1 (la prod contient `Global Auto` + vendors internes). Le Supabase contient à peu près les mêmes données suite à un commit accidentel le 2026-05-29 ; les counts ne distinguent plus les deux — fier-toi à l'hôte dans l'URL.
+
+**TODO suite** : aligner les `.env` du repo sur la prod Prisma Postgres et déprécier la copie Supabase, ou la repurpose en staging documenté.
 
 ---
 
