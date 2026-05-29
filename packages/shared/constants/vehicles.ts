@@ -29,3 +29,29 @@ export const BRAND_NAMES = Object.keys(VEHICLE_BRANDS)
 export function getEngines(brand: string, model: string): string[] {
   return data[brand]?.models[model]?.engines ?? []
 }
+
+/**
+ * Catégories de véhicules sélectionnables dans le parcours acheteur.
+ * Seul VOITURE possède des données (VEHICLE_BRANDS) ; les autres sont
+ * affichés « Bientôt disponible » tant que leurs marques/modèles ne sont
+ * pas seedés. L'enum Prisma `BodyType` (MOTORCYCLE/TRUCK…) couvrira le
+ * peuplement réel plus tard.
+ */
+export type VehicleTypeId = 'VOITURE' | 'MOTO' | 'CAMION' | 'ENGIN_CHANTIER'
+
+export interface VehicleType {
+  id: VehicleTypeId
+  label: string
+  /** clé d'icône résolue côté web */
+  icon: string
+  available: boolean
+}
+
+export const VEHICLE_TYPES: VehicleType[] = [
+  { id: 'VOITURE', label: 'Voiture', icon: 'car', available: true },
+  { id: 'MOTO', label: 'Moto', icon: 'motorcycle', available: false },
+  { id: 'CAMION', label: 'Camion', icon: 'truck', available: false },
+  { id: 'ENGIN_CHANTIER', label: 'Engin de chantier', icon: 'excavator', available: false },
+]
+
+export const DEFAULT_VEHICLE_TYPE: VehicleTypeId = 'VOITURE'

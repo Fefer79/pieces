@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
 
 // Vehicle-specific categories — these require knowing the make/model/year for
 // compatibility. The 8 universal categories on /browse already cover consumables
@@ -36,9 +36,8 @@ export function VehicleSearchPanel({ brand, model, year }: VehicleSearchPanelPro
     return qs
   }
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    const trimmed = query.trim()
+  const goToSearch = (value: string) => {
+    const trimmed = value.trim()
     if (!trimmed) return
     const qs = baseParams()
     qs.set('q', trimmed)
@@ -61,19 +60,15 @@ export function VehicleSearchPanel({ brand, model, year }: VehicleSearchPanelPro
         {year ? ` ${year}` : ''} ?
       </h2>
 
-      {/* Free-text search */}
-      <form onSubmit={handleSubmit} className="mt-3 flex gap-2">
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="ex. plaquettes de frein, alternateur, courroie…"
-          className="min-w-0 flex-1 rounded-md border border-border bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted-2 focus:border-accent focus:outline-none"
-        />
-        <Button type="submit" size="md" disabled={query.trim().length === 0}>
-          Rechercher
-        </Button>
-      </form>
+      {/* Free-text search avec prédictions, restreint au véhicule */}
+      <PartSearchAutocomplete
+        value={query}
+        onChange={setQuery}
+        onSubmit={goToSearch}
+        vehicle={{ brand, model, year }}
+        placeholder="ex. plaquettes de frein, alternateur, courroie…"
+        className="mt-3"
+      />
 
       {/* Vehicle-specific categories */}
       <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">

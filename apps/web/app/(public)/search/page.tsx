@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Button } from '@/components/ui/button'
 import { ProductCard, type ProductCardItem } from '@/components/ui/product-card'
+import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
 
 const CONDITION_OPTIONS = [
   { value: 'NEW', label: 'Neuf' },
@@ -108,11 +109,6 @@ function SearchPageContent() {
     updateParams({ condition: next.length > 0 ? next.join(',') : null })
   }
 
-  const submitQ = (e: React.FormEvent) => {
-    e.preventDefault()
-    updateParams({ q: qInput.trim() || null })
-  }
-
   const applyPriceRange = () => {
     updateParams({
       priceMin: priceMinInput.trim() || null,
@@ -196,24 +192,19 @@ function SearchPageContent() {
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
           {/* Filter sidebar */}
           <aside className="space-y-6 rounded-md border border-border bg-card p-4">
-            {/* Search */}
-            <form onSubmit={submitQ} className="space-y-2">
+            {/* Search avec prédictions, restreintes au véhicule */}
+            <div className="space-y-2">
               <label className="block font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
                 Rechercher
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="search"
-                  value={qInput}
-                  onChange={(e) => setQInput(e.target.value)}
-                  placeholder="ex. plaquettes, alternateur…"
-                  className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted-2 focus:border-accent focus:outline-none"
-                />
-                <Button type="submit" size="sm">
-                  OK
-                </Button>
-              </div>
-            </form>
+              <PartSearchAutocomplete
+                value={qInput}
+                onChange={setQInput}
+                onSubmit={(v) => updateParams({ q: v.trim() || null })}
+                vehicle={hasVehicle ? { brand, model, year } : null}
+                placeholder="ex. plaquettes, alternateur…"
+              />
+            </div>
 
             {/* Category */}
             <div className="space-y-2">
@@ -340,7 +331,11 @@ function SearchPageContent() {
 
             {!loading && items.length === 0 && (
               <div className="mt-5 rounded-md border border-border bg-card p-8 text-center">
-                <p className="text-sm text-muted">Aucun résultat pour ces filtres.</p>
+                <p className="text-sm text-muted">
+                  {hasVehicle
+                    ? `Aucune pièce compatible trouvée pour votre ${brand} ${model}${year ? ` ${year}` : ''}.`
+                    : 'Aucun résultat pour ces filtres.'}
+                </p>
                 <p className="mt-1 text-xs text-muted-2">
                   Essayez de changer la catégorie, élargir la fourchette de prix, ou contactez-nous via WhatsApp.
                 </p>

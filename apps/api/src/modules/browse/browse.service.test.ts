@@ -28,7 +28,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { getBrands, getModels, getYears, getCategories, browseParts, searchParts, decodeVin } = await import('./browse.service.js')
+const { getBrands, getModels, getYears, getCategories, browseParts, searchParts, suggestParts, decodeVin } = await import('./browse.service.js')
 
 describe('browse.service', () => {
   beforeEach(() => {
@@ -91,6 +91,57 @@ describe('browse.service', () => {
 
       expect(result.items).toHaveLength(1)
       expect(result.pagination.total).toBe(1)
+    })
+
+    it('filters STRICTLY by structured fitments (no legacy text fallback)', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([])
+      mockCatalogItemCount.mockResolvedValueOnce(0)
+
+      await browseParts({ brand: 'Toyota', model: 'Corolla', year: 2015 })
+
+      const where = mockCatalogItemFindMany.mock.calls[0][0].where as Record<string, unknown>
+      const and = where.AND as Record<string, unknown>[]
+      const vehicleClause = and[0] as { OR: Record<string, unknown>[] }
+      // Strict: fitments OR universal categories — never vehicleCompatibility text.
+      const serialized = JSON.stringify(vehicleClause)
+      expect(serialized).toContain('fitments')
+      expect(serialized).not.toContain('vehicleCompatibility')
+      expect(vehicleClause.OR.some((c) => 'category' in c)).toBe(true)
+    })
+
+    it('adds a text clause on name/oemReference when q is provided', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([])
+      mockCatalogItemCount.mockResolvedValueOnce(0)
+
+      await browseParts({ brand: 'Toyota', q: 'plaquette' })
+
+      const where = mockCatalogItemFindMany.mock.calls[0][0].where as Record<string, unknown>
+      const and = where.AND as Record<string, unknown>[]
+      expect(and).toHaveLength(2)
+      expect(JSON.stringify(and[1])).toContain('plaquette')
+    })
+  })
+
+  describe('suggestParts', () => {
+    it('returns distinct part names matching the prefix', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { name: 'Plaquettes de frein avant Corolla' },
+        { name: 'Plaquettes de frein arrière' },
+      ])
+
+      const result = await suggestParts('pla', { brand: 'Toyota', model: 'Corolla', year: 2015 })
+
+      expect(result.suggestions).toHaveLength(2)
+      const args = mockCatalogItemFindMany.mock.calls[0][0]
+      expect(args.distinct).toEqual(['name'])
+      // restricted to the vehicle
+      expect(JSON.stringify(args.where)).toContain('fitments')
+    })
+
+    it('returns empty for queries shorter than 2 chars without hitting the DB', async () => {
+      const result = await suggestParts('p')
+      expect(result.suggestions).toEqual([])
+      expect(mockCatalogItemFindMany).not.toHaveBeenCalled()
     })
   })
 

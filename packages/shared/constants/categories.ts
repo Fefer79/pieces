@@ -39,6 +39,21 @@ export const PART_CATEGORIES = [
 export type PartCategory = (typeof PART_CATEGORIES)[number]
 
 /**
+ * Catégories de pièces NON spécifiques à un véhicule (fluides, outillage,
+ * accessoires universels). Elles contournent le filtre de compatibilité
+ * strict : un acheteur avec un véhicule sélectionné les voit toujours.
+ */
+export const UNIVERSAL_CATEGORIES: readonly PartCategory[] = [
+  'Accessoires & équipements',
+  'Outillage & entretien',
+  'Fluides & consommables',
+] as const
+
+export function isUniversalCategory(category: string | null | undefined): boolean {
+  return category != null && (UNIVERSAL_CATEGORIES as readonly string[]).includes(category)
+}
+
+/**
  * Hiérarchie catégorie → sous-catégories de pièces (style RockAuto)
  * Utilisé pour la sélection lors de l'ajout de pièces au catalogue.
  */
