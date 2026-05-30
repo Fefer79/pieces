@@ -225,10 +225,11 @@ export default function CataloguePage() {
 
         {/* List */}
         {items.length > 0 && (
-          <ul className="mt-5 divide-y divide-border rounded-md border border-border bg-card">
+          <div className="mt-5 divide-y divide-border rounded-md border border-border bg-card">
             {items.map((item) => (
-              <li
+              <Link
                 key={item.id}
+                href={`/produit/${item.id}`}
                 className="flex gap-3 px-3 py-3 transition-colors hover:bg-surface"
               >
                 <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
@@ -264,9 +265,9 @@ export default function CataloguePage() {
                 {item.price != null && (
                   <Price amount={item.price} className="self-center text-sm" />
                 )}
-              </li>
+              </Link>
             ))}
-          </ul>
+          </div>
         )}
 
         {/* Empty state when not loading and no items */}

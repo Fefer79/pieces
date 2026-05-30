@@ -401,3 +401,46 @@ export async function suggestParts(
 
   return { suggestions: rows.map((r) => r.name).filter((n): n is string => n != null) }
 }
+
+/**
+ * Détail public d'une fiche produit (pièce). Ne renvoie que les pièces
+ * publiées d'un vendeur actif. Inclut photos, compatibilités véhicule et
+ * coordonnées vendeur — utilisé par la fiche produit côté acheteur.
+ */
+export async function getPublicItemDetail(id: string) {
+  const item = await prisma.catalogItem.findFirst({
+    where: { id, status: 'PUBLISHED', vendor: { status: 'ACTIVE' } },
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      oemReference: true,
+      vehicleCompatibility: true,
+      condition: true,
+      partSource: true,
+      price: true,
+      warrantyMonths: true,
+      inStock: true,
+      imageOriginalUrl: true,
+      imageThumbUrl: true,
+      imageSmallUrl: true,
+      imageMediumUrl: true,
+      imageLargeUrl: true,
+      vendor: { select: { id: true, shopName: true } },
+      photos: {
+        orderBy: { position: 'asc' },
+        select: { id: true, urlThumb: true, urlMedium: true, urlLarge: true, urlOriginal: true },
+      },
+      fitments: {
+        orderBy: [{ brand: 'asc' }, { model: 'asc' }],
+        select: { id: true, brand: true, model: true, yearFrom: true, yearTo: true, engine: true },
+      },
+    },
+  })
+
+  if (!item) {
+    throw new AppError('ITEM_NOT_FOUND', 404, { message: 'Pièce introuvable' })
+  }
+
+  return item
+}
