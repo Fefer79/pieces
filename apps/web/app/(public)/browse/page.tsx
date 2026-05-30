@@ -50,9 +50,9 @@ const PROMO_SLIDES: PromoSlide[] = [
     eyebrow: 'Entreprises · Gestion de flotte',
     title: 'Vous êtes une entreprise ? Vous avez une flotte ?',
     description:
-      'Tarifs négociés, facturation centralisée, suivi d’entretien par véhicule, compte gestionnaire dédié et livraison prioritaire à votre garage partenaire. Enregistrez votre flotte et simplifiez la maintenance.',
+      'Tableau de bord multi-véhicules, détection des véhicules « gouffres », alertes prédictives WhatsApp, stock tampon auto, factures DGI consolidées, livraison express. Pilotez votre flotte, réduisez vos coûts.',
     cta: { label: 'Enregistrer ma flotte', href: '/enterprise/register' },
-    secondaryCta: { label: 'Nos services entreprise', href: '/enterprise' },
+    secondaryCta: { label: 'Nos services entreprise', href: '/entreprises' },
     art: <PromoArt src="/promo/flotte.webp" alt="Flotte de véhicules utilitaires" />,
     theme: 'cream',
   },
