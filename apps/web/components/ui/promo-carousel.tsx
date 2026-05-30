@@ -40,23 +40,25 @@ const themeClasses: Record<PromoSlide['theme'], { bg: string; text: string; art:
 
 export function PromoCarousel({ slides, autoMs = 8250 }: { slides: PromoSlide[]; autoMs?: number }) {
   const [idx, setIdx] = useState(0)
+  // Dès que l'utilisateur choisit une carte (flèche ou point), l'auto-défilement s'arrête.
+  const [paused, setPaused] = useState(false)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    if (!autoMs || slides.length <= 1) return
+    if (paused || !autoMs || slides.length <= 1) return
     timer.current = setInterval(() => setIdx((i) => (i + 1) % slides.length), autoMs)
     return () => {
       if (timer.current) clearInterval(timer.current)
     }
-  }, [autoMs, slides.length])
+  }, [autoMs, slides.length, paused])
 
   const goTo = (i: number) => {
     setIdx(i)
-    if (timer.current) clearInterval(timer.current)
-    if (autoMs && slides.length > 1) {
-      timer.current = setInterval(() => setIdx((curr) => (curr + 1) % slides.length), autoMs)
-    }
+    setPaused(true)
   }
+
+  const goPrev = () => goTo((idx - 1 + slides.length) % slides.length)
+  const goNext = () => goTo((idx + 1) % slides.length)
 
   return (
     <div className="relative overflow-hidden rounded-lg">
@@ -124,16 +126,40 @@ export function PromoCarousel({ slides, autoMs = 8250 }: { slides: PromoSlide[];
         if (!current) return null
         const t = themeClasses[current.theme]
         return (
-          <div className="absolute bottom-3 left-5 z-10 flex gap-1.5 md:bottom-5 md:left-14 md:gap-2">
-            {slides.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => goTo(i)}
-                aria-label={`Aller au slide ${i + 1}`}
-                className={`h-[3px] w-7 rounded-sm transition-colors md:w-9 ${i === idx ? t.dotActive : t.dot}`}
-              />
-            ))}
-          </div>
+          <>
+            <div className="absolute bottom-3 left-5 z-10 flex gap-1.5 md:bottom-5 md:left-14 md:gap-2">
+              {slides.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => goTo(i)}
+                  aria-label={`Aller au slide ${i + 1}`}
+                  className={`h-[3px] w-7 rounded-sm transition-colors md:w-9 ${i === idx ? t.dotActive : t.dot}`}
+                />
+              ))}
+            </div>
+
+            {(() => {
+              const arrow =
+                current.theme === 'cream'
+                  ? 'text-ink/50 bg-ink/5 hover:text-ink hover:bg-ink/10'
+                  : 'text-white/55 bg-white/10 hover:text-white hover:bg-white/20'
+              const btn = `pointer-events-auto grid h-8 w-8 place-items-center rounded-full backdrop-blur-sm transition-colors md:h-10 md:w-10 ${arrow}`
+              return (
+                <div className="pointer-events-none absolute inset-y-0 left-0 right-0 z-10 flex items-center justify-between px-2 md:px-4">
+                  <button onClick={goPrev} aria-label="Carte précédente" className={btn}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 md:h-5 md:w-5">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                  <button onClick={goNext} aria-label="Carte suivante" className={btn}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 md:h-5 md:w-5">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                </div>
+              )
+            })()}
+          </>
         )
       })()}
     </div>
