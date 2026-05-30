@@ -100,7 +100,7 @@ export default function AdminPartsPage() {
                         {src ? <img src={src} alt="" className="h-10 w-10 rounded-sm object-cover" /> : <div className="h-10 w-10 rounded-sm bg-surface" />}
                       </td>
                       <td className="px-3 py-2">
-                        <div className="font-medium text-ink">{it.name ?? '—'}</div>
+                        <Link href={`/admin/catalog/${it.id}`} className="font-medium text-ink hover:text-accent hover:underline">{it.name ?? '—'}</Link>
                         <div className="text-xs text-muted">{it.category ?? ''}</div>
                       </td>
                       <td className="px-3 py-2">

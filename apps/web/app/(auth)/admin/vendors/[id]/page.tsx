@@ -14,7 +14,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 interface Detail {
   vendor: {
-    id: string; shopName: string; phone: string; status: string; commune: string | null; address: string | null
+    id: string; shopName: string; contactName: string; phone: string; status: string; commune: string | null; address: string | null
     user: { id: string; name: string | null; phone: string | null; email: string | null; createdAt: string } | null
     kyc: { kycType: string } | null
   }
@@ -30,9 +30,40 @@ export default function AdminVendorDetailPage() {
   const [data, setData] = useState<Detail | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Édition du contact vendeur (contactName + phone)
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState({ contactName: '', phone: '' })
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
   useEffect(() => {
     adminFetch<Detail>(`/admin/vendors/${id}/detail`).then(setData).catch((e) => setError(e.message))
   }, [id])
+
+  function startEdit() {
+    if (!data) return
+    setForm({ contactName: data.vendor.contactName ?? '', phone: data.vendor.phone ?? '' })
+    setSaveError(null)
+    setEditing(true)
+  }
+
+  async function saveContact() {
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const updated = await adminFetch<Detail>(`/admin/vendors/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contactName: form.contactName.trim(), phone: form.phone.trim() }),
+      })
+      setData(updated)
+      setEditing(false)
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (error) return <div className="p-6 text-sm text-status-err">{error}</div>
   if (!data) return <div className="p-6 text-sm text-muted">Chargement…</div>
@@ -46,12 +77,60 @@ export default function AdminVendorDetailPage() {
 
       <div className="mb-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div className="rounded-md border border-border bg-card p-4">
-          <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">Contact</div>
-          <div className="mt-2 text-sm">
-            <div className="font-medium text-ink">{v.user?.name ?? '—'}</div>
-            <div>{v.user?.phone ?? v.phone}</div>
-            <div className="text-muted">{v.user?.email ?? ''}</div>
+          <div className="flex items-center justify-between">
+            <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">Contact</div>
+            {!editing && (
+              <button onClick={startEdit} className="text-xs font-medium text-accent hover:underline">
+                Éditer
+              </button>
+            )}
           </div>
+
+          {editing ? (
+            <div className="mt-2 space-y-2 text-sm">
+              <div>
+                <label className="text-[11px] text-muted">Nom du contact</label>
+                <input
+                  value={form.contactName}
+                  onChange={(e) => setForm((f) => ({ ...f, contactName: e.target.value }))}
+                  className="mt-1 w-full rounded-sm border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                  placeholder="Nom du contact"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted">Téléphone</label>
+                <input
+                  value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  className="mt-1 w-full rounded-sm border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                  placeholder="+225XXXXXXXXXX"
+                />
+              </div>
+              {saveError && <div className="text-xs text-status-err">{saveError}</div>}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={saveContact}
+                  disabled={saving}
+                  className="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
+                >
+                  {saving ? 'Enregistrement…' : 'Enregistrer'}
+                </button>
+                <button
+                  onClick={() => setEditing(false)}
+                  disabled={saving}
+                  className="rounded-sm border border-border-strong px-3 py-1.5 text-xs hover:bg-surface"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-2 text-sm">
+              <div className="font-medium text-ink">{v.contactName || '—'}</div>
+              <div>{v.phone}</div>
+              {v.user?.email && <div className="text-muted">{v.user.email}</div>}
+            </div>
+          )}
         </div>
         <div className="rounded-md border border-border bg-card p-4">
           <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted">Commissions totales</div>

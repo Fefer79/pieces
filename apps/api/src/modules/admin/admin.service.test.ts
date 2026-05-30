@@ -12,6 +12,8 @@ const mockUserCount = vi.fn()
 const mockUserFindUnique = vi.fn()
 const mockVendorCount = vi.fn()
 const mockVendorFindMany = vi.fn()
+const mockVendorFindUnique = vi.fn()
+const mockVendorUpdate = vi.fn()
 const mockDisputeCount = vi.fn()
 const mockCatalogFindMany = vi.fn()
 const mockCatalogCount = vi.fn()
@@ -33,6 +35,8 @@ vi.mock('../../lib/prisma.js', () => ({
     vendor: {
       count: (...args: unknown[]) => mockVendorCount(...args),
       findMany: (...args: unknown[]) => mockVendorFindMany(...args),
+      findUnique: (...args: unknown[]) => mockVendorFindUnique(...args),
+      update: (...args: unknown[]) => mockVendorUpdate(...args),
     },
     order: {
       findMany: (...args: unknown[]) => mockOrderFindMany(...args),
@@ -59,6 +63,7 @@ const {
   getAdminExternalImportStats,
   getAdminCatalogItem,
   updateAdminCatalogItem,
+  updateAdminVendor,
 } = await import('./admin.service.js')
 
 describe('admin.service', () => {
@@ -229,6 +234,16 @@ describe('admin.service', () => {
         statusCode: 404,
       })
       expect(mockCatalogUpdate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('updateAdminVendor', () => {
+    it('throws 404 when the vendor does not exist', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+      await expect(
+        updateAdminVendor('missing', { contactName: 'Awa', phone: '+2250700000000' }),
+      ).rejects.toMatchObject({ statusCode: 404 })
+      expect(mockVendorUpdate).not.toHaveBeenCalled()
     })
   })
 

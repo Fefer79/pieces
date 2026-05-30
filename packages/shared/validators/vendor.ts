@@ -29,3 +29,11 @@ export const createVendorSchema = z
 export const updateDeliveryZonesSchema = z.object({
   zones: z.array(z.enum(ABIDJAN_COMMUNES)).min(1, 'Au moins une commune est requise'),
 })
+
+// Admin edit of a vendor's contact (nom du contact + téléphone).
+export const adminUpdateVendorSchema = z
+  .object({
+    contactName: z.string().min(2).max(100).optional(),
+    phone: phoneSchema.optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: 'Aucun champ à modifier' })

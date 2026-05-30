@@ -16,6 +16,7 @@ import {
   getAdminCatalogList,
   getAdminVendorsList,
   getAdminVendorDetail,
+  updateAdminVendor,
   getAdminClientsList,
   getAdminClientDetail,
   getAdminEnterprisesList,
@@ -45,6 +46,7 @@ import {
   adminListQuerySchema,
   adminExportQuerySchema,
   adminUpdateCatalogItemSchema,
+  adminUpdateVendorSchema,
   reorderPhotosSchema,
   createSubscriptionSchema,
   updateSubscriptionSchema,
@@ -298,6 +300,24 @@ export async function adminRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const data = await getAdminVendorDetail(id)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/vendors/:id',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Modifie le contact d\'un vendeur (admin)',
+        body: zodToFastify(adminUpdateVendorSchema),
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await updateAdminVendor(id, request.body as Record<string, never>)
+      request.log.info({ event: 'ADMIN_VENDOR_UPDATED', vendorId: id })
       return reply.status(200).send({ data })
     },
   )
