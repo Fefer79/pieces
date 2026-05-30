@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Price } from '@/components/ui/price'
 import { VehicleTypeSelector } from '@/components/vehicle-type-selector'
@@ -352,7 +353,11 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Résultats</h3>
               <div className="grid gap-3 lg:grid-cols-3 xl:grid-cols-4">
                 {searchResults.map((item) => (
-                  <div key={item.id} className="flex gap-3 rounded-md border border-border bg-card p-3 transition-all hover:border-border-strong hover:shadow-sm">
+                  <Link
+                    key={item.id}
+                    href={`/produit/${item.id}`}
+                    className="flex gap-3 rounded-md border border-border bg-card p-3 transition-all hover:border-border-strong hover:shadow-sm"
+                  >
                     <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
                       {item.imageThumbUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -366,7 +371,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                       <p className="text-xs text-muted">{item.category ?? '—'} · {item.vendor.shopName}</p>
                     </div>
                     {item.price != null && <Price amount={item.price} className="self-center text-sm" />}
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
