@@ -40,9 +40,11 @@ const themeClasses: Record<PromoSlide['theme'], { bg: string; text: string; art:
 
 export function PromoCarousel({ slides, autoMs = 8250 }: { slides: PromoSlide[]; autoMs?: number }) {
   const [idx, setIdx] = useState(0)
-  // Dès que l'utilisateur choisit une carte (flèche ou point), l'auto-défilement s'arrête.
+  // Quand l'utilisateur choisit une carte (flèche ou point), l'auto-défilement
+  // se met en pause puis reprend après ~10 s d'inactivité.
   const [paused, setPaused] = useState(false)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (paused || !autoMs || slides.length <= 1) return
@@ -52,9 +54,16 @@ export function PromoCarousel({ slides, autoMs = 8250 }: { slides: PromoSlide[];
     }
   }, [autoMs, slides.length, paused])
 
+  // Nettoyage du timer de reprise au démontage.
+  useEffect(() => () => {
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+  }, [])
+
   const goTo = (i: number) => {
     setIdx(i)
     setPaused(true)
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+    resumeTimer.current = setTimeout(() => setPaused(false), 10000)
   }
 
   const goPrev = () => goTo((idx - 1 + slides.length) % slides.length)
