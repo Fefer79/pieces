@@ -274,43 +274,23 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             )}
 
             {activeTab === 'WhatsApp' && (
-              <div className="grid gap-4 lg:grid-cols-2">
-                <a
-                  href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto. Je vous envoie une note vocale.')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex min-h-[88px] items-center justify-between rounded-lg border border-green-100 bg-green-50 py-3 pl-4 transition-transform active:scale-[0.98]"
-                  style={{ paddingRight: 10 }}
-                >
-                  <div>
-                    <p className="text-sm font-medium text-green-800">Recherche par note vocale</p>
-                    <p className="text-xs text-muted">Décrivez la pièce par WhatsApp</p>
-                  </div>
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                      <path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 0013.6 2.3A7 7 0 0019 12h-2zm-4 6.93V21h-2v-2.07A8.02 8.02 0 014.07 13H6.1a5.98 5.98 0 005.9 5 5.98 5.98 0 005.9-5h2.03A8.02 8.02 0 0113 18.93z" />
-                    </svg>
-                  </div>
-                </a>
-                <a
-                  href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, je recherche une pièce auto.')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex min-h-[88px] items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 py-3 pl-4 transition-transform active:scale-[0.98]"
-                  style={{ paddingRight: 10 }}
-                >
-                  <div>
-                    <p className="text-sm font-medium text-emerald-800">Recherche par message</p>
-                    <p className="text-xs text-muted">Écrivez-nous sur WhatsApp</p>
-                  </div>
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" />
-                      <path d="M7 9h10v2H7zm0-3h10v2H7z" />
-                    </svg>
-                  </div>
-                </a>
-              </div>
+              <a
+                href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, voici la photo de ma carte grise.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-h-[88px] items-center justify-between rounded-lg border border-green-100 bg-green-50 py-3 pl-4 transition-transform active:scale-[0.98]"
+                style={{ paddingRight: 10 }}
+              >
+                <div>
+                  <p className="text-sm font-medium text-green-800">Envoyez une photo de la carte grise sur WhatsApp.</p>
+                </div>
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                    <path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" />
+                    <path fillRule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.2.32.558.523.95.523h.3c1.796 0 3.241 1.51 3.241 3.3v7.2c0 1.79-1.445 3.3-3.241 3.3H5.241C3.445 20.1 2 18.59 2 16.8V9.6c0-1.79 1.445-3.3 3.241-3.3h.3c.392 0 .75-.203.95-.523l.821-1.317a2.616 2.616 0 012.332-1.39zM12 10.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </a>
             )}
           </div>
         </section>
@@ -322,6 +302,9 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             {vehicle
               ? `Recherche limitée aux pièces compatibles ${vehicle.brand} ${vehicle.model}${vehicle.year ? ` ${vehicle.year}` : ''}.`
               : 'Astuce : sélectionnez d’abord votre véhicule pour ne voir que les pièces compatibles.'}
+          </p>
+          <p className="mt-1 text-[13px] text-muted">
+            Vous ne connaissez pas le nom de la pièce ? Prenez-la en photo, notre IA la reconnaît.
           </p>
 
           <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-stretch">
@@ -357,7 +340,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                   <path fillRule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.2.32.558.523.95.523h.3c1.796 0 3.241 1.51 3.241 3.3v7.2c0 1.79-1.445 3.3-3.241 3.3H5.241C3.445 20.1 2 18.59 2 16.8V9.6c0-1.79 1.445-3.3 3.241-3.3h.3c.392 0 .75-.203.95-.523l.821-1.317a2.616 2.616 0 012.332-1.39zM12 10.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" clipRule="evenodd" />
                 </svg>
               </span>
-              Photo de la pièce (IA)
+              Photo de la pièce
             </button>
           </div>
 
