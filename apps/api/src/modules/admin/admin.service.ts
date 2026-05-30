@@ -179,6 +179,26 @@ export async function updateAdminCatalogItem(id: string, patch: AdminCatalogItem
   return getAdminCatalogItem(id)
 }
 
+interface AdminVendorPatch {
+  contactName?: string
+  phone?: string
+}
+
+/** Admin edit of a vendor's contact (nom du contact + téléphone). */
+export async function updateAdminVendor(vendorId: string, patch: AdminVendorPatch) {
+  const exists = await prisma.vendor.findUnique({ where: { id: vendorId }, select: { id: true } })
+  if (!exists) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Vendeur introuvable' })
+  }
+
+  const data: Prisma.VendorUpdateInput = {}
+  if (patch.contactName !== undefined) data.contactName = patch.contactName
+  if (patch.phone !== undefined) data.phone = patch.phone
+
+  await prisma.vendor.update({ where: { id: vendorId }, data })
+  return getAdminVendorDetail(vendorId)
+}
+
 /** Resolve an annonce's vendorId so the R2 key can be scoped, asserting it exists. */
 async function adminItemVendorId(id: string): Promise<string> {
   const item = await prisma.catalogItem.findUnique({ where: { id }, select: { vendorId: true } })
