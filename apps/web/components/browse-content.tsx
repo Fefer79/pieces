@@ -299,11 +299,11 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         {/* ───── CARTE 2 — Trouver la pièce ───── */}
         <section className="mt-5 rounded-lg border border-border bg-card p-4 lg:p-6">
           <h2 className="font-display text-lg text-ink lg:text-xl">2. Trouvez votre pièce</h2>
-          <p className="mt-1 text-[13px] text-muted">
-            {vehicle
-              ? `Recherche limitée aux pièces compatibles ${vehicle.brand} ${vehicle.model}${vehicle.year ? ` ${vehicle.year}` : ''}.`
-              : 'Astuce : sélectionnez d’abord votre véhicule pour ne voir que les pièces compatibles.'}
-          </p>
+          {!vehicle && (
+            <p className="mt-1 text-[13px] text-muted">
+              Astuce : sélectionnez d’abord votre véhicule pour ne voir que les pièces compatibles.
+            </p>
+          )}
           <p className="mt-1 text-[13px] text-muted">
             Vous ne connaissez pas le nom de la pièce ? Prenez-la en photo, notre IA la reconnaît.
           </p>

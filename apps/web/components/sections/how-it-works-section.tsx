@@ -1,4 +1,64 @@
-const STEPS = [
+import Link from 'next/link'
+
+type Step = {
+  number: string
+  title: string
+  description: string
+  icon: React.ReactNode
+}
+
+// Parcours prioritaire : entreprises & flottes (cf. /entreprises — Flotte Pro / Pro +)
+const ENTERPRISE_STEPS: Step[] = [
+  {
+    number: '1',
+    title: 'Enregistrez votre flotte',
+    description:
+      'Importez vos véhicules en CSV ou un par un. Chaque véhicule a sa fiche : kilométrage, historique et coûts.',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+        <path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625zM12.75 9.75a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9.75z" />
+        <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z" />
+      </svg>
+    ),
+  },
+  {
+    number: '2',
+    title: 'Pilotez depuis le tableau de bord',
+    description:
+      'Suivez le coût de chaque véhicule, repérez les « gouffres » et recevez des alertes prédictives sur WhatsApp.',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+        <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z" />
+      </svg>
+    ),
+  },
+  {
+    number: '3',
+    title: 'Commandez et réapprovisionnez',
+    description:
+      'Comparez les fournisseurs et laissez le stock tampon se réapprovisionner seul. Vos pièces critiques sont toujours là.',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+        <path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.057-4.035.75.75 0 00-.53-.918z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
+    number: '4',
+    title: 'Facturation et livraison',
+    description:
+      'Une facture DGI consolidée en fin de mois, et la livraison express avec SLA jusqu’à votre garage.',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+        <path fillRule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zm5.97 9.66a.75.75 0 10-1.19-.91l-2.66 3.48-.99-.99a.75.75 0 00-1.06 1.06l1.6 1.6a.75.75 0 001.124-.08l3.226-4.22z" clipRule="evenodd" />
+        <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z" />
+      </svg>
+    ),
+  },
+]
+
+// Parcours particulier / mécanicien
+const USER_STEPS: Step[] = [
   {
     number: '1',
     title: 'Le mécanicien démonte la pièce',
@@ -48,27 +108,70 @@ const STEPS = [
   },
 ]
 
+function StepGrid({ steps, badgeClass }: { steps: Step[]; badgeClass: string }) {
+  return (
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      {steps.map((step) => (
+        <div key={step.number} className="flex flex-col items-center text-center">
+          <div className="relative mb-4 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-[#002366] text-white">
+            {step.icon}
+            <span
+              className={`absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${badgeClass}`}
+            >
+              {step.number}
+            </span>
+          </div>
+          <h3 className="mb-2 min-h-[3rem] font-semibold text-[#1A1A1A]">{step.title}</h3>
+          <p className="min-h-[4.5rem] text-sm text-gray-600">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function HowItWorksSection() {
   return (
     <section id="comment-ca-marche" className="bg-[#FAFAFA] px-4 py-16 lg:px-8">
       <div className="mx-auto max-w-4xl lg:max-w-6xl">
-        <h2 className="mb-10 text-center text-2xl font-bold text-[#1A1A1A] lg:text-3xl">
+        <h2 className="mb-12 text-center text-2xl font-bold text-[#1A1A1A] lg:text-3xl">
           Comment ça marche
         </h2>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((step) => (
-            <div key={step.number} className="flex flex-col items-center text-center">
-              <div className="relative mb-4 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-[#002366] text-white">
-                {step.icon}
-                <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-[#1A1A1A]">
-                  {step.number}
-                </span>
-              </div>
-              <h3 className="mb-2 min-h-[3rem] font-semibold text-[#1A1A1A]">{step.title}</h3>
-              <p className="min-h-[4.5rem] text-sm text-gray-600">{step.description}</p>
-            </div>
-          ))}
+        {/* Entreprises & flottes — en priorité */}
+        <div className="mb-14">
+          <div className="mb-6 flex flex-col items-center gap-2 text-center">
+            <span className="rounded-full bg-accent/10 px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-accent">
+              Entreprises &amp; flottes
+            </span>
+            <p className="text-sm text-gray-600">
+              Gérez l’entretien de toute votre flotte depuis un seul tableau de bord.
+            </p>
+          </div>
+
+          <StepGrid steps={ENTERPRISE_STEPS} badgeClass="bg-accent text-white" />
+
+          <div className="mt-7 text-center">
+            <Link
+              href="/entreprises"
+              className="inline-flex items-center gap-1 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+            >
+              Découvrir nos services entreprises →
+            </Link>
+          </div>
+        </div>
+
+        {/* Particuliers & mécaniciens */}
+        <div className="border-t border-border pt-12">
+          <div className="mb-6 flex flex-col items-center gap-2 text-center">
+            <span className="rounded-full bg-gray-200 px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-gray-600">
+              Particuliers &amp; mécaniciens
+            </span>
+            <p className="text-sm text-gray-600">
+              Une pièce à remplacer ? Une photo suffit pour la trouver au meilleur prix.
+            </p>
+          </div>
+
+          <StepGrid steps={USER_STEPS} badgeClass="bg-amber-400 text-[#1A1A1A]" />
         </div>
       </div>
     </section>
