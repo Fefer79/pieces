@@ -199,7 +199,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                       setMethod('vehicle')
                     }}
                     title={t.label}
-                    className={`flex flex-shrink-0 flex-col items-center justify-center gap-1 rounded-md px-3 py-2 transition-colors lg:w-[92px] ${
+                    className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-md px-3 py-2 transition-colors lg:w-[92px] lg:flex-none ${
                       active ? 'bg-ink-2 text-white' : 'text-ink hover:bg-surface'
                     }`}
                     style={{ minHeight: 48, minWidth: 56 }}
@@ -226,7 +226,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                       role="tab"
                       aria-selected={active}
                       onClick={() => setMethod(m.id)}
-                      className={`relative -mb-px flex-shrink-0 whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors lg:text-sm ${
+                      className={`relative -mb-px flex-shrink-0 whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors lg:flex-1 lg:text-center lg:text-sm ${
                         active ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink'
                       }`}
                       style={{ minHeight: 44 }}
