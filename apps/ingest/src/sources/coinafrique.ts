@@ -60,8 +60,24 @@ function categoryUrl(page: number): string {
   return page <= 1 ? `${ORIGIN}/${CATEGORY_PATH}` : `${ORIGIN}/${CATEGORY_PATH}?page=${page}`
 }
 
-export async function fetchCategoryPage(page: number): Promise<string> {
-  return fetchText(categoryUrl(page), { headers: { 'user-agent': UA } })
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Fetch d'une page avec retry exponentiel. L'ELB de CoinAfrique renvoie des 502
+ * transitoires ; sans retry, une seule erreur tuerait tout le crawl. Réessaie
+ * `attempts` fois (backoff 1s, 2s, 4s…) avant de propager.
+ */
+export async function fetchCategoryPage(page: number, attempts = 4): Promise<string> {
+  let lastErr: unknown
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      return await fetchText(categoryUrl(page), { headers: { 'user-agent': UA } })
+    } catch (err) {
+      lastErr = err
+      if (i < attempts - 1) await sleep(1000 * 2 ** i)
+    }
+  }
+  throw lastErr
 }
 
 /**
@@ -76,7 +92,15 @@ export async function* streamAllProducts(
   const seen = new Set<string>()
   const hardCap = opts.maxPages ?? 200
   for (let page = 1; page <= hardCap; page += 1) {
-    const html = await fetchCategoryPage(page)
+    let html: string
+    try {
+      html = await fetchCategoryPage(page)
+    } catch (err) {
+      // Page définitivement KO (502 persistant…) : on s'arrête proprement pour que
+      // l'appelant charge ce qui a déjà été collecté, au lieu de tout perdre.
+      console.warn(`[coinafrique] page ${page} abandonnée:`, err instanceof Error ? err.message : err)
+      break
+    }
     const products = parseCategoryHtml(html)
     const fresh = products.filter((p) => !seen.has(p.postId))
     fresh.forEach((p) => seen.add(p.postId))
