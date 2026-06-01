@@ -22,7 +22,7 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   ),
 }
 
-function TypeIcon({ icon }: { icon: string }) {
+export function TypeIcon({ icon }: { icon: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6" aria-hidden>
       {TYPE_ICONS[icon] ?? TYPE_ICONS.car}
@@ -33,12 +33,21 @@ function TypeIcon({ icon }: { icon: string }) {
 interface VehicleTypeSelectorProps {
   /** Appelé après confirmation d'un véhicule complet. */
   onConfirmed?: () => void
+  /**
+   * Type piloté par le parent. Quand fourni, le rail interne de types est masqué
+   * (le parent affiche son propre rail) et ce type pilote la cascade — le composant
+   * ne rend alors que la cascade, sans sa carte englobante.
+   */
+  type?: VehicleTypeId
 }
 
-export function VehicleTypeSelector({ onConfirmed }: VehicleTypeSelectorProps) {
+export function VehicleTypeSelector({ onConfirmed, type: controlledType }: VehicleTypeSelectorProps) {
   const { vehicle, setVehicle } = useSelectedVehicle()
 
-  const [type, setType] = useState<VehicleTypeId>(vehicle?.type ?? DEFAULT_VEHICLE_TYPE)
+  const [internalType, setInternalType] = useState<VehicleTypeId>(vehicle?.type ?? DEFAULT_VEHICLE_TYPE)
+  const controlled = controlledType !== undefined
+  const type = controlledType ?? internalType
+  const setType = setInternalType
   const [brand, setBrand] = useState(vehicle?.brand ?? '')
   const [model, setModel] = useState(vehicle?.model ?? '')
   const [year, setYear] = useState(vehicle?.year ?? '')
@@ -90,44 +99,16 @@ export function VehicleTypeSelector({ onConfirmed }: VehicleTypeSelectorProps) {
   const selectClass =
     'w-full rounded-sm border border-border-strong bg-card px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)] disabled:opacity-50'
 
-  return (
-    <div className="rounded-md border border-border bg-card p-3 lg:p-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:gap-5">
-        {/* Rail de types — horizontal sur mobile, vertical sur desktop */}
-        <div
-          role="tablist"
-          aria-label="Type de véhicule"
-          className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:gap-1.5 lg:border-r lg:border-border lg:pr-4"
-        >
-          {VEHICLE_TYPES.map((t) => {
-            const active = t.id === type
-            return (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={active}
-                onClick={() => changeType(t.id)}
-                title={t.label}
-                className={`flex flex-shrink-0 flex-col items-center justify-center gap-1 rounded-md px-3 py-2 transition-colors lg:w-[88px] ${
-                  active ? 'bg-ink-2 text-white' : 'text-ink hover:bg-surface'
-                }`}
-                style={{ minHeight: 48, minWidth: 56 }}
-              >
-                <TypeIcon icon={t.icon} />
-                <span className="text-[11px] font-medium leading-tight">{t.label}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Contenu : cascade (dispo) ou message "Bientôt disponible" */}
-        <div className="min-w-0 flex-1">
-          {available ? (
-            <>
-              <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                Sélectionnez votre {activeType?.label.toLowerCase()}
-              </p>
-              <div className="space-y-3 lg:grid lg:grid-cols-4 lg:gap-3 lg:space-y-0">
+  const content = (
+    <div className="min-w-0 flex-1">
+      {available ? (
+        <>
+          {!controlled && (
+            <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              Sélectionnez votre {activeType?.label.toLowerCase()}
+            </p>
+          )}
+          <div className="space-y-3 lg:grid lg:grid-cols-4 lg:gap-3 lg:space-y-0">
                 <select value={brand} onChange={(e) => changeBrand(e.target.value)} className={selectClass} style={{ minHeight: 48 }} aria-label="Marque">
                   <option value="">— Marque —</option>
                   {brandNames.map((b) => (
@@ -169,7 +150,43 @@ export function VehicleTypeSelector({ onConfirmed }: VehicleTypeSelectorProps) {
               </p>
             </div>
           )}
+    </div>
+  )
+
+  // Mode contrôlé : le parent affiche son propre rail de types → on ne rend que la cascade.
+  if (controlled) return content
+
+  return (
+    <div className="rounded-md border border-border bg-card p-3 lg:p-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:gap-5">
+        {/* Rail de types — horizontal sur mobile, vertical sur desktop */}
+        <div
+          role="tablist"
+          aria-label="Type de véhicule"
+          className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:gap-1.5 lg:border-r lg:border-border lg:pr-4"
+        >
+          {VEHICLE_TYPES.map((t) => {
+            const active = t.id === type
+            return (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={active}
+                onClick={() => changeType(t.id)}
+                title={t.label}
+                className={`flex flex-shrink-0 flex-col items-center justify-center gap-1 rounded-md px-3 py-2 transition-colors lg:w-[88px] ${
+                  active ? 'bg-ink-2 text-white' : 'text-ink hover:bg-surface'
+                }`}
+                style={{ minHeight: 48, minWidth: 56 }}
+              >
+                <TypeIcon icon={t.icon} />
+                <span className="text-[11px] font-medium leading-tight">{t.label}</span>
+              </button>
+            )
+          })}
         </div>
+
+        {content}
       </div>
     </div>
   )

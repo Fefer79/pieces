@@ -5,20 +5,15 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Price } from '@/components/ui/price'
-import { VehicleTypeSelector } from '@/components/vehicle-type-selector'
+import { VehicleTypeSelector, TypeIcon } from '@/components/vehicle-type-selector'
 import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
 import { CategoryCarousel, type CategoryTile } from '@/components/ui/category-carousel'
+import { VEHICLE_TYPES, DEFAULT_VEHICLE_TYPE } from 'shared/constants'
+import type { VehicleTypeId } from 'shared/constants'
 
-// Onglets de la CARTE 1 — méthodes d'identification du véhicule.
-// « Mon véhicule » est à gauche / actif par défaut (cf. demande produit).
-const VEHICLE_TABS = ['Mon véhicule', 'Code VIN', 'WhatsApp'] as const
-type VehicleTab = (typeof VEHICLE_TABS)[number]
-
-const TAB_META: Record<VehicleTab, { icon: string; desc: string }> = {
-  'Mon véhicule': { icon: '🚗', desc: 'Marque · modèle · année' },
-  'Code VIN': { icon: '🔢', desc: '17 caractères' },
-  WhatsApp: { icon: '💬', desc: '+225 07 09 02 17 08' },
-}
+// Méthodes d'identification du véhicule (onglets de droite de la CARTE 1).
+// « Sélectionnez votre {type} » est actif par défaut (cf. demande produit).
+type IdentifyMethod = 'vehicle' | 'vin' | 'whatsapp'
 
 const WA_NUMBER = '2250709021708'
 
@@ -46,7 +41,9 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const vinFileInputRef = useRef<HTMLInputElement>(null)
-  const [activeTab, setActiveTab] = useState<VehicleTab>('Mon véhicule')
+  // Type de véhicule (rail de gauche) + méthode d'identification (onglets de droite).
+  const [vehicleType, setVehicleType] = useState<VehicleTypeId>(DEFAULT_VEHICLE_TYPE)
+  const [method, setMethod] = useState<IdentifyMethod>('vehicle')
 
   // Recherche pièce (Carte 2)
   const [searchQuery, setSearchQuery] = useState('')
@@ -70,6 +67,8 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
     year: persistedVehicle.year,
     motor: persistedVehicle.motor ?? '',
   } : null
+
+  const activeTypeLabel = VEHICLE_TYPES.find((t) => t.id === vehicleType)?.label ?? VEHICLE_TYPES[0]?.label ?? ''
 
   const [waMenuOpen, setWaMenuOpen] = useState(false)
 
@@ -160,7 +159,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             </button>
           </>
         ) : (
-          <button onClick={() => setActiveTab('Mon véhicule')} className="flex w-full items-center gap-2.5 text-left">
+          <button onClick={() => setMethod('vehicle')} className="flex w-full items-center gap-2.5 text-left">
             <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent text-white" aria-hidden>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                 <path d="M3.5 13.5 5 9a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 9l1.5 4.5v5a1 1 0 0 1-1 1H18a1 1 0 0 1-1-1v-1H7v1a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1v-5Zm3-1h11l-.9-2.7a.5.5 0 0 0-.5-.3H7.9a.5.5 0 0 0-.5.3l-.9 2.7Zm.5 3.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
@@ -180,33 +179,68 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
           <h2 className="font-display text-lg text-ink lg:text-xl">1. Identifiez votre véhicule</h2>
           <p className="mt-1 text-[13px] text-muted">Choisissez la méthode qui vous convient.</p>
 
-          {/* Sous-onglets */}
-          <div className="mt-4 grid grid-cols-3 overflow-hidden rounded-md border border-border">
-            {VEHICLE_TABS.map((tab, i) => {
-              const meta = TAB_META[tab]
-              const active = activeTab === tab
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex flex-col items-center gap-1 px-2 py-3 text-center transition-colors ${
-                    i < VEHICLE_TABS.length - 1 ? 'border-r border-border' : ''
-                  } ${active ? 'bg-ink-2 text-white' : 'text-ink hover:bg-surface'}`}
-                  style={{ minHeight: 48 }}
-                >
-                  <span className="text-[22px] leading-none lg:text-[26px]">{meta.icon}</span>
-                  <span className="text-[13px] font-medium lg:text-sm">{tab}</span>
-                  <span className={`hidden text-[11px] lg:block ${active ? 'text-white/70' : 'text-muted'}`}>{meta.desc}</span>
-                </button>
-              )
-            })}
-          </div>
+          {/* Bloc unique : rail de types (gauche) + onglets méthode & contenu (droite) */}
+          <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:gap-5">
+            {/* Rail de types — horizontal sur mobile, vertical sur desktop */}
+            <div
+              role="tablist"
+              aria-label="Type de véhicule"
+              className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:gap-1.5 lg:border-r lg:border-border lg:pr-4"
+            >
+              {VEHICLE_TYPES.map((t) => {
+                const active = t.id === vehicleType
+                return (
+                  <button
+                    key={t.id}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => {
+                      setVehicleType(t.id)
+                      setMethod('vehicle')
+                    }}
+                    title={t.label}
+                    className={`flex flex-shrink-0 flex-col items-center justify-center gap-1 rounded-md px-3 py-2 transition-colors lg:w-[92px] ${
+                      active ? 'bg-ink-2 text-white' : 'text-ink hover:bg-surface'
+                    }`}
+                    style={{ minHeight: 48, minWidth: 56 }}
+                  >
+                    <TypeIcon icon={t.icon} />
+                    <span className="text-[11px] font-medium leading-tight">{t.label}</span>
+                  </button>
+                )
+              })}
+            </div>
 
-          {/* Contenu onglet */}
-          <div className="mt-5">
-            {activeTab === 'Mon véhicule' && <VehicleTypeSelector />}
+            {/* Droite : onglets méthode + contenu */}
+            <div className="min-w-0 flex-1">
+              <div role="tablist" aria-label="Méthode d'identification" className="flex gap-1 overflow-x-auto border-b border-border">
+                {([
+                  { id: 'vehicle' as const, label: `Sélectionnez votre ${activeTypeLabel.toLowerCase()}` },
+                  { id: 'vin' as const, label: 'Code VIN' },
+                  { id: 'whatsapp' as const, label: 'WhatsApp' },
+                ]).map((m) => {
+                  const active = method === m.id
+                  return (
+                    <button
+                      key={m.id}
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setMethod(m.id)}
+                      className={`relative -mb-px flex-shrink-0 whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors lg:text-sm ${
+                        active ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink'
+                      }`}
+                      style={{ minHeight: 44 }}
+                    >
+                      {m.label}
+                    </button>
+                  )
+                })}
+              </div>
 
-            {activeTab === 'Code VIN' && (
+              <div className="mt-5">
+                {method === 'vehicle' && <VehicleTypeSelector type={vehicleType} />}
+
+                {method === 'vin' && (
               <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
                 {variant === 'mobile' && (
                   <button
@@ -274,7 +308,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               </div>
             )}
 
-            {activeTab === 'WhatsApp' && (
+                {method === 'whatsapp' && (
               <a
                 href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, voici la photo de ma carte grise.')}`}
                 target="_blank"
@@ -292,7 +326,9 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                   </svg>
                 </div>
               </a>
-            )}
+                )}
+              </div>
+            </div>
           </div>
         </section>
 
