@@ -108,7 +108,7 @@ export function PromoCarousel({ slides, autoMs = 8250 }: { slides: PromoSlide[];
                   {slide.secondaryCta && (
                     <a
                       href={slide.secondaryCta.href}
-                      className={`hidden items-center justify-center rounded-md border px-5 py-3 text-[15px] font-medium transition-all duration-150 active:scale-[0.98] md:inline-flex ${
+                      className={`inline-flex items-center justify-center rounded-md border px-4 py-2 text-[13px] font-medium transition-all duration-150 active:scale-[0.98] md:px-5 md:py-3 md:text-[15px] ${
                         slide.theme === 'cream'
                           ? 'border-border-strong bg-card text-ink hover:bg-surface'
                           : 'border-white/30 bg-white/10 text-white hover:bg-white/15'
