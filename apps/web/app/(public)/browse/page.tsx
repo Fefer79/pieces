@@ -79,7 +79,7 @@ export default function BrowsePage() {
       </div>
 
       {/* Mobile */}
-      <div className="flex min-h-dvh flex-col lg:hidden">
+      <div className="flex min-h-dvh flex-col pb-[calc(env(safe-area-inset-bottom)+5rem)] lg:hidden">
         {/* Header */}
         <header className="flex items-center justify-between bg-card px-4 pb-2 pt-4">
           <div className="flex flex-col">
