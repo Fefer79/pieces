@@ -18,19 +18,19 @@ type IdentifyMethod = 'vehicle' | 'vin' | 'whatsapp'
 const WA_NUMBER = '2250709021708'
 
 // Catégories pour « Parcourir par catégorie » (affiché sous la sélection véhicule).
-const CATEGORY_TILES_BASE: Array<{ id: string; title: string; emoji: string; gradient: string }> = [
-  { id: 'freinage', title: 'Freinage', emoji: '🛞', gradient: 'linear-gradient(135deg,#D9764A 0%,#C25E2E 100%)' },
-  { id: 'moteur', title: 'Moteur', emoji: '⚙️', gradient: 'linear-gradient(135deg,#00113A 0%,#002366 100%)' },
-  { id: 'filtration', title: 'Filtration', emoji: '🧪', gradient: 'linear-gradient(135deg,#2F6F4F 0%,#1F4D38 100%)' },
-  { id: 'suspension', title: 'Suspension', emoji: '🔩', gradient: 'linear-gradient(135deg,#5A4A8A 0%,#3D316B 100%)' },
-  { id: 'electrique', title: 'Électrique & batterie', emoji: '🔋', gradient: 'linear-gradient(135deg,#B7873A 0%,#8C6325 100%)' },
-  { id: 'eclairage', title: 'Éclairage & signalisation', emoji: '💡', gradient: 'linear-gradient(135deg,#1F2937 0%,#0B1220 100%)' },
-  { id: 'distribution', title: 'Distribution', emoji: '⛓️', gradient: 'linear-gradient(135deg,#4A6B8A 0%,#2E4A66 100%)' },
-  { id: 'demarrage', title: 'Démarrage & charge', emoji: '🔌', gradient: 'linear-gradient(135deg,#8A2A2A 0%,#5C1A1A 100%)' },
-  { id: 'roues', title: 'Roues & pneus', emoji: '🏁', gradient: 'linear-gradient(135deg,#2C2C2C 0%,#0F0F0F 100%)' },
-  { id: 'climatisation', title: 'Climatisation & chauffage', emoji: '❄️', gradient: 'linear-gradient(135deg,#3A8FB7 0%,#1F6A8C 100%)' },
-  { id: 'carrosserie', title: 'Carrosserie extérieure', emoji: '🚗', gradient: 'linear-gradient(135deg,#6B7280 0%,#3F4753 100%)' },
-  { id: 'fluides', title: 'Fluides & consommables', emoji: '🛢️', gradient: 'linear-gradient(135deg,#3A2F1F 0%,#1F1813 100%)' },
+const CATEGORY_TILES_BASE: Array<{ id: string; title: string; image: string }> = [
+  { id: 'freinage', title: 'Freinage', image: '/categories/freinage.png' },
+  { id: 'moteur', title: 'Moteur', image: '/categories/moteur.png' },
+  { id: 'filtration', title: 'Filtration', image: '/categories/filtres.png' },
+  { id: 'suspension', title: 'Suspension', image: '/categories/suspension.png' },
+  { id: 'electrique', title: 'Électrique & batterie', image: '/categories/batterie.png' },
+  { id: 'eclairage', title: 'Éclairage & signalisation', image: '/categories/eclairage.png' },
+  { id: 'distribution', title: 'Distribution', image: '/categories/distrib.png' },
+  { id: 'demarrage', title: 'Démarrage & charge', image: '/categories/allumage.png' },
+  { id: 'roues', title: 'Roues & pneus', image: '/categories/pneu.png' },
+  { id: 'climatisation', title: 'Climatisation & chauffage', image: '/categories/clim.png' },
+  { id: 'carrosserie', title: 'Carrosserie extérieure', image: '/categories/carrext.png' },
+  { id: 'fluides', title: 'Fluides & consommables', image: '/categories/fluides.png' },
 ]
 
 interface BrowseContentProps {
@@ -115,7 +115,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         const qs = new URLSearchParams({ brand: vehicle.brand, category: t.title })
         if (vehicle.model) qs.set('model', vehicle.model)
         if (vehicle.year) qs.set('year', vehicle.year)
-        return { id: t.id, title: t.title, emoji: t.emoji, gradient: t.gradient, href: `/search?${qs.toString()}` }
+        return { id: t.id, title: t.title, image: t.image, href: `/search?${qs.toString()}` }
       })
     : []
 
