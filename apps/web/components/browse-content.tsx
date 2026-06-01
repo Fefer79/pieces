@@ -185,7 +185,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             <div
               role="tablist"
               aria-label="Type de véhicule"
-              className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:gap-1.5 lg:border-r lg:border-border lg:pr-4"
+              className="flex flex-row gap-2 overflow-x-auto overflow-y-hidden lg:flex-col lg:overflow-x-visible lg:gap-1.5 lg:border-r lg:border-border lg:pr-4"
             >
               {VEHICLE_TYPES.map((t) => {
                 const active = t.id === vehicleType
@@ -213,7 +213,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
 
             {/* Droite : onglets méthode + contenu */}
             <div className="min-w-0 flex-1">
-              <div role="tablist" aria-label="Méthode d'identification" className="flex gap-1 overflow-x-auto border-b border-border">
+              <div role="tablist" aria-label="Méthode d'identification" className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border lg:overflow-x-visible">
                 {([
                   { id: 'vehicle' as const, label: `Sélectionnez votre ${activeTypeLabel.toLowerCase()}` },
                   { id: 'vin' as const, label: 'Code VIN' },

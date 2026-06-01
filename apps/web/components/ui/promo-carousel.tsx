@@ -150,11 +150,11 @@ export function PromoCarousel({ slides, autoMs = 8250 }: { slides: PromoSlide[];
             {(() => {
               const arrow =
                 current.theme === 'cream'
-                  ? 'text-ink/50 bg-ink/5 hover:text-ink hover:bg-ink/10'
-                  : 'text-white/55 bg-white/10 hover:text-white hover:bg-white/20'
-              const btn = `pointer-events-auto grid h-8 w-8 place-items-center rounded-full backdrop-blur-sm transition-colors md:h-10 md:w-10 ${arrow}`
+                  ? 'text-ink/60 hover:text-ink'
+                  : 'text-white/80 hover:text-white'
+              const btn = `pointer-events-auto grid h-8 w-8 place-items-center transition-colors [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.35))] md:h-10 md:w-10 ${arrow}`
               return (
-                <div className="pointer-events-none absolute inset-y-0 left-0 right-0 z-10 flex items-center justify-between px-2 md:px-4">
+                <div className="pointer-events-none absolute inset-y-0 left-0 right-0 z-10 flex items-center justify-between px-0.5 md:px-2">
                   <button onClick={goPrev} aria-label="Carte précédente" className={btn}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 md:h-5 md:w-5">
                       <path d="M15 18l-6-6 6-6" />
