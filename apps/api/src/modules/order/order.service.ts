@@ -30,11 +30,68 @@ function generateShareToken(): string {
   return randomBytes(16).toString('hex')
 }
 
+// Somme des quantités par pièce (un même catalogItemId peut apparaître plusieurs fois).
+function qtyMapFromItems(items: { catalogItemId: string; quantity?: number }[]): Map<string, number> {
+  const qtyById = new Map<string, number>()
+  for (const i of items) {
+    const qty = i.quantity && i.quantity > 0 ? i.quantity : 1
+    qtyById.set(i.catalogItemId, (qtyById.get(i.catalogItemId) ?? 0) + qty)
+  }
+  return qtyById
+}
+
+// Verrouille les prix depuis le catalogue (pièces publiées + en stock) et
+// construit le payload OrderItem + le total. Partagé entre createOrder et upsertDraft.
+async function buildOrderItems(qtyById: Map<string, number>) {
+  const catalogItems = await prisma.catalogItem.findMany({
+    where: {
+      id: { in: [...qtyById.keys()] },
+      status: 'PUBLISHED',
+      inStock: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      price: true,
+      imageThumbUrl: true,
+      vendorId: true,
+      commissionAmount: true,
+      vendor: { select: { id: true, shopName: true, status: true } },
+    },
+  })
+
+  if (catalogItems.length === 0) {
+    throw new AppError('ORDER_NO_VALID_ITEMS', 400, { message: 'Aucun article valide trouvé' })
+  }
+
+  const totalAmount = catalogItems.reduce(
+    (sum, item) => sum + (item.price ?? 0) * (qtyById.get(item.id) ?? 1),
+    0,
+  )
+
+  const create = catalogItems.map((item) => ({
+    catalogItemId: item.id,
+    vendorId: item.vendorId,
+    vendorShopName: item.vendor.shopName,
+    name: item.name ?? 'Pièce',
+    category: item.category,
+    priceSnapshot: item.price ?? 0,
+    quantity: qtyById.get(item.id) ?? 1,
+    commissionAmount: item.commissionAmount,
+    imageThumbUrl: item.imageThumbUrl,
+  }))
+
+  return { create, totalAmount }
+}
+
 export async function createOrder(
   initiatorId: string,
-  items: { catalogItemId: string }[],
+  items: { catalogItemId: string; quantity?: number }[],
   options: { ownerPhone?: string; laborCost?: number; vehicleId?: string } = {},
 ) {
+  const qtyById = qtyMapFromItems(items)
+
   // Validate vehicle access if a vehicleId is provided
   let vehicleId: string | undefined
   let enterpriseId: string | undefined
@@ -66,30 +123,7 @@ export async function createOrder(
     enterpriseId = vehicle.enterpriseId ?? undefined
   }
 
-  // Fetch catalog items with vendor info and lock prices
-  const catalogItems = await prisma.catalogItem.findMany({
-    where: {
-      id: { in: items.map((i) => i.catalogItemId) },
-      status: 'PUBLISHED',
-      inStock: true,
-    },
-    select: {
-      id: true,
-      name: true,
-      category: true,
-      price: true,
-      imageThumbUrl: true,
-      vendorId: true,
-      commissionAmount: true,
-      vendor: { select: { id: true, shopName: true, status: true } },
-    },
-  })
-
-  if (catalogItems.length === 0) {
-    throw new AppError('ORDER_NO_VALID_ITEMS', 400, { message: 'Aucun article valide trouvé' })
-  }
-
-  const totalAmount = catalogItems.reduce((sum, item) => sum + (item.price ?? 0), 0)
+  const { create, totalAmount } = await buildOrderItems(qtyById)
   const shareToken = generateShareToken()
 
   const order = await prisma.order.create({
@@ -101,18 +135,7 @@ export async function createOrder(
       laborCost: options.laborCost,
       vehicleId,
       enterpriseId,
-      items: {
-        create: catalogItems.map((item) => ({
-          catalogItemId: item.id,
-          vendorId: item.vendorId,
-          vendorShopName: item.vendor.shopName,
-          name: item.name ?? 'Pièce',
-          category: item.category,
-          priceSnapshot: item.price ?? 0,
-          commissionAmount: item.commissionAmount,
-          imageThumbUrl: item.imageThumbUrl,
-        })),
-      },
+      items: { create },
       events: {
         create: {
           toStatus: 'DRAFT',
@@ -127,6 +150,79 @@ export async function createOrder(
   })
 
   return order
+}
+
+// Note d'événement qui distingue un brouillon-panier d'une commande envoyée au
+// propriétaire (note 'Commande créée'). Les deux sont en statut DRAFT — seul ce
+// marqueur permet à getOpenDraft de ne réhydrater que le panier, pas une commande.
+const CART_DRAFT_NOTE = 'Brouillon panier'
+
+function cartDraftWhere(userId: string) {
+  return {
+    initiatorId: userId,
+    status: 'DRAFT' as const,
+    events: { some: { note: CART_DRAFT_NOTE } },
+  }
+}
+
+/**
+ * Récupère le brouillon (panier serveur) ouvert de l'utilisateur — le plus
+ * récent. Ne renvoie que les paniers (marqueur CART_DRAFT_NOTE), jamais une
+ * commande déjà envoyée au propriétaire. Sert à réhydrater le panier.
+ */
+export async function getOpenDraft(userId: string) {
+  return prisma.order.findFirst({
+    where: cartDraftWhere(userId),
+    orderBy: { updatedAt: 'desc' },
+    include: { items: true },
+  })
+}
+
+/**
+ * Upsert idempotent du brouillon ouvert de l'utilisateur : remplace les items
+ * et quantités à partir du payload panier. Reste en statut DRAFT. Sans items,
+ * supprime le brouillon ouvert (panier vidé).
+ */
+export async function upsertDraft(
+  userId: string,
+  items: { catalogItemId: string; quantity?: number }[],
+) {
+  const existing = await prisma.order.findFirst({
+    where: cartDraftWhere(userId),
+    orderBy: { updatedAt: 'desc' },
+    select: { id: true },
+  })
+
+  if (items.length === 0) {
+    if (existing) {
+      await prisma.orderItem.deleteMany({ where: { orderId: existing.id } })
+      await prisma.order.delete({ where: { id: existing.id } })
+    }
+    return null
+  }
+
+  const qtyById = qtyMapFromItems(items)
+  const { create, totalAmount } = await buildOrderItems(qtyById)
+
+  if (existing) {
+    await prisma.orderItem.deleteMany({ where: { orderId: existing.id } })
+    return prisma.order.update({
+      where: { id: existing.id },
+      data: { totalAmount, items: { create } },
+      include: { items: true },
+    })
+  }
+
+  return prisma.order.create({
+    data: {
+      initiatorId: userId,
+      shareToken: generateShareToken(),
+      totalAmount,
+      items: { create },
+      events: { create: { toStatus: 'DRAFT', actor: userId, note: 'Brouillon panier' } },
+    },
+    include: { items: true },
+  })
 }
 
 export async function getOrderByShareToken(shareToken: string) {

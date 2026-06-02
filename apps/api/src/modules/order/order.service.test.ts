@@ -9,8 +9,11 @@ vi.stubEnv('PORT', '3001')
 const mockCatalogItemFindMany = vi.fn()
 const mockOrderCreate = vi.fn()
 const mockOrderFindUnique = vi.fn()
+const mockOrderFindFirst = vi.fn()
 const mockOrderFindMany = vi.fn()
 const mockOrderUpdate = vi.fn()
+const mockOrderDelete = vi.fn()
+const mockOrderItemDeleteMany = vi.fn()
 const mockVehicleFindUnique = vi.fn()
 const mockEnterpriseMemberFindUnique = vi.fn()
 
@@ -28,8 +31,13 @@ vi.mock('../../lib/prisma.js', () => ({
     order: {
       create: (...args: unknown[]) => mockOrderCreate(...args),
       findUnique: (...args: unknown[]) => mockOrderFindUnique(...args),
+      findFirst: (...args: unknown[]) => mockOrderFindFirst(...args),
       findMany: (...args: unknown[]) => mockOrderFindMany(...args),
       update: (...args: unknown[]) => mockOrderUpdate(...args),
+      delete: (...args: unknown[]) => mockOrderDelete(...args),
+    },
+    orderItem: {
+      deleteMany: (...args: unknown[]) => mockOrderItemDeleteMany(...args),
     },
     vehicle: {
       findUnique: (...args: unknown[]) => mockVehicleFindUnique(...args),
@@ -40,7 +48,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder } = await import('./order.service.js')
+const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, getOpenDraft, upsertDraft } = await import('./order.service.js')
 
 describe('order.service', () => {
   beforeEach(() => {
@@ -72,6 +80,56 @@ describe('order.service', () => {
 
       await expect(createOrder('user-1', [{ catalogItemId: 'bad' }]))
         .rejects.toThrow()
+    })
+
+    it('propagates quantity to OrderItem and multiplies total by quantity', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, vendorId: 'v1', commissionAmount: 250, vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } },
+      ])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1', quantity: 3 }])
+
+      const createArg = mockOrderCreate.mock.calls[0]![0] as {
+        data: { totalAmount: number; items: { create: { quantity: number; commissionAmount: number | null }[] } }
+      }
+      expect(createArg.data.totalAmount).toBe(15000)
+      expect(createArg.data.items.create[0]!.quantity).toBe(3)
+      // commission reste le snapshot unitaire (non multiplié)
+      expect(createArg.data.items.create[0]!.commissionAmount).toBe(250)
+    })
+
+    it('sums quantities when the same catalogItemId appears twice', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, vendorId: 'v1', commissionAmount: null, vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } },
+      ])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [
+        { catalogItemId: 'item-1', quantity: 2 },
+        { catalogItemId: 'item-1', quantity: 3 },
+      ])
+
+      const createArg = mockOrderCreate.mock.calls[0]![0] as {
+        data: { totalAmount: number; items: { create: { quantity: number }[] } }
+      }
+      expect(createArg.data.items.create[0]!.quantity).toBe(5)
+      expect(createArg.data.totalAmount).toBe(25000)
+    })
+
+    it('defaults quantity to 1 when omitted', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, vendorId: 'v1', commissionAmount: null, vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } },
+      ])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }])
+
+      const createArg = mockOrderCreate.mock.calls[0]![0] as {
+        data: { totalAmount: number; items: { create: { quantity: number }[] } }
+      }
+      expect(createArg.data.items.create[0]!.quantity).toBe(1)
+      expect(createArg.data.totalAmount).toBe(5000)
     })
   })
 
@@ -131,6 +189,71 @@ describe('order.service', () => {
       mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT' })
 
       await expect(transitionOrder('order-1', 'DELIVERED', 'user-1')).rejects.toThrow()
+    })
+  })
+
+  describe('getOpenDraft', () => {
+    it('returns the latest open DRAFT order for the user', async () => {
+      mockOrderFindFirst.mockResolvedValueOnce({ id: 'd1', status: 'DRAFT', items: [] })
+      const result = await getOpenDraft('user-1')
+      expect(result?.id).toBe('d1')
+      const arg = mockOrderFindFirst.mock.calls[0]![0] as { where: { initiatorId: string; status: string } }
+      expect(arg.where).toMatchObject({ initiatorId: 'user-1', status: 'DRAFT' })
+    })
+  })
+
+  describe('upsertDraft', () => {
+    it('creates a new draft when none exists', async () => {
+      mockOrderFindFirst.mockResolvedValueOnce(null) // no existing draft
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, vendorId: 'v1', commissionAmount: null, vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } },
+      ])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'd-new', items: [] })
+
+      await upsertDraft('user-1', [{ catalogItemId: 'item-1', quantity: 2 }])
+
+      const createArg = mockOrderCreate.mock.calls[0]![0] as {
+        data: { totalAmount: number; items: { create: { quantity: number }[] } }
+      }
+      expect(createArg.data.totalAmount).toBe(10000)
+      expect(createArg.data.items.create[0]!.quantity).toBe(2)
+    })
+
+    it('replaces items on an existing draft (deletes then recreates)', async () => {
+      mockOrderFindFirst.mockResolvedValueOnce({ id: 'd-existing' })
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, vendorId: 'v1', commissionAmount: null, vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } },
+      ])
+      mockOrderItemDeleteMany.mockResolvedValueOnce({ count: 3 })
+      mockOrderUpdate.mockResolvedValueOnce({ id: 'd-existing', items: [] })
+
+      await upsertDraft('user-1', [{ catalogItemId: 'item-1', quantity: 1 }])
+
+      expect(mockOrderItemDeleteMany).toHaveBeenCalledWith({ where: { orderId: 'd-existing' } })
+      const updateArg = mockOrderUpdate.mock.calls[0]![0] as { where: { id: string }; data: { totalAmount: number } }
+      expect(updateArg.where.id).toBe('d-existing')
+      expect(updateArg.data.totalAmount).toBe(5000)
+      expect(mockOrderCreate).not.toHaveBeenCalled()
+    })
+
+    it('deletes the draft when the cart is emptied', async () => {
+      mockOrderFindFirst.mockResolvedValueOnce({ id: 'd-existing' })
+      mockOrderItemDeleteMany.mockResolvedValueOnce({ count: 2 })
+      mockOrderDelete.mockResolvedValueOnce({ id: 'd-existing' })
+
+      const result = await upsertDraft('user-1', [])
+
+      expect(result).toBeNull()
+      expect(mockOrderItemDeleteMany).toHaveBeenCalledWith({ where: { orderId: 'd-existing' } })
+      expect(mockOrderDelete).toHaveBeenCalledWith({ where: { id: 'd-existing' } })
+      expect(mockCatalogItemFindMany).not.toHaveBeenCalled()
+    })
+
+    it('is a no-op when emptying with no existing draft', async () => {
+      mockOrderFindFirst.mockResolvedValueOnce(null)
+      const result = await upsertDraft('user-1', [])
+      expect(result).toBeNull()
+      expect(mockOrderDelete).not.toHaveBeenCalled()
     })
   })
 
