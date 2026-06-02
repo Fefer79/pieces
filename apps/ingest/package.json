@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "ingest": "tsx --env-file=.env src/cli.ts",
+    "export:vehicles": "tsx --env-file=.env src/scripts/export-vehicles-data.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vitest run --passWithNoTests"

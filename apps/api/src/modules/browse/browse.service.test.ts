@@ -38,8 +38,9 @@ describe('browse.service', () => {
   describe('getBrands', () => {
     it('returns list of brands', () => {
       const brands = getBrands()
-      expect(brands).toContain('Toyota')
-      expect(brands).toContain('Peugeot')
+      // Marques en MAJUSCULES (export depuis la base Global Auto).
+      expect(brands).toContain('TOYOTA')
+      expect(brands).toContain('PEUGEOT')
       expect(brands.length).toBeGreaterThan(5)
     })
   })

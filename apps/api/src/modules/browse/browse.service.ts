@@ -39,20 +39,30 @@ export function getBrands() {
   return BRAND_NAMES
 }
 
-export function getModels(brand: string) {
-  const brandData = VEHICLE_BRANDS[brand]
-  if (!brandData) {
-    throw new AppError('BRAND_NOT_FOUND', 404, { message: `Marque "${brand}" introuvable` })
+/**
+ * Résout la donnée d'une marque par clé, insensible à la casse. Les clés de
+ * VEHICLE_BRANDS sont en MAJUSCULES (export depuis la base Global Auto) ; la
+ * marque peut arriver d'une URL ou d'un véhicule utilisateur en casse libre.
+ */
+function resolveBrand(brand: string) {
+  const direct = VEHICLE_BRANDS[brand]
+  if (direct) return direct
+  const lower = brand.toLowerCase()
+  for (const [key, value] of Object.entries(VEHICLE_BRANDS)) {
+    if (key.toLowerCase() === lower) return value
   }
-  return Object.keys(brandData.models)
+  throw new AppError('BRAND_NOT_FOUND', 404, { message: `Marque "${brand}" introuvable` })
+}
+
+export function getModels(brand: string) {
+  return Object.keys(resolveBrand(brand).models)
 }
 
 export function getYears(brand: string, model: string) {
-  const brandData = VEHICLE_BRANDS[brand]
-  if (!brandData) {
-    throw new AppError('BRAND_NOT_FOUND', 404, { message: `Marque "${brand}" introuvable` })
-  }
-  const years = brandData.models[model]
+  const brandData = resolveBrand(brand)
+  const lower = model.toLowerCase()
+  const modelKey = Object.keys(brandData.models).find((m) => m.toLowerCase() === lower)
+  const years = modelKey ? brandData.models[modelKey] : undefined
   if (!years) {
     throw new AppError('MODEL_NOT_FOUND', 404, { message: `Modèle "${model}" introuvable pour ${brand}` })
   }

@@ -53,7 +53,7 @@ describe('Browse Routes', () => {
 
       expect(response.statusCode).toBe(200)
       const body = response.json()
-      expect(body.data).toContain('Toyota')
+      expect(body.data).toContain('TOYOTA')
     })
   })
 

@@ -65,12 +65,15 @@ export function parseCompatibilityText(text: string | null | undefined): ParsedF
   if (!head) return null
 
   const lower = head.toLowerCase()
-  // Match d'une marque canonique connue en tête de chaîne.
+  // Match d'une marque connue en tête de chaîne. La liste ne sert qu'à détecter
+  // la frontière marque/modèle ; on conserve la marque telle qu'écrite dans le
+  // texte (et non la clé de la liste, en MAJUSCULES) pour ne pas réécrire la casse.
   for (const brand of SORTED_BRANDS) {
     const b = brand.toLowerCase()
     if (lower === b || lower.startsWith(`${b} `)) {
+      const matchedBrand = head.slice(0, brand.length)
       const model = head.slice(brand.length).trim()
-      return { brand, model: model || null, yearFrom, yearTo }
+      return { brand: matchedBrand, model: model || null, yearFrom, yearTo }
     }
   }
 
