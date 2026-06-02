@@ -14,6 +14,7 @@ const mockOrderFindMany = vi.fn()
 const mockOrderUpdate = vi.fn()
 const mockOrderDelete = vi.fn()
 const mockOrderItemDeleteMany = vi.fn()
+const mockOrderEventDeleteMany = vi.fn()
 const mockVehicleFindUnique = vi.fn()
 const mockEnterpriseMemberFindUnique = vi.fn()
 
@@ -38,6 +39,9 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     orderItem: {
       deleteMany: (...args: unknown[]) => mockOrderItemDeleteMany(...args),
+    },
+    orderEvent: {
+      deleteMany: (...args: unknown[]) => mockOrderEventDeleteMany(...args),
     },
     vehicle: {
       findUnique: (...args: unknown[]) => mockVehicleFindUnique(...args),
@@ -236,15 +240,18 @@ describe('order.service', () => {
       expect(mockOrderCreate).not.toHaveBeenCalled()
     })
 
-    it('deletes the draft when the cart is emptied', async () => {
+    it('deletes the draft (items + events) when the cart is emptied', async () => {
       mockOrderFindFirst.mockResolvedValueOnce({ id: 'd-existing' })
       mockOrderItemDeleteMany.mockResolvedValueOnce({ count: 2 })
+      mockOrderEventDeleteMany.mockResolvedValueOnce({ count: 1 })
       mockOrderDelete.mockResolvedValueOnce({ id: 'd-existing' })
 
       const result = await upsertDraft('user-1', [])
 
       expect(result).toBeNull()
       expect(mockOrderItemDeleteMany).toHaveBeenCalledWith({ where: { orderId: 'd-existing' } })
+      // OrderEvent doit être supprimé avant l'Order (pas de cascade FK)
+      expect(mockOrderEventDeleteMany).toHaveBeenCalledWith({ where: { orderId: 'd-existing' } })
       expect(mockOrderDelete).toHaveBeenCalledWith({ where: { id: 'd-existing' } })
       expect(mockCatalogItemFindMany).not.toHaveBeenCalled()
     })

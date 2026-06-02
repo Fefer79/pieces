@@ -195,7 +195,10 @@ export async function upsertDraft(
 
   if (items.length === 0) {
     if (existing) {
+      // OrderItem et OrderEvent n'ont pas onDelete:Cascade → supprimer les
+      // enfants avant l'Order, sinon violation de clé étrangère.
       await prisma.orderItem.deleteMany({ where: { orderId: existing.id } })
+      await prisma.orderEvent.deleteMany({ where: { orderId: existing.id } })
       await prisma.order.delete({ where: { id: existing.id } })
     }
     return null
