@@ -6,6 +6,7 @@ import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
 import { ConditionChip, PartSourceChip, type Condition, type PartSource } from '@/components/ui/chip'
+import { MiniCartButton } from '@/components/cart/mini-cart'
 
 interface CatalogItem {
   id: string
@@ -84,12 +85,12 @@ export default function CataloguePage() {
             </span>
             <span className="text-xs tracking-wide text-muted">Catalogue</span>
           </Link>
-          <Link
-            href="/"
-            className="text-sm font-medium text-ink-2 hover:underline"
-          >
-            ← Accueil
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-sm font-medium text-ink-2 hover:underline">
+              ← Accueil
+            </Link>
+            <MiniCartButton />
+          </div>
         </div>
       </header>
 

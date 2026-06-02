@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { useCart } from '@/lib/cart'
 
 interface NavItem {
   href: string
@@ -14,6 +15,7 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean): Na
   if (!isAuthenticated) {
     return [
       { href: '/', label: 'Accueil', icon: HomeIcon },
+      { href: '/panier', label: 'Sélection', icon: CartIcon },
       { href: '/info', label: 'Info', icon: InfoIcon },
       { href: '/login', label: 'Connexion', icon: LoginIcon },
     ]
@@ -50,6 +52,7 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean): Na
       // MECHANIC, OWNER, or null
       return [
         { href: '/', label: 'Accueil', icon: HomeIcon },
+        { href: '/panier', label: 'Sélection', icon: CartIcon },
         { href: '/orders', label: 'Commandes', icon: OrdersIcon },
         { href: '/profile', label: 'Profil', icon: ProfileIcon },
       ]
@@ -59,6 +62,7 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean): Na
 export function BottomNav() {
   const pathname = usePathname()
   const { user, isAuthenticated } = useAuth()
+  const { count } = useCart()
   const items = getNavItems(user?.activeContext ?? null, isAuthenticated)
 
   return (
@@ -69,6 +73,7 @@ export function BottomNav() {
       <div className="mx-auto flex max-w-md items-center justify-around">
         {items.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href || (href !== '/' && pathname.startsWith(href))
+          const showBadge = href === '/panier' && count > 0
           return (
             <Link
               key={href}
@@ -77,7 +82,14 @@ export function BottomNav() {
                 isActive ? 'text-ink-2' : 'text-muted hover:text-ink'
               }`}
             >
-              <Icon active={isActive} />
+              <span className="relative">
+                <Icon active={isActive} />
+                {showBadge && (
+                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] tabular leading-none text-white">
+                    {count > 99 ? '99+' : count}
+                  </span>
+                )}
+              </span>
               <span className={`text-[11px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
                 {label}
               </span>
@@ -105,6 +117,17 @@ function OrdersIcon({ active }: { active: boolean }) {
       <polyline points="14 2 14 8 20 8" />
       <line x1="16" y1="13" x2="8" y2="13" />
       <line x1="16" y1="17" x2="8" y2="17" />
+    </svg>
+  )
+}
+
+function CartIcon({ active }: { active: boolean }) {
+  void active
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
     </svg>
   )
 }

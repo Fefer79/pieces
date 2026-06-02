@@ -14,6 +14,7 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean, isA
   if (!isAuthenticated) {
     return [
       { href: '/', label: 'Accueil' },
+      { href: '/panier', label: 'Sélection' },
       { href: '/login', label: 'Connexion' },
     ]
   }
@@ -67,6 +68,7 @@ function getNavItems(activeContext: string | null, isAuthenticated: boolean, isA
     default:
       return [
         { href: '/', label: 'Accueil' },
+        { href: '/panier', label: 'Sélection' },
         { href: '/orders', label: 'Commandes' },
         ...adminItem,
         { href: '/profile', label: 'Profil' },

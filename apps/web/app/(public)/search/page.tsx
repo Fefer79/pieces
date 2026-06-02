@@ -7,6 +7,7 @@ import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Button } from '@/components/ui/button'
 import { ProductCard, type ProductCardItem } from '@/components/ui/product-card'
 import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
+import { MiniCartButton } from '@/components/cart/mini-cart'
 
 const CONDITION_OPTIONS = [
   { value: 'NEW', label: 'Neuf' },
@@ -139,9 +140,12 @@ function SearchPageContent() {
             </span>
             <span className="text-xs tracking-wide text-muted">Recherche</span>
           </Link>
-          <Link href="/browse" className="text-sm font-medium text-ink-2 hover:underline">
-            ← Accueil
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/browse" className="text-sm font-medium text-ink-2 hover:underline">
+              ← Accueil
+            </Link>
+            <MiniCartButton />
+          </div>
         </div>
       </header>
 

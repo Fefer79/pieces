@@ -436,7 +436,15 @@ export async function getPublicItemDetail(id: string) {
       imageSmallUrl: true,
       imageMediumUrl: true,
       imageLargeUrl: true,
-      vendor: { select: { id: true, shopName: true } },
+      vendor: {
+        select: {
+          id: true,
+          shopName: true,
+          aggregateRating: true,
+          avgReviewRating: true,
+          ordersDelivered: true,
+        },
+      },
       photos: {
         orderBy: { position: 'asc' },
         select: { id: true, urlThumb: true, urlMedium: true, urlLarge: true, urlOriginal: true },

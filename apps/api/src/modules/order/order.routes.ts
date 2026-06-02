@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { createOrderSchema, confirmOrderSchema } from 'shared/validators'
+import { createOrderSchema, confirmOrderSchema, upsertDraftSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth } from '../../plugins/auth.js'
 import {
@@ -10,6 +10,8 @@ import {
   selectPaymentMethod,
   cancelOrder,
   transitionOrder,
+  getOpenDraft,
+  upsertDraft,
 } from './order.service.js'
 import { getUserOrderHistory } from '../admin/admin.service.js'
 import { generateDevisPdf } from './devis.service.js'
@@ -28,7 +30,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const body = request.body as { items: { catalogItemId: string }[]; ownerPhone?: string; laborCost?: number; vehicleId?: string }
+      const body = request.body as { items: { catalogItemId: string; quantity?: number }[]; ownerPhone?: string; laborCost?: number; vehicleId?: string }
       const order = await createOrder(request.user.id, body.items, {
         ownerPhone: body.ownerPhone,
         laborCost: body.laborCost,
@@ -74,6 +76,42 @@ export async function orderRoutes(fastify: FastifyInstance) {
         Number(query.limit) || 20,
       )
       return reply.status(200).send({ data: result })
+    },
+  )
+
+  // Get the user's open cart draft (server-side hybrid cart)
+  fastify.get(
+    '/draft',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Orders'],
+        description: 'Récupérer le brouillon panier ouvert de l\'utilisateur',
+        security: [{ BearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const draft = await getOpenDraft(request.user.id)
+      return reply.status(200).send({ data: draft })
+    },
+  )
+
+  // Upsert the user's open cart draft
+  fastify.put(
+    '/draft',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Orders'],
+        description: 'Synchroniser le brouillon panier (remplace items + quantités)',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(upsertDraftSchema),
+      },
+    },
+    async (request, reply) => {
+      const body = request.body as { items: { catalogItemId: string; quantity?: number }[] }
+      const draft = await upsertDraft(request.user.id, body.items)
+      return reply.status(200).send({ data: draft })
     },
   )
 
