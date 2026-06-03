@@ -61,7 +61,7 @@ export default function DriverGuidePage() {
               Vous conduisez un véhicule pour une entreprise inscrite sur Pièces. Votre gestionnaire
               vous a créé une fiche chauffeur. Ce manuel vous explique comment activer votre compte et
               utiliser votre espace au quotidien. <strong>Vous ne voyez que vos propres
-              informations</strong> — votre recette, votre véhicule, votre historique.
+              informations</strong> : votre recette, votre véhicule, votre historique.
             </p>
           </Section>
 
