@@ -67,9 +67,10 @@ export function AppTopbar() {
         />
       </form>
       <div className="flex-1" />
-      <Link
-        href="/notifications"
+      <button
+        type="button"
         aria-label="Notifications"
+        title="Notifications (bientôt disponible)"
         className="relative flex h-10 w-10 items-center justify-center rounded-md text-ink transition-colors hover:bg-surface"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -77,7 +78,7 @@ export function AppTopbar() {
           <path d="M13.7 21a2 2 0 01-3.4 0" />
         </svg>
         <span className="absolute right-2.5 top-2 h-[7px] w-[7px] rounded-full bg-accent" />
-      </Link>
+      </button>
       <Link
         href="/profile"
         aria-label="Mon compte"
