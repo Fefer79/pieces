@@ -226,7 +226,7 @@ export default function EntreprisesPage() {
 
       <p className="mt-6 text-center text-xs text-muted">
         Prix flat par véhicule, mensuel d&apos;avance. Paiement annuel = 2 mois
-        offerts. Garantie ROI à 3 mois sur Flotte Pro.
+        offerts. 30 jours d&apos;essai gratuit sur Flotte Pro.
       </p>
 
       {/* Comparison */}
@@ -282,7 +282,8 @@ export default function EntreprisesPage() {
           ROI typique
         </div>
         <h2 className="mt-2 font-display text-3xl text-ink">
-          Pour une flotte de 50 véhicules, Flotte Pro est remboursé en 3 semaines.
+          Pour une flotte de 50 véhicules, Flotte Pro et Pro + transforment
+          chaque mois votre budget pièces en économies nettes.
         </h2>
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           {[
@@ -300,8 +301,8 @@ export default function EntreprisesPage() {
           Hypothèse : budget pièces annuel typique 150 M F sur 50 véhicules,
           économie projetée 20 % minimum via comparateur, scoring qualité
           fournisseur, détection des véhicules « gouffres » et stock tampon
-          automatique. Si l&apos;économie ne couvre pas l&apos;abonnement à 3
-          mois, nous remboursons la dernière mensualité (garantie ROI).
+          automatique. Testez-le pendant 30 jours gratuits : vous mesurez les
+          gains sur votre propre flotte avant tout engagement.
         </p>
       </section>
 
