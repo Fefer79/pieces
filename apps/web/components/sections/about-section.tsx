@@ -8,8 +8,8 @@ export function AboutSection() {
 
         <p className="mb-8 text-center text-gray-600 lg:text-lg">
           <strong>Pièces.ci</strong> est la première marketplace de pièces
-          détachées neuves et d&apos;occasion qui connecte mécaniciens,
-          propriétaires et vendeurs.
+          détachées neuves et d&apos;occasion qui connecte propriétaires,
+          mécaniciens et vendeurs.
         </p>
 
         <div className="grid gap-6 md:grid-cols-3">
