@@ -144,8 +144,9 @@ export default function EntreprisesPage() {
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted">
           Trois niveaux, trois promesses, prix flat par véhicule. Pour les
-          flottes de 5 véhicules ou plus en Côte d&apos;Ivoire — transport,
-          BTP, mines, location longue durée, services administratifs.
+          flottes de 5 véhicules ou plus en Côte d&apos;Ivoire, dans tous les
+          domaines d&apos;activités, du transport aux BTP, mines, location
+          longue durée, et entreprises de services.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
@@ -170,51 +171,56 @@ export default function EntreprisesPage() {
       </header>
 
       {/* Tier cards */}
-      <section className="mt-12 grid gap-5 md:grid-cols-3">
+      <section className="mt-12 grid items-stretch gap-5 md:grid-cols-3">
         {TIERS.map((t) => (
-          <article
-            key={t.key}
-            className={
-              t.highlight
-                ? 'rounded-xl border-2 border-accent bg-card p-6 shadow-sm'
-                : 'rounded-xl border border-border bg-card p-6'
-            }
-          >
-            {t.highlight ? (
-              <div className="mb-3 inline-block rounded-full bg-accent/10 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-accent">
-                Recommandé
-              </div>
-            ) : null}
-            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              {t.label}
+          <div key={t.key} className="flex flex-col">
+            {/* Badge slot — reserved on every card so the card tops align */}
+            <div className="mb-2 flex h-6 items-center justify-center">
+              {t.highlight ? (
+                <span className="inline-block rounded-full bg-accent/10 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-accent">
+                  Recommandé
+                </span>
+              ) : null}
             </div>
-            <div className="mt-1 font-display text-2xl text-ink">{t.tagline}</div>
-            <div className="mt-5 flex items-baseline gap-2">
-              <span className="font-display text-3xl text-ink">{t.price}</span>
-              {t.key !== 'FREE' && <span className="text-sm text-muted">FCFA</span>}
-            </div>
-            <div className="mt-1 text-xs text-muted">{t.priceNote}</div>
 
-            <ul className="mt-6 space-y-2.5 text-sm text-ink">
-              {t.highlights.map((h) => (
-                <li key={h} className="flex gap-2">
-                  <span className="mt-1 text-accent">✓</span>
-                  <span className="leading-snug">{h}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Link
-              href="/login"
+            <article
               className={
                 t.highlight
-                  ? 'mt-7 block rounded-md bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-accent-hover'
-                  : 'mt-7 block rounded-md border border-border-strong bg-card px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-surface'
+                  ? 'flex flex-1 flex-col rounded-xl border-2 border-accent bg-card p-6 shadow-sm'
+                  : 'flex flex-1 flex-col rounded-xl border border-border bg-card p-6'
               }
             >
-              {t.cta}
-            </Link>
-          </article>
+              <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                {t.label}
+              </div>
+              <div className="mt-1 font-display text-2xl text-ink">{t.tagline}</div>
+              <div className="mt-5 flex items-baseline gap-2">
+                <span className="font-display text-3xl text-ink">{t.price}</span>
+                {t.key !== 'FREE' && <span className="text-sm text-muted">FCFA</span>}
+              </div>
+              <div className="mt-1 text-xs text-muted">{t.priceNote}</div>
+
+              <ul className="mb-7 mt-6 space-y-2.5 text-sm text-ink">
+                {t.highlights.map((h) => (
+                  <li key={h} className="flex gap-2">
+                    <span className="mt-1 text-accent">✓</span>
+                    <span className="leading-snug">{h}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/login"
+                className={
+                  t.highlight
+                    ? 'mt-auto block rounded-md bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-accent-hover'
+                    : 'mt-auto block rounded-md border border-border-strong bg-card px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-surface'
+                }
+              >
+                {t.cta}
+              </Link>
+            </article>
+          </div>
         ))}
       </section>
 
