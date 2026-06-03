@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { ROLE_LABELS } from '@/lib/role-labels'
+import { ContextSwitcher } from '@/components/context-switcher'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -57,7 +58,6 @@ export default function ProfilePage() {
   }
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [switching, setSwitching] = useState(false)
   const [selectingRole, setSelectingRole] = useState(false)
   const [error, setError] = useState('')
   const [editName, setEditName] = useState('')
@@ -199,41 +199,6 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleSwitchContext(role: string) {
-    if (switching || !profile) return
-    setSwitching(true)
-    setError('')
-
-    try {
-      const {
-        data: { session },
-      } = await getSupabase().auth.getSession()
-      if (!session) return
-
-      const res = await fetch(`/api/v1/users/me/context`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ role }),
-      })
-
-      if (!res.ok) {
-        const body = await res.json()
-        setError(body.error?.message ?? 'Impossible de changer de contexte')
-        return
-      }
-
-      const body = await res.json()
-      setProfile(body.data)
-    } catch {
-      setError('Erreur de connexion')
-    } finally {
-      setSwitching(false)
-    }
-  }
-
   async function handleLogout() {
     await getSupabase().auth.signOut()
     router.push('/login')
@@ -290,7 +255,6 @@ export default function ProfilePage() {
   }
 
   const availableRoles = ROLE_CARDS.filter(({ role }) => !profile.roles.includes(role))
-  const isMultiRole = profile.roles.length > 1
 
   const inputCls = 'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
   const sectionHeader = 'mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
@@ -410,29 +374,13 @@ export default function ProfilePage() {
         </section>
       )}
 
-      {isMultiRole && (
+      {profile.roles.length > 1 && (
         <section className="mb-4 rounded-md border border-border bg-card p-5">
-          <p className={sectionHeader}>Changer de contexte</p>
-          {error && (
-            <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-              {error}
-            </div>
-          )}
-          <div className="space-y-2">
-            {profile.roles
-              .filter((role) => role !== profile.activeContext)
-              .map((role) => (
-                <button
-                  key={role}
-                  onClick={() => handleSwitchContext(role)}
-                  disabled={switching}
-                  className="w-full rounded-md border border-ink-2 bg-card px-4 py-3 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white disabled:opacity-50"
-                  style={{ minHeight: '48px' }}
-                >
-                  {switching ? 'Changement…' : `Passer en ${ROLE_LABELS[role] ?? role}`}
-                </button>
-              ))}
-          </div>
+          <p className={sectionHeader}>Contexte actif</p>
+          <ContextSwitcher variant="light" />
+          <p className="mt-2 px-0.5 text-xs text-muted">
+            Sur ordinateur, ce sélecteur est aussi en haut du menu de gauche.
+          </p>
         </section>
       )}
 
