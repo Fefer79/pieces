@@ -14,7 +14,6 @@ const SECTIONS = [
   { id: 'vehicule', label: '3 — Mon véhicule' },
   { id: 'releve', label: '4 — Mon relevé du jour' },
   { id: 'historique', label: '5 — Mon historique' },
-  { id: 'gestionnaire', label: '6 — Ce que voit mon chef' },
   { id: 'astuces', label: 'Bonnes pratiques' },
   { id: 'faq', label: 'FAQ' },
 ]
@@ -120,16 +119,6 @@ export default function DriverGuidePage() {
               Sous le formulaire, <strong>« Mes derniers relevés »</strong> liste vos journées passées
               avec, pour chacune, la recette et le <em>net</em> (recette − carburant − dépenses). C'est
               votre carnet de bord personnel, toujours à portée de main.
-            </p>
-          </Section>
-
-          <Section id="gestionnaire" title="6 — Ce que voit mon chef">
-            <p>
-              Votre gestionnaire voit vos relevés consolidés et des indicateurs (recette moyenne par
-              jour, par km, rentabilité). Ce n'est pas de la surveillance : ces chiffres aident
-              l'entreprise à mieux entretenir les véhicules, à reconnaître les bons chauffeurs et à
-              prendre de meilleures décisions. <strong>Des relevés réguliers et honnêtes</strong>, c'est
-              une flotte mieux gérée — et un meilleur véhicule pour vous.
             </p>
           </Section>
 
