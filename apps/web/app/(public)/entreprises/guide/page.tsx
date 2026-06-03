@@ -51,6 +51,24 @@ export default function EnterpriseGuidePage() {
             Commencer le guide
           </a>
         </div>
+
+        {/* Manuels approfondis */}
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Link
+            href="/entreprises/guide/gestionnaire"
+            className="rounded-md border border-border bg-card p-4 hover:border-border-strong"
+          >
+            <p className="font-display text-base text-ink">Manuel gestionnaire de flotte →</p>
+            <p className="mt-1 text-sm text-muted">Véhicules, chauffeurs, relevés journaliers, KPIs de rentabilité, incidents.</p>
+          </Link>
+          <Link
+            href="/entreprises/guide/chauffeur"
+            className="rounded-md border border-border bg-card p-4 hover:border-border-strong"
+          >
+            <p className="font-display text-base text-ink">Manuel chauffeur de flotte →</p>
+            <p className="mt-1 text-sm text-muted">Activer son compte, son véhicule, saisir le relevé du jour, son historique.</p>
+          </Link>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[200px_1fr]">
