@@ -126,9 +126,9 @@ export function DesktopSidebar() {
     return (
       <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:bg-ink lg:text-white">
         <div className="flex h-16 items-center px-5">
-          <span className="font-display text-2xl text-white">
+          <Link href="/" className="font-display text-2xl text-white">
             Pièces<span className="text-accent">.</span>
-          </span>
+          </Link>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
           <Link href="/" className="block rounded-md px-3 py-2.5 text-sm font-medium text-white/75 hover:bg-white/[0.06] hover:text-white">Accueil</Link>
@@ -145,9 +145,9 @@ export function DesktopSidebar() {
     <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:bg-ink lg:text-white">
       {/* Logo */}
       <div className="flex h-16 items-center px-5">
-        <span className="font-display text-2xl text-white">
+        <Link href="/" className="font-display text-2xl text-white">
           Pièces<span className="text-accent">.</span>
-        </span>
+        </Link>
       </div>
 
       {/* Context switcher */}

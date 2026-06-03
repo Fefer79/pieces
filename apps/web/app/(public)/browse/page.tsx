@@ -82,14 +82,14 @@ export default function BrowsePage() {
       <div className="flex min-h-dvh flex-col pb-[calc(env(safe-area-inset-bottom)+5rem)] lg:hidden">
         {/* Header */}
         <header className="flex items-center justify-between bg-card px-4 pb-2 pt-4">
-          <div className="flex flex-col">
+          <a href="/" className="flex flex-col">
             <span className="font-display text-3xl text-ink">
               Pièces<span className="text-accent">.</span>
             </span>
             <span className="text-xs tracking-wide text-muted">
               Pièces détachées automobiles
             </span>
-          </div>
+          </a>
           <MobileDrawer />
         </header>
 

@@ -73,9 +73,9 @@ export function MobileDrawer() {
       >
         {/* Header with brand + close */}
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <span className="font-display text-2xl text-ink">
+          <a href="/" onClick={() => setOpen(false)} className="font-display text-2xl text-ink">
             Pièces<span className="text-accent">.</span>
-          </span>
+          </a>
           <button
             onClick={() => setOpen(false)}
             className="flex h-10 w-10 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink"
