@@ -131,6 +131,7 @@ export default function VehicleDetailPage() {
   const [centers, setCenters] = useState<MaintenanceCenter[]>([])
   const [error, setError] = useState<string | null>(null)
   const [mileageInput, setMileageInput] = useState('')
+  const [editing, setEditing] = useState(false)
 
   useEffect(() => { setEnterpriseId(getActiveEnterpriseId()) }, [])
 
@@ -241,13 +242,31 @@ export default function VehicleDetailPage() {
           </h1>
           <p className="mt-1 text-sm text-muted tabular">{vehicle.plate ?? 'Sans plaque'}</p>
         </div>
-        <button
-          onClick={handleDelete}
-          className="rounded-md border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
-        >
-          Supprimer
-        </button>
+        <div className="flex flex-shrink-0 gap-2">
+          <button
+            onClick={() => setEditing(true)}
+            className="rounded-md border border-border-strong px-4 py-2 text-sm font-semibold text-ink hover:bg-surface"
+          >
+            Modifier
+          </button>
+          <button
+            onClick={handleDelete}
+            className="rounded-md border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+          >
+            Supprimer
+          </button>
+        </div>
       </div>
+
+      {editing && enterpriseId && (
+        <EditVehicleModal
+          enterpriseId={enterpriseId}
+          vehicleId={vehicleId}
+          vehicle={vehicle}
+          onClose={() => setEditing(false)}
+          onSaved={() => { setEditing(false); load() }}
+        />
+      )}
 
       {analytics && (
         <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -590,6 +609,108 @@ function MonthlyBars({ data }: { data: { month: string; total: number }[] }) {
           </div>
         )
       })}
+    </div>
+  )
+}
+
+const USAGE_OPTIONS: { value: FleetVehicle['usageType']; label: string }[] = [
+  { value: null, label: '—' },
+  { value: 'TRANSPORT', label: 'Transport' },
+  { value: 'CHANTIER', label: 'Chantier' },
+  { value: 'LIVRAISON', label: 'Livraison' },
+  { value: 'DIRECTION', label: 'Direction' },
+  { value: 'AUTRE', label: 'Autre' },
+]
+
+function EditVehicleModal({
+  enterpriseId,
+  vehicleId,
+  vehicle,
+  onClose,
+  onSaved,
+}: {
+  enterpriseId: string
+  vehicleId: string
+  vehicle: VehicleDetail
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [plate, setPlate] = useState(vehicle.plate ?? '')
+  const [engine, setEngine] = useState(vehicle.engine ?? '')
+  const [usageType, setUsageType] = useState<FleetVehicle['usageType']>(vehicle.usageType)
+  const [groupName, setGroupName] = useState(vehicle.groupName ?? '')
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    setErr(null)
+    // PATCH partiel : on n'envoie que les champs descriptifs éditables ici.
+    const payload: Record<string, unknown> = {
+      plate: plate.trim() || undefined,
+      engine: engine.trim() || undefined,
+      groupName: groupName.trim() || undefined,
+    }
+    if (usageType) payload.usageType = usageType
+    const res = await enterpriseFetch(`/${enterpriseId}/vehicles/${vehicleId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    })
+    setSaving(false)
+    if (!res.ok) { setErr(res.message); return }
+    onSaved()
+  }
+
+  const labelCls = 'font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
+  const inputCls = 'mt-1 w-full rounded-sm border border-border bg-white px-3 py-2 text-sm text-ink'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="w-full max-w-md rounded-md bg-white p-6" onClick={(e) => e.stopPropagation()}>
+        <h2 className="mb-1 font-display text-xl text-ink">Modifier le véhicule</h2>
+        <p className="mb-4 text-sm text-muted">{vehicle.brand} {vehicle.model} {vehicle.year}</p>
+        <form onSubmit={handleSave} className="space-y-3">
+          <div>
+            <label className={labelCls}>Immatriculation</label>
+            <input
+              value={plate}
+              onChange={(e) => setPlate(e.target.value.toUpperCase())}
+              placeholder="Ex. 1234 AB 01"
+              className={`${inputCls} uppercase`}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Motorisation</label>
+              <input value={engine} onChange={(e) => setEngine(e.target.value)} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Usage</label>
+              <select
+                value={usageType ?? ''}
+                onChange={(e) => setUsageType((e.target.value || null) as FleetVehicle['usageType'])}
+                className={inputCls}
+              >
+                {USAGE_OPTIONS.map((o) => (
+                  <option key={o.label} value={o.value ?? ''}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Groupe</label>
+            <input value={groupName} onChange={(e) => setGroupName(e.target.value)} className={inputCls} />
+          </div>
+          {err && <div className="text-sm text-red-600">{err}</div>}
+          <div className="mt-4 flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="rounded-md px-4 py-2 text-sm text-muted hover:bg-surface">Annuler</button>
+            <button type="submit" disabled={saving} className="rounded-md bg-ink-2 px-4 py-2 text-sm font-semibold text-white hover:bg-ink disabled:opacity-50">
+              {saving ? 'Enregistrement…' : 'Enregistrer'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
