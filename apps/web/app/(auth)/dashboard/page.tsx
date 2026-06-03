@@ -76,7 +76,7 @@ export default function DashboardPage() {
 
       const [ordersRes, vehiclesRes] = await Promise.all([
         fetch('/api/v1/orders/history?page=1&limit=5', { headers }),
-        fetch('/api/v1/vehicles/me/vehicles', { headers }),
+        fetch('/api/v1/users/me/vehicles', { headers }),
       ])
 
       if (ordersRes.ok) {
