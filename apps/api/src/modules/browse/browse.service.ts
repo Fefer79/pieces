@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma.js'
-import { VEHICLE_BRANDS, BRAND_NAMES, PART_CATEGORIES, UNIVERSAL_CATEGORIES } from 'shared/constants'
+import { VEHICLE_BRANDS, BRAND_NAMES, getEngines as getEnginesData, PART_CATEGORIES, UNIVERSAL_CATEGORIES } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
 
 export interface VinDecodeResult {
@@ -67,6 +67,26 @@ export function getYears(brand: string, model: string) {
     throw new AppError('MODEL_NOT_FOUND', 404, { message: `Modèle "${model}" introuvable pour ${brand}` })
   }
   return years.slice().reverse() // Most recent first
+}
+
+/**
+ * Motorisations connues pour une marque/modèle. Résout d'abord les clés
+ * canoniques (casse exacte) car getEnginesData indexe VEHICLE_DATA par clé
+ * exacte. Renvoie [] si le modèle existe mais n'a pas de data moteur.
+ */
+export function getModelEngines(brand: string, model: string): string[] {
+  const lowerBrand = brand.toLowerCase()
+  const brandKey = Object.keys(VEHICLE_BRANDS).find((b) => b.toLowerCase() === lowerBrand)
+  if (!brandKey) {
+    throw new AppError('BRAND_NOT_FOUND', 404, { message: `Marque "${brand}" introuvable` })
+  }
+  const lowerModel = model.toLowerCase()
+  const brandModels = VEHICLE_BRANDS[brandKey]?.models ?? {}
+  const modelKey = Object.keys(brandModels).find((m) => m.toLowerCase() === lowerModel)
+  if (!modelKey) {
+    throw new AppError('MODEL_NOT_FOUND', 404, { message: `Modèle "${model}" introuvable pour ${brand}` })
+  }
+  return getEnginesData(brandKey, modelKey)
 }
 
 export function getCategories() {

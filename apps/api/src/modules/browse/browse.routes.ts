@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { getBrands, getModels, getYears, getCategories, browseParts, searchParts, suggestParts, compareParts, decodeVin, getPublicItemDetail } from './browse.service.js'
+import { getBrands, getModels, getYears, getModelEngines, getCategories, browseParts, searchParts, suggestParts, compareParts, decodeVin, getPublicItemDetail } from './browse.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { vinDecodeSchema } from 'shared/validators'
 
@@ -47,6 +47,21 @@ export async function browseRoutes(fastify: FastifyInstance) {
       const { brand, model } = request.params as { brand: string; model: string }
       const years = getYears(decodeURIComponent(brand), decodeURIComponent(model))
       return reply.status(200).send({ data: years })
+    },
+  )
+
+  fastify.get(
+    '/brands/:brand/models/:model/engines',
+    {
+      schema: {
+        tags: ['Browse'],
+        description: 'Motorisations disponibles pour une marque/modèle',
+      },
+    },
+    async (request, reply) => {
+      const { brand, model } = request.params as { brand: string; model: string }
+      const engines = getModelEngines(decodeURIComponent(brand), decodeURIComponent(model))
+      return reply.status(200).send({ data: engines })
     },
   )
 

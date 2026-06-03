@@ -1,5 +1,5 @@
 'use client'
-/* eslint-disable react-hooks/set-state-in-effect, react/no-unescaped-entities */
+/* eslint-disable react/no-unescaped-entities */
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -8,6 +8,7 @@ import {
   getActiveEnterpriseId,
   type FleetVehicle,
 } from '@/lib/enterprise-api'
+import { VehiclePicker, type VehicleSelection } from '@/components/vehicle-picker'
 
 const USAGE_LABEL: Record<NonNullable<FleetVehicle['usageType']>, string> = {
   TRANSPORT: 'Transport',
@@ -164,26 +165,31 @@ function CreateVehicleModal({
   onClose,
   onCreated,
 }: { enterpriseId: string; onClose: () => void; onCreated: () => void }) {
+  const [vehicle, setVehicle] = useState<VehicleSelection>({
+    brand: '', model: '', year: '', engine: '', vin: '',
+  })
   const [form, setForm] = useState({
-    brand: '', model: '', year: new Date().getFullYear(),
-    plate: '', vin: '', engine: '', mileage: '',
-    usageType: '', groupName: '',
+    plate: '', mileage: '', usageType: '', groupName: '',
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!vehicle.brand || !vehicle.model || !vehicle.year) {
+      setError('Marque, modèle et année sont requis.')
+      return
+    }
     setSubmitting(true)
     setError(null)
     const payload: Record<string, unknown> = {
-      brand: form.brand,
-      model: form.model,
-      year: Number(form.year),
+      brand: vehicle.brand,
+      model: vehicle.model,
+      year: Number(vehicle.year),
     }
     if (form.plate) payload.plate = form.plate
-    if (form.vin) payload.vin = form.vin
-    if (form.engine) payload.engine = form.engine
+    if (vehicle.vin) payload.vin = vehicle.vin
+    if (vehicle.engine) payload.engine = vehicle.engine
     if (form.mileage) payload.mileage = Number(form.mileage)
     if (form.usageType) payload.usageType = form.usageType
     if (form.groupName) payload.groupName = form.groupName
@@ -201,13 +207,12 @@ function CreateVehicleModal({
       <div className="w-full max-w-lg rounded-md bg-white p-6" onClick={(e) => e.stopPropagation()}>
         <h2 className="mb-4 font-display text-xl text-ink">Ajouter un véhicule</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
+          <VehiclePicker
+            value={vehicle}
+            onChange={(patch) => setVehicle((prev) => ({ ...prev, ...patch }))}
+          />
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Marque *" value={form.brand} onChange={(v) => setForm({ ...form, brand: v })} required />
-            <Field label="Modèle *" value={form.model} onChange={(v) => setForm({ ...form, model: v })} required />
-            <Field label="Année *" type="number" value={String(form.year)} onChange={(v) => setForm({ ...form, year: Number(v) })} required />
             <Field label="Plaque" value={form.plate} onChange={(v) => setForm({ ...form, plate: v })} />
-            <Field label="VIN" value={form.vin} onChange={(v) => setForm({ ...form, vin: v.toUpperCase() })} />
-            <Field label="Motorisation" value={form.engine} onChange={(v) => setForm({ ...form, engine: v })} />
             <Field label="Kilométrage" type="number" value={form.mileage} onChange={(v) => setForm({ ...form, mileage: v })} />
             <div>
               <label className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Usage</label>

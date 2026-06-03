@@ -28,7 +28,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { getBrands, getModels, getYears, getCategories, browseParts, searchParts, suggestParts, decodeVin } = await import('./browse.service.js')
+const { getBrands, getModels, getYears, getModelEngines, getCategories, browseParts, searchParts, suggestParts, decodeVin } = await import('./browse.service.js')
 
 describe('browse.service', () => {
   beforeEach(() => {
@@ -70,6 +70,21 @@ describe('browse.service', () => {
 
     it('throws MODEL_NOT_FOUND for invalid model', () => {
       expect(() => getYears('Toyota', 'InvalidModel')).toThrow()
+    })
+  })
+
+  describe('getModelEngines', () => {
+    it('returns an engines array for a valid brand/model (case-insensitive)', () => {
+      const engines = getModelEngines('toyota', 'corolla')
+      expect(Array.isArray(engines)).toBe(true)
+    })
+
+    it('throws BRAND_NOT_FOUND for invalid brand', () => {
+      expect(() => getModelEngines('Invalid', 'Corolla')).toThrow()
+    })
+
+    it('throws MODEL_NOT_FOUND for invalid model', () => {
+      expect(() => getModelEngines('Toyota', 'InvalidModel')).toThrow()
     })
   })
 
