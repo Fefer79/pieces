@@ -33,7 +33,7 @@ export async function vehicleRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const body = request.body as { brand: string; model: string; year: number; vin?: string }
+      const body = request.body as { brand: string; model: string; year: number; vin?: string; engine?: string }
       const vehicle = await addUserVehicle(request.user.id, body)
       return reply.status(201).send({ data: vehicle })
     },

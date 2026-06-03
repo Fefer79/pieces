@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { VehiclePicker, type VehicleSelection } from '@/components/vehicle-picker'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -12,8 +13,11 @@ interface Vehicle {
   model: string
   year: number
   vin: string | null
+  engine: string | null
   createdAt: string
 }
+
+const EMPTY_VEHICLE: VehicleSelection = { brand: '', model: '', year: '', engine: '', vin: '' }
 
 export default function VehiclesPage() {
   const router = useRouter()
@@ -26,10 +30,7 @@ export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [brand, setBrand] = useState('')
-  const [model, setModel] = useState('')
-  const [year, setYear] = useState('')
-  const [vin, setVin] = useState('')
+  const [vehicle, setVehicle] = useState<VehicleSelection>(EMPTY_VEHICLE)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -54,7 +55,7 @@ export default function VehiclesPage() {
   useEffect(() => { fetchVehicles() }, [fetchVehicles])
 
   async function handleAdd() {
-    if (!brand || !model || !year) return
+    if (!vehicle.brand || !vehicle.model || !vehicle.year) return
     setSaving(true)
     setError(null)
     try {
@@ -68,10 +69,11 @@ export default function VehiclesPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          brand,
-          model,
-          year: parseInt(year, 10),
-          ...(vin.length === 17 ? { vin: vin.toUpperCase() } : {}),
+          brand: vehicle.brand,
+          model: vehicle.model,
+          year: Number(vehicle.year),
+          ...(vehicle.vin.length === 17 ? { vin: vehicle.vin.toUpperCase() } : {}),
+          ...(vehicle.engine ? { engine: vehicle.engine } : {}),
         }),
       })
       if (!res.ok) {
@@ -81,10 +83,7 @@ export default function VehiclesPage() {
       }
       const body = await res.json()
       setVehicles((prev) => [body.data, ...prev])
-      setBrand('')
-      setModel('')
-      setYear('')
-      setVin('')
+      setVehicle(EMPTY_VEHICLE)
       setShowForm(false)
     } catch {
       setError('Erreur réseau')
@@ -119,8 +118,6 @@ export default function VehiclesPage() {
     )
   }
 
-  const inputCls = 'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
-
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-6 lg:py-8">
       <div className="mb-6">
@@ -146,7 +143,9 @@ export default function VehiclesPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="font-display text-lg text-ink">{v.brand} {v.model}</p>
-                <p className="font-mono text-xs tabular text-muted">{v.year}</p>
+                <p className="font-mono text-xs tabular text-muted">
+                  {v.year}{v.engine ? ` · ${v.engine}` : ''}
+                </p>
                 {v.vin && <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-muted-2">{v.vin}</p>}
               </div>
               <div className="flex flex-shrink-0 gap-2">
@@ -187,39 +186,10 @@ export default function VehiclesPage() {
           <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
             Nouveau véhicule
           </p>
-          <div className="space-y-2.5">
-            <input
-              type="text"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
-              placeholder="Marque (ex : Toyota)"
-              className={inputCls}
-            />
-            <input
-              type="text"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="Modèle (ex : Corolla)"
-              className={inputCls}
-            />
-            <input
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              placeholder="Année (ex : 2015)"
-              min="1980"
-              max={new Date().getFullYear() + 1}
-              className={`${inputCls} font-mono`}
-            />
-            <input
-              type="text"
-              value={vin}
-              onChange={(e) => setVin(e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/gi, '').slice(0, 17))}
-              placeholder="VIN (optionnel, 17 caractères)"
-              maxLength={17}
-              className={`${inputCls} font-mono uppercase tracking-wider`}
-            />
-          </div>
+          <VehiclePicker
+            value={vehicle}
+            onChange={(patch) => setVehicle((prev) => ({ ...prev, ...patch }))}
+          />
 
           {error && (
             <div className="mt-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
@@ -230,7 +200,7 @@ export default function VehiclesPage() {
           <div className="mt-4 flex gap-2">
             <button
               onClick={handleAdd}
-              disabled={!brand || !model || !year || saving}
+              disabled={!vehicle.brand || !vehicle.model || !vehicle.year || saving}
               className="flex-1 rounded-md bg-accent py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? 'Ajout…' : 'Ajouter'}

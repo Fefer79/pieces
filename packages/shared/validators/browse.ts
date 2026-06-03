@@ -9,4 +9,5 @@ export const createVehicleSchema = z.object({
   model: z.string().min(1, 'Le modèle est requis'),
   year: z.number().int().min(1980).max(new Date().getFullYear() + 1),
   vin: z.string().length(17).regex(/^[A-HJ-NPR-Z0-9]{17}$/i).optional(),
+  engine: z.string().min(1).optional(),
 })

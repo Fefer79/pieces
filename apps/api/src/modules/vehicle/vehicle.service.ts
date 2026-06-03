@@ -5,19 +5,19 @@ export async function getUserVehicles(userId: string) {
   return prisma.vehicle.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, brand: true, model: true, year: true, vin: true, createdAt: true },
+    select: { id: true, brand: true, model: true, year: true, vin: true, engine: true, createdAt: true },
   })
 }
 
-export async function addUserVehicle(userId: string, data: { brand: string; model: string; year: number; vin?: string }) {
+export async function addUserVehicle(userId: string, data: { brand: string; model: string; year: number; vin?: string; engine?: string }) {
   const count = await prisma.vehicle.count({ where: { userId } })
   if (count >= 5) {
     throw new AppError('VEHICLE_LIMIT_REACHED', 400, { message: 'Maximum 5 véhicules par utilisateur' })
   }
 
   return prisma.vehicle.create({
-    data: { userId, brand: data.brand, model: data.model, year: data.year, vin: data.vin },
-    select: { id: true, brand: true, model: true, year: true, vin: true, createdAt: true },
+    data: { userId, brand: data.brand, model: data.model, year: data.year, vin: data.vin, engine: data.engine },
+    select: { id: true, brand: true, model: true, year: true, vin: true, engine: true, createdAt: true },
   })
 }
 
