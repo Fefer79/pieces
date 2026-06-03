@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
 import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
@@ -28,7 +29,11 @@ type Draft = { items: DraftItem[] } | null
 export default function PanierPage() {
   const { items, itemsByVendor, count, subtotal, setQuantity, removeItem, clear, mergeItems } =
     useCart()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  const router = useRouter()
+  // Le propriétaire valide sa propre sélection : on l'envoie directement au
+  // paiement, sans l'étape « envoyer au propriétaire » / partage de lien.
+  const isOwner = user?.activeContext === 'OWNER'
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<CreatedOrder | null>(null)
@@ -90,8 +95,13 @@ export default function PanierPage() {
       if (isAuthenticated) {
         await apiFetch('/orders/draft', { method: 'PUT', body: JSON.stringify({ items: [] }) })
       }
-      setCreated(res.data)
       clear()
+      // Propriétaire : aller droit au paiement. Sinon : écran de partage du lien.
+      if (isOwner) {
+        router.push(`/choose/${res.data.shareToken}`)
+        return
+      }
+      setCreated(res.data)
     } else {
       setError(res.message)
     }
@@ -259,10 +269,16 @@ export default function PanierPage() {
                 disabled={submitting}
                 onClick={handleSend}
               >
-                {submitting ? 'Envoi…' : 'Envoyer au propriétaire'}
+                {submitting
+                  ? 'Envoi…'
+                  : isOwner
+                    ? 'Procéder au paiement'
+                    : 'Envoyer au propriétaire'}
               </Button>
               <p className="mt-2 text-center text-xs text-muted">
-                Un lien de validation et de paiement sera généré.
+                {isOwner
+                  ? 'Vous passez directement au choix du moyen de paiement.'
+                  : 'Un lien de validation et de paiement sera généré.'}
               </p>
             </aside>
           </div>

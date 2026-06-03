@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Chip } from '@/components/ui/chip'
 import { Price } from '@/components/ui/price'
 import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
+import { useAuth } from '@/lib/auth-context'
 
 interface OrderItem {
   id: string
@@ -26,6 +27,7 @@ interface Order {
   laborCost: number | null
   shareToken: string
   items: OrderItem[]
+  initiator?: { id: string } | null
 }
 
 type PayMethodId = 'ORANGE_MONEY' | 'MTN_MOMO' | 'WAVE' | 'COD'
@@ -77,6 +79,7 @@ const PAY_METHODS: Record<PayMethodId, PayMethodConfig> = {
 export default function OwnerChoicePage() {
   const params = useParams()
   const router = useRouter()
+  const { user } = useAuth()
   const shareToken = params.shareToken as string
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
@@ -146,6 +149,10 @@ export default function OwnerChoicePage() {
 
   if (!order) return null
 
+  // Le viewer est-il l'auteur de la sélection (ex. propriétaire qui valide la
+  // sienne) ? Si oui, le cadrage « votre mécanicien vous demande » est faux.
+  const isSelf = !!user?.id && order.initiator?.id === user.id
+
   const grandTotal = order.totalAmount + order.deliveryFee + (order.laborCost ?? 0)
 
   const availableMethods: PayMethodId[] = [
@@ -172,7 +179,9 @@ export default function OwnerChoicePage() {
             Commande partagée · #{order.id.slice(0, 8)}
           </div>
           <h1 className="mt-2 font-display text-[28px] leading-tight md:text-[40px]">
-            Votre mécanicien vous demande d&apos;approuver
+            {isSelf
+              ? 'Validez et payez votre sélection'
+              : 'Votre mécanicien vous demande d’approuver'}
           </h1>
           <p className="mt-2 max-w-xl text-sm text-white/80 md:text-base">
             {order.items.length} {order.items.length > 1 ? 'articles' : 'article'} sélectionnés.
