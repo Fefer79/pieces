@@ -57,6 +57,11 @@ function getNavItems(
         { href: '/enterprise/dashboard', label: 'Dashboard', icon: DashboardIcon },
         { href: '/profile', label: 'Profil', icon: ProfileIcon },
       ]
+    case 'DRIVER':
+      return [
+        { href: '/driver', label: 'Mon espace', icon: DashboardIcon },
+        { href: '/profile', label: 'Profil', icon: ProfileIcon },
+      ]
     case 'LIAISON':
       return [
         { href: '/liaison', label: 'Liaison', icon: DashboardIcon },

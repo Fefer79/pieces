@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation'
 const ENTERPRISE_LINKS = [
   { href: '/enterprise/dashboard', label: 'Tableau de bord' },
   { href: '/enterprise/vehicles', label: 'Véhicules' },
+  { href: '/enterprise/drivers', label: 'Chauffeurs' },
   { href: '/enterprise/members', label: 'Membres' },
   { href: '/enterprise/orders', label: 'Commandes' },
   { href: '/enterprise/search', label: 'Recherche' },
