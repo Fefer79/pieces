@@ -13,6 +13,11 @@ import {
   createBufferStockSchema,
   updateBufferStockSchema,
   adjustBufferStockSchema,
+  createDriverSchema,
+  updateDriverSchema,
+  assignVehicleSchema,
+  driverDailyRecordSchema,
+  createIncidentSchema,
 } from 'shared/validators'
 import {
   listBufferStock,
@@ -60,6 +65,17 @@ import {
   importVehiclesFromCsv,
   getVehicleAnalytics,
 } from './vehicle.service.js'
+import {
+  listEnterpriseDrivers,
+  getEnterpriseDriver,
+  createEnterpriseDriver,
+  updateEnterpriseDriver,
+  deleteEnterpriseDriver,
+  assignVehicleToDriver,
+  addDriverDailyRecord,
+  addDriverIncident,
+  getDriverAnalytics,
+} from './driver.service.js'
 import { getEnterpriseDashboard, exportEnterpriseOrdersCsv } from './dashboard.service.js'
 import { getSubscriptionForMember } from './subscription.service.js'
 import {
@@ -786,6 +802,138 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
         `attachment; filename="pieces-orders-${enterpriseId}.csv"`,
       )
       return reply.send(csv)
+    },
+  )
+
+  // ---- Drivers (chauffeurs) ---------------------------------------------
+  fastify.get(
+    '/:enterpriseId/drivers',
+    { preHandler: [requireAuth], schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] } },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await listEnterpriseDrivers(enterpriseId, request.user.id)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/drivers',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], body: zodToFastify(createDriverSchema) },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await createEnterpriseDriver(
+        enterpriseId,
+        request.user.id,
+        request.body as Parameters<typeof createEnterpriseDriver>[2],
+      )
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/drivers/:driverId',
+    { preHandler: [requireAuth], schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] } },
+    async (request, reply) => {
+      const { enterpriseId, driverId } = request.params as { enterpriseId: string; driverId: string }
+      const data = await getEnterpriseDriver(enterpriseId, request.user.id, driverId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/:enterpriseId/drivers/:driverId',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], body: zodToFastify(updateDriverSchema) },
+    },
+    async (request, reply) => {
+      const { enterpriseId, driverId } = request.params as { enterpriseId: string; driverId: string }
+      const data = await updateEnterpriseDriver(
+        enterpriseId,
+        request.user.id,
+        driverId,
+        request.body as Parameters<typeof updateEnterpriseDriver>[3],
+      )
+      return reply.send({ data })
+    },
+  )
+
+  fastify.delete(
+    '/:enterpriseId/drivers/:driverId',
+    { preHandler: [requireAuth], schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] } },
+    async (request, reply) => {
+      const { enterpriseId, driverId } = request.params as { enterpriseId: string; driverId: string }
+      const data = await deleteEnterpriseDriver(enterpriseId, request.user.id, driverId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/drivers/:driverId/assign',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], body: zodToFastify(assignVehicleSchema) },
+    },
+    async (request, reply) => {
+      const { enterpriseId, driverId } = request.params as { enterpriseId: string; driverId: string }
+      const body = request.body as { vehicleId?: string | null }
+      const data = await assignVehicleToDriver(enterpriseId, request.user.id, driverId, body.vehicleId ?? null)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/drivers/:driverId/daily',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], body: zodToFastify(driverDailyRecordSchema) },
+    },
+    async (request, reply) => {
+      const { enterpriseId, driverId } = request.params as { enterpriseId: string; driverId: string }
+      const data = await addDriverDailyRecord(
+        enterpriseId,
+        request.user.id,
+        driverId,
+        request.body as Parameters<typeof addDriverDailyRecord>[3],
+      )
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/drivers/:driverId/incidents',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], body: zodToFastify(createIncidentSchema) },
+    },
+    async (request, reply) => {
+      const { enterpriseId, driverId } = request.params as { enterpriseId: string; driverId: string }
+      const data = await addDriverIncident(
+        enterpriseId,
+        request.user.id,
+        driverId,
+        request.body as Parameters<typeof addDriverIncident>[3],
+      )
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/drivers/:driverId/analytics',
+    { preHandler: [requireAuth], schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] } },
+    async (request, reply) => {
+      const { enterpriseId, driverId } = request.params as { enterpriseId: string; driverId: string }
+      const q = request.query as { days?: string }
+      const data = await getDriverAnalytics(
+        enterpriseId,
+        request.user.id,
+        driverId,
+        q.days ? Number(q.days) : 30,
+      )
+      return reply.send({ data })
     },
   )
 }

@@ -29,6 +29,17 @@ export { createSellerReviewSchema, createDeliveryReviewSchema, openDisputeSchema
 export { updatePreferencesSchema, sendNotificationSchema } from './notification'
 export { liaisonCreateVendorSchema, liaisonUpdateVendorSchema, liaisonCreatePartSchema, liaisonUpdatePartSchema } from './liaison'
 export {
+  driverStatusSchema,
+  createDriverSchema,
+  updateDriverSchema,
+  assignVehicleSchema,
+  driverDailyRecordSchema,
+  driverIncidentTypeSchema,
+  driverIncidentSeveritySchema,
+  createIncidentSchema,
+  driverAnalyticsQuerySchema,
+} from './driver'
+export {
   vehicleUsageTypeSchema,
   enterpriseMemberRoleSchema,
   createEnterpriseSchema,

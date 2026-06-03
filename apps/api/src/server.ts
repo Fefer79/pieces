@@ -23,6 +23,7 @@ import { notificationRoutes } from './modules/notification/notification.routes.j
 import { adminRoutes } from './modules/admin/admin.routes.js'
 import { liaisonRoutes } from './modules/liaison/liaison.routes.js'
 import { enterpriseRoutes } from './modules/enterprise/enterprise.routes.js'
+import { driverRoutes } from './modules/driver/driver.routes.js'
 import { returnRoutes } from './modules/returns/return.routes.js'
 import multipart from '@fastify/multipart'
 import { startWorker } from './modules/queue/worker.js'
@@ -71,6 +72,7 @@ export function buildApp() {
   fastify.register(adminRoutes, { prefix: '/api/v1/admin' })
   fastify.register(liaisonRoutes, { prefix: '/api/v1/liaison' })
   fastify.register(enterpriseRoutes, { prefix: '/api/v1/enterprises' })
+  fastify.register(driverRoutes, { prefix: '/api/v1/driver' })
   fastify.register(returnRoutes, { prefix: '/api/v1' })
 
   return fastify
