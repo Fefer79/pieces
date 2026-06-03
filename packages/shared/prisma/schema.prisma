@@ -15,6 +15,7 @@ enum Role {
   ADMIN
   ENTERPRISE
   LIAISON
+  DRIVER
 }
 
 model User {
@@ -43,6 +44,7 @@ model User {
   managedVendors       Vendor[]      @relation("VendorManagedByLiaison")
   liaisonCatalogItems  CatalogItem[] @relation("CatalogItemCreatedByLiaison")
   activityLogs         ActivityLog[]
+  driverProfiles       Driver[]      @relation("UserDriverProfile")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -370,6 +372,7 @@ model Enterprise {
   subscriptions       EnterpriseSubscription[]
   invoices            Invoice[]
   monthlyInvoices     EnterpriseMonthlyInvoice[]
+  drivers             Driver[]
 
   @@map("enterprises")
   @@index([slug], name: "idx_enterprises_slug")
@@ -602,6 +605,9 @@ model Vehicle {
 
   orders               Order[]
   maintenanceSchedules MaintenanceSchedule[]
+  driverAssignments    DriverAssignment[]
+  driverDailyRecords   DriverDailyRecord[]
+  driverIncidents      DriverIncident[]
 
   @@map("vehicles")
   @@index([userId], name: "idx_vehicles_user")
@@ -1097,4 +1103,115 @@ model CompetitorVendor {
   @@map("competitor_vendors")
   @@index([type, zone], name: "idx_competitor_vendors_type_zone")
   @@index([commune], name: "idx_competitor_vendors_commune")
+}
+
+// ===========================================================================
+// Gestion des chauffeurs (flotte) — onboarding + comptes, CA journalier,
+// affectation véhicule, incidents/impact. Rattaché à une Enterprise.
+// ===========================================================================
+
+enum DriverStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+model Driver {
+  id              String       @id @default(uuid())
+  enterpriseId    String       @map("enterprise_id")
+  enterprise      Enterprise   @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  // Lié au compte utilisateur du chauffeur une fois qu'il s'est connecté (OTP
+  // sur le même téléphone). Null tant qu'il n'a pas activé son accès.
+  userId          String?      @map("user_id")
+  user            User?        @relation("UserDriverProfile", fields: [userId], references: [id], onDelete: SetNull)
+  name            String
+  phone           String       // format +225XXXXXXXXXX
+  licenseNumber   String?      @map("license_number")
+  licenseCategory String?      @map("license_category")
+  photoUrl        String?      @map("photo_url")
+  status          DriverStatus @default(ACTIVE)
+  hiredAt         DateTime?    @map("hired_at")
+  notes           String?
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  assignments  DriverAssignment[]
+  dailyRecords DriverDailyRecord[]
+  incidents    DriverIncident[]
+
+  @@map("drivers")
+  @@unique([enterpriseId, phone], name: "uq_driver_phone")
+  @@index([enterpriseId], name: "idx_drivers_enterprise")
+  @@index([userId], name: "idx_drivers_user")
+}
+
+// Historique d'affectation chauffeur ↔ véhicule (endedAt = null → affectation active).
+model DriverAssignment {
+  id        String    @id @default(uuid())
+  driverId  String    @map("driver_id")
+  driver    Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicleId String    @map("vehicle_id")
+  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  startedAt DateTime  @default(now()) @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("driver_assignments")
+  @@index([driverId], name: "idx_driver_assignments_driver")
+  @@index([vehicleId], name: "idx_driver_assignments_vehicle")
+}
+
+// Relevé quotidien saisi par le chauffeur : CA, carburant, dépenses, km.
+model DriverDailyRecord {
+  id            String   @id @default(uuid())
+  driverId      String   @map("driver_id")
+  driver        Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicleId     String?  @map("vehicle_id")
+  vehicle       Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  date          DateTime @db.Date
+  revenue       Int      @default(0) // CA du jour (FCFA)
+  fuelCost      Int      @default(0) @map("fuel_cost")
+  otherExpenses Int      @default(0) @map("other_expenses")
+  kmDriven      Int?     @map("km_driven")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("driver_daily_records")
+  @@unique([driverId, date], name: "uq_driver_day")
+  @@index([driverId], name: "idx_driver_daily_driver")
+  @@index([vehicleId], name: "idx_driver_daily_vehicle")
+}
+
+enum DriverIncidentType {
+  ACCIDENT
+  INFRACTION
+  BREAKDOWN
+  COMPLAINT
+  OTHER
+}
+
+enum DriverIncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// Journal d'incidents/conduite — impact véhicule et rentabilité.
+model DriverIncident {
+  id           String                 @id @default(uuid())
+  driverId     String                 @map("driver_id")
+  driver       Driver                 @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicleId    String?                @map("vehicle_id")
+  vehicle      Vehicle?               @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  type         DriverIncidentType
+  severity     DriverIncidentSeverity @default(LOW)
+  date         DateTime               @db.Date
+  description  String?
+  costEstimate Int?                   @map("cost_estimate")
+  createdAt    DateTime               @default(now()) @map("created_at")
+
+  @@map("driver_incidents")
+  @@index([driverId], name: "idx_driver_incidents_driver")
+  @@index([vehicleId], name: "idx_driver_incidents_vehicle")
 }
