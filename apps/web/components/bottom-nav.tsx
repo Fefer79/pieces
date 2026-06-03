@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { useCart } from '@/lib/cart'
+import { EnterpriseMoreMenu } from './enterprise-more-menu'
 
 interface NavItem {
   href: string
@@ -11,7 +12,22 @@ interface NavItem {
   icon: (props: { active: boolean }) => React.ReactNode
 }
 
-function getNavItems(activeContext: string | null, isAuthenticated: boolean): NavItem[] {
+function getNavItems(
+  activeContext: string | null,
+  isAuthenticated: boolean,
+  onEnterprise: boolean,
+): NavItem[] {
+  // Sur /enterprise/*, la barre mobile bascule sur la navigation flotte.
+  // Les 3 raccourcis clés + un bouton « Plus » (rendu à part) qui ouvre le
+  // tiroir listant les 10 sections.
+  if (onEnterprise) {
+    return [
+      { href: '/enterprise/dashboard', label: 'Dashboard', icon: DashboardIcon },
+      { href: '/enterprise/vehicles', label: 'Véhicules', icon: CarIcon },
+      { href: '/enterprise/orders', label: 'Commandes', icon: OrdersIcon },
+    ]
+  }
+
   if (!isAuthenticated) {
     return [
       { href: '/', label: 'Accueil', icon: HomeIcon },
@@ -63,7 +79,8 @@ export function BottomNav() {
   const pathname = usePathname()
   const { user, isAuthenticated } = useAuth()
   const { count } = useCart()
-  const items = getNavItems(user?.activeContext ?? null, isAuthenticated)
+  const onEnterprise = pathname.startsWith('/enterprise')
+  const items = getNavItems(user?.activeContext ?? null, isAuthenticated, onEnterprise)
 
   return (
     <nav
@@ -96,6 +113,7 @@ export function BottomNav() {
             </Link>
           )
         })}
+        {onEnterprise && <EnterpriseMoreMenu />}
       </div>
     </nav>
   )
@@ -177,6 +195,17 @@ function InfoIcon({ active }: { active: boolean }) {
       <circle cx="12" cy="12" r="10" />
       <line x1="12" y1="16" x2="12" y2="12" />
       <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  )
+}
+
+function CarIcon({ active }: { active: boolean }) {
+  void active
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 17h14M5 17a2 2 0 01-2-2V9a2 2 0 012-2h14a2 2 0 012 2v6a2 2 0 01-2 2M7 21h10" />
+      <circle cx="7.5" cy="17.5" r="1" />
+      <circle cx="16.5" cy="17.5" r="1" />
     </svg>
   )
 }

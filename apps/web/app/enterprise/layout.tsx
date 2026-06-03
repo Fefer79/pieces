@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { EnterpriseSidebar } from './_components/enterprise-sidebar'
+import { AppShell } from '@/components/app-shell'
 
 type SupabaseClient = ReturnType<typeof createClient>
 type AccessState = 'loading' | 'authorized' | 'no-role'
@@ -99,12 +99,5 @@ export default function EnterpriseLayout({ children }: { children: React.ReactNo
     )
   }
 
-  return (
-    <div className="flex h-screen bg-[#FAFAFA]">
-      <EnterpriseSidebar />
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
-    </div>
-  )
+  return <AppShell>{children}</AppShell>
 }

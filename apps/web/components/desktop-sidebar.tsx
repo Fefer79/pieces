@@ -22,6 +22,7 @@ function getSections(
   activeContext: string | null,
   isAdmin: boolean,
   cartCount: number,
+  onEnterprise: boolean,
 ): NavSection[] {
   const adminSection: NavSection[] = isAdmin
     ? [{ title: 'Admin', items: [
@@ -29,6 +30,30 @@ function getSections(
         { href: '/liaison', label: 'Liaison', icon: UsersIcon },
       ] }]
     : []
+
+  // Sur les pages /enterprise/*, on déroule la navigation flotte complète
+  // (indépendamment de activeContext), pour que les 10 sections soient
+  // accessibles depuis le shell Cockpit.
+  if (onEnterprise) {
+    return [
+      { title: 'Flotte', items: [
+        { href: '/enterprise/dashboard', label: 'Tableau de bord', icon: GridIcon },
+        { href: '/enterprise/vehicles', label: 'Véhicules', icon: CarIcon },
+        { href: '/enterprise/members', label: 'Membres', icon: UsersIcon },
+        { href: '/enterprise/orders', label: 'Commandes', icon: OrdersIcon },
+        { href: '/enterprise/search', label: 'Recherche', icon: SearchIcon },
+        { href: '/enterprise/centers', label: 'Centres', icon: BuildingIcon },
+        { href: '/enterprise/returns', label: 'Retours', icon: ReturnIcon },
+        { href: '/enterprise/buffer-stock', label: 'Stock tampon', icon: BoxIcon },
+        { href: '/enterprise/invoices', label: 'Factures', icon: FileIcon },
+        { href: '/enterprise/billing', label: 'Abonnement', icon: CardIcon },
+      ] },
+      { title: 'Compte', items: [
+        { href: '/dashboard', label: 'Retour à l’app', icon: HomeIcon },
+      ] },
+      ...adminSection,
+    ]
+  }
 
   switch (activeContext) {
     case 'SELLER':
@@ -105,7 +130,8 @@ export function DesktopSidebar() {
     )
   }
 
-  const sections = getSections(user?.activeContext ?? null, isAdmin, count)
+  const onEnterprise = pathname.startsWith('/enterprise')
+  const sections = getSections(user?.activeContext ?? null, isAdmin, count, onEnterprise)
 
   return (
     <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:bg-ink lg:text-white">
@@ -189,4 +215,9 @@ const UsersIcon: Icon = ({ className }) => sv({ className, children: <><path d="
 const ShopIcon: Icon = ({ className }) => sv({ className, children: <><path d="M3 9l1-5h16l1 5M4 9v10a1 1 0 001 1h14a1 1 0 001-1V9M3 9h18" /></> })
 const DeliveryIcon: Icon = ({ className }) => sv({ className, children: <><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></> })
 const UserIcon: Icon = ({ className }) => sv({ className, children: <><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></> })
+const BuildingIcon: Icon = ({ className }) => sv({ className, children: <><path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21V12h6v9" /></> })
+const ReturnIcon: Icon = ({ className }) => sv({ className, children: <><polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 00-4-4H4" /></> })
+const BoxIcon: Icon = ({ className }) => sv({ className, children: <><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></> })
+const FileIcon: Icon = ({ className }) => sv({ className, children: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></> })
+const CardIcon: Icon = ({ className }) => sv({ className, children: <><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></> })
 const LogoutIcon: Icon = ({ className }) => sv({ className, children: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></> })
