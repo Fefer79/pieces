@@ -6,7 +6,10 @@ services:
     plan: starter
     rootDir: .
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm -F shared db:generate && pnpm -F api build
-    startCommand: pnpm -F shared exec prisma migrate deploy && pnpm -F api start
+    # `pnpm -F api start` lance `prisma migrate deploy` avant node (voir le script start
+    # de apps/api) : les migrations s'appliquent à chaque déploiement, même si le
+    # startCommand réel du service Render est resté « pnpm -F api start ».
+    startCommand: pnpm -F api start
     healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION

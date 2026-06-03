@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "build": "tsc --noEmit && node esbuild.config.js",
-    "start": "node dist/server.js",
+    "start": "pnpm -F shared run db:deploy && node dist/server.js",
     "lint": "eslint src",
     "test": "vitest run"
   },
