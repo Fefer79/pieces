@@ -88,19 +88,22 @@ describe('order.service', () => {
 
     it('propagates quantity to OrderItem and multiplies total by quantity', async () => {
       mockCatalogItemFindMany.mockResolvedValueOnce([
-        { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, vendorId: 'v1', commissionAmount: 250, vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } },
+        { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, condition: 'NEW', partSource: 'AFTERMARKET', vendorId: 'v1', commissionAmount: 250, vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } },
       ])
       mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
 
       await createOrder('user-1', [{ catalogItemId: 'item-1', quantity: 3 }])
 
       const createArg = mockOrderCreate.mock.calls[0]![0] as {
-        data: { totalAmount: number; items: { create: { quantity: number; commissionAmount: number | null }[] } }
+        data: { totalAmount: number; items: { create: { quantity: number; commissionAmount: number | null; condition: string | null; partSource: string | null }[] } }
       }
       expect(createArg.data.totalAmount).toBe(15000)
       expect(createArg.data.items.create[0]!.quantity).toBe(3)
       // commission reste le snapshot unitaire (non multiplié)
       expect(createArg.data.items.create[0]!.commissionAmount).toBe(250)
+      // condition/partSource snapshotés à la commande
+      expect(createArg.data.items.create[0]!.condition).toBe('NEW')
+      expect(createArg.data.items.create[0]!.partSource).toBe('AFTERMARKET')
     })
 
     it('sums quantities when the same catalogItemId appears twice', async () => {

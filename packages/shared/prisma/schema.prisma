@@ -775,6 +775,8 @@ model OrderItem {
   priceSnapshot   Int      @map("price_snapshot")
   quantity        Int      @default(1)
   imageThumbUrl   String?  @map("image_thumb_url")
+  condition       PartCondition? // snapshot de la condition à la commande
+  partSource      PartSource?    @map("part_source")
   commissionAmount Int?    @map("commission_amount")
   createdAt       DateTime @default(now()) @map("created_at")
 

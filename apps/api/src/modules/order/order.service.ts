@@ -55,6 +55,8 @@ async function buildOrderItems(qtyById: Map<string, number>) {
       category: true,
       price: true,
       imageThumbUrl: true,
+      condition: true,
+      partSource: true,
       vendorId: true,
       commissionAmount: true,
       vendor: { select: { id: true, shopName: true, status: true } },
@@ -78,6 +80,8 @@ async function buildOrderItems(qtyById: Map<string, number>) {
     category: item.category,
     priceSnapshot: item.price ?? 0,
     quantity: qtyById.get(item.id) ?? 1,
+    condition: item.condition,
+    partSource: item.partSource,
     commissionAmount: item.commissionAmount,
     imageThumbUrl: item.imageThumbUrl,
   }))

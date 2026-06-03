@@ -72,6 +72,28 @@ export function ConditionChip({ condition, className }: { condition: Condition; 
   )
 }
 
+const ORDER_STATUS: Record<string, { label: string; variant: ChipVariant }> = {
+  DRAFT: { label: 'Brouillon', variant: 'oem' },
+  PENDING_PAYMENT: { label: 'À payer', variant: 'status-warn' },
+  PAID: { label: 'Payé', variant: 'status-ok' },
+  VENDOR_CONFIRMED: { label: 'Confirmé', variant: 'status-ok' },
+  DISPATCHED: { label: 'Expédié', variant: 'status-warn' },
+  IN_TRANSIT: { label: 'En transit', variant: 'status-warn' },
+  DELIVERED: { label: 'Livré', variant: 'occasion' },
+  CONFIRMED: { label: 'Confirmé', variant: 'status-ok' },
+  COMPLETED: { label: 'Terminé', variant: 'status-ok' },
+  CANCELLED: { label: 'Annulé', variant: 'status-err' },
+}
+
+export function StatusChip({ status, className }: { status: string; className?: string }) {
+  const s = ORDER_STATUS[status] ?? { label: status, variant: 'plain' as ChipVariant }
+  return (
+    <Chip variant={s.variant} className={className}>
+      {s.label}
+    </Chip>
+  )
+}
+
 const PART_SOURCE_LABELS = {
   OEM: 'OEM',
   AFTERMARKET: 'Aftermarket',

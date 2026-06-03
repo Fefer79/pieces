@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-context'
 import { ROLE_LABELS } from '@/lib/role-labels'
 import { StatCard } from '@/components/ui/card'
 import { Price } from '@/components/ui/price'
+import { useCart } from '@/lib/cart'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -102,6 +103,8 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchDashboard() }, [fetchDashboard])
 
+  const { count: cartCount } = useCart()
+
   if (loading) {
     return (
       <main className="flex min-h-[50vh] items-center justify-center">
@@ -113,7 +116,7 @@ export default function DashboardPage() {
   const roleName = user?.activeContext ? (ROLE_LABELS[user.activeContext] ?? user.activeContext) : ''
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-6 lg:py-8">
+    <main className="mx-auto w-full max-w-[1100px] px-4 py-6 lg:px-7 lg:py-8">
       {/* Header */}
       <div className="mb-6">
         <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
@@ -123,9 +126,12 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats cards */}
-      <div className="mb-6 grid grid-cols-3 gap-3">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Commandes" value={orderStats.total} />
         <StatCard label="En cours" value={orderStats.active} />
+        <Link href="/panier" className="block">
+          <StatCard label="Ma sélection" value={cartCount} />
+        </Link>
         <StatCard label="Véhicules" value={vehicles.length} />
       </div>
 
