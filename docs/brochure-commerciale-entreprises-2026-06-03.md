@@ -1,12 +1,10 @@
 # Pièces Entreprises — Brochure commerciale
-Édition de juin 2026 — packaging Flotte Pro à trois niveaux, avec gestion des chauffeurs
 
 La plateforme pour les gestionnaires de flotte qui veulent reprendre le contrôle de leur budget pièces, de leur entretien et de la rentabilité de chaque véhicule — chauffeur compris.
 
 ## En une phrase
 
-Trois niveaux, une seule plateforme
-Pièces se construit en trois étages indépendants. Chacun répond à un besoin distinct ; chacun se prend séparément. Vous montez en étage uniquement quand la valeur que vous y trouvez le justifie.
+Une plateforme, trois offres.
 
 | GRATUIT | FLOTTE PRO | FLOTTE PRO + |
 |---|---|---|
@@ -14,36 +12,36 @@ Pièces se construit en trois étages indépendants. Chacun répond à un besoin
 | 0 F | 5 000 F / véhicule / mois | 10 000 F / véhicule / mois |
 | Achetez mieux. La marketplace de référence pour vos pièces auto avec confiance intermédiée. | Pilotez votre flotte et vos chauffeurs. L'analytique qui révèle où part votre budget, qui gagne de l'argent et qui en perd, l'automatisation qui anticipe les pannes, et la facturation normalisée DGI. | Tout Flotte Pro + ne perdez plus une journée. Livraison express en 3 h (6 h maximum) et assistance dédiée. |
 
-Flotte Pro et Flotte Pro + se choisissent selon votre besoin. **Flotte Pro + inclut intégralement Flotte Pro** : c'est un abonnement unique à 10 000 F/véhicule/mois (prix flat, pas de paliers) qui ajoute la couche urgence — pas un cumul. Vous pouvez aussi rester en gratuit aussi longtemps que vous voulez — pas de gating par taille de flotte.
+Flotte Pro et Flotte Pro + se choisissent selon votre besoin. **Flotte Pro + inclut intégralement Flotte Pro** : c'est un abonnement unique à 10 000 F/véhicule/mois qui ajoute la couche urgence.
 
 ## Pour qui ?
-Vous exploitez 5 véhicules ou plus en Côte d'Ivoire et l'entretien — ou le suivi de vos chauffeurs — est devenu un casse-tête ?
+Vous exploitez 5 véhicules ou plus en Côte d'Ivoire et l'entretien, ou le suivi de vos chauffeurs, peut être amélioré ?
 - VTC, taxi, transport de personnes
 - Livraison urbaine et inter-régionale
 - BTP, mines, agro-industrie
 - Location longue durée
-- Services administratifs (parc auto entreprise / ministère)
+- Parcs auto entreprise / administrations
 
-Si vous dépensez plus de 15 millions de FCFA par an en pièces, ou si vous gérez des chauffeurs sans savoir véhicule par véhicule qui rapporte et qui coûte, cette brochure est faite pour vous.
+Si vous dépensez beaucoup par an en pièces et entretien, ou vous gérez des chauffeurs sans savoir véhicule par véhicule qui rapporte et qui coûte, cette brochure est faite pour vous.
 
-## Le constat — pourquoi votre flotte coûte plus qu'elle ne devrait
+## Le constat : pourquoi votre flotte coûte plus qu'elle ne devrait
 Sans plateforme dédiée :
 Les prix sont opaques. Chaque mécanicien, chaque fournisseur, chaque commande est un point isolé. Impossible de comparer, impossible de négocier.
 Les véhicules « gouffres » se cachent. 5 % de votre parc consomme 30 % du budget pièces, mais personne ne les identifie.
-Les chauffeurs ne sont pas pilotés. Recette du jour notée sur un cahier, carburant non rapproché, incidents oubliés — vous ne savez pas quel chauffeur ni quel véhicule est réellement rentable.
-Les ruptures coûtent cher. Une plaquette qui manque, c'est un véhicule immobilisé 48 h. Deux fois par mois × 20 véhicules = des dizaines de jours perdus par an.
+Les chauffeurs ne sont pas pilotés. Recette du jour notée sur un cahier, carburant non rapproché, incidents oubliés : vous ne remarquez pas quel chauffeur ni quel véhicule est réellement rentable.
+Les ruptures coûtent cher. Une plaquette qui manque, c'est un véhicule immobilisé 24, voire 48 h. Deux fois par mois × 20 véhicules = des dizaines de jours perdus par an.
 Les retours sont un cauchemar. Une pièce défectueuse ? Discussions interminables avec le fournisseur, perte sèche dans 30 % des cas.
 La maintenance prédictive n'existe pas. Vous réagissez à la panne, vous ne la prévenez pas.
 
 ## Niveau 1 — Pièces.ci · Gratuit
 « Achetez mieux. »
 
-La marketplace de référence pour vos pièces auto. Vous arrêtez de surpayer en mettant des dizaines de fournisseurs en concurrence sur chaque pièce, avec la confiance d'une garantie intermédiée par Pièces.
+La marketplace de référence pour vos pièces auto. Vous arrêtez de surpayer en mettant des fournisseurs en concurrence sur chaque pièce, avec la confiance d'une garantie intermédiée par Pièces.
 ## Ce que vous avez, gratuitement :
 - Catalogue avec compatibilité véhicule garantie (marque, modèle, année, motorisation, VIN)
 - Sélecteur de véhicule par cascade (marque → modèle → année → motorisation) ou par VIN
 - Comparateur multi-fournisseurs sur le prix
-- Garantie pièce intermédiée — vous ne négociez plus avec le fournisseur en cas de défaut
+- Garantie pièce intermédiée 
 - Workflow retours structuré (pièce défectueuse, mauvaise référence, etc.)
 - 1 centre de maintenance déclaré
 - Jusqu'à 2 utilisateurs
@@ -51,7 +49,7 @@ La marketplace de référence pour vos pièces auto. Vous arrêtez de surpayer e
 - Devis PDF professionnel signé Pièces (par commande)
 - Export CSV des commandes
 
-Pièces se rémunère sur la commission fournisseur. Vous ne payez strictement rien pour utiliser la marketplace.
+Vous ne payez strictement rien pour utiliser la marketplace.
 
 ## Niveau 2 — Pièces Flotte Pro · 5 000 F / véhicule / mois
 « Pilotez votre flotte et vos chauffeurs. »
@@ -59,22 +57,21 @@ Pièces se rémunère sur la commission fournisseur. Vous ne payez strictement r
 L'analytique qui révèle où part votre budget pièce par pièce, véhicule par véhicule, chauffeur par chauffeur. L'automatisation qui anticipe les pannes plutôt que d'y réagir. Tout ce qui transforme un parc subi en parc piloté.
 ## Intelligence flotte
 - Véhicules et utilisateurs illimités, rôles fins (gestionnaire, mécanicien, comptable)
-- Tableau de bord flotte multi-véhicules : dépenses du mois, alertes maintenance, top 5 véhicules les plus coûteux
-- Détection automatique des véhicules « gouffres » — coût > 1,5× la moyenne flotte similaire
+- Tableau de bord flotte multi-véhicules : dépenses du mois, alertes maintenance, classement des véhicules par coût
+- Détection automatique des véhicules « gouffres »
 - Fiche véhicule enrichie : coût total cumulé, YTD, comparaison flotte similaire, graphique 12 mois
 - Comparateur enrichi : scoring qualité fournisseur sur 100, garantie comparée, recommandations « meilleur sur tous critères »
 - Reporting avancé : coût/km, par catégorie, mois/mois, exports CSV par flotte
-- **Vue analytiques flotte dédiée** : une page qui agrège toute la flotte — dépense par catégorie de pièce, par type d'usage (VTC, livraison, BTP…) et par parc/groupe de véhicules, courbe mensuelle sur 12 mois, coût au km moyen et classement des véhicules les plus coûteux au kilomètre. Vous voyez d'un coup où part le budget et quels véhicules tirent vos coûts vers le haut.
+- **Vue analytiques flotte dédiée** : une page qui agrège toute la flotte : dépense par catégorie de pièce, par type d'usage et par parc/groupe de véhicules, courbe mensuelle sur 12 mois, coût au km moyen et classement des véhicules les plus coûteux au kilomètre. Vous voyez d'un coup où part le budget et quels véhicules tirent vos coûts vers le haut.
 
-## Gestion des chauffeurs *(nouveau)*
+## Gestion des chauffeurs 
 Le pilotage ne s'arrête plus au véhicule : il descend jusqu'à l'homme qui le conduit.
-- **Onboarding chauffeur en 2 minutes** : nom, téléphone, numéro et catégorie de permis, photo. Le chauffeur reçoit une invitation et active son compte par OTP — aucune installation, ça marche sur n'importe quel téléphone.
+- **Onboarding chauffeur en 2 minutes** : nom, téléphone, numéro et catégorie de permis, photo. Le chauffeur reçoit une invitation et active son compte par OTP : aucune installation, ça marche sur n'importe quel smarttéléphone.
 - **Affectation chauffeur ↔ véhicule** : qui conduit quoi, depuis quand. Historique complet des affectations conservé à chaque rotation.
 - **Recette quotidienne** : le chauffeur (ou le gestionnaire) saisit chaque jour la recette (CA du jour), le carburant, les autres dépenses et le kilométrage. Le résultat net du jour se calcule tout seul.
-- **Suivi des incidents** : accident, infraction, panne, plainte client — chacun horodaté, qualifié par gravité (faible / moyenne / élevée) et chiffré (coût estimé). Fini les incidents oubliés.
 - **KPIs chauffeur** : recette nette par chauffeur, tendance, comparaison entre chauffeurs et entre véhicules. Vous voyez enfin qui rapporte, qui coûte, et où agir.
 
-## Espace chauffeur en self-service *(nouveau)*
+## Espace chauffeur 
 Chaque chauffeur a son propre espace, ultra-simplifié :
 - Activation du compte par OTP, sans mot de passe à retenir
 - Le véhicule qui lui est affecté, en un coup d'œil
@@ -84,7 +81,7 @@ Chaque chauffeur a son propre espace, ultra-simplifié :
 
 ## Automatisation
 - Alertes prédictives multi-canal (WhatsApp, SMS, email) avant la panne
-- **Rappels d'entretien automatiques par WhatsApp** : un scan quotidien repère les entretiens dus ou en retard et prévient tout seul vos gestionnaires — rien à surveiller, vous êtes notifié au bon moment.
+- **Rappels d'entretien automatiques par WhatsApp** : un scan quotidien repère les entretiens dus ou en retard et prévient tout seul vos gestionnaires : rien à surveiller, vous êtes notifié au bon moment.
 - **Commande en un clic depuis l'alerte** : chaque alerte d'entretien (tableau de bord) et chaque entretien programmé (fiche véhicule) porte un bouton « Commander ». Au clic, la recherche catalogue est pré-remplie avec la bonne pièce et la compatibilité du véhicule, et la commande est automatiquement rattachée au véhicule pour alimenter son suivi de coûts. La boucle alerte → pièce → commande → coût est fermée, sans ressaisie.
 - Stock tampon avec réapprovisionnement automatique sur vos références critiques
 - Centres de maintenance multiples + rattachement véhicule → centre
@@ -92,12 +89,12 @@ Chaque chauffeur a son propre espace, ultra-simplifié :
 - Jour de livraison hebdomadaire défini par centre
 
 ## Facturation & conformité fiscale
-- **Factures normalisées DGI** sur chaque commande — numéro de validation, QR code, mentions obligatoires, conformes au standard de la Direction Générale des Impôts.
+- **Factures normalisées DGI** sur chaque commande : numéro de validation, QR code, mentions obligatoires, conformes au standard de la Direction Générale des Impôts.
 - **Facture mensuelle consolidée** : un seul PDF récapitulant toutes vos commandes du mois, ventilées par vendeur, véhicule, centre, avec TVA détachée. Prêt à transmettre à votre comptable, fin des liasses à reconstituer.
 - **Module optimisation fiscale** : ventilation automatique pièces / entretien / réparation, calcul de la TVA récupérable, export FEC compatible avec votre logiciel comptable. Pour une flotte au régime du réel, économie d'impôt typique de 1 à 2 % du budget pièces annuel.
 
 ## Service
-- Devis PDF et PDF historique véhicule signés Pièces — arguments forts à la revente
+- Devis PDF et PDF historique véhicule signés Pièces
 - Support prioritaire avec première réponse sous 4 h ouvrées
 - Revue trimestrielle de flotte avec un Liaison Pièces (30 min)
 
@@ -116,10 +113,10 @@ Pour une flotte de 50 véhicules, l'abonnement Flotte Pro est remboursé en 3 se
 
 Flotte Pro + **inclut intégralement Flotte Pro** (toute l'intelligence flotte, la gestion des chauffeurs, l'automatisation, la facturation normalisée et le service) et y ajoute la couche urgence ci-dessous. Un véhicule immobilisé coûte 30 000 à 50 000 FCFA par jour à un transporteur ou un taxi — la couche urgence transforme cette exposition en une promesse opérationnelle chiffrée.
 
-**Tarification** : un abonnement unique à **10 000 F / véhicule / mois**, prix flat (pas de paliers). Flotte Pro + remplace Flotte Pro — vous ne cumulez pas les deux. Exemple flotte 20 véhicules : **200 000 F/mois tout compris**, vs 100 000 F en Flotte Pro seul.
+**Tarification** : un abonnement unique à **10 000 F / véhicule / mois**, prix unique. Flotte Pro + remplace Flotte Pro — vous ne cumulez pas les deux. Exemple flotte 20 véhicules : **200 000 F/mois tout compris**, vs 100 000 F en Flotte Pro seul.
 ## À Abidjan
 - Livraison express : 3 heures, 6 heures maximum, quand la pièce est en stock chez un vendeur partenaire
-- 5 livraisons express incluses par mois — au-delà, 1 500 F par livraison supplémentaire
+- 5 livraisons express incluses par mois : au-delà, 1 500 F par livraison supplémentaire
 
 ## Hors Abidjan (San-Pédro, Bouaké, Yamoussoukro, Korhogo…)
 - Livraison prioritaire, plus rapide que le standard
@@ -128,7 +125,7 @@ Flotte Pro + **inclut intégralement Flotte Pro** (toute l'intelligence flotte, 
 ## Assistance
 - Pickup prioritaire : le livreur Pièces récupère la pièce chez le vendeur en 30 min
 - Numéro WhatsApp dédié, ouvert 6 h – 22 h, 7 j / 7
-- Concierge dépannage : un appel, Pièces trouve la pièce et l'achemine — même si elle n'est pas dans le catalogue
+- Concierge dépannage : un appel, Pièces trouve la pièce et l'achemine : même si elle n'est pas dans le catalogue
 
 ## Récapitulatif des fonctionnalités par niveau
 
@@ -188,10 +185,8 @@ Rappel : **Flotte Pro + = Flotte Pro + couche urgence**, donc toute fonctionnali
 Nos engagements commerciaux
 ## Essai 30 jours sur Flotte Pro
 À l'inscription, toutes les fonctionnalités Flotte Pro sont activées 30 jours gratuitement et sans engagement. Vous voyez la valeur avant de décider. À J+30, vous choisissez : continuer avec Flotte Pro, ou repasser sur le niveau gratuit.
-## Garantie ROI à 3 mois
-Si à 3 mois Flotte Pro ne vous a pas fait économiser au moins l'équivalent de l'abonnement, vous repassez en gratuit et nous vous remboursons la dernière mensualité. Nous prenons le risque.
 ## Paiement annuel = 2 mois offerts
-Payer Flotte Pro annuellement d'avance vous fait gagner l'équivalent de 2 mois (16,7 % de remise effective). Cash up-front pour vous, prévisibilité pour nous. Idéal pour les services administratifs et les flottes structurées.
+Payer Flotte Pro annuellement d'avance vous fait gagner l'équivalent de 2 mois (16,7 % de remise effective). Cash up-front pour vous, prévisibilité pour nous. Idéal pour les flottes structurées.
 ## Calculateur ROI à l'inscription
 Avant même de saisir vos véhicules, indiquez votre budget pièces annuel. Pièces calcule en temps réel l'économie projetée, le coût Flotte Pro (5 000 F × véhicules), et le ROI net. La décision devient une évidence arithmétique. Le calculateur est aussi accessible en ligne sur pieces.ci/entreprises/calculateur-roi.
 
