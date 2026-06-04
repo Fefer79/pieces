@@ -64,6 +64,7 @@ L'analytique qui révèle où part votre budget pièce par pièce, véhicule par
 - Fiche véhicule enrichie : coût total cumulé, YTD, comparaison flotte similaire, graphique 12 mois
 - Comparateur enrichi : scoring qualité fournisseur sur 100, garantie comparée, recommandations « meilleur sur tous critères »
 - Reporting avancé : coût/km, par catégorie, mois/mois, exports CSV par flotte
+- **Vue analytiques flotte dédiée** : une page qui agrège toute la flotte — dépense par catégorie de pièce, par type d'usage (VTC, livraison, BTP…) et par parc/groupe de véhicules, courbe mensuelle sur 12 mois, coût au km moyen et classement des véhicules les plus coûteux au kilomètre. Vous voyez d'un coup où part le budget et quels véhicules tirent vos coûts vers le haut.
 
 ## Gestion des chauffeurs *(nouveau)*
 Le pilotage ne s'arrête plus au véhicule : il descend jusqu'à l'homme qui le conduit.
@@ -83,6 +84,8 @@ Chaque chauffeur a son propre espace, ultra-simplifié :
 
 ## Automatisation
 - Alertes prédictives multi-canal (WhatsApp, SMS, email) avant la panne
+- **Rappels d'entretien automatiques par WhatsApp** : un scan quotidien repère les entretiens dus ou en retard et prévient tout seul vos gestionnaires — rien à surveiller, vous êtes notifié au bon moment.
+- **Commande en un clic depuis l'alerte** : chaque alerte d'entretien (tableau de bord) et chaque entretien programmé (fiche véhicule) porte un bouton « Commander ». Au clic, la recherche catalogue est pré-remplie avec la bonne pièce et la compatibilité du véhicule, et la commande est automatiquement rattachée au véhicule pour alimenter son suivi de coûts. La boucle alerte → pièce → commande → coût est fermée, sans ressaisie.
 - Stock tampon avec réapprovisionnement automatique sur vos références critiques
 - Centres de maintenance multiples + rattachement véhicule → centre
 - Calendrier d'entretien prédictif par véhicule (vidange, filtres, plaquettes, courroie, pneus…) avec seuils d'alerte au km
@@ -160,7 +163,10 @@ Rappel : **Flotte Pro + = Flotte Pro + couche urgence**, donc toute fonctionnali
 | Détection automatique véhicules « gouffres » | — | ✓ | ✓ |
 | Graphique mensuel 12 mois par véhicule | — | ✓ | ✓ |
 | Reporting avancé (coût/km, par catégorie, mois/mois) | — | ✓ | ✓ |
+| Vue analytiques flotte (catégorie, usage, parc, coût/km) | — | ✓ | ✓ |
 | Alertes prédictives multi-canal (WhatsApp/SMS/email) | — | ✓ | ✓ |
+| Rappels d'entretien automatiques par WhatsApp | — | ✓ | ✓ |
+| Commande en un clic depuis une alerte d'entretien | — | ✓ | ✓ |
 | Calendrier d'entretien prédictif par véhicule | — | ✓ | ✓ |
 | **Stock tampon** |  |  |  |
 | Définition manuelle SKU critiques + alertes seuils | ✓ | ✓ | ✓ |
