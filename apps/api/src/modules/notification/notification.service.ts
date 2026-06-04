@@ -81,3 +81,21 @@ export async function notifyRiderAssignment(phone: string, deliveryId: string, p
   const message = `Nouvelle livraison ${deliveryId.slice(0, 8)} assignée. Récupérez à : ${pickupAddress}`
   return sendNotification({ to: phone, channel: 'whatsapp', message })
 }
+
+export async function notifyMaintenanceDue(
+  phone: string,
+  args: { vehicle: string; part: string; status: 'OVERDUE' | 'DUE_SOON'; kmRemaining: number | null },
+) {
+  const { vehicle, part, status, kmRemaining } = args
+  const km = kmRemaining != null ? Math.abs(kmRemaining).toLocaleString('fr-FR') : null
+  const detail =
+    status === 'OVERDUE'
+      ? km
+        ? `en retard de ${km} km`
+        : 'en retard'
+      : km
+        ? `à prévoir dans ${km} km`
+        : 'à prévoir bientôt'
+  const message = `🔧 Entretien ${vehicle} : ${part} ${detail}. Commandez la pièce sur Pièces.`
+  return sendNotification({ to: phone, channel: 'whatsapp', message })
+}

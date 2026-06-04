@@ -1,7 +1,27 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { notifyMaintenanceDue } from '../notification/notification.service.js'
 import type { MaintenanceKind } from '@prisma/client'
+
+const KIND_LABEL: Record<string, string> = {
+  OIL_CHANGE: 'Vidange moteur',
+  OIL_FILTER: 'Filtre à huile',
+  AIR_FILTER: 'Filtre à air',
+  FUEL_FILTER: 'Filtre à carburant',
+  CABIN_FILTER: "Filtre d'habitacle",
+  BRAKE_PADS_FRONT: 'Plaquettes avant',
+  BRAKE_PADS_REAR: 'Plaquettes arrière',
+  TIMING_BELT: 'Courroie de distribution',
+  TIRES: 'Pneus',
+  COOLANT: 'Liquide de refroidissement',
+  TRANSMISSION_FLUID: 'Huile de boîte',
+  OTHER: 'Entretien',
+}
+
+// On re-notifie une échéance toujours due au bout de 30 jours, même sans
+// changement de statut, pour ne pas l'oublier — mais pas tous les jours.
+const RENOTIFY_AFTER_MS = 30 * 86_400_000
 
 export interface ScheduleInput {
   kind: MaintenanceKind
@@ -275,4 +295,99 @@ export async function markScheduleDone(
     data: { lastDoneAtKm: km, lastDoneAt: new Date() },
     select: SELECT,
   })
+}
+
+/**
+ * Parcourt les entretiens dus (OVERDUE / DUE_SOON) de toutes les entreprises
+ * (ou d'une seule) et envoie un rappel WhatsApp aux gestionnaires (OWNER /
+ * MANAGER). Dédoublonnage : on ne renvoie un rappel que si le statut a changé
+ * depuis le dernier envoi, ou après 30 jours pour une échéance toujours due.
+ * Idempotent et sûr à rejouer.
+ */
+export async function scanAndSendReminders(opts?: { enterpriseId?: string }) {
+  const enterprises = await prisma.enterprise.findMany({
+    where: opts?.enterpriseId ? { id: opts.enterpriseId } : {},
+    select: {
+      id: true,
+      members: {
+        where: { role: { in: ['OWNER', 'MANAGER'] } },
+        select: { user: { select: { phone: true } } },
+      },
+      vehicles: {
+        select: {
+          id: true,
+          brand: true,
+          model: true,
+          year: true,
+          plate: true,
+          mileage: true,
+          maintenanceSchedules: {
+            where: { enabled: true },
+            select: {
+              id: true,
+              kind: true,
+              label: true,
+              intervalKm: true,
+              warningKm: true,
+              lastDoneAtKm: true,
+              lastNotifiedAt: true,
+              lastNotifiedStatus: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  const now = Date.now()
+  let schedulesDue = 0
+  let schedulesNotified = 0
+  let notificationsSent = 0
+
+  for (const ent of enterprises) {
+    const phones = [
+      ...new Set(
+        ent.members
+          .map((m) => m.user?.phone)
+          .filter((p): p is string => Boolean(p)),
+      ),
+    ]
+
+    for (const v of ent.vehicles) {
+      for (const s of v.maintenanceSchedules) {
+        const { status, kmRemaining } = computeScheduleStatus(v.mileage, s)
+        if (status !== 'OVERDUE' && status !== 'DUE_SOON') continue
+        schedulesDue++
+
+        const statusChanged = s.lastNotifiedStatus !== status
+        const stale =
+          s.lastNotifiedAt == null || now - s.lastNotifiedAt.getTime() >= RENOTIFY_AFTER_MS
+        if (!statusChanged && !stale) continue
+
+        // Sans contact joignable, on ne marque pas l'échéance : on réessaiera
+        // dès qu'un gestionnaire avec téléphone sera ajouté.
+        if (phones.length === 0) continue
+
+        const part = s.label ?? KIND_LABEL[s.kind] ?? 'Entretien'
+        const vehicle = `${v.brand} ${v.model} ${v.year}${v.plate ? ` (${v.plate})` : ''}`
+        for (const phone of phones) {
+          const res = await notifyMaintenanceDue(phone, { vehicle, part, status, kmRemaining })
+          if (res.success === true) notificationsSent++
+        }
+
+        await prisma.maintenanceSchedule.update({
+          where: { id: s.id },
+          data: { lastNotifiedAt: new Date(), lastNotifiedStatus: status },
+        })
+        schedulesNotified++
+      }
+    }
+  }
+
+  return {
+    enterprisesChecked: enterprises.length,
+    schedulesDue,
+    schedulesNotified,
+    notificationsSent,
+  }
 }

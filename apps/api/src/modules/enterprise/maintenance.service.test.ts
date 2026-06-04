@@ -13,6 +13,8 @@ const scheduleFindFirst = vi.fn()
 const vehicleFindMany = vi.fn()
 const vehicleFindFirst = vi.fn()
 const enterpriseMemberFindUnique = vi.fn()
+const enterpriseFindMany = vi.fn()
+const notifyMaintenanceDue = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
@@ -26,10 +28,17 @@ vi.mock('../../lib/prisma.js', () => ({
       findMany: (...a: unknown[]) => vehicleFindMany(...a),
       findFirst: (...a: unknown[]) => vehicleFindFirst(...a),
     },
+    enterprise: {
+      findMany: (...a: unknown[]) => enterpriseFindMany(...a),
+    },
     enterpriseMember: {
       findUnique: (...a: unknown[]) => enterpriseMemberFindUnique(...a),
     },
   },
+}))
+
+vi.mock('../notification/notification.service.js', () => ({
+  notifyMaintenanceDue: (...a: unknown[]) => notifyMaintenanceDue(...a),
 }))
 
 const {
@@ -37,6 +46,7 @@ const {
   listSchedules,
   markScheduleDone,
   listEnterpriseUpcomingMaintenance,
+  scanAndSendReminders,
 } = await import('./maintenance.service.js')
 
 function asMember(role = 'OWNER') {
@@ -179,5 +189,92 @@ describe('listEnterpriseUpcomingMaintenance', () => {
     expect(result.alerts[0]?.status).toBe('DUE_SOON')
     expect(result.alerts[0]?.estimatedDaysToDue).toBeGreaterThanOrEqual(4)
     expect(result.alerts[0]?.estimatedDaysToDue).toBeLessThanOrEqual(6)
+  })
+})
+
+describe('scanAndSendReminders', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    notifyMaintenanceDue.mockResolvedValue({ success: true })
+  })
+
+  function enterpriseWith(schedule: Record<string, unknown>, phone: string | null = '+2250700000000') {
+    return {
+      id: 'e1',
+      members: [{ user: { phone } }],
+      vehicles: [
+        {
+          id: 'v1',
+          brand: 'Toyota',
+          model: 'Hilux',
+          year: 2018,
+          plate: 'AB-1',
+          mileage: 20000,
+          maintenanceSchedules: [schedule],
+        },
+      ],
+    }
+  }
+
+  it('notifies an overdue schedule never notified before, and marks it', async () => {
+    enterpriseFindMany.mockResolvedValueOnce([
+      enterpriseWith({
+        id: 's1', kind: 'OIL_CHANGE', label: null, intervalKm: 5000, warningKm: 500,
+        lastDoneAtKm: 10000, lastNotifiedAt: null, lastNotifiedStatus: null,
+      }),
+    ])
+    // overdue: nextDue = 15000, mileage 20000 -> kmRemaining -5000
+
+    const res = await scanAndSendReminders()
+
+    expect(res.schedulesDue).toBe(1)
+    expect(res.schedulesNotified).toBe(1)
+    expect(res.notificationsSent).toBe(1)
+    expect(notifyMaintenanceDue).toHaveBeenCalledTimes(1)
+    expect(notifyMaintenanceDue).toHaveBeenCalledWith(
+      '+2250700000000',
+      expect.objectContaining({ status: 'OVERDUE', part: 'Vidange moteur' }),
+    )
+    expect(scheduleUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 's1' },
+        data: expect.objectContaining({ lastNotifiedStatus: 'OVERDUE' }),
+      }),
+    )
+  })
+
+  it('skips a schedule already notified for the same status recently', async () => {
+    enterpriseFindMany.mockResolvedValueOnce([
+      enterpriseWith({
+        id: 's1', kind: 'OIL_CHANGE', label: null, intervalKm: 5000, warningKm: 500,
+        lastDoneAtKm: 10000, lastNotifiedAt: new Date(), lastNotifiedStatus: 'OVERDUE',
+      }),
+    ])
+
+    const res = await scanAndSendReminders()
+
+    expect(res.schedulesDue).toBe(1)
+    expect(res.schedulesNotified).toBe(0)
+    expect(notifyMaintenanceDue).not.toHaveBeenCalled()
+    expect(scheduleUpdate).not.toHaveBeenCalled()
+  })
+
+  it('does not mark a due schedule when no manager phone is reachable', async () => {
+    enterpriseFindMany.mockResolvedValueOnce([
+      enterpriseWith(
+        {
+          id: 's1', kind: 'OIL_CHANGE', label: null, intervalKm: 5000, warningKm: 500,
+          lastDoneAtKm: 10000, lastNotifiedAt: null, lastNotifiedStatus: null,
+        },
+        null,
+      ),
+    ])
+
+    const res = await scanAndSendReminders()
+
+    expect(res.schedulesDue).toBe(1)
+    expect(res.schedulesNotified).toBe(0)
+    expect(notifyMaintenanceDue).not.toHaveBeenCalled()
+    expect(scheduleUpdate).not.toHaveBeenCalled()
   })
 })

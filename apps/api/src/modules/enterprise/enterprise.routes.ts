@@ -43,6 +43,7 @@ import {
   deleteSchedule,
   markScheduleDone,
   listEnterpriseUpcomingMaintenance,
+  scanAndSendReminders,
   type ScheduleInput,
 } from './maintenance.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
@@ -54,6 +55,7 @@ import {
   inviteMember,
   listMembers,
   removeMember,
+  assertMember,
 } from './enterprise.service.js'
 import {
   listEnterpriseVehicles,
@@ -473,6 +475,22 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { enterpriseId } = request.params as { enterpriseId: string }
       const data = await listEnterpriseUpcomingMaintenance(enterpriseId, request.user.id)
+      return reply.send({ data })
+    },
+  )
+
+  // Déclenchement manuel des rappels WhatsApp pour cette entreprise (test /
+  // envoi immédiat). Le scan automatique tourne par ailleurs chaque jour.
+  fastify.post(
+    '/:enterpriseId/maintenance/send-reminders',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Envoie immédiatement les rappels d\'entretien dus (OWNER/MANAGER)' },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      await assertMember(enterpriseId, request.user.id, ['OWNER', 'MANAGER'])
+      const data = await scanAndSendReminders({ enterpriseId })
       return reply.send({ data })
     },
   )
