@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { enterpriseFetch, getActiveEnterpriseId, type FleetVehicle, type MaintenanceCenter } from '@/lib/enterprise-api'
+import { setCartVehicle } from '@/lib/cart'
+import { buildMaintenanceSearchHref } from 'shared/constants'
 
 const DAY_LABEL: Record<number, string> = {
   0: 'Dimanche', 1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi',
@@ -192,6 +194,15 @@ export default function VehicleDetailPage() {
     )
     if (!res.ok) { setError(res.message); return }
     load()
+  }
+
+  function handleOrderPart(kind: string) {
+    if (!vehicle) return
+    setCartVehicle({
+      vehicleId,
+      label: `${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
+    })
+    router.push(buildMaintenanceSearchHref(kind, vehicle))
   }
 
   async function handleDeleteSchedule(scheduleId: string) {
@@ -406,6 +417,12 @@ export default function VehicleDetailPage() {
                       <StatusBadge status={s.status} kmRemaining={s.kmRemaining} />
                     </td>
                     <td className="px-2 py-2 text-right">
+                      <button
+                        onClick={() => handleOrderPart(s.kind)}
+                        className="mr-1 rounded-sm border border-accent/40 bg-accent/5 px-2 py-1 text-[11px] font-medium text-accent hover:bg-accent/10"
+                      >
+                        🛒 Commander
+                      </button>
                       <button
                         onClick={() => handleMarkDone(s.id)}
                         className="mr-1 rounded-sm border border-border px-2 py-1 text-[11px] text-ink hover:bg-surface"

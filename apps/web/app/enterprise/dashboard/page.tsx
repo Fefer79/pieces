@@ -3,8 +3,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
+import { buildMaintenanceSearchHref } from 'shared/constants'
+import { setCartVehicle } from '@/lib/cart'
 import {
   enterpriseFetch,
   enterpriseDownload,
@@ -61,6 +64,7 @@ const KIND_LABEL_FR: Record<string, string> = {
 }
 
 export default function EnterpriseDashboardPage() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [enterprises, setEnterprises] = useState<Enterprise[]>([])
   const [active, setActive] = useState<Enterprise | null>(null)
@@ -204,6 +208,7 @@ export default function EnterpriseDashboardPage() {
                 <th className="px-6 py-3 text-right">Reste</th>
                 <th className="px-6 py-3 text-right">Estimation</th>
                 <th className="px-6 py-3 text-left">Statut</th>
+                <th className="px-6 py-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -241,6 +246,20 @@ export default function EnterpriseDashboardPage() {
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${badgeClass}`}>
                         {statusLabel}
                       </span>
+                    </td>
+                    <td className="px-6 py-3 text-right">
+                      <button
+                        onClick={() => {
+                          setCartVehicle({
+                            vehicleId: a.vehicleId,
+                            label: `${a.brand} ${a.model} ${a.year}`,
+                          })
+                          router.push(buildMaintenanceSearchHref(a.kind, a))
+                        }}
+                        className="rounded-sm border border-accent/40 bg-accent/5 px-2 py-1 text-[11px] font-medium text-accent hover:bg-accent/10"
+                      >
+                        🛒 Commander
+                      </button>
                     </td>
                   </tr>
                 )

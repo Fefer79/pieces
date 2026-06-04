@@ -27,7 +27,7 @@ type DraftItem = {
 type Draft = { items: DraftItem[] } | null
 
 export default function PanierPage() {
-  const { items, itemsByVendor, count, subtotal, setQuantity, removeItem, clear, mergeItems } =
+  const { items, itemsByVendor, count, subtotal, vehicle, setQuantity, removeItem, clear, mergeItems, setVehicle } =
     useCart()
   const { isAuthenticated, user } = useAuth()
   const router = useRouter()
@@ -88,6 +88,7 @@ export default function PanierPage() {
       method: 'POST',
       body: JSON.stringify({
         items: items.map((i) => ({ catalogItemId: i.catalogItemId, quantity: i.quantity })),
+        ...(vehicle ? { vehicleId: vehicle.vehicleId } : {}),
       }),
     })
     if (res.ok) {
@@ -174,6 +175,22 @@ export default function PanierPage() {
                   {count} article{count > 1 ? 's' : ''}
                 </span>
               </div>
+
+              {vehicle && (
+                <div className="flex items-center justify-between rounded-md border border-accent/30 bg-accent/5 px-4 py-2.5">
+                  <span className="text-sm text-ink">
+                    🔧 Commande pour&nbsp;
+                    <span className="font-semibold">{vehicle.label}</span>
+                    <span className="ml-1 text-muted">— rattachée au suivi de coûts du véhicule</span>
+                  </span>
+                  <button
+                    onClick={() => setVehicle(null)}
+                    className="ml-3 shrink-0 text-xs text-muted hover:text-ink hover:underline"
+                  >
+                    Détacher
+                  </button>
+                </div>
+              )}
 
               {itemsByVendor.map((group) => (
                 <div

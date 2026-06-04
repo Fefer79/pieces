@@ -6,3 +6,8 @@ export { PART_CATEGORIES, PART_CATALOG, UNIVERSAL_CATEGORIES, isUniversalCategor
 export type { PartCategory } from './categories'
 export { parseCompatibilityText } from './fitment'
 export type { ParsedFitment } from './fitment'
+export {
+  MAINTENANCE_KIND_TO_PART,
+  buildMaintenanceSearchHref,
+} from './maintenance-parts'
+export type { MaintenanceKindKey, MaintenancePartHint } from './maintenance-parts'

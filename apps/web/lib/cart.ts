@@ -4,6 +4,8 @@ import { useCallback, useMemo, useSyncExternalStore } from 'react'
 
 const STORAGE_KEY = 'pieces_cart'
 const EVENT = 'pieces:cart-changed'
+const VEHICLE_KEY = 'pieces_cart_vehicle'
+const VEHICLE_EVENT = 'pieces:cart-vehicle-changed'
 
 export interface CartItem {
   catalogItemId: string
@@ -77,6 +79,64 @@ function getServerSnapshot() {
   return null
 }
 
+/**
+ * Contexte véhicule du panier : lorsqu'un gestionnaire commande une pièce
+ * depuis une alerte d'entretien, on retient le véhicule concerné pour
+ * rattacher la commande (Order.vehicleId) et alimenter l'analytics de coûts.
+ */
+export interface CartVehicle {
+  vehicleId: string
+  /** Libellé lisible, ex. « Toyota Hilux 2018 » */
+  label: string
+}
+
+function readVehicleRaw(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return window.localStorage.getItem(VEHICLE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function parseVehicle(raw: string | null): CartVehicle | null {
+  if (!raw) return null
+  try {
+    const v = JSON.parse(raw)
+    if (v && typeof v === 'object' && typeof v.vehicleId === 'string' && v.vehicleId) {
+      return { vehicleId: v.vehicleId, label: typeof v.label === 'string' ? v.label : 'Véhicule' }
+    }
+  } catch {
+    // ignore
+  }
+  return null
+}
+
+function subscribeVehicle(callback: () => void) {
+  if (typeof window === 'undefined') return () => {}
+  window.addEventListener(VEHICLE_EVENT, callback)
+  window.addEventListener('storage', callback)
+  return () => {
+    window.removeEventListener(VEHICLE_EVENT, callback)
+    window.removeEventListener('storage', callback)
+  }
+}
+
+/** Définit (ou efface avec null) le véhicule rattaché au panier. */
+export function setCartVehicle(vehicle: CartVehicle | null) {
+  if (typeof window === 'undefined') return
+  try {
+    if (vehicle) {
+      window.localStorage.setItem(VEHICLE_KEY, JSON.stringify(vehicle))
+    } else {
+      window.localStorage.removeItem(VEHICLE_KEY)
+    }
+    window.dispatchEvent(new CustomEvent(VEHICLE_EVENT))
+  } catch {
+    // ignore
+  }
+}
+
 export interface VendorGroup {
   vendorId: string
   vendorShopName: string
@@ -87,6 +147,9 @@ export interface VendorGroup {
 export function useCart() {
   const raw = useSyncExternalStore(subscribe, readFromStorage, getServerSnapshot)
   const items = useMemo(() => parse(raw), [raw])
+
+  const rawVehicle = useSyncExternalStore(subscribeVehicle, readVehicleRaw, getServerSnapshot)
+  const vehicle = useMemo(() => parseVehicle(rawVehicle), [rawVehicle])
 
   const addItem = useCallback((item: Omit<CartItem, 'quantity'>, quantity = 1) => {
     const current = parse(readFromStorage())
@@ -113,6 +176,7 @@ export function useCart() {
 
   const clear = useCallback(() => {
     write([])
+    setCartVehicle(null)
   }, [])
 
   // Fusionne des items (ex. brouillon serveur) : le local gagne si déjà présent.
@@ -149,5 +213,5 @@ export function useCart() {
     return [...groups.values()]
   }, [items])
 
-  return { items, itemsByVendor, count, subtotal, addItem, setQuantity, removeItem, clear, mergeItems }
+  return { items, itemsByVendor, count, subtotal, vehicle, addItem, setQuantity, removeItem, clear, mergeItems, setVehicle: setCartVehicle }
 }
