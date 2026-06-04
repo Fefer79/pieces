@@ -5,6 +5,16 @@
 **Date :** Mai 2026
 **Décision attendue :** Validation packaging + tarifs avant mise en marché
 
+> **⚠️ Document partiellement obsolète (mise à jour 2026-06-04).** Le modèle de
+> « SLA monétisé » avec **pénalités / remboursement en cas de breach a été
+> abandonné**. Flotte Pro + propose désormais la livraison express comme un
+> **bénéfice de service : 3 heures, 6 heures maximum à Abidjan** (livraison
+> prioritaire hors Abidjan), **sans SLA contractuel ni pénalité**. Les sections
+> ci-dessous sur le coût d'un breach, le taux de breach cible, la carte SLA et
+> les remboursements automatiques sont conservées comme historique mais **ne
+> reflètent plus l'offre**. Tarif cible : **10 000 F / véhicule / mois**
+> (Flotte Pro +), positionné comme le meilleur rapport.
+
 ---
 
 ## 1. Contexte
@@ -53,9 +63,8 @@ Ce qui est inclus :
 
 | Avantage | Détail |
 |---|---|
-| **Livraison 3h chrono à Abidjan** | Quand la pièce est en stock chez un vendeur partenaire dans Abidjan, livraison garantie sous 3 heures |
+| **Livraison express à Abidjan** | Quand la pièce est en stock chez un vendeur partenaire dans Abidjan, livraison en 3 heures, 6 heures maximum |
 | **5 livraisons express incluses par mois** | Au-delà, 1 500 FCFA par livraison express supplémentaire |
-| **SLA monétisé** | Si la promesse 3h est rompue (hors cas force majeure), remboursement intégral des frais de livraison + 5 000 FCFA de crédit sur le mois suivant |
 | **Pickup prioritaire** | Le livreur Pièces vient chercher la pièce chez le vendeur dans les 30 min |
 | **Numéro WhatsApp dédié** | Ligne directe pour les demandes urgentes, ouverte 6h–22h 7j/7 |
 
@@ -85,9 +94,8 @@ Gratuit (acquis pour tous)
 └── Revue trimestrielle
 
 Étage 2 — Express Abidjan  → 10 000 F / mois forfaitaire
-├── Livraison 3h chrono
+├── Livraison express 3h (6h max)
 ├── 5 livraisons express incluses
-├── SLA monétisé (remboursement si breach)
 ├── Pickup prioritaire
 └── Ligne WhatsApp dédiée 6h-22h
 ```

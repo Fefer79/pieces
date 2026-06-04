@@ -1,6 +1,17 @@
 # Étude de pricing — Packaging Flotte Pro à 3 niveaux
 Document interne · Statut : étude pré-décisionnelle · Auteur : Pièces, équipe produit · Date : mai 2026
 
+> **⚠️ Document partiellement obsolète (mise à jour 2026-06-04).** Le modèle de
+> « SLA monétisé » avec **pénalités / remboursement en cas de breach a été
+> abandonné**. Flotte Pro + propose désormais la livraison express comme un
+> **bénéfice de service : 3 heures, 6 heures maximum à Abidjan** (livraison
+> prioritaire hors Abidjan), **sans SLA contractuel ni pénalité**. Les sections
+> ci-dessous décrivant le coût d'un breach, le taux de breach cible, les
+> webhooks SLA et les remboursements automatiques sont conservées comme
+> historique de réflexion mais **ne reflètent plus l'offre**. Le tarif cible
+> reste **10 000 F / véhicule / mois** (Flotte Pro +), positionné comme le
+> meilleur rapport.
+
 ## Contexte et erreur conceptuelle à éviter
 Le modèle initialement envisagé reposait sur un gratuit très large (dashboard, import CSV, stock tampon, comparateur, garantie, retours, centres de maintenance, plans d'entretien) et un payant minimal (quelques notifications WhatsApp, support prioritaire, PDF historique, revue trimestrielle). Aucune entreprise rationnelle n'aurait payé 100 000 F/mois (flotte de 20) pour ça. Le gratuit cannibalisait l'abonnement.
 L'erreur conceptuelle : placer la gestion en gratuit et l'information en payant. C'est l'inverse qu'il faut faire. Les flottes veulent bien payer pour comprendre où part leur argent (intelligence) — beaucoup moins pour recevoir une notification de plus. La présente étude inverse ce découpage.
@@ -18,7 +29,7 @@ Trois niveaux, trois promesses. **Flotte Pro +** est une extension de **Flotte P
 |---|---|---|
 | Gratuit « Pièces.ci » | Achetez mieux. La marketplace, la confiance, la transaction sécurisée. | 0 F (commission fournisseur 5–10 %) |
 | Étage 1 « Flotte Pro » | Pilotez votre flotte. Analytique, prévention, automatisation, conformité fiscale. | **5 000 F / véhicule / mois** |
-| Étage 2 « Flotte Pro + » = Flotte Pro + urgence | Tout Flotte Pro + ne perdez plus une journée. SLA monétisé, assistance dédiée. | **10 000 F / véhicule / mois** |
+| Étage 2 « Flotte Pro + » = Flotte Pro + urgence | Tout Flotte Pro + ne perdez plus une journée. Livraison express 3 h (6 h max), assistance dédiée. | **10 000 F / véhicule / mois** |
 
 Flotte Pro + inclut systématiquement Flotte Pro — c'est un abonnement unique à 10 000 F/véhicule/mois qui regroupe le pilotage et la couche urgence. On ne peut pas prendre Flotte Pro + sans Flotte Pro (l'urgence n'a de sens que sur une flotte déjà pilotée). Pour le reste, le client reste libre de rester en gratuit ou de prendre Flotte Pro sans Flotte Pro +.
 
@@ -68,9 +79,8 @@ Objectif : vendre une assurance opérationnelle adossée au pilotage Flotte Pro.
 Tarification unique : **10 000 F / véhicule / mois**, prix flat (pas de paliers). C'est un seul abonnement qui remplace Flotte Pro — il n'y a pas de cumul. Exemple flotte 20 véhicules : 200 000 F/mois (vs 100 000 F en Flotte Pro seul).
 
 Couche urgence ajoutée :
-- Abidjan : livraison 3 h chrono, 5 livraisons express incluses par flotte, +1 500 F au-delà
-- Hors Abidjan : livraison J+1 garantie (vs J+2/J+3 standard), 2 livraisons J+1 incluses par flotte
-- SLA monétisé : remboursement intégral + 5 000 F de crédit en cas de breach
+- Abidjan : livraison express 3 h (6 h maximum), 5 livraisons express incluses par flotte, +1 500 F au-delà
+- Hors Abidjan : livraison prioritaire (plus rapide que le standard), 2 livraisons prioritaires incluses par flotte
 - Pickup prioritaire chez le vendeur en 30 min
 - Ligne WhatsApp dédiée 6 h – 22 h, 7 j / 7
 - Concierge dépannage : un appel, Pièces trouve et achemine la pièce

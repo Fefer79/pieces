@@ -46,9 +46,8 @@ Plus de 200 fournisseurs Abidjan + intérieur, comparateur multi-fournisseurs su
 
 Pour les véhicules sur lesquels une journée d'immobilisation coûte cher :
 
-- **Livraison 3 h chrono à Abidjan** quand la pièce est en stock chez un vendeur partenaire.
-- **Livraison J+1 garantie hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo) vs J+2/J+3 standard.
-- **SLA monétisé** : remboursement intégral des frais + 5 000 F de crédit en cas de breach.
+- **Livraison express à Abidjan : 3 heures, 6 heures maximum** quand la pièce est en stock chez un vendeur partenaire.
+- **Livraison prioritaire hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo), plus rapide que le standard.
 - **Ligne WhatsApp dédiée 6 h – 22 h, 7 j / 7** avec un Liaison Pièces affecté à votre compte.
 - **Concierge dépannage** : un appel, Pièces trouve la pièce et l'achemine — même si elle n'est pas au catalogue.
 

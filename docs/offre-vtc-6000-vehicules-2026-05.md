@@ -15,7 +15,7 @@ Pièces.ci propose à [Nom de l'entreprise VTC] **un contrat d'abonnement platef
 | **Flotte Pro** | 5 000 FCFA / véhicule / mois | 30 000 000 FCFA | 360 000 000 FCFA | **300 000 000 FCFA** (10 mois facturés, 2 mois offerts) |
 | **Flotte Pro +** | 10 000 FCFA / véhicule / mois | 60 000 000 FCFA | 720 000 000 FCFA | **600 000 000 FCFA** (10 mois facturés, 2 mois offerts) |
 
-**Flotte Pro +** inclut intégralement Flotte Pro et y ajoute la couche urgence (SLA 3 h chrono Abidjan, J+1 garanti hors Abidjan, ligne WhatsApp dédiée, concierge dépannage).
+**Flotte Pro +** inclut intégralement Flotte Pro et y ajoute la couche urgence (livraison express 3 h / 6 h max à Abidjan, livraison prioritaire hors Abidjan, ligne WhatsApp dédiée, concierge dépannage).
 
 Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'objet d'aucune publication sur pieces.ci.
 
@@ -46,9 +46,8 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 ### Flotte Pro + (600 M FCFA / an) — inclut tout Flotte Pro plus
 
-- **Livraison 3 h chrono à Abidjan** garantie quand la pièce est en stock chez un partenaire
-- **Livraison J+1 garantie hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo) vs J+2/J+3 standard
-- **SLA monétisé** : remboursement intégral des frais + 5 000 F de crédit par breach
+- **Livraison express à Abidjan : 3 heures, 6 heures maximum** quand la pièce est en stock chez un partenaire
+- **Livraison prioritaire hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo), plus rapide que le standard
 - Pickup prioritaire chez le vendeur en 30 min
 - **Ligne WhatsApp dédiée**, 6 h – 22 h, 7 j / 7
 - **Concierge dépannage** : Pièces sourcing + livraison sur demande, même hors catalogue
@@ -77,7 +76,7 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 ---
 
-## 4. Engagements de service (SLA)
+## 4. Engagements de service
 
 ### Flotte Pro
 
@@ -92,11 +91,10 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 | Engagement | Niveau |
 |---|---|
-| Livraison express Abidjan | **3 h chrono** sur stock partenaire |
-| Livraison J+1 hors Abidjan | **J+1 ouvré** sur 4 villes pilotes, extension trimestrielle |
+| Livraison express Abidjan | **3 h, 6 h maximum** sur stock partenaire |
+| Livraison hors Abidjan | Prioritaire sur 4 villes pilotes, extension trimestrielle |
 | Disponibilité ligne WhatsApp dédiée | 6 h – 22 h, 7 j / 7 |
 | Réponse concierge dépannage | < 30 minutes |
-| **Pénalité SLA breach** | Remboursement intégral des frais de livraison + 5 000 F de crédit |
 
 ---
 
@@ -148,7 +146,7 @@ Conditions d'application :
 
 Pour une flotte VTC de 6 000 véhicules en Côte d'Ivoire, Pièces recommande :
 
-**Démarrer en Flotte Pro pour 12 mois**, payé annuellement (300 M FCFA, économie 60 M FCFA vs mensuel). À 12 mois, basculer 1 000 à 2 000 véhicules les plus exposés à l'immobilisation (zones intenses, véhicules récents à forte rentabilité au quotidien) en **Flotte Pro +** pour bénéficier du SLA 3 h chrono — soit un mix à environ 350–400 M FCFA/an, avec un ROI confortable sur les deux dimensions (économie pièces + économie immobilisation).
+**Démarrer en Flotte Pro pour 12 mois**, payé annuellement (300 M FCFA, économie 60 M FCFA vs mensuel). À 12 mois, basculer 1 000 à 2 000 véhicules les plus exposés à l'immobilisation (zones intenses, véhicules récents à forte rentabilité au quotidien) en **Flotte Pro +** pour bénéficier de la livraison express 3 h (6 h max) — soit un mix à environ 350–400 M FCFA/an, avec un ROI confortable sur les deux dimensions (économie pièces + économie immobilisation).
 
 Cette approche progressive permet de valider l'économie réelle avant d'engager le tier supérieur sur tout le parc.
 
