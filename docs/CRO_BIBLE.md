@@ -420,7 +420,7 @@ Le travail du CRO est de rendre le revenu de Pièces **prévisible, croissant et
 
 À 36 mois, le succès se lit sur trois nombres : **revenu net (3–5 Mds F)**, **part de récurrent (≥ 50%)**, **NRR (> 115%)**. Si ces trois sont verts, Pièces n'est pas une marketplace prometteuse — c'est une entreprise qui se valorise.
 
-Le reste — marché, produit, ops, finance — est dans la CEO Bible, la CTO Bible, DESIGN.md, et les brochures commerciales (`brochure-commerciale-pieces`, `brochure-commerciale-entreprises-2026-05-27`, `brochure-vtc-grand-compte-2026-05`, `brochure-btp-grand-compte-2026-05`, `offre-vtc-6000-vehicules-2026-05`, `offre-btp-800-vehicules-2026-05`, `pricing-flotte-2026-05-27`).
+Le reste — marché, produit, ops, finance — est dans la CEO Bible, la CTO Bible, DESIGN.md, et les brochures commerciales (`brochure-commerciale-pieces`, `brochure-commerciale-entreprises-2026-06-03`, `brochure-vtc-grand-compte-2026-05`, `brochure-btp-grand-compte-2026-05`, `offre-vtc-6000-vehicules-2026-05`, `offre-btp-800-vehicules-2026-05`, `pricing-flotte-2026-05-27`).
 
 **Lis-les. Puis encaisse.**
 

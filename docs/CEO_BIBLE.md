@@ -500,7 +500,7 @@ Le rôle du CEO :
 - **Tenir l'équipe sur l'exécution des cinq mouvements** sans dispersion.
 - **Garder la promesse produit non-négociable** (transparence, vitesse, conformité) même quand l'urgence pousse au shortcut.
 
-Tout le reste — produit, ops, finance — est documenté ici, dans la CTO Bible, dans DESIGN.md, et dans les brochures commerciales (`brochure-commerciale-pieces`, `brochure-commerciale-entreprises-2026-05-27`, `brochure-vtc-grand-compte-2026-05`, `brochure-btp-grand-compte-2026-05`, `offre-vtc-6000-vehicules-2026-05`, `offre-btp-800-vehicules-2026-05`, `pricing-flotte-2026-05-27`).
+Tout le reste — produit, ops, finance — est documenté ici, dans la CTO Bible, dans DESIGN.md, et dans les brochures commerciales (`brochure-commerciale-pieces`, `brochure-commerciale-entreprises-2026-06-03`, `brochure-vtc-grand-compte-2026-05`, `brochure-btp-grand-compte-2026-05`, `offre-vtc-6000-vehicules-2026-05`, `offre-btp-800-vehicules-2026-05`, `pricing-flotte-2026-05-27`).
 
 **Lis-les. Puis exécute.**
 

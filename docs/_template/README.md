@@ -20,7 +20,7 @@ Run from anywhere in the repo. Rebuilds every document registered in the `DOCS` 
 
 ```bash
 bash docs/_template/build.sh deep-dive-manuel-liaison
-bash docs/_template/build.sh brochure-commerciale-entreprises
+bash docs/_template/build.sh brochure-commerciale-entreprises-2026-06-03
 ```
 
 Pass one or several slugs. Slug = the markdown filename without `.md`.
