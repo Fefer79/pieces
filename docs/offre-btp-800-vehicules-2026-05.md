@@ -15,7 +15,7 @@ Pièces.ci propose à [Nom de l'entreprise BTP] **un contrat d'abonnement platef
 | **Flotte Pro** | 5 000 FCFA / véhicule / mois | 4 000 000 FCFA | 48 000 000 FCFA | **40 000 000 FCFA** (10 mois facturés, 2 mois offerts) |
 | **Flotte Pro +** | 10 000 FCFA / véhicule / mois | 8 000 000 FCFA | 96 000 000 FCFA | **80 000 000 FCFA** (10 mois facturés, 2 mois offerts) |
 
-**Flotte Pro +** inclut intégralement Flotte Pro et y ajoute la couche urgence (SLA 3 h chrono Abidjan, J+1 garanti hors Abidjan, ligne WhatsApp dédiée, concierge dépannage avec sourcing engins lourds).
+**Flotte Pro +** inclut intégralement Flotte Pro et y ajoute la couche urgence (livraison express 3 h / 6 h max à Abidjan, livraison prioritaire hors Abidjan, ligne WhatsApp dédiée, concierge dépannage avec sourcing engins lourds).
 
 Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'objet d'aucune publication sur pieces.ci.
 
@@ -47,10 +47,9 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 ### Flotte Pro + (80 M FCFA / an en paiement annuel) — inclut tout Flotte Pro plus
 
-- **Livraison 3 h chrono à Abidjan** garantie quand la pièce est en stock chez un partenaire
-- **Livraison J+1 garantie hors Abidjan** sur les 4 villes pilotes (San-Pédro, Bouaké, Yamoussoukro, Korhogo)
+- **Livraison express à Abidjan : 3 heures, 6 heures maximum** quand la pièce est en stock chez un partenaire
+- **Livraison prioritaire hors Abidjan** sur les 4 villes pilotes (San-Pédro, Bouaké, Yamoussoukro, Korhogo)
 - **Extension trimestrielle vers sites miniers et chantiers isolés** à la demande (Tongon, Ity, Bonikro, Anguédédou…)
-- **SLA monétisé** : remboursement intégral des frais + 5 000 F de crédit par breach
 - Pickup prioritaire chez le vendeur en 30 min
 - **Ligne WhatsApp dédiée**, 6 h – 22 h, 7 j / 7
 - **Concierge dépannage** : Pièces sourcing + livraison sur demande, même hors catalogue, **import express engins lourds** (France, Émirats) pour références rares
@@ -80,7 +79,7 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 ---
 
-## 4. Engagements de service (SLA)
+## 4. Engagements de service
 
 ### Flotte Pro
 
@@ -95,12 +94,11 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 | Engagement | Niveau |
 |---|---|
-| Livraison express Abidjan | **3 h chrono** sur stock partenaire |
-| Livraison J+1 hors Abidjan | **J+1 ouvré** sur 4 villes pilotes, extension trimestrielle vers sites miniers et chantiers isolés |
+| Livraison express Abidjan | **3 h, 6 h maximum** sur stock partenaire |
+| Livraison hors Abidjan | Prioritaire sur 4 villes pilotes, extension trimestrielle vers sites miniers et chantiers isolés |
 | Disponibilité ligne WhatsApp dédiée | 6 h – 22 h, 7 j / 7 |
 | Réponse concierge dépannage | < 30 minutes |
 | Sourcing engins lourds (références rares) | Réponse sous 24 h, délai annoncé avant engagement |
-| **Pénalité SLA breach** | Remboursement intégral des frais de livraison + 5 000 F de crédit |
 
 ---
 
@@ -159,7 +157,7 @@ Configuration cible :
 - 400 véh en Flotte Pro : 20 M FCFA/an (annuel)
 - **Total : 60 M FCFA/an** pour un ROI projeté de 165 à 200 M FCFA/an (ratio ×2,7 à ×3,3).
 
-Cette approche permet de concentrer la valeur du SLA 3 h chrono là où elle paie réellement (engins lourds en chantier critique) sans gonfler le coût sur le parc non-prioritaire.
+Cette approche permet de concentrer la valeur de la livraison express 3 h (6 h max) là où elle paie réellement (engins lourds en chantier critique) sans gonfler le coût sur le parc non-prioritaire.
 
 ---
 

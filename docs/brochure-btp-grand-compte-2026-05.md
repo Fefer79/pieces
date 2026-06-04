@@ -60,9 +60,8 @@ Plus de 200 fournisseurs pièces auto + un sourcing dédié sur les **pièces en
 
 Pour les engins sur lesquels une journée d'immobilisation coûte 200 à 500 000 FCFA :
 
-- **Livraison 3 h chrono à Abidjan** quand la pièce est en stock chez un partenaire.
-- **Livraison J+1 garantie hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo, **+ extension trimestrielle vers les sites miniers** : Tongon, Ity, Bonikro à la demande).
-- **SLA monétisé** : remboursement intégral des frais + 5 000 F de crédit en cas de breach.
+- **Livraison express à Abidjan : 3 heures, 6 heures maximum** quand la pièce est en stock chez un partenaire.
+- **Livraison prioritaire hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo, **+ extension trimestrielle vers les sites miniers** : Tongon, Ity, Bonikro à la demande).
 - **Pickup prioritaire** chez le vendeur en 30 min.
 - **Ligne WhatsApp dédiée 6 h – 22 h, 7 j / 7** avec un Liaison senior affecté à votre compte.
 - **Concierge dépannage** : appel direct, Pièces source la pièce (même hors catalogue, même import express depuis la France ou Dubaï pour les références rares engins lourds) et l'achemine au chantier.
@@ -100,7 +99,7 @@ ROI net projeté :
 - **Flotte Pro** : +165 à +199 M FCFA/an (ROI ×5,1 à ×6,0)
 - **Flotte Pro +** : +125 à +159 M FCFA/an (ROI ×2,6 à ×3,0) — le surcoût du tier +  est largement couvert par l'économie d'immobilisation chantier (les pénalités contractuelles évitées ne sont pas comptabilisées dans le tableau, elles s'ajoutent).
 
-À l'échelle BTP, **Flotte Pro + est généralement le bon choix** : la valeur d'un jour d'immobilisation d'engin lourd justifie 10 fois le surcoût du SLA 3 h chrono.
+À l'échelle BTP, **Flotte Pro + est généralement le bon choix** : la valeur d'un jour d'immobilisation d'engin lourd justifie 10 fois le surcoût de la livraison express 3 h (6 h max).
 
 ## Pourquoi maintenant
 

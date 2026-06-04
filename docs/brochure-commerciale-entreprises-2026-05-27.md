@@ -12,7 +12,7 @@ Pièces se construit en trois étages indépendants. Chacun répond à un besoin
 |---|---|---|
 | Pièces.ci | Pièces Flotte Pro | Pièces Flotte Pro + |
 | 0 F | 5 000 F / véhicule / mois | 10 000 F / véhicule / mois |
-| Achetez mieux. La marketplace de référence pour vos pièces auto avec confiance intermédiée. | Pilotez votre flotte. L'analytique qui révèle où part votre budget, l'automatisation qui anticipe les pannes, et la facturation normalisée DGI. | Tout Flotte Pro + ne perdez plus une journée. SLA monétisé, livraisons 3 h chrono, assistance dédiée. |
+| Achetez mieux. La marketplace de référence pour vos pièces auto avec confiance intermédiée. | Pilotez votre flotte. L'analytique qui révèle où part votre budget, l'automatisation qui anticipe les pannes, et la facturation normalisée DGI. | Tout Flotte Pro + ne perdez plus une journée. Livraison express en 3 h (6 h maximum) et assistance dédiée. |
 
 Flotte Pro et Flotte Pro + se choisissent selon votre besoin. **Flotte Pro + inclut intégralement Flotte Pro** : c'est un abonnement unique à 10 000 F/véhicule/mois (prix flat, pas de paliers) qui ajoute la couche urgence — pas un cumul. Vous pouvez aussi rester en gratuit aussi longtemps que vous voulez — pas de gating par taille de flotte.
 
@@ -95,14 +95,12 @@ Flotte Pro + **inclut intégralement Flotte Pro** (toute l'intelligence flotte, 
 
 **Tarification** : un abonnement unique à **10 000 F / véhicule / mois**, prix flat (pas de paliers). Flotte Pro + remplace Flotte Pro — vous ne cumulez pas les deux. Exemple flotte 20 véhicules : **200 000 F/mois tout compris**, vs 100 000 F en Flotte Pro seul.
 ## À Abidjan
-- Livraison 3 h chrono garantie quand la pièce est en stock chez un vendeur partenaire
+- Livraison express : 3 heures, 6 heures maximum, quand la pièce est en stock chez un vendeur partenaire
 - 5 livraisons express incluses par mois — au-delà, 1 500 F par livraison supplémentaire
-- SLA monétisé : remboursement intégral des frais + 5 000 F de crédit en cas de breach
 
 ## Hors Abidjan (San-Pédro, Bouaké, Yamoussoukro, Korhogo…)
-- Livraison J+1 garantie au lieu de J+2 ou J+3 en standard
-- 2 livraisons J+1 incluses par mois
-- SLA monétisé partout en Côte d'Ivoire, pas seulement à Abidjan
+- Livraison prioritaire, plus rapide que le standard
+- 2 livraisons prioritaires incluses par mois
 
 ## Assistance
 - Pickup prioritaire : le livreur Pièces récupère la pièce chez le vendeur en 30 min
@@ -143,8 +141,8 @@ Rappel : **Flotte Pro + = Flotte Pro + couche urgence**, donc toute fonctionnali
 | Module optimisation fiscale + export FEC | — | ✓ | ✓ |
 | **Logistique premium** |  |  |  |
 | Livraison standard (J+2 / J+3) | ✓ | ✓ | ✓ |
-| Livraison 3 h chrono Abidjan + SLA monétisé | — | — | ✓ |
-| Livraison J+1 garantie hors Abidjan + SLA monétisé | — | — | ✓ |
+| Livraison express 3 h (6 h max) à Abidjan | — | — | ✓ |
+| Livraison prioritaire hors Abidjan | — | — | ✓ |
 | Pickup prioritaire + WhatsApp dédiée + concierge | — | — | ✓ |
 | **Service** |  |  |  |
 | PDF historique véhicule signé Pièces | — | ✓ | ✓ |
