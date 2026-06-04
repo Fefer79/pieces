@@ -77,6 +77,7 @@ import {
   getDriverAnalytics,
 } from './driver.service.js'
 import { getEnterpriseDashboard, exportEnterpriseOrdersCsv } from './dashboard.service.js'
+import { getFleetAnalytics } from './analytics.service.js'
 import { getSubscriptionForMember } from './subscription.service.js'
 import {
   listInvoicesForEnterprise,
@@ -700,6 +701,19 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { enterpriseId } = request.params as { enterpriseId: string }
       const data = await getEnterpriseDashboard(enterpriseId, request.user.id)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/analytics',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Analytics flotte : dépense par catégorie/usage/groupe, coût au km' },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await getFleetAnalytics(enterpriseId, request.user.id)
       return reply.send({ data })
     },
   )

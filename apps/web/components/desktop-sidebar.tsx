@@ -38,6 +38,7 @@ function getSections(
     return [
       { title: 'Flotte', items: [
         { href: '/enterprise/dashboard', label: 'Tableau de bord', icon: GridIcon },
+        { href: '/enterprise/analytics', label: 'Analytiques', icon: ChartIcon },
         { href: '/enterprise/vehicles', label: 'Véhicules', icon: CarIcon },
         { href: '/enterprise/drivers', label: 'Chauffeurs', icon: WheelIcon },
         { href: '/enterprise/members', label: 'Membres', icon: UsersIcon },
@@ -229,4 +230,5 @@ const BoxIcon: Icon = ({ className }) => sv({ className, children: <><path d="M2
 const FileIcon: Icon = ({ className }) => sv({ className, children: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></> })
 const CardIcon: Icon = ({ className }) => sv({ className, children: <><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></> })
 const WheelIcon: Icon = ({ className }) => sv({ className, children: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" /><line x1="12" y1="9" x2="12" y2="3" /><line x1="9.5" y1="13.5" x2="4.5" y2="17" /><line x1="14.5" y1="13.5" x2="19.5" y2="17" /></> })
+const ChartIcon: Icon = ({ className }) => sv({ className, children: <><line x1="3" y1="21" x2="21" y2="21" /><rect x="6" y="11" width="3" height="7" /><rect x="11" y="6" width="3" height="12" /><rect x="16" y="14" width="3" height="4" /></> })
 const LogoutIcon: Icon = ({ className }) => sv({ className, children: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></> })

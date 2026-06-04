@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation'
 // pages absentes de la barre du bas (Dashboard / Véhicules / Commandes).
 const ENTERPRISE_LINKS = [
   { href: '/enterprise/dashboard', label: 'Tableau de bord' },
+  { href: '/enterprise/analytics', label: 'Analytiques' },
   { href: '/enterprise/vehicles', label: 'Véhicules' },
   { href: '/enterprise/drivers', label: 'Chauffeurs' },
   { href: '/enterprise/members', label: 'Membres' },
