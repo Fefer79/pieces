@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
+import { authCookieDomain } from './cookie-domain'
 
 export function createSupabaseMiddlewareClient(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } })
@@ -11,6 +12,7 @@ export function createSupabaseMiddlewareClient(request: NextRequest) {
     supabaseUrl,
     anonKey,
     {
+      cookieOptions: { domain: authCookieDomain(request.headers.get('host')) },
       cookies: {
         getAll() {
           return request.cookies.getAll()

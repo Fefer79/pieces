@@ -33,9 +33,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // Sous-domaine flotte.pieces.ci : portail entreprise dédié.
+  const isFlotte = ((request.headers.get('host') ?? '').split(':')[0] ?? '').startsWith('flotte.')
+
   // Connecté : la racine renvoie au tableau de bord, pas à la landing marketing.
+  // Sur flotte.*, c'est le tableau de bord entreprise.
   if (user && request.nextUrl.pathname === '/') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(
+      new URL(isFlotte ? '/enterprise/dashboard' : '/dashboard', request.url),
+    )
+  }
+
+  // Non connecté sur flotte.* à la racine : page marketing entreprises.
+  if (!user && isFlotte && request.nextUrl.pathname === '/') {
+    return NextResponse.rewrite(new URL('/entreprises', request.url))
   }
 
   return response

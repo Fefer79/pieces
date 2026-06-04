@@ -3,6 +3,9 @@ main = ".open-next/worker.js"
 compatibility_date = "2026-03-31"
 compatibility_flags = ["nodejs_compat"]
 
+# Custom domains gérés côté dashboard Cloudflare (pieces.ci + flotte.pieces.ci).
+# Le routing par hostname pour flotte.pieces.ci est dans middleware.ts.
+
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
