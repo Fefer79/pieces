@@ -87,6 +87,8 @@ interface VehicleAnalytics {
   totalSpend: number
   ytdSpend: number
   spendByMonth: { month: string; total: number }[]
+  spendByCategory: { category: string; total: number }[]
+  costPerKm: number | null
   items: {
     id: string
     orderId: string
@@ -269,9 +271,18 @@ export default function VehicleDetailPage() {
       )}
 
       {analytics && (
-        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
           <Kpi label="Dépense totale" value={`${analytics.totalSpend.toLocaleString('fr-FR')} F`} />
           <Kpi label="Année en cours" value={`${analytics.ytdSpend.toLocaleString('fr-FR')} F`} />
+          <Kpi
+            label="Coût / km"
+            value={
+              analytics.costPerKm != null
+                ? `${analytics.costPerKm.toLocaleString('fr-FR')} F`
+                : '—'
+            }
+            hint={analytics.costPerKm == null ? 'Renseignez le kilométrage' : undefined}
+          />
           <Kpi
             label="Moyenne flotte similaire"
             value={
@@ -311,6 +322,13 @@ export default function VehicleDetailPage() {
         <div className="mb-4 rounded-md border border-border bg-card p-4">
           <h2 className="mb-3 font-display text-lg text-ink">Dépense par mois (12 mois)</h2>
           <MonthlyBars data={analytics.spendByMonth} />
+        </div>
+      )}
+
+      {analytics && analytics.spendByCategory.length > 0 && (
+        <div className="mb-4 rounded-md border border-border bg-card p-4">
+          <h2 className="mb-3 font-display text-lg text-ink">Dépense par catégorie</h2>
+          <CategoryBars data={analytics.spendByCategory} total={analytics.totalSpend} />
         </div>
       )}
 
@@ -606,6 +624,41 @@ function MonthlyBars({ data }: { data: { month: string; total: number }[] }) {
               style={{ height: `${h}%` }}
             />
             <span className="font-mono text-[9px] text-muted">{label}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function CategoryBars({
+  data,
+  total,
+}: {
+  data: { category: string; total: number }[]
+  total: number
+}) {
+  const max = Math.max(...data.map((d) => d.total), 1)
+  return (
+    <div className="flex flex-col gap-2">
+      {data.map((d) => {
+        const w = Math.max(2, Math.round((d.total / max) * 100))
+        const pct = total > 0 ? Math.round((d.total / total) * 100) : 0
+        return (
+          <div key={d.category} className="flex items-center gap-3">
+            <span className="w-28 shrink-0 truncate text-xs text-ink" title={d.category}>
+              {d.category}
+            </span>
+            <div className="h-4 flex-1 rounded-sm bg-surface/50">
+              <div
+                className="h-full rounded-sm bg-ink-2/70"
+                style={{ width: `${w}%` }}
+              />
+            </div>
+            <span className="w-28 shrink-0 text-right font-semibold tabular text-ink">
+              {d.total.toLocaleString('fr-FR')} F
+              <span className="ml-1 font-normal text-muted">({pct}%)</span>
+            </span>
           </div>
         )
       })}

@@ -226,11 +226,29 @@ export async function getVehicleAnalytics(
     }
   }
 
+  // Spend by part category (aggregated in-memory from items already loaded)
+  const byCategory = new Map<string, number>()
+  for (const it of items) {
+    const key = it.category ?? 'Autre'
+    byCategory.set(key, (byCategory.get(key) ?? 0) + it.lineTotal)
+  }
+  const spendByCategory = [...byCategory.entries()]
+    .map(([category, total]) => ({ category, total }))
+    .sort((a, b) => b.total - a.total)
+
+  // Cost per km: total spend / current mileage (null if mileage unknown or zero)
+  const costPerKm =
+    vehicle.mileage != null && vehicle.mileage > 0
+      ? Math.round((totalSpend / vehicle.mileage) * 100) / 100
+      : null
+
   return {
     vehicleId,
     totalSpend,
     ytdSpend,
     spendByMonth,
+    spendByCategory,
+    costPerKm,
     items,
     peerCount: peerIds.length,
     avgSpendForSimilar,

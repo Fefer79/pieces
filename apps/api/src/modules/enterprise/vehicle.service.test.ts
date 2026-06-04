@@ -13,6 +13,8 @@ const vehicleCreateMany = vi.fn()
 const vehicleUpdate = vi.fn()
 const vehicleDelete = vi.fn()
 const enterpriseMemberFindUnique = vi.fn()
+const orderFindMany = vi.fn()
+const orderGroupBy = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
@@ -23,6 +25,10 @@ vi.mock('../../lib/prisma.js', () => ({
       createMany: (...a: unknown[]) => vehicleCreateMany(...a),
       update: (...a: unknown[]) => vehicleUpdate(...a),
       delete: (...a: unknown[]) => vehicleDelete(...a),
+    },
+    order: {
+      findMany: (...a: unknown[]) => orderFindMany(...a),
+      groupBy: (...a: unknown[]) => orderGroupBy(...a),
     },
     enterpriseMember: {
       findUnique: (...a: unknown[]) => enterpriseMemberFindUnique(...a),
@@ -35,6 +41,7 @@ const {
   createEnterpriseVehicle,
   updateMileage,
   importVehiclesFromCsv,
+  getVehicleAnalytics,
 } = await import('./vehicle.service.js')
 
 // Assume the caller is an OWNER unless overridden in a test
@@ -94,6 +101,59 @@ describe('enterprise/vehicle.service', () => {
       const callArg = vehicleUpdate.mock.calls[0]![0] as { data: { mileage: number; mileageUpdatedAt: Date } }
       expect(callArg.data.mileage).toBe(50000)
       expect(callArg.data.mileageUpdatedAt).toBeInstanceOf(Date)
+    })
+  })
+
+  describe('getVehicleAnalytics', () => {
+    it('aggregates spend by category and computes cost per km', async () => {
+      vehicleFindFirst.mockResolvedValueOnce({
+        id: 'v1',
+        brand: 'Toyota',
+        model: 'Hilux',
+        year: 2018,
+        mileage: 100_000,
+      })
+      orderFindMany.mockResolvedValueOnce([
+        {
+          id: 'o1',
+          paidAt: new Date(),
+          createdAt: new Date(),
+          totalAmount: 30_000,
+          items: [
+            { id: 'i1', name: 'Plaquettes', category: 'Freinage', priceSnapshot: 10_000, quantity: 2, vendorShopName: 'X', imageThumbUrl: null, createdAt: new Date() },
+            { id: 'i2', name: 'Filtre', category: 'Filtration', priceSnapshot: 5_000, quantity: 2, vendorShopName: 'X', imageThumbUrl: null, createdAt: new Date() },
+          ],
+        },
+      ])
+      // no peers
+      vehicleFindMany.mockResolvedValueOnce([])
+
+      const res = await getVehicleAnalytics('e1', 'u1', 'v1')
+
+      expect(res.totalSpend).toBe(30_000)
+      expect(res.spendByCategory).toEqual([
+        { category: 'Freinage', total: 20_000 },
+        { category: 'Filtration', total: 10_000 },
+      ])
+      // 30000 / 100000 = 0.3
+      expect(res.costPerKm).toBe(0.3)
+    })
+
+    it('returns null cost per km when mileage is unknown', async () => {
+      vehicleFindFirst.mockResolvedValueOnce({
+        id: 'v1',
+        brand: 'Toyota',
+        model: 'Hilux',
+        year: 2018,
+        mileage: null,
+      })
+      orderFindMany.mockResolvedValueOnce([])
+      vehicleFindMany.mockResolvedValueOnce([])
+
+      const res = await getVehicleAnalytics('e1', 'u1', 'v1')
+
+      expect(res.costPerKm).toBeNull()
+      expect(res.spendByCategory).toEqual([])
     })
   })
 
