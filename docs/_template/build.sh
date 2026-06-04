@@ -94,7 +94,7 @@ build_one() {
   local html="$TMP_DIR/$slug.html"
   "$PANDOC" "$md" -o "$html" \
     --from gfm --standalone \
-    --metadata title="$slug" \
+    --metadata pagetitle="$slug" \
     --css="$CSS" \
     --embed-resources \
     --include-before-body="$header"
