@@ -1,135 +1,11 @@
 import Link from 'next/link'
+import { FLEET_PLANS, FLEET_COMPARISON, COST_LEVERS, DELIVERY_PROMISE } from '@/lib/fleet-plans'
 
 export const metadata = {
-  title: 'Pièces Entreprises — Flotte Pro et Flotte Pro +',
+  title: 'Pièces Entreprises — Optimisez les coûts de votre flotte',
   description:
-    'Trois niveaux pour gérer votre flotte en Côte d\'Ivoire. Gratuit, Flotte Pro à 5 000 F/véh/mois, Flotte Pro + à 10 000 F/véh/mois.',
+    'La plateforme qui réduit les coûts d\'exploitation de votre flotte en Côte d\'Ivoire : achats au meilleur prix, pilotage des coûts, entretien préventif, livraison express. Gratuit, Flotte Pro 5 000 F, Flotte Pro + 10 000 F par véhicule / mois.',
 }
-
-type Tier = {
-  key: 'FREE' | 'PRO_FLOTTE' | 'PRO_FLOTTE_PLUS'
-  label: string
-  tagline: string
-  price: string
-  priceNote: string
-  cta: string
-  highlights: string[]
-  highlight?: boolean
-}
-
-const TIERS: Tier[] = [
-  {
-    key: 'FREE',
-    label: 'Gratuit',
-    tagline: 'Achetez mieux.',
-    price: '0 F',
-    priceNote: 'commission fournisseur uniquement',
-    cta: 'Créer un compte',
-    highlights: [
-      'Catalogue compatibilité véhicule',
-      'Comparateur multi-fournisseurs sur le prix',
-      'Garantie pièce intermédiée + retours',
-      '1 centre de maintenance, 2 utilisateurs',
-      'Export CSV des commandes',
-    ],
-  },
-  {
-    key: 'PRO_FLOTTE',
-    label: 'Flotte Pro',
-    tagline: 'Pilotez votre flotte.',
-    price: '5 000 F',
-    priceNote: 'par véhicule / mois — prix flat',
-    cta: 'Demander un essai 30 jours',
-    highlight: true,
-    highlights: [
-      'Détection automatique des véhicules « gouffres »',
-      'Tableau de bord flotte multi-véhicules',
-      'Alertes prédictives WhatsApp / SMS / email',
-      'Stock tampon avec réapprovisionnement auto',
-      'Factures normalisées DGI + facture mensuelle',
-      'Module optimisation fiscale + export FEC',
-      'Support prioritaire < 4 h ouvrées',
-    ],
-  },
-  {
-    key: 'PRO_FLOTTE_PLUS',
-    label: 'Flotte Pro +',
-    tagline: 'Ne perdez plus une journée.',
-    price: '10 000 F',
-    priceNote: 'par véhicule / mois — inclut tout Flotte Pro',
-    cta: 'Demander un essai 30 jours',
-    highlights: [
-      'Tout Flotte Pro inclus',
-      'Livraison 3 h chrono Abidjan + SLA monétisé',
-      'Livraison J+1 garantie hors Abidjan',
-      'Pickup prioritaire chez le vendeur',
-      'Ligne WhatsApp dédiée 6 h – 22 h, 7 j / 7',
-      'Concierge dépannage : un appel et c\'est réglé',
-    ],
-  },
-]
-
-const COMPARISON: Array<{ group: string; rows: Array<{ label: string; free: string; pro: string; plus: string }> }> = [
-  {
-    group: 'Marketplace & confiance',
-    rows: [
-      { label: 'Catalogue compatibilité véhicule', free: '✓', pro: '✓', plus: '✓' },
-      { label: 'Comparateur multi-fournisseurs (prix)', free: '✓', pro: '✓', plus: '✓' },
-      { label: 'Comparateur enrichi (scoring qualité)', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Garantie pièce intermédiée + retours', free: '✓', pro: '✓', plus: '✓' },
-    ],
-  },
-  {
-    group: 'Gestion de flotte',
-    rows: [
-      { label: 'Utilisateurs & véhicules', free: '2 / illim.', pro: 'Illimités', plus: 'Illimités' },
-      { label: 'Centres de maintenance', free: '1', pro: 'Illimités', plus: 'Illimités' },
-      { label: 'Fiche véhicule enrichie (coût, YTD, vs flotte)', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Rôles fins (gestionnaire / mécano / compta)', free: '—', pro: '✓', plus: '✓' },
-    ],
-  },
-  {
-    group: 'Intelligence & pilotage',
-    rows: [
-      { label: 'Tableau de bord multi-véhicules', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Détection véhicules « gouffres »', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Reporting avancé (coût/km, mensuel)', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Alertes prédictives multi-canal', free: '—', pro: '✓', plus: '✓' },
-    ],
-  },
-  {
-    group: 'Stock & approvisionnement',
-    rows: [
-      { label: 'Stock tampon manuel sur SKU critiques', free: '✓', pro: '✓', plus: '✓' },
-      { label: 'Réapprovisionnement automatique', free: '—', pro: '✓', plus: '✓' },
-    ],
-  },
-  {
-    group: 'Facturation & fiscalité',
-    rows: [
-      { label: 'Factures normalisées DGI (QR, mentions)', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Facture mensuelle consolidée flotte', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Module optimisation fiscale + export FEC', free: '—', pro: '✓', plus: '✓' },
-    ],
-  },
-  {
-    group: 'Logistique premium',
-    rows: [
-      { label: 'Livraison standard (J+2 / J+3)', free: '✓', pro: '✓', plus: '✓' },
-      { label: 'Livraison 3 h chrono Abidjan + SLA', free: '—', pro: '—', plus: '✓' },
-      { label: 'Livraison J+1 garantie hors Abidjan + SLA', free: '—', pro: '—', plus: '✓' },
-      { label: 'Pickup prioritaire + WhatsApp dédiée + concierge', free: '—', pro: '—', plus: '✓' },
-    ],
-  },
-  {
-    group: 'Service',
-    rows: [
-      { label: 'PDF historique véhicule signé Pièces', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Support prioritaire < 4 h ouvrées', free: '—', pro: '✓', plus: '✓' },
-      { label: 'Revue trimestrielle avec Liaison Pièces', free: '—', pro: '✓', plus: '✓' },
-    ],
-  },
-]
 
 export default function EntreprisesPage() {
   return (
@@ -140,13 +16,14 @@ export default function EntreprisesPage() {
           Pièces Entreprises
         </div>
         <h1 className="mt-2 font-display text-4xl leading-tight text-ink lg:text-5xl">
-          Reprenez le contrôle de votre budget pièces et entretien.
+          Optimisez les coûts d&apos;exploitation de votre flotte.
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted">
-          Trois niveaux, trois promesses, prix flat par véhicule. Pour les
-          flottes de 5 véhicules ou plus en Côte d&apos;Ivoire, dans tous les
-          domaines d&apos;activités, du transport aux BTP, mines, location
-          longue durée, et entreprises de services.
+          Pièces réunit sur une seule plateforme l&apos;achat de pièces au meilleur
+          prix, le pilotage des coûts véhicule par véhicule, l&apos;entretien
+          préventif et la livraison express. Résultat : moins de surcoûts, moins de
+          pannes, moins d&apos;immobilisation. Pour les flottes de 5 véhicules ou plus
+          en Côte d&apos;Ivoire — transport, VTC, BTP, mines, location, services.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
@@ -170,15 +47,32 @@ export default function EntreprisesPage() {
         </div>
       </header>
 
+      {/* Cost levers */}
+      <section className="mt-12">
+        <h2 className="font-display text-3xl text-ink">Quatre leviers d&apos;économies</h2>
+        <p className="mt-2 max-w-2xl text-sm text-muted">
+          Chaque fonctionnalité de Pièces existe pour faire baisser une ligne de
+          votre budget d&apos;exploitation.
+        </p>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {COST_LEVERS.map((l) => (
+            <div key={l.title} className="rounded-xl border border-border bg-card p-5">
+              <div className="font-display text-lg text-ink">{l.title}</div>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{l.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Tier cards */}
-      <section className="mt-12 grid items-stretch gap-5 md:grid-cols-3">
-        {TIERS.map((t) => (
+      <section className="mt-16 grid items-stretch gap-5 md:grid-cols-3">
+        {FLEET_PLANS.map((t) => (
           <div key={t.key} className="flex flex-col">
             {/* Badge slot — reserved on every card so the card tops align */}
             <div className="mb-2 flex h-6 items-center justify-center">
-              {t.highlight ? (
+              {t.highlight && t.badge ? (
                 <span className="inline-block rounded-full bg-accent/10 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-accent">
-                  Recommandé
+                  {t.badge}
                 </span>
               ) : null}
             </div>
@@ -226,15 +120,16 @@ export default function EntreprisesPage() {
 
       <p className="mt-6 text-center text-xs text-muted">
         Prix flat par véhicule, mensuel d&apos;avance. Paiement annuel = 2 mois
-        offerts. 30 jours d&apos;essai gratuit sur Flotte Pro.
+        offerts. 30 jours d&apos;essai gratuit sur Flotte Pro et Flotte Pro +.
       </p>
 
       {/* Comparison */}
       <section className="mt-16">
         <h2 className="font-display text-3xl text-ink">Tableau comparatif détaillé</h2>
         <p className="mt-2 text-sm text-muted">
-          Rappel : <strong>Flotte Pro +</strong> inclut systématiquement tout
-          Flotte Pro, et ajoute la couche urgence.
+          <strong>Flotte Pro +</strong> inclut tout Flotte Pro et ajoute la
+          livraison express, l&apos;automatisation du stock, la facturation
+          consolidée et le support prioritaire.
         </p>
 
         <div className="mt-6 overflow-x-auto rounded-lg border border-border bg-card">
@@ -247,16 +142,16 @@ export default function EntreprisesPage() {
                 <th className="px-4 py-3 text-center font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
                   Gratuit
                 </th>
-                <th className="px-4 py-3 text-center font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-accent">
+                <th className="px-4 py-3 text-center font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
                   Flotte Pro
                 </th>
-                <th className="px-4 py-3 text-center font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink">
+                <th className="px-4 py-3 text-center font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-accent">
                   Flotte Pro +
                 </th>
               </tr>
             </thead>
             <tbody>
-              {COMPARISON.flatMap((g) => [
+              {FLEET_COMPARISON.flatMap((g) => [
                 <tr key={`group-${g.group}`} className="bg-surface/50">
                   <td colSpan={4} className="px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-ink">
                     {g.group}
@@ -266,14 +161,15 @@ export default function EntreprisesPage() {
                   <tr key={`${g.group}-${r.label}`} className="border-t border-border">
                     <td className="px-4 py-2.5 text-ink">{r.label}</td>
                     <td className="px-4 py-2.5 text-center text-muted">{r.free}</td>
-                    <td className="px-4 py-2.5 text-center text-ink">{r.pro}</td>
-                    <td className="px-4 py-2.5 text-center text-ink">{r.plus}</td>
+                    <td className="px-4 py-2.5 text-center text-muted">{r.pro}</td>
+                    <td className="px-4 py-2.5 text-center font-medium text-ink">{r.plus}</td>
                   </tr>
                 )),
               ])}
             </tbody>
           </table>
         </div>
+        <p className="mt-3 text-xs text-muted">{DELIVERY_PROMISE}</p>
       </section>
 
       {/* ROI panel */}
@@ -282,14 +178,14 @@ export default function EntreprisesPage() {
           ROI typique
         </div>
         <h2 className="mt-2 font-display text-3xl text-ink">
-          Pour une flotte de 50 véhicules, Flotte Pro et Pro + transforment
-          chaque mois votre budget pièces en économies nettes.
+          Pour une flotte de 50 véhicules, l&apos;abonnement se rembourse plusieurs
+          fois en économies sur le budget pièces.
         </h2>
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           {[
             { label: 'Économie cible sur les pièces', value: '20–30 %' },
-            { label: 'Investissement Flotte Pro / an (50 véh)', value: '2,5 M F' },
-            { label: 'ROI net minimum / an (50 véh)', value: '+ 27,5 M F' },
+            { label: 'Investissement Flotte Pro + / an (50 véh)', value: '5 M F' },
+            { label: 'ROI net minimum / an (50 véh)', value: '+ 25 M F' },
           ].map((s) => (
             <div key={s.label}>
               <div className="font-display text-3xl text-ink">{s.value}</div>
@@ -313,10 +209,10 @@ export default function EntreprisesPage() {
           {[
             'Créez votre compte entreprise sur pieces.ci (signature en ligne, RCCM facultatif).',
             'Importez le CSV de votre flotte (marque, modèle, année, plaque, km).',
-            'Essai Flotte Pro 30 jours activé automatiquement — toutes les fonctionnalités, sans carte bancaire.',
+            'Essai 30 jours activé automatiquement — toutes les fonctionnalités Flotte Pro +, sans carte bancaire.',
             'Déclarez vos centres de maintenance et rattachez vos véhicules.',
             'Invitez votre équipe avec des rôles distincts (gestionnaire, mécanicien, comptable).',
-            'À J+30, vous choisissez : continuer en Flotte Pro, revenir au gratuit, ou passer en Flotte Pro +.',
+            'À J+30, vous choisissez : Flotte Pro +, Flotte Pro, ou le niveau gratuit.',
           ].map((step, i) => (
             <li key={i} className="flex gap-3">
               <span className="mt-0.5 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 font-mono text-xs font-semibold text-accent">

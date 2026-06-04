@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
+import { FLEET_PLANS } from '@/lib/fleet-plans'
 
 type Tier = 'FREE' | 'PRO_FLOTTE' | 'PRO_FLOTTE_PLUS'
 type Status = 'TRIALING' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED'
@@ -28,16 +29,21 @@ interface BillingData {
   }
 }
 
+const PLAN_BY_KEY = Object.fromEntries(FLEET_PLANS.map((p) => [p.key, p])) as Record<
+  Tier,
+  (typeof FLEET_PLANS)[number]
+>
+
 const TIER_LABEL: Record<Tier, string> = {
-  FREE: 'Gratuit',
-  PRO_FLOTTE: 'Flotte Pro',
-  PRO_FLOTTE_PLUS: 'Flotte Pro +',
+  FREE: PLAN_BY_KEY.FREE.label,
+  PRO_FLOTTE: PLAN_BY_KEY.PRO_FLOTTE.label,
+  PRO_FLOTTE_PLUS: PLAN_BY_KEY.PRO_FLOTTE_PLUS.label,
 }
 
 const TIER_TAGLINE: Record<Tier, string> = {
-  FREE: 'Marketplace et confiance intermédiée.',
-  PRO_FLOTTE: 'Pilotage, automatisation, facturation normalisée.',
-  PRO_FLOTTE_PLUS: 'Tout Flotte Pro + couche urgence (SLA, 3h chrono).',
+  FREE: PLAN_BY_KEY.FREE.tagline,
+  PRO_FLOTTE: PLAN_BY_KEY.PRO_FLOTTE.tagline,
+  PRO_FLOTTE_PLUS: PLAN_BY_KEY.PRO_FLOTTE_PLUS.tagline,
 }
 
 const STATUS_LABEL: Record<Status, string> = {
@@ -149,23 +155,31 @@ export default function EnterpriseBillingPage() {
         )}
       </section>
 
-      {/* Upgrade prompt */}
+      {/* Upgrade prompt — pousse vers Flotte Pro + (10 000 F) */}
       {tier !== 'PRO_FLOTTE_PLUS' && (
         <section className="mt-6 rounded-xl border border-accent bg-accent/5 p-6">
-          <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent">Évoluer</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent">
+            Recommandé — Flotte Pro +
+          </div>
           <h2 className="mt-1 font-display text-2xl text-ink">
-            {tier === 'FREE'
-              ? 'Passez à Flotte Pro pour piloter votre flotte'
-              : 'Passez à Flotte Pro + pour la couche urgence'}
+            Passez à Flotte Pro + pour optimiser tous vos coûts d&apos;exploitation
           </h2>
           <p className="mt-2 text-sm text-muted">
             {tier === 'FREE'
-              ? 'Détection des véhicules « gouffres », alertes prédictives, facturation normalisée DGI, support prioritaire. 30 jours d\'essai gratuit, sans carte bancaire.'
-              : 'Livraison 3 h chrono à Abidjan, J+1 garanti hors Abidjan, SLA monétisé, concierge dépannage. Tout Flotte Pro inclus.'}
+              ? 'Pilotage et analytique des coûts, détection des véhicules « gouffres », alertes d\'entretien — plus la livraison express et l\'administration déléguée. Pour 10 000 F par véhicule / mois, soit seulement 5 000 F de plus que Flotte Pro.'
+              : 'Pour 5 000 F de plus par véhicule, vous ajoutez la livraison express, le réapprovisionnement automatique, la facture mensuelle consolidée + export FEC et le support prioritaire dédié.'}
           </p>
+          <ul className="mt-4 grid gap-2 text-sm text-ink sm:grid-cols-2">
+            {PLAN_BY_KEY.PRO_FLOTTE_PLUS.highlights.map((h) => (
+              <li key={h} className="flex gap-2">
+                <span className="mt-0.5 text-accent">✓</span>
+                <span className="leading-snug">{h}</span>
+              </li>
+            ))}
+          </ul>
           <Link
             href="/entreprises"
-            className="mt-4 inline-block rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
+            className="mt-5 inline-block rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
           >
             Voir les détails et contacter Pièces
           </Link>
