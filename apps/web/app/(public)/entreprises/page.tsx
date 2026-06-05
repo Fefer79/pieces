@@ -65,56 +65,63 @@ export default function EntreprisesPage() {
       </section>
 
       {/* Tier cards */}
-      <section className="mt-16 grid items-stretch gap-5 md:grid-cols-3">
+      {/*
+        Subgrid layout: the section owns 6 row tracks (label, tagline, price,
+        priceNote, advantages[1fr], CTA) and each card spans all of them via
+        `grid-rows-subgrid`. Every row therefore takes the tallest content
+        across the three cards, so prices / notes / advantages / CTAs stay
+        aligned at any width — no fragile min-height guesses. Collapses to a
+        plain stacked flex column below `md`.
+      */}
+      <section className="mt-16 grid gap-y-10 md:grid-cols-3 md:grid-rows-[auto_auto_auto_auto_1fr_auto] md:gap-x-5 md:gap-y-0">
         {FLEET_PLANS.map((t) => (
-          <div key={t.key} className="flex flex-col">
-            {/* Badge slot — reserved on every card so the card tops align */}
-            <div className="mb-2 flex h-6 items-center justify-center">
-              {t.highlight && t.badge ? (
-                <span className="inline-block rounded-full bg-accent/10 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-accent">
-                  {t.badge}
-                </span>
-              ) : null}
-            </div>
+          <article
+            key={t.key}
+            className={
+              (t.highlight
+                ? 'border-2 border-accent shadow-sm'
+                : 'border border-border') +
+              ' relative flex flex-col rounded-xl bg-card p-6 md:row-span-6 md:grid md:grid-rows-subgrid'
+            }
+          >
+            {t.highlight && t.badge ? (
+              <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent/10 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-accent">
+                {t.badge}
+              </span>
+            ) : null}
 
-            <article
+            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              {t.label}
+            </div>
+            <div className="mt-1 font-display text-2xl leading-snug text-ink">
+              {t.tagline}
+            </div>
+            <div className="mt-5 flex items-baseline gap-2">
+              <span className="font-display text-3xl text-ink">{t.price}</span>
+              {t.key !== 'FREE' && <span className="text-sm text-muted">FCFA</span>}
+            </div>
+            <div className="mt-1 text-xs text-muted">{t.priceNote}</div>
+
+            <ul className="mb-7 mt-6 space-y-2.5 text-sm text-ink">
+              {t.highlights.map((h) => (
+                <li key={h} className="flex gap-2">
+                  <span className="mt-1 text-accent">✓</span>
+                  <span className="leading-snug">{h}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href="/login"
               className={
                 t.highlight
-                  ? 'flex flex-1 flex-col rounded-xl border-2 border-accent bg-card p-6 shadow-sm'
-                  : 'flex flex-1 flex-col rounded-xl border border-border bg-card p-6'
+                  ? 'mt-auto block rounded-md bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-accent-hover'
+                  : 'mt-auto block rounded-md border border-border-strong bg-card px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-surface'
               }
             >
-              <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                {t.label}
-              </div>
-              <div className="mt-1 font-display text-2xl text-ink">{t.tagline}</div>
-              <div className="mt-5 flex items-baseline gap-2">
-                <span className="font-display text-3xl text-ink">{t.price}</span>
-                {t.key !== 'FREE' && <span className="text-sm text-muted">FCFA</span>}
-              </div>
-              <div className="mt-1 text-xs text-muted">{t.priceNote}</div>
-
-              <ul className="mb-7 mt-6 space-y-2.5 text-sm text-ink">
-                {t.highlights.map((h) => (
-                  <li key={h} className="flex gap-2">
-                    <span className="mt-1 text-accent">✓</span>
-                    <span className="leading-snug">{h}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                href="/login"
-                className={
-                  t.highlight
-                    ? 'mt-auto block rounded-md bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-accent-hover'
-                    : 'mt-auto block rounded-md border border-border-strong bg-card px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-surface'
-                }
-              >
-                {t.cta}
-              </Link>
-            </article>
-          </div>
+              {t.cta}
+            </Link>
+          </article>
         ))}
       </section>
 
