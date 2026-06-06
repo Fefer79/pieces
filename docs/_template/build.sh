@@ -26,8 +26,12 @@ CSS="$TEMPLATE_DIR/style.css"
 HEADER_TPL="$TEMPLATE_DIR/header.html.tpl"
 
 PANDOC="${PANDOC:-$(command -v pandoc 2>/dev/null || true)}"
-if [[ -z "${PANDOC:-}" ]] && [[ -x /tmp/pandoc-3.5-x86_64/bin/pandoc ]]; then
-  PANDOC=/tmp/pandoc-3.5-x86_64/bin/pandoc
+# Fallback to a prebuilt pandoc extracted under /tmp (this machine's Xcode is too
+# old for `brew install pandoc`; download the macOS zip from the pandoc releases).
+if [[ -z "${PANDOC:-}" ]]; then
+  for p in /tmp/pandoc-*/bin/pandoc; do
+    [[ -x "$p" ]] && PANDOC="$p" && break
+  done
 fi
 if [[ -z "${PANDOC:-}" ]] || [[ ! -x "$PANDOC" ]]; then
   echo "ERROR: pandoc not found. Install via Homebrew or set PANDOC=..." >&2
