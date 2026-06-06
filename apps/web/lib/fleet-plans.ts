@@ -151,8 +151,8 @@ export const COST_LEVERS: Array<{ title: string; body: string }> = [
     body: 'Comparateur multi-fournisseurs et scoring qualité : vous arrêtez de surpayer les pièces et d’acheter de la mauvaise qualité qui casse vite.',
   },
   {
-    title: 'Vos véhicules « gouffres » sous contrôle',
-    body: 'L’analytique par véhicule (coût/km, par catégorie) révèle les véhicules qui coûtent anormalement cher — et qu’il faut réparer ou réformer.',
+    title: 'Vos véhicules sous contrôle',
+    body: 'L’analytique par véhicule (coût/km, par catégorie) révèle les véhicules qui coûtent anormalement cher, ce qui permet d’investiguer si le problème est le chauffeur ou le véhicule.',
   },
   {
     title: 'Moins de pannes, moins d’immobilisation',
