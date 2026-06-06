@@ -15,7 +15,8 @@ const VTC_BUDGET_PER_VEHICLE = 1_000_000 // FCFA / véhicule / an
 
 function fmtFcfa(n: number): string {
   if (!Number.isFinite(n)) return '—'
-  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} M FCFA`
+  // Toujours afficher le montant complet avec séparateurs de milliers
+  // (ex. 25 000 000 FCFA) — plus lisible qu'une abréviation « M ».
   return `${Math.round(n).toLocaleString('fr-FR')} FCFA`
 }
 
@@ -196,16 +197,6 @@ export default function CalculateurRoiPage() {
               Camion BTP : 80–150 k. Bus interurbain : 100–200 k.
             </Hint>
           </Field>
-
-          <div className="self-end rounded-md border border-border bg-surface px-4 py-3 text-xs text-muted">
-            <div className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink">
-              Garantie ROI à 3 mois
-            </div>
-            <p className="mt-1 leading-relaxed">
-              Si Flotte Pro ne rembourse pas l&apos;abonnement à 3 mois, vous repassez en gratuit et
-              nous remboursons la dernière mensualité. Zéro risque pour tester.
-            </p>
-          </div>
         </div>
       </section>
 
@@ -230,7 +221,7 @@ export default function CalculateurRoiPage() {
             </p>
           </div>
           <Link
-            href="/login"
+            href="/enterprise/dashboard"
             className="inline-flex items-center justify-center rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
           >
             Démarrer l&apos;essai 30 jours
@@ -238,8 +229,13 @@ export default function CalculateurRoiPage() {
         </div>
       </section>
 
-      {/* Side-by-side cards */}
-      <section className="mt-8 grid gap-5 lg:grid-cols-2">
+      {/* Side-by-side cards
+         Subgrid : la section possède 8 pistes de lignes (badge, en-tête, prix,
+         net annuel, stats, encart urgence[1fr], note, CTA) et chaque carte les
+         occupe via `grid-rows-subgrid`. Chaque ligne prend donc la hauteur du
+         contenu le plus haut des deux cartes — badge, encart urgence, note et
+         CTA restent alignés même quand un seul des deux tiers les affiche. */}
+      <section className="mt-8 grid gap-5 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto_auto_auto_1fr_auto_auto]">
         <TierCard
           tier="PRO_FLOTTE"
           label="Flotte Pro"
@@ -350,24 +346,40 @@ function TierCard({
 }) {
   const price = PRICE_PER_VEHICLE[tier]
   return (
-    <div className={highlighted ? 'rounded-xl border-2 border-accent bg-card p-6 shadow-sm' : 'rounded-xl border border-border bg-card p-6'}>
-      {highlighted && (
-        <div className="mb-3 inline-block rounded-full bg-accent/10 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-accent">
-          Recommandé pour vous
-        </div>
-      )}
-      <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</div>
-      <div className="mt-1 font-display text-2xl text-ink">{tagline}</div>
+    <div
+      className={
+        (highlighted ? 'border-2 border-accent shadow-sm' : 'border border-border') +
+        ' flex flex-col rounded-xl bg-card p-6 lg:row-span-8 lg:grid lg:grid-rows-subgrid lg:gap-0'
+      }
+    >
+      {/* badge */}
+      <div>
+        {highlighted && (
+          <span className="inline-block rounded-full bg-accent/10 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-accent">
+            Recommandé pour vous
+          </span>
+        )}
+      </div>
+
+      {/* en-tête */}
+      <div className="mt-3 lg:mt-4">
+        <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</div>
+        <div className="mt-1 font-display text-2xl text-ink">{tagline}</div>
+      </div>
+
+      {/* prix */}
       <div className="mt-4 flex items-baseline gap-2">
         <span className="font-display text-3xl text-ink">{price.toLocaleString('fr-FR')} F</span>
         <span className="text-sm text-muted">/ véh / mois</span>
       </div>
 
+      {/* net annuel */}
       <div className="mt-5 border-t border-border pt-4">
         <div className="font-display text-3xl text-ink">{fmtFcfa(result.netAnnual)}</div>
         <div className="text-sm text-muted">Gain net annuel estimé après abonnement</div>
       </div>
 
+      {/* stats */}
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat label="Abonnement / an" value={fmtFcfa(result.annualCost)} />
         <Stat label="Économies / an" value={fmtFcfa(result.grossSaving)} />
@@ -375,11 +387,14 @@ function TierCard({
         <Stat label="Payback" value={Number.isFinite(result.paybackDays) ? `${Math.round(result.paybackDays)} jours` : '—'} />
       </div>
 
-      {result.downtimeSaving > 0 && (
-        <div className="mt-4 rounded-md border border-success-fg/20 bg-success-bg px-3 py-2 text-xs text-success-fg">
-          <strong>+ {fmtFcfa(result.downtimeSaving)}/an</strong> grâce à la couche urgence (3 h chrono, J+1 garantie).
-        </div>
-      )}
+      {/* encart urgence (piste 1fr — réservée même si vide) */}
+      <div className="mt-4">
+        {result.downtimeSaving > 0 && (
+          <div className="rounded-md border border-success-fg/20 bg-success-bg px-3 py-2 text-xs text-success-fg">
+            <strong>+ {fmtFcfa(result.downtimeSaving)}/an</strong> grâce à la couche urgence (3 h chrono, J+1 garantie).
+          </div>
+        )}
+      </div>
 
       <p className="mt-4 text-xs text-muted">
         Paiement annuel : <strong className="font-mono tabular-nums">{fmtFcfa(result.annualCostBilledAnnual)}</strong>{' '}
@@ -387,7 +402,7 @@ function TierCard({
       </p>
 
       <Link
-        href="/login"
+        href="/enterprise/dashboard"
         className={
           highlighted
             ? 'mt-5 block rounded-md bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-accent-hover'

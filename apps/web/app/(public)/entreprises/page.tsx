@@ -23,11 +23,12 @@ export default function EntreprisesPage() {
           prix, le pilotage des coûts véhicule par véhicule, l&apos;entretien
           préventif et la livraison express. Résultat : moins de surcoûts, moins de
           pannes, moins d&apos;immobilisation. Pour les flottes de 5 véhicules ou plus
-          en Côte d&apos;Ivoire — transport, VTC, BTP, mines, location, services.
+          en Côte d&apos;Ivoire dans tous les domaines : transport, VTC, BTP, mines,
+          location et services.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
-            href="/login"
+            href="/enterprise/dashboard"
             className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
           >
             Démarrer l&apos;essai 30 jours
@@ -127,7 +128,8 @@ export default function EntreprisesPage() {
 
       <p className="mt-6 text-center text-xs text-muted">
         Prix flat par véhicule, mensuel d&apos;avance. Paiement annuel = 2 mois
-        offerts. 30 jours d&apos;essai gratuit sur Flotte Pro et Flotte Pro +.
+        offerts. Toutes les entreprises démarrent avec 30 jours d&apos;essai gratuit,
+        d&apos;office.
       </p>
 
       {/* Comparison */}
