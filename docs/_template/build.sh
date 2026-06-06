@@ -4,10 +4,14 @@
 #
 # Requirements:
 #   - pandoc (>= 3) — installed via Homebrew, or extracted to /tmp/pandoc-3.5-x86_64
-#   - Google Chrome (macOS) for headless PDF rendering
+#   - PDF engine (one of):
+#       * WeasyPrint (preferred) — `pip install weasyprint`. Renders the @page
+#         footer (brand left / page counter right) that defines the v2 standard.
+#       * Google Chrome (fallback) — headless; ignores margin boxes (no footer).
 #
 # Env overrides:
 #   PANDOC=/path/to/pandoc
+#   WEASYPRINT=/path/to/weasyprint
 #   CHROME=/path/to/Chrome
 #
 # Usage: bash docs/_template/build.sh [slug ...]
@@ -30,9 +34,13 @@ if [[ -z "${PANDOC:-}" ]] || [[ ! -x "$PANDOC" ]]; then
   exit 1
 fi
 
+# Preferred PDF engine: WeasyPrint renders the @page footer margin boxes
+# (brand left / page counter right) that define the v2 standard.
+WEASYPRINT="${WEASYPRINT:-$(command -v weasyprint 2>/dev/null || true)}"
+
 CHROME="${CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
-if [[ ! -x "$CHROME" ]]; then
-  echo "ERROR: Google Chrome not found at $CHROME. Set CHROME=..." >&2
+if [[ -z "${WEASYPRINT:-}" ]] && [[ ! -x "$CHROME" ]]; then
+  echo "ERROR: no PDF engine found. Install WeasyPrint (pip install weasyprint) or Google Chrome." >&2
   exit 1
 fi
 
@@ -56,6 +64,7 @@ DOCS=(
   "brochure-vtc-grand-compte-2026-05|Brochure commerciale|Édition VTC grand compte (confidentielle) · Mai 2026"
   "offre-vtc-6000-vehicules-2026-05|Offre commerciale|VTC 6 000 véhicules · Mai 2026 · PCS-VTC-2026-05-001"
   "brochure-commerciale-entreprises-2026-06-03|Brochure commerciale|Édition Entreprises — Pro Flotte 3 niveaux + chauffeurs · 3 juin 2026"
+  "pitch-partenariat-yango-2026-06|Note de partenariat|Réseau partenaires Yango · Abidjan · Juin 2026"
   "brochure-vtc-grand-compte-2026-06-03|Brochure commerciale|Édition VTC grand compte (confidentielle) · 3 juin 2026"
   "offre-vtc-6000-vehicules-2026-06-03|Offre commerciale|VTC 6 000 véhicules · Juin 2026 · PCS-VTC-2026-06-001"
   "brochure-btp-grand-compte-2026-05|Brochure commerciale|Édition BTP grand compte (confidentielle) · Mai 2026"
@@ -96,17 +105,21 @@ build_one() {
     --embed-resources \
     --include-before-body="$header"
 
-  # PDF via Chrome headless
-  "$CHROME" --headless --disable-gpu --no-pdf-header-footer \
-    --print-to-pdf="$DOCS_DIR/$slug.pdf" \
-    --print-to-pdf-no-header \
-    "file://$html" 2>/dev/null
+  # PDF — WeasyPrint preferred (renders footer), Chrome headless as fallback.
+  if [[ -n "${WEASYPRINT:-}" ]]; then
+    "$WEASYPRINT" "$html" "$DOCS_DIR/$slug.pdf"
+  else
+    "$CHROME" --headless --disable-gpu --no-pdf-header-footer \
+      --print-to-pdf="$DOCS_DIR/$slug.pdf" \
+      --print-to-pdf-no-header \
+      "file://$html" 2>/dev/null
+  fi
 
   echo "  ok $slug"
 }
 
 echo "Pandoc: $PANDOC"
-echo "Chrome: $CHROME"
+echo "PDF engine: ${WEASYPRINT:-$CHROME (Chrome — no footer)}"
 echo "Output: $DOCS_DIR"
 echo "---"
 

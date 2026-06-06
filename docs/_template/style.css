@@ -1,19 +1,45 @@
 /*
- * Pièces — Production document style
+ * Pièces — Production document style (v2, "Yango standard")
  * Used by docs/_template/build.sh for all PDF rendering.
  * Fonts and colors mirror pieces.ci (DESIGN.md).
+ *
+ * Authoring conventions (see docs/_template/README.md):
+ *   <p class="eyebrow">PROPOSITION DE COLLABORATION</p>   ← mono orange kicker above H1
+ *   # Titre                                                ← H1 (Gloock navy)
+ *   First paragraph after H1                               ← rendered as the deck/subtitle
+ *   <div class="callout"> … <strong>orange</strong> … </div>  ← navy hero callout box
+ *   - bullets                                              ← orange ▸ arrows
+ *   | tables |                                             ← navy header row
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap');
 
+:root {
+  --navy: #00113a;
+  --orange: #FF6B00;
+  --ink: #1a1a1a;
+  --muted: #888;
+}
+
 @page {
   size: A4;
-  margin: 22mm 18mm 22mm 18mm;
-  @bottom-center {
-    content: counter(page) " / " counter(pages);
-    font-size: 9pt;
-    color: #888;
+  margin: 22mm 18mm 20mm 18mm;
+  /* Footer — left brand, right page counter. Requires a paged-media renderer
+     (WeasyPrint). Chrome headless ignores margin boxes; use WeasyPrint for the
+     production deliverable. */
+  @bottom-left {
+    content: "Pièces — pieces.ci";
     font-family: 'DM Mono', monospace;
+    font-size: 8pt;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  @bottom-right {
+    content: "Page " counter(page) " / " counter(pages);
+    font-family: 'DM Mono', monospace;
+    font-size: 8pt;
+    color: var(--muted);
+    letter-spacing: 0.04em;
   }
 }
 
@@ -25,17 +51,18 @@ body {
   font-family: 'Instrument Sans', -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 10.5pt;
   line-height: 1.55;
-  color: #1a1a1a;
+  color: var(--ink);
   max-width: 100%;
   margin: 0;
   padding: 0;
 }
 
+/* ── Header band (logo + meta) ─────────────────────────────────────────── */
 .pieces-doc-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 2px solid #FF6B00;
+  border-bottom: 2px solid var(--orange);
   padding-bottom: 10pt;
   margin-bottom: 18pt;
 }
@@ -47,34 +74,61 @@ body {
 .pieces-doc-header .meta {
   font-family: 'DM Mono', monospace;
   font-size: 7pt;
-  color: #888;
+  color: var(--muted);
   text-align: right;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  line-height: 1.4;
+  line-height: 1.5;
+}
+
+.pieces-doc-header .meta .category {
+  color: var(--orange);
+  font-weight: 500;
+}
+
+/* ── Eyebrow / kicker above the title ──────────────────────────────────── */
+.eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5pt;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--orange);
+  margin: 0 0 4pt 0;
 }
 
 h1 {
   font-family: 'Gloock', ui-serif, Georgia, serif;
   font-weight: 400;
   font-size: 26pt;
-  color: #00113a;
+  color: var(--navy);
   letter-spacing: -0.5pt;
   border-bottom: none;
   padding-bottom: 0;
   margin-top: 0;
-  margin-bottom: 14pt;
+  margin-bottom: 10pt;
   page-break-after: avoid;
   line-height: 1.15;
+}
+
+/* Deck — the first paragraph directly after the H1 reads as a subtitle. */
+h1 + p {
+  font-size: 12.5pt;
+  line-height: 1.45;
+  color: #555;
+  margin-top: 0;
+  margin-bottom: 16pt;
 }
 
 h2 {
   font-family: 'Gloock', ui-serif, Georgia, serif;
   font-weight: 400;
   font-size: 17pt;
-  color: #00113a;
+  color: var(--navy);
   margin-top: 22pt;
   margin-bottom: 8pt;
+  padding-bottom: 4pt;
+  border-bottom: 1px solid #e8e8e8;
   page-break-after: avoid;
   line-height: 1.2;
 }
@@ -83,7 +137,7 @@ h3 {
   font-family: 'Instrument Sans', sans-serif;
   font-weight: 600;
   font-size: 12.5pt;
-  color: #00113a;
+  color: var(--navy);
   margin-top: 16pt;
   margin-bottom: 6pt;
   page-break-after: avoid;
@@ -93,7 +147,7 @@ h4 {
   font-family: 'Instrument Sans', sans-serif;
   font-weight: 600;
   font-size: 11pt;
-  color: #1a1a1a;
+  color: var(--ink);
   margin-top: 12pt;
   margin-bottom: 4pt;
   page-break-after: avoid;
@@ -105,15 +159,41 @@ p, ul, ol {
 }
 
 ul, ol {
-  padding-left: 22pt;
+  padding-left: 20pt;
 }
 
 li {
   margin-bottom: 3pt;
 }
 
+/* Orange ▸ arrow bullets on top-level unordered lists. */
+ul {
+  list-style: none;
+  padding-left: 16pt;
+}
+ul > li {
+  position: relative;
+  padding-left: 6pt;
+}
+ul > li::before {
+  content: "▸";
+  position: absolute;
+  left: -10pt;
+  color: var(--orange);
+  font-size: 9.5pt;
+  top: 0.5pt;
+}
+/* Nested lists fall back to plain disc to stay legible. */
+ul ul {
+  list-style: disc;
+  padding-left: 18pt;
+}
+ul ul > li::before {
+  content: none;
+}
+
 strong {
-  color: #00113a;
+  color: var(--navy);
   font-weight: 600;
 }
 
@@ -127,14 +207,14 @@ code {
   border-radius: 3px;
   font-family: 'DM Mono', "SF Mono", Menlo, Monaco, monospace;
   font-size: 9.5pt;
-  color: #00113a;
+  color: var(--navy);
 }
 
 pre {
   background: #f8f8f6;
   padding: 9pt 13pt;
   border-radius: 4px;
-  border-left: 3px solid #FF6B00;
+  border-left: 3px solid var(--orange);
   font-family: 'DM Mono', monospace;
   font-size: 9pt;
   overflow-x: auto;
@@ -146,24 +226,56 @@ pre code {
   padding: 0;
 }
 
+/* ── Navy hero callout ─────────────────────────────────────────────────── */
+/* Author with raw HTML in markdown:
+     <div class="callout">
+       <p class="lead">Phrase d'accroche <strong>en orange</strong>.</p>
+       <p>Ligne de support, en blanc atténué.</p>
+     </div>                                                                   */
+.callout {
+  background: var(--navy);
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 16pt 18pt;
+  margin: 14pt 0;
+  page-break-inside: avoid;
+}
+.callout p {
+  margin: 0 0 6pt 0;
+}
+.callout p:last-child {
+  margin-bottom: 0;
+}
+.callout .lead,
+.callout p:first-child {
+  font-family: 'Gloock', ui-serif, Georgia, serif;
+  font-size: 15pt;
+  line-height: 1.25;
+  color: #ffffff;
+}
+.callout p:not(.lead):not(:first-child) {
+  font-size: 10pt;
+  color: rgba(255, 255, 255, 0.82);
+}
+.callout strong {
+  color: var(--orange);
+  font-weight: 400;
+}
+
+/* Light note (default blockquote) — kept for back-compat with older docs. */
 blockquote {
-  border-left: 3px solid #FF6B00;
+  border-left: 3px solid var(--orange);
   background: #fff9f4;
   padding: 8pt 14pt;
-  margin: 10pt 0 10pt 0;
+  margin: 10pt 0;
   color: #444;
   font-style: italic;
   page-break-inside: avoid;
 }
+blockquote p:first-child { margin-top: 0; }
+blockquote p:last-child { margin-bottom: 0; }
 
-blockquote p:first-child {
-  margin-top: 0;
-}
-
-blockquote p:last-child {
-  margin-bottom: 0;
-}
-
+/* ── Tables ────────────────────────────────────────────────────────────── */
 table {
   border-collapse: collapse;
   width: 100%;
@@ -173,7 +285,7 @@ table {
 }
 
 th {
-  background: #00113a;
+  background: var(--navy);
   color: white;
   padding: 6pt 9pt;
   text-align: left;
@@ -191,28 +303,33 @@ tr:nth-child(even) td {
   background: #fafafa;
 }
 
+/* First column emphasis (label columns read as orange, like the Yango doc). */
+td strong:first-child {
+  color: var(--orange);
+}
+
 hr {
   border: none;
   border-top: 1px solid #ddd;
-  margin: 22pt 0;
+  margin: 20pt 0;
 }
 
 a {
-  color: #00113a;
+  color: var(--navy);
   text-decoration: none;
-  border-bottom: 1px dotted #00113a;
+  border-bottom: 1px dotted var(--navy);
 }
 
 a:hover {
   text-decoration: underline;
 }
 
-/* Italic note paragraphs (often used as document footers in the source markdowns) */
+/* Italic note paragraphs (often used as document footers in source markdowns). */
 p > em:only-child {
   display: block;
   text-align: center;
-  color: #888;
-  font-size: 9.5pt;
+  color: var(--muted);
+  font-size: 9pt;
   padding-top: 10pt;
   border-top: 1px solid #eee;
   margin-top: 14pt;

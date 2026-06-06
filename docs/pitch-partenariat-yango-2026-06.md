@@ -1,15 +1,13 @@
-# Note de partenariat — Réseau partenaires Yango
+<p class="eyebrow">Proposition de collaboration</p>
 
-**Pièces • Proposition de collaboration**
-Abidjan · Juin 2026 · `pitch-partenariat-yango-2026-06`
-
-## Moins de véhicules immobilisés. Plus de courses. Plus de commission.
+# Moins de véhicules immobilisés. Plus de courses. Plus de commission.
 
 Comment Pièces réduit le temps d'arrêt des véhicules de votre réseau partenaire — et augmente mécaniquement le volume de courses sur la plateforme Yango.
 
-> **Chaque véhicule à l'arrêt pour une pièce, c'est une journée de courses perdue — pour le chauffeur, le partenaire, et pour Yango.**
->
-> Pièces s'attaque précisément à cette cause d'immobilisation. Notre intérêt est aligné sur le vôtre : plus vos véhicules roulent, plus vous générez de commission.
+<div class="callout">
+<p class="lead">Chaque véhicule à l'arrêt pour une pièce, c'est <strong>une journée de courses perdue</strong> — pour le chauffeur, le partenaire, et pour Yango.</p>
+<p>Pièces s'attaque précisément à cette cause d'immobilisation. Notre intérêt est aligné sur le vôtre : plus vos véhicules roulent, plus vous générez de commission.</p>
+</div>
 
 ## L'intérêt aligné
 
@@ -54,9 +52,10 @@ Pour lever toute ambiguïté : **Pièces n'est pas un concurrent de Yango**, ni 
 - Mesure de l'**indicateur clé : jours-véhicule d'immobilisation évités**, traduits en courses additionnelles.
 - Restitution chiffrée conjointe — et décision d'élargir si la mécanique fonctionne.
 
-> **Un échange de 30 minutes pour vous montrer le calcul sur une flotte type de votre réseau.**
->
-> Nous venons avec les chiffres ; vous repartez avec une estimation des courses récupérables.
+<div class="callout">
+<p class="lead">Un échange de 30 minutes pour vous montrer le calcul sur <strong>une flotte type de votre réseau</strong>.</p>
+<p>Nous venons avec les chiffres ; vous repartez avec une estimation des courses récupérables.</p>
+</div>
 
 ---
 

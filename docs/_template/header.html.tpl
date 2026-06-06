@@ -4,7 +4,7 @@
     <circle cx="252" cy="48" r="8" fill="#ff6b00"/>
   </svg>
   <div class="meta">
-    {{CATEGORY}}<br/>
+    <span class="category">{{CATEGORY}}</span><br/>
     {{SUBTITLE}}
   </div>
 </div>
