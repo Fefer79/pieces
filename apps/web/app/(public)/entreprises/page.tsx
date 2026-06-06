@@ -20,7 +20,14 @@ export default function EntreprisesPage() {
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted">
           Pièces réunit sur une seule plateforme l&apos;achat de pièces au meilleur
-          prix, le pilotage des coûts véhicule par véhicule, l&apos;entretien
+          prix sur{' '}
+          <a
+            href="https://pieces.ci"
+            className="font-medium text-accent underline underline-offset-2 hover:text-accent-hover"
+          >
+            pieces.ci
+          </a>
+          , le pilotage des coûts véhicule par véhicule, l&apos;entretien
           préventif et la livraison express. Résultat : moins de surcoûts, moins de
           pannes, moins d&apos;immobilisation. Pour les flottes de 5 véhicules ou plus
           en Côte d&apos;Ivoire dans tous les domaines : transport, VTC, BTP, mines,
