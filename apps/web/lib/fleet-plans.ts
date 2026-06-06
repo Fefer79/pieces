@@ -29,7 +29,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     label: 'Gratuit',
     tagline: 'Achetez la bonne pièce, au bon prix.',
     price: '0 F',
-    priceNote: 'commission fournisseur uniquement',
+    priceNote: '',
     cta: 'Créer un compte',
     highlights: [
       'Catalogue avec compatibilité véhicule',
