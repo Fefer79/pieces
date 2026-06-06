@@ -201,7 +201,7 @@ export default function EntreprisesPage() {
           {[
             { label: 'Économie cible sur les pièces', value: '20–30 %' },
             { label: 'Investissement Flotte Pro + / an (50 véh)', value: '5 M F' },
-            { label: 'ROI net minimum / an (50 véh)', value: '+ 25 M F' },
+            { label: 'ROI net minimum / an (50 véh)', value: '+ 8 M F' },
           ].map((s) => (
             <div key={s.label}>
               <div className="font-display text-3xl text-ink">{s.value}</div>
@@ -210,11 +210,13 @@ export default function EntreprisesPage() {
           ))}
         </div>
         <p className="mt-6 text-sm leading-relaxed text-muted">
-          Hypothèse : budget pièces annuel typique 150 M F sur 50 véhicules,
-          économie projetée 20 % minimum via comparateur, scoring qualité
-          fournisseur, détection des véhicules « gouffres » et stock tampon
-          automatique. Testez-le pendant 30 jours gratuits : vous mesurez les
-          gains sur votre propre flotte avant tout engagement.
+          Hypothèse : budget pièces annuel ~65 M F sur 50 véhicules (1,3 M F /
+          véhicule), économie projetée 20 % minimum via comparateur, scoring
+          qualité fournisseur, détection des véhicules « gouffres » et stock
+          tampon automatique — soit 13 M F d&apos;économie pour 5 M F
+          d&apos;abonnement (ROI ×2,6, hors gains d&apos;immobilisation évitée).
+          Testez-le pendant 30 jours gratuits : vous mesurez les gains sur votre
+          propre flotte avant tout engagement.
         </p>
       </section>
 
