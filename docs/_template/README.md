@@ -20,7 +20,7 @@ Write plain GitHub-flavoured markdown, plus these Pièces idioms:
 |---|---|
 | **Eyebrow / kicker** (mono orange, above the title) | `<p class="eyebrow">Proposition de collaboration</p>` as the first line, before the `#` title |
 | **Title** | `# Mon titre` (one H1 per doc — Gloock navy) |
-| **Deck / subtitle** | the first paragraph immediately after the H1 (auto-styled larger & grey) |
+| **Deck / subtitle** | `<p class="deck">…</p>` right after the H1 (larger grey). Opt-in, so a metadata block as the first line isn't blown up. |
 | **Navy hero callout** | a raw-HTML block (see below) |
 | **Section heading** | `## Section` (Gloock navy, thin underline) |
 | **Arrow bullets** | normal `- item` lists render with orange ▸ markers |

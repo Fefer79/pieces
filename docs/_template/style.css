@@ -111,8 +111,10 @@ h1 {
   line-height: 1.15;
 }
 
-/* Deck — the first paragraph directly after the H1 reads as a subtitle. */
-h1 + p {
+/* Deck — opt-in subtitle under the H1. Author with <p class="deck">…</p>.
+   Opt-in (not `h1 + p`) so docs whose first line is a metadata block or a
+   confidential note aren't blown up into a giant grey subtitle. */
+.deck {
   font-size: 12.5pt;
   line-height: 1.45;
   color: #555;

@@ -44,7 +44,8 @@ inline styles in the markdown — only use the documented conventions below.
    - Eyebrow (first line, before the title):
      `<p class="eyebrow">Proposition de collaboration</p>`
    - One `# Title` (Gloock navy).
-   - **Deck**: the first paragraph right after the H1 (auto-styled large + grey).
+   - **Deck**: subtitle right after the H1 — `<p class="deck">…</p>` (opt-in, so a
+     metadata first line isn't styled as a giant subtitle).
    - **Navy hero callout** — raw HTML; markdown inside is NOT reparsed, so write
      `<strong>` literally. `<strong>` renders orange, the `.lead`/first `<p>` is
      large Gloock white:

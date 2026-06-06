@@ -2,7 +2,7 @@
 
 # Moins de véhicules immobilisés. Plus de courses. Plus de commission.
 
-Comment Pièces réduit le temps d'arrêt des véhicules de votre réseau partenaire — et augmente mécaniquement le volume de courses sur la plateforme Yango.
+<p class="deck">Comment Pièces réduit le temps d'arrêt des véhicules de votre réseau partenaire — et augmente mécaniquement le volume de courses sur la plateforme Yango.</p>
 
 <div class="callout">
 <p class="lead">Chaque véhicule à l'arrêt pour une pièce, c'est <strong>une journée de courses perdue</strong> — pour le chauffeur, le partenaire, et pour Yango.</p>
