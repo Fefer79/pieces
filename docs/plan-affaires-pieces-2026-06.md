@@ -17,7 +17,7 @@
 - **Suite Flotte (B2B)** : `Flotte Pro` (5 000 F/véh/mois) et `Flotte Pro +` (10 000 F/véh/mois) assurent le pilotage du coût total de possession, la détection des véhicules « gouffres », les alertes d'entretien, la livraison express, la facturation consolidée et la conformité fiscale.
 - **Programme Liaison** : les agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au vendeur de détail. Notre douve, c'est la **cartographie des acteurs de la chaîne** et la **digitalisation de leurs produits, même quand ils ne sont pas sur internet**.
 
-La plateforme est **construite et déployée** : marketplace, paiement à la livraison, dashboard flotte, calculateur ROI, bot conversationnel, et un catalogue de **7 137 annonces** déjà ingérées. Le portail entreprise est en ligne sur `flotte.pieces.ci`.
+La plateforme est **construite et déployée** : marketplace, paiement à la livraison, dashboard flotte, calculateur ROI, bot WhatsApp, et un catalogue de **7 137 annonces** déjà ingérées. Le portail entreprise est en ligne sur `flotte.pieces.ci`.
 
 **La demande** : nous levons un tour **Pre-seed de ~1 M EUR (≈ 655 M FCFA)** pour financer 18 à 20 mois d'exécution : verrouiller le catalogue de 90 % des pièces du marché, prendre la verticale VTC via un partenariat Yango et atteindre les jalons d'un Seed.
 
@@ -47,7 +47,7 @@ Pièces rend la chaîne **transparente et concurrentielle** : l'acheteur voit le
 | **Recherche pièce (texte / photo IA / VIN)** | Identification fiable, compatibilité véhicule CI | En production |
 | **Suite Flotte (Pro / Pro +)** | Pilotage coût, alertes, livraison express, conformité | En production |
 | **Calculateur ROI flotte** | Preuve chiffrée à la vente B2B | En production |
-| **Bot conversationnel** | Canal d'entrée n°1 | En production |
+| **Bot WhatsApp** | Canal d'entrée n°1 | En production |
 | **Programme & app Liaison** | Onboarding vendeurs à grande échelle | V1, à industrialiser |
 | **Facturation normalisée FNE-CI / DGI** | Verrou réglementaire, récupération TVA flottes | Roadmap P1 |
 
@@ -206,7 +206,7 @@ VC pan-africains (Partech, Janngo Capital, Ventures Platform, P1 Ventures, AAIC)
 
 ## 10. Équipe & organisation
 
-Recrutements prioritaires M0-M3 : **Head of Liaison** (l'arme stratégique), **Head of Sales B2B**, **Chief of Staff CEO**, **CTO confirmé**. Cible ~25 personnes à M12, ~55 à M24 (tech, commercial flotte, Liaison/ops, support client, finance/conformité).
+Recrutements prioritaires M0-M3 : **Head of Liaison** (l'arme stratégique), **Head of Sales B2B**, **Chief of Staff CEO**, **CTO confirmé**. Cible ~25 personnes à M12, ~55 à M24 (tech, commercial flotte, Liaison/ops, support WhatsApp, finance/conformité).
 
 ## 11. Risques majeurs & mitigations
 
