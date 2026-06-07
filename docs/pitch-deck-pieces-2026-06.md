@@ -29,7 +29,7 @@ Trois produits, une seule infrastructure :
 
 - **Marketplace tripartite** — le mécanicien identifie, le propriétaire paie en **escrow Mobile Money**, le vendeur livre. Prix et condition affichés, garantie, facture.
 - **Suite Flotte (B2B)** — pilotage du coût total de possession, détection des véhicules « gouffres », livraison express, conformité fiscale.
-- **Réseau Liaison** — des agents terrain digitalisent les vendeurs informels, sans smartphone requis.
+- **Réseau Liaison** — des agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au détaillant — même hors ligne.
 
 <div class="callout">
 <p class="lead">Une douve cumulée : <strong>demande + offre + conformité</strong>.</p>
@@ -112,7 +112,7 @@ Concurrent réel = **cantines + WhatsApp + Excel**. Aucun acteur structuré à l
 
 Notre douve, défendable à 36 mois :
 
-- **Réseau Liaison** (objectif 80 agents en 12 mois).
+- **Cartographie de la chaîne + réseau Liaison** — tous les acteurs (gros → détail, formels & informels) et leurs produits digitalisés, même hors ligne (objectif 80 agents en 12 mois).
 - **Data fitments Côte d'Ivoire** — inattaquable à 100 000 transactions.
 - **Escrow + garantie** — confiance dans un marché de méfiance.
 - **FNE-CI natif** — verrou réglementaire.

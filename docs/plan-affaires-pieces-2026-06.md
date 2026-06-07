@@ -15,7 +15,7 @@
 
 - **Marketplace tripartite** — le mécanicien identifie la pièce (recherche, photo IA, VIN), le propriétaire paie en Mobile Money via **escrow**, le vendeur livre. Prix affichés, condition de la pièce affichée (chip Neuf / Occasion / Ré-usiné / Aftermarket / OEM), garantie, facture.
 - **Suite Flotte (B2B)** — `Flotte Pro` (5 000 F/véh/mois) et `Flotte Pro +` (10 000 F/véh/mois) : pilotage du coût total de possession, détection des véhicules « gouffres », alertes d'entretien, livraison express, facturation consolidée, conformité fiscale.
-- **Programme Liaison** — des agents terrain digitalisent les vendeurs informels d'Adjamé et Yopougon (photo + publication du stock), sans exiger d'eux un smartphone. C'est notre douve concurrentielle.
+- **Programme Liaison** — les agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au vendeur de détail. Notre douve concurrentielle est la **cartographie des acteurs de la chaîne** et la **digitalisation de leurs produits, même quand ils ne sont pas sur internet**.
 
 La plateforme est **construite et déployée** : marketplace, escrow, dashboard flotte, calculateur ROI, bot WhatsApp, et un catalogue de **7 137 annonces** déjà ingérées (sources Jumia, CoinAfrique, global-auto). Le portail entreprise est en ligne sur `flotte.pieces.ci`.
 
@@ -97,7 +97,7 @@ Restriction de l'âge des véhicules importés, rajeunissement du parc, montée 
 
 **Notre douve, cumulée et défendable à 36 mois :**
 
-- **Le réseau Liaison** — agents terrain Adjamé/Yopougon (objectif : 80 sous 12 mois).
+- **Le réseau Liaison & la cartographie de la chaîne** — agents terrain qui recensent et digitalisent tous les acteurs (importateurs en gros → détaillants, formels et informels) et leurs produits, même hors ligne. Objectif : 80 agents sous 12 mois.
 - **La data fitments Côte d'Ivoire** — quelle pièce va sur quel véhicule local ; inattaquable à 100 000 transactions.
 - **L'escrow Mobile Money + garantie Pièces** — confiance institutionnelle dans un marché de méfiance.
 - **La conformité FNE-CI native** — premier à émettre la facture normalisée DGI sur la pièce.
