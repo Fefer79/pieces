@@ -112,6 +112,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 
 ### Stratégie & financement (confidentiel)
 
+- [Étude — Coûts d'exploitation VTC](./etude-couts-exploitation-vtc-ci-2026.md) — Analyse de marché du VTC ivoirien (parc ~30 000 véhicules 2026, Yango ~25 000 / 100 000 courses jour) et structure de coûts détaillée, focus dépenses pièces & consommables (~1,3 M F/véh/an) — Mai 2026 ([PDF](./etude-couts-exploitation-vtc-ci-2026.pdf))
 - [Plan d'affaires Pièces](./plan-affaires-pieces-2026-06.md) — Plan d'affaires complet pour la levée Seed : marché (TAM/SAM/SOM chiffré et sourcé), produit, modèle économique, GTM 5 mouvements, projections 3 ans, dimensionnement de la levée (~1,5 M USD, emploi des fonds, jalons Série A), risques — Juin 2026 ([PDF](./plan-affaires-pieces-2026-06.pdf))
 - [Pitch deck Pièces](./pitch-deck-pieces-2026-06.md) — Deck investisseur Seed (~14 slides) : problème, solution, marché, pourquoi maintenant (départ Uber / Yango dominant), modèle, GTM, douve, projections, demande de financement — Juin 2026 ([PDF](./pitch-deck-pieces-2026-06.pdf))
 

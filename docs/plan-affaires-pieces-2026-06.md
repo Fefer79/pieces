@@ -5,8 +5,8 @@
 <p class="deck">Marketplace tripartite + suite de gestion de flotte + réseau terrain « Liaison », pour un marché de la pièce détachée massif, fragmenté et 100 % informel. Ce document présente le marché, le modèle, les projections et la levée Seed recherchée.</p>
 
 <div class="callout">
-<p class="lead">Le marché ivoirien de la pièce auto pèse <strong>~210 milliards FCFA/an</strong>. Il est fragmenté, opaque et informel. Personne ne combine marketplace, flotte et onboarding terrain.</p>
-<p>Pièces vise 15–20 % du marché intermédié à 5 ans, soit 30–40 Mds FCFA de GMV et 3–5 Mds FCFA de revenu net annuel.</p>
+<p class="lead">Le marché ivoirien de la pièce auto pèse <strong>~250 milliards FCFA/an</strong>. Il est fragmenté, opaque et informel. Personne ne combine marketplace, flotte et onboarding terrain.</p>
+<p>Pièces vise 15–20 % du marché intermédié à 5 ans, soit 35–50 Mds FCFA de GMV et 4–6 Mds FCFA de revenu net annuel.</p>
 </div>
 
 ## 1. Résumé exécutif
@@ -60,24 +60,26 @@ Estimation bottom-up du marché de la **pièce détachée seule** (parc × dépe
 | Segment | Volume (Abidjan) | Dépense pièces/véh/an | Marché/an |
 |---|---|---|---|
 | Parc particulier | ~600 000 | 180 000 F | ~108 Mds F |
-| **VTC (Yango, Heetch, indépendants)** | ~6 000–8 000 | 1 300 000 F | ~9 Mds F |
+| **VTC (Yango ~25 000, Heetch, inDrive, indép.)** | ~25 000–30 000 | 1 300 000 F | ~36 Mds F |
 | Taxis communaux / woro-woro | ~18 000 | 350 000 F | ~6 Mds F |
 | Transport collectif (gbaka, minicars) | ~12 000 | 600 000 F | ~7 Mds F |
 | BTP / engins légers | ~8 000 | 1 200 000 F | ~10 Mds F |
 | Flottes corporate (banques, telco, distrib.) | ~15 000 | 350 000 F | ~5 Mds F |
-| **Total Abidjan adressable** | | | **~145 Mds F/an** |
+| **Total Abidjan adressable** | | | **~172 Mds F/an** |
 
-En ajoutant Bouaké, San Pedro, Yamoussoukro, Korhogo → **marché national ~210 Mds FCFA/an** sur la pièce seule (le double avec la main-d'œuvre).
+En ajoutant Bouaké, San Pedro, Yamoussoukro, Korhogo → **marché national ~250 Mds FCFA/an** sur la pièce seule (le double avec la main-d'œuvre).
 
 <div class="callout">
-<p class="lead">TAM <strong>~210 Mds F</strong> (national, pièces) · SAM <strong>~145 Mds F</strong> (Abidjan adressable) · SOM 5 ans <strong>30–40 Mds F</strong> de GMV intermédié.</p>
+<p class="lead">TAM <strong>~250 Mds F</strong> (national, pièces) · SAM <strong>~172 Mds F</strong> (Abidjan adressable) · SOM 5 ans <strong>35–50 Mds F</strong> de GMV intermédié.</p>
 </div>
 
-### 4.2 Le VTC : un beachhead, pas le marché
+### 4.2 Le VTC : le meilleur point d'entrée
 
-Le secteur VTC ivoirien comptait **5 000 à 6 000 chauffeurs actifs en 2024**. **Uber a quitté la Côte d'Ivoire le 25 septembre 2025**, laissant **Yango en position dominante** (bureau régional Afrique de l'Ouest ouvert à Abidjan en juillet 2025), aux côtés de Heetch et d'InDrive (informel).
+Le secteur a explosé : de **5 000–6 000 chauffeurs en 2024** à **~30 000 véhicules VTC en activité début 2026** au niveau national (estimation Déclic Car), et plus de 20 000 emplois créés. **Uber a quitté la Côte d'Ivoire le 25 septembre 2025**, laissant **Yango ultra-dominant** : la plateforme revendique **~25 000 véhicules à Abidjan, ~100 000 courses par jour, et plus de 160 entreprises de flotte** créées dans son sillage (bureau régional Afrique de l'Ouest ouvert à Abidjan en juillet 2025). Heetch et inDrive complètent le marché.
 
-Le VTC n'est pas le plus gros segment, mais c'est **le meilleur point d'entrée** : un véhicule VTC roule ~44 000 km/an (3× un particulier), use ses pièces 3× plus vite, et chaque jour d'immobilisation détruit directement du revenu. La douleur est aiguë, récurrente, et mesurable — idéale pour prouver le ROI, construire les cas clients, et la base de données fitments, avant d'étendre au parc entier.
+La demande de mobilité est massive — **~4 milliards FCFA dépensés par jour en déplacements à Abidjan** — et Yango recrute en continu : le marché est tiré par la demande, pas saturé côté offre.
+
+Le VTC n'est pas le plus gros segment du parc, mais c'est **le meilleur point d'entrée** : un véhicule VTC roule **~44 000 km/an** (3× un particulier), use ses pièces 3× plus vite (dépense pièces **~1,3 M FCFA/véh/an**), et chaque jour d'immobilisation détruit directement du revenu (15 000–30 000 F/jour). Douleur aiguë, récurrente, mesurable — idéale pour prouver le ROI, bâtir les cas clients et la base de données fitments, avant d'étendre au parc entier. **Les ~160 entreprises de flotte du réseau Yango sont des cibles B2B concentrées et immédiatement adressables.**
 
 ### 4.3 Dynamique
 
@@ -90,6 +92,7 @@ Restriction de l'âge des véhicules importés, rajeunissement du parc, montée 
 | **Cantines + WhatsApp + Excel** | Le vrai concurrent (90 % des flux) | Rendre ce stack obsolète sans rupture de comportement |
 | **global-auto.online** | Seul catalogue web structuré | Catalogue miroité (veille prix permanente) ; ils ne voient pas nos prix |
 | **Jumia / Glovo / Yango Tech** | Capital, pourraient acquérir à 24–36 mois | Avance terrain + data fitments à industrialiser vite |
+| **FleetOps (gestion partenaires Yango)** | Gère chauffeurs/loueurs (39 000+ suivis), pas le coût pièces | Partenaire d'intégration potentiel, pas concurrent sur la pièce |
 | **Outils fleet européens (Fleetio, Geotab)** | Génériques, non localisés | FCFA, fournisseurs CI, FNE-CI natif |
 
 **Notre douve, cumulée et défendable à 36 mois :**
@@ -218,4 +221,4 @@ Le marché est gigantesque, fragmenté, mal servi. **Personne** ne combine la ma
 
 ---
 
-_Pièces — la pièce qu'il te faut, au juste prix, livrée et garantie. · Document interne confidentiel · Plan d'affaires v1.0 · Juin 2026. Sources marché : Ministère des Transports CI (2022), AutoMag.ci (2024–2025), Agence Ecofin & Jeune Afrique (retrait Uber 2025), Disrupt Africa / TechCabal (financement 2024–2025). Chiffres financiers : projections internes à valider sur données réelles._
+_Pièces — la pièce qu'il te faut, au juste prix, livrée et garantie. · Document interne confidentiel · Plan d'affaires v1.1 · Juin 2026. Sources marché : étude Pièces « Coûts d'exploitation VTC en Côte d'Ivoire » (mai 2026), Déclic Car / 7info & Digital Mag CI (Yango : 25 000 véhicules, 100 000 courses/jour, 160 entreprises — 2026), Africa Data Intelligence (VTC 2024), Ministère des Transports CI (parc ~1,2 M, 2022), Agence Ecofin & Jeune Afrique (retrait Uber 2025), Disrupt Africa / TechCabal (financement 2024–2025). Chiffres financiers : projections internes à valider sur données réelles._

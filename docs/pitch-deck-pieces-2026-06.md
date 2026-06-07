@@ -2,7 +2,7 @@
 
 # Pièces
 
-<p class="deck">L'infrastructure de confiance de la pièce auto en Côte d'Ivoire. Marketplace + flotte + réseau terrain, pour un marché de 210 Mds FCFA/an, fragmenté et 100 % informel.</p>
+<p class="deck">L'infrastructure de confiance de la pièce auto en Côte d'Ivoire. Marketplace + flotte + réseau terrain, pour un marché de ~250 Mds FCFA/an, fragmenté et 100 % informel.</p>
 
 <div class="callout">
 <p class="lead">La pièce qu'il te faut, <strong>au juste prix</strong>, livrée et garantie.</p>
@@ -53,17 +53,17 @@ Parc national **~1,2 M véhicules** (Min. Transports, 2022). Secteur auto **~400
 
 | | Marché pièces / an |
 |---|---|
-| **TAM** — national (pièces seules) | **~210 Mds F** |
-| **SAM** — Abidjan adressable | **~145 Mds F** |
-| **SOM** — 5 ans, GMV intermédié | **30–40 Mds F** |
+| **TAM** — national (pièces seules) | **~250 Mds F** |
+| **SAM** — Abidjan adressable | **~172 Mds F** |
+| **SOM** — 5 ans, GMV intermédié | **35–50 Mds F** |
 
-À une take rate de 9–12 %, le SOM représente **3–5 Mds FCFA de revenu net annuel** (~5–8 M USD).
+À une take rate de 9–12 %, le SOM représente **4–6 Mds FCFA de revenu net annuel** (~6–10 M USD).
 
 <div style="page-break-after: always;"></div>
 
 ## Pourquoi maintenant
 
-- **Uber a quitté la Côte d'Ivoire (sept. 2025)** → **Yango dominant**, bureau régional Afrique de l'Ouest ouvert à Abidjan. Un partenaire flotte évident.
+- **Uber a quitté la Côte d'Ivoire (sept. 2025)** → **Yango ultra-dominant** : ~25 000 véhicules, **~100 000 courses/jour**, 160+ entreprises de flotte, HQ régional à Abidjan. Un partenaire flotte évident.
 - **Parc qui rajeunit** : importations de neuf triplées depuis 2017, restriction de l'âge des véhicules.
 - **Mobile Money massif** (Orange Money, MTN, Wave) → l'escrow devient possible.
 - **Formalisation fiscale (FNE-CI)** → fenêtre pour devenir le standard de la facture pièce.
@@ -76,11 +76,12 @@ Parc national **~1,2 M véhicules** (Min. Transports, 2022). Secteur auto **~400
 
 ## Le beachhead : le VTC
 
-Le VTC ivoirien (~6 000–8 000 véhicules, en croissance) est **le meilleur point d'entrée**, pas le plus gros segment :
+Le VTC ivoirien a explosé : **~30 000 véhicules en 2026** (vs 5–6k en 2024), Yango ~25 000 à Abidjan. C'est **le meilleur point d'entrée**, pas le plus gros segment :
 
-- Un VTC roule **~44 000 km/an** (3× un particulier) → use ses pièces 3× plus vite.
-- Chaque jour d'immobilisation **détruit du revenu** → douleur aiguë et mesurable.
-- Idéal pour prouver le ROI, bâtir les cas clients et la **data fitments**, avant d'étendre au parc entier (taxis, gbaka, BTP, corporate).
+- Un VTC roule **~44 000 km/an** (3× un particulier) → use ses pièces 3× plus vite (**~1,3 M F/an** de pièces).
+- Chaque jour d'immobilisation **détruit du revenu** (15–30k F/jour) → douleur aiguë et mesurable.
+- **~160 entreprises de flotte** Yango = cibles B2B concentrées et immédiates.
+- Idéal pour prouver le ROI et bâtir la **data fitments**, avant d'étendre au parc entier (taxis, gbaka, BTP, corporate).
 
 <div style="page-break-after: always;"></div>
 
