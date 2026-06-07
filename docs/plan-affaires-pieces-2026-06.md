@@ -5,7 +5,7 @@
 <p class="deck">Pièces optimise les dépenses automobiles de tout le monde, du propriétaire d'un seul véhicule au gestionnaire d'une flotte de mille, sur un marché de la pièce détachée massif et largement informel. Ce document couvre le marché, le modèle, les projections et la levée Pre-seed recherchée.</p>
 
 <div class="callout">
-<p class="lead">Le marché ivoirien de la pièce auto pèse <strong>~250 milliards FCFA/an</strong>. Il est fragmenté, opaque et largement informel. Pièces le rend lisible en imposant la <strong>transparence des prix</strong>.</p>
+<p class="lead">Le marché ivoirien de la pièce auto pèse <strong>~250 milliards FCFA/an</strong>. Il est fragmenté, opaque et largement informel. Pièces le rend lisible en imposant la <strong>transparence des prix et dépenses</strong>.</p>
 <p>Pièces vise 15-20 % du marché intermédié à 5 ans, soit 35-50 Mds FCFA de GMV et 4-6 Mds FCFA de revenu net annuel.</p>
 </div>
 
