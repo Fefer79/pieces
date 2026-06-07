@@ -1,7 +1,7 @@
 <div class="pieces-doc-header">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 181 80" class="logo" style="height:36pt;">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 80" class="logo" style="height:36pt;">
     <text x="0" y="62" font-family="Gloock, serif" font-size="64" fill="#00113a" letter-spacing="-1">Pièces</text>
-    <circle cx="172" cy="54" r="8" fill="#ff6b00"/>
+    <circle cx="186" cy="54" r="8" fill="#ff6b00"/>
   </svg>
   <div class="meta">
     <span class="category">{{CATEGORY}}</span><br/>

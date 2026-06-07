@@ -256,12 +256,12 @@ Mêmes familles que le web ; valeurs en **points (pt)** pour l'impression A4.
 Fragment HTML injecté en tête de chaque PDF : SVG « Pièces » en Gloock `#00113a` + point accent orange `#ff6b00`, et un bloc méta à droite peuplé via `{{CATEGORY}}` / `{{SUBTITLE}}` au build.
 
 ### Règle du point orange (convention de marque)
-**Le point orange touche toujours le wordmark.** Il est verrouillé au contact du « s » final de « Pièces », comme un point final qui en embrasse la queue. Il ne doit jamais flotter détaché, ni être recentré, ni être déplacé verticalement : le wordmark et le point forment un bloc indissociable, mis à l'échelle ensemble.
+**Le point orange est le point final de « Pièces ».** Il se place sur la ligne de base, juste après le « s », comme la ponctuation d'un mot — jamais posé sur le « s » ni superposé aux lettres. Il reste solidaire du wordmark : on ne le recentre pas, on ne le déplace pas verticalement, on ne l'éloigne pas ; le wordmark et le point forment un bloc indissociable, mis à l'échelle ensemble.
 
-Géométrie de référence (viewBox `0 0 181 80`) : texte `x=0 y=62`, Gloock `font-size=64`, `letter-spacing=-1`, `#00113a` ; cercle `cx=172 cy=54 r=8`, `#ff6b00`. Source unique :
-- SVG web : `apps/web/public/logo-pieces-light.svg`
+Géométrie de référence (viewBox `0 0 196 80`) : texte `x=0 y=62`, Gloock `font-size=64`, `letter-spacing=-1` ; cercle `cx=186 cy=54 r=8`, `#ff6b00` (sur la ligne de base, après le « s »). Encre : `#00113a` (fond clair) ou `#ffffff` (fond sombre). Sources uniques :
+- SVG web : `apps/web/public/logo-pieces-light.svg` · `logo-pieces-dark.svg`
 - SVG header docs : `docs/_template/header.html.tpl`
-- PNG haute résolution (transparent, 3620×1600) : `apps/web/public/logo-pieces-light.png` (copie dans `docs/_template/`)
+- PNG haute résolution (transparent, 3920×1600) : `apps/web/public/logo-pieces-light.png` · `logo-pieces-dark.png` (copies dans `docs/_template/`)
 
 ### Ajouter un document
 1. Écrire le markdown dans `docs/mon-doc.md`.
