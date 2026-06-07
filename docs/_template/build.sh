@@ -101,6 +101,25 @@ build_one() {
   # DOCX (plain — no logo header, Word renders system fonts)
   "$PANDOC" "$md" -o "$DOCS_DIR/$slug.docx" --from gfm
 
+  # PPTX for decks (slug starting with "pitch-deck"): strip the print-only HTML
+  # (page-break separators, eyebrow/deck/callout wrappers) into clean slide
+  # markdown, then let pandoc build one slide per "##". Default pandoc theme —
+  # apply Pièces branding in PowerPoint via a reference-doc later if needed.
+  if [[ "$slug" == pitch-deck* ]]; then
+    local deckmd="$TMP_DIR/$slug.deck.md"
+    perl -0pe '
+      s{<div[^>]*page-break[^>]*></div>}{}g;
+      s{<div class="callout">}{}g;
+      s{</div>}{}g;
+      s{<strong>}{**}g; s{</strong>}{**}g;
+      s{<p class="eyebrow">.*?</p>}{}g;
+      s{<p class="deck">(.*?)</p>}{$1}g;
+      s{<p class="lead">(.*?)</p>}{> $1}g;
+      s{<p>(.*?)</p>}{> $1}g;
+    ' "$md" > "$deckmd"
+    "$PANDOC" "$deckmd" -o "$DOCS_DIR/$slug.pptx" --from gfm --slide-level=2
+  fi
+
   # HTML for PDF rendering — logo header + CSS + embedded resources
   local html="$TMP_DIR/$slug.html"
   "$PANDOC" "$md" -o "$html" \

@@ -49,15 +49,13 @@ Trois produits, une seule infrastructure :
 
 ## Le marché
 
-Parc national **~1,2 M véhicules** (Min. Transports, 2022). Secteur auto **~400–420 Mds F/an**.
+Parc national **~1,2 M véhicules** (Min. Transports, 2022). Secteur auto **~400–420 Mds F/an**. À une take rate de 9–12 %, le SOM représente **4–6 Mds FCFA de revenu net annuel** (~6–10 M USD).
 
 | | Marché pièces / an |
 |---|---|
 | **TAM** — national (pièces seules) | **~250 Mds F** |
 | **SAM** — Abidjan adressable | **~172 Mds F** |
 | **SOM** — 5 ans, GMV intermédié | **35–50 Mds F** |
-
-À une take rate de 9–12 %, le SOM représente **4–6 Mds FCFA de revenu net annuel** (~6–10 M USD).
 
 <div style="page-break-after: always;"></div>
 
@@ -87,14 +85,14 @@ Le VTC ivoirien a explosé : **~30 000 véhicules en 2026** (vs 5–6k en 2024),
 
 ## Modèle économique
 
+**Unit economics** : revenu net **2 560 F/commande** · LTV Flotte Pro **~85 000 F/véhicule** · **LTV/CAC > 4** dès M12.
+
 | Flux | Mécanique | An 3 |
 |---|---|---|
 | Commission marketplace | 5–10 % côté vendeur | 45 % |
 | Abonnement Flotte Pro | 5 000 F/véh/mois | 35 % |
 | Abonnement Flotte Pro + | 10 000 F/véh/mois | 15 % |
 | Conformité / facturation | forfait FNE-CI | 5 % |
-
-**Unit economics** : revenu net **2 560 F/commande** · LTV Flotte Pro **~85 000 F/véhicule** · **LTV/CAC > 4** dès M12.
 
 <div style="page-break-after: always;"></div>
 
@@ -140,6 +138,8 @@ Notre douve, défendable à 36 mois :
 <p>Fourchette 1,2–1,8 M USD. Cohérent avec le marché 2025 (ticket Seed moyen ~1,6 M USD).</p>
 </div>
 
+**Jalons débloqués** : 1 500 véhicules abonnés, 600 commandes/jour, GMV > 250 M F/mois, break-even Abidjan à M18 → **Série A 4–7 M USD**.
+
 | Emploi des fonds | Part |
 |---|---|
 | Liaison & opérations terrain | 30 % |
@@ -147,8 +147,6 @@ Notre douve, défendable à 36 mois :
 | Produit & tech | 25 % |
 | G&A, finance, conformité | 10 % |
 | Fonds de roulement & contingence | 10 % |
-
-**Jalons débloqués** : 1 500 véhicules abonnés, 600 commandes/jour, GMV > 250 M F/mois, break-even Abidjan à M18 → **Série A 4–7 M USD**.
 
 <div style="page-break-after: always;"></div>
 
