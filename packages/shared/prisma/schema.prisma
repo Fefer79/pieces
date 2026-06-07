@@ -160,6 +160,7 @@ enum JobType {
   IMAGE_PROCESS_VARIANTS
   CATALOG_AI_IDENTIFY
   MAINTENANCE_REMINDER_SCAN
+  BUFFER_STOCK_REPLENISH_SCAN
 }
 
 enum JobStatus {
@@ -499,6 +500,10 @@ model EnterpriseBufferStock {
   targetQty       Int         @map("target_qty")
   currentQty      Int         @default(0) @map("current_qty")
   autoReplenish   Boolean     @default(false) @map("auto_replenish")
+  // Anti-spam du job de réappro : on ne régénère pas un bon tant que le dernier
+  // est récent ou non résolu. lastReplenishOrderId pointe le dernier bon créé.
+  lastReplenishedAt   DateTime? @map("last_replenished_at")
+  lastReplenishOrderId String?  @map("last_replenish_order_id")
   notes           String?
   createdAt       DateTime    @default(now()) @map("created_at")
   updatedAt       DateTime    @updatedAt @map("updated_at")

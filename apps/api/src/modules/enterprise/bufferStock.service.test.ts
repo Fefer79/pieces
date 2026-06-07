@@ -10,9 +10,13 @@ const bufferFindMany = vi.fn()
 const bufferFindFirst = vi.fn()
 const bufferCreate = vi.fn()
 const bufferUpdate = vi.fn()
+const bufferUpdateMany = vi.fn()
 const bufferDelete = vi.fn()
 const catalogFindUnique = vi.fn()
 const enterpriseMemberFindUnique = vi.fn()
+const enterpriseFindMany = vi.fn()
+const orderCreate = vi.fn()
+const notifyBufferReplenish = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
@@ -21,11 +25,18 @@ vi.mock('../../lib/prisma.js', () => ({
       findFirst: (...a: unknown[]) => bufferFindFirst(...a),
       create: (...a: unknown[]) => bufferCreate(...a),
       update: (...a: unknown[]) => bufferUpdate(...a),
+      updateMany: (...a: unknown[]) => bufferUpdateMany(...a),
       delete: (...a: unknown[]) => bufferDelete(...a),
     },
     catalogItem: { findUnique: (...a: unknown[]) => catalogFindUnique(...a) },
     enterpriseMember: { findUnique: (...a: unknown[]) => enterpriseMemberFindUnique(...a) },
+    enterprise: { findMany: (...a: unknown[]) => enterpriseFindMany(...a) },
+    order: { create: (...a: unknown[]) => orderCreate(...a) },
   },
+}))
+
+vi.mock('../notification/notification.service.js', () => ({
+  notifyBufferReplenish: (...a: unknown[]) => notifyBufferReplenish(...a),
 }))
 
 const {
@@ -33,6 +44,7 @@ const {
   listBufferStock,
   createBufferStock,
   adjustBufferStock,
+  scanAndReplenish,
 } = await import('./bufferStock.service.js')
 
 function asMember(role = 'OWNER') {
@@ -135,5 +147,76 @@ describe('adjustBufferStock', () => {
     expect(bufferUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ currentQty: 8 }) }),
     )
+  })
+})
+
+describe('scanAndReplenish', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    orderCreate.mockResolvedValue({ id: 'order-1' })
+    bufferUpdateMany.mockResolvedValue({ count: 1 })
+    notifyBufferReplenish.mockResolvedValue({ success: true })
+  })
+
+  const catalogItem = {
+    id: 'c1', name: 'Plaquettes', category: 'Freinage', price: 12_000,
+    imageThumbUrl: null, condition: 'NEUF', partSource: 'OEM',
+    vendorId: 'v1', vendor: { shopName: 'Bosch Pro' },
+  }
+  const owner = { role: 'OWNER', userId: 'u-owner', user: { phone: '+2250700000000' } }
+
+  it('creates a DRAFT reorder for below-threshold autoReplenish lines and notifies managers', async () => {
+    enterpriseFindMany.mockResolvedValueOnce([
+      {
+        id: 'e1',
+        members: [owner],
+        bufferStock: [
+          // OUT: 0/10 → deficit 10
+          { id: 'b1', targetQty: 10, currentQty: 0, lastReplenishedAt: null, catalogItem },
+        ],
+      },
+    ])
+
+    const res = await scanAndReplenish()
+
+    expect(res.ordersCreated).toBe(1)
+    expect(res.linesReplenished).toBe(1)
+    // l'item commandé couvre le déficit (target - current = 10)
+    const arg = orderCreate.mock.calls[0]![0] as {
+      data: { enterpriseId: string; totalAmount: number; items: { create: { quantity: number }[] } }
+    }
+    expect(arg.data.enterpriseId).toBe('e1')
+    expect(arg.data.items.create[0]!.quantity).toBe(10)
+    expect(arg.data.totalAmount).toBe(120_000)
+    // les lignes sont marquées pour le cooldown
+    expect(bufferUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ lastReplenishOrderId: 'order-1' }) }),
+    )
+    expect(notifyBufferReplenish).toHaveBeenCalledTimes(1)
+  })
+
+  it('skips lines recently replenished (cooldown) and lines still above threshold', async () => {
+    enterpriseFindMany.mockResolvedValueOnce([
+      {
+        id: 'e1',
+        members: [owner],
+        bufferStock: [
+          { id: 'b1', targetQty: 10, currentQty: 0, lastReplenishedAt: new Date(), catalogItem }, // cooldown
+          { id: 'b2', targetQty: 10, currentQty: 8, lastReplenishedAt: null, catalogItem }, // OK
+        ],
+      },
+    ])
+
+    const res = await scanAndReplenish()
+    expect(res.ordersCreated).toBe(0)
+    expect(orderCreate).not.toHaveBeenCalled()
+  })
+
+  it('skips an enterprise with no manager/owner account to act as initiator', async () => {
+    enterpriseFindMany.mockResolvedValueOnce([
+      { id: 'e1', members: [], bufferStock: [{ id: 'b1', targetQty: 10, currentQty: 0, lastReplenishedAt: null, catalogItem }] },
+    ])
+    const res = await scanAndReplenish()
+    expect(res.ordersCreated).toBe(0)
   })
 })

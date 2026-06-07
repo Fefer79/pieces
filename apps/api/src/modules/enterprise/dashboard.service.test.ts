@@ -40,6 +40,10 @@ describe('enterprise/dashboard.service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     memberFindUnique.mockResolvedValue({ role: 'OWNER' })
+    // Défauts pour les requêtes supplémentaires de getFleetMoneyPits (2e groupBy
+    // + findMany). Les `mockResolvedValueOnce` des tests passent en priorité.
+    orderGroupBy.mockResolvedValue([])
+    vehicleFindMany.mockResolvedValue([])
   })
 
   describe('getEnterpriseDashboard', () => {

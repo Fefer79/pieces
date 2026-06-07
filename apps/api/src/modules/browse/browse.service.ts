@@ -210,6 +210,9 @@ export interface CompareOffer {
   warrantyMonths: number | null
   inStock: boolean
   imageThumbUrl: string | null
+  // Score « rapport qualité-prix » sur 100 (rempli au moment du regroupement,
+  // relatif aux autres offres du même groupe). Null si pas de prix.
+  valueScore: number | null
 }
 
 export interface CompareGroup {
@@ -220,13 +223,62 @@ export interface CompareGroup {
   offerCount: number
   minPrice: number | null
   offers: CompareOffer[]
+  // id de l'offre au meilleur rapport qualité-prix du groupe.
+  bestValueOfferId: string | null
 }
 
 function normalizeName(s: string | null | undefined): string {
   return (s ?? '').toLowerCase().replace(/\s+/g, ' ').trim()
 }
 
-export async function compareParts(filters: BrowsePartsFilters & { oem?: string } = {}) {
+// Pondération du score qualité-prix. Le prix domine (c'est un marché sensible au
+// prix) mais la réputation vendeur et la garantie cassent les égalités et évitent
+// de recommander la pièce la moins chère d'un vendeur non fiable.
+const VALUE_W_PRICE = 0.55
+const VALUE_W_RATING = 0.3
+const VALUE_W_WARRANTY = 0.15
+
+// Bonus de fiabilité par type de pièce — l'OEM/aftermarket reconnu rassure.
+const SOURCE_QUALITY: Record<string, number> = {
+  OEM: 1,
+  AFTERMARKET: 0.85,
+  COMPATIBLE: 0.6,
+}
+
+/**
+ * Calcule un score qualité-prix sur 100 pour chaque offre d'un groupe, relatif
+ * aux autres offres : le prix est normalisé sur l'offre la moins chère, la note
+ * vendeur et la garantie viennent enrichir. Les offres sans prix restent à null.
+ */
+function scoreOffers(offers: CompareOffer[]): void {
+  const prices = offers.map((o) => o.price).filter((p): p is number => p != null && p > 0)
+  const minPrice = prices.length ? Math.min(...prices) : null
+  const maxWarranty = Math.max(1, ...offers.map((o) => o.warrantyMonths ?? 0))
+
+  for (const o of offers) {
+    if (o.price == null || o.price <= 0 || minPrice == null) {
+      o.valueScore = null
+      continue
+    }
+    // 1 pour la moins chère, décroît à mesure que le prix monte.
+    const priceScore = minPrice / o.price
+    // Note vendeur 0-100 → 0-1 ; 0,5 par défaut si pas encore noté.
+    const ratingScore = o.vendorRating != null ? o.vendorRating / 100 : 0.5
+    // Garantie relative + qualité de source.
+    const warrantyScore = (o.warrantyMonths ?? 0) / maxWarranty
+    const sourceBonus = o.partSource ? (SOURCE_QUALITY[o.partSource] ?? 0.6) : 0.6
+    const quality = ratingScore * 0.7 + sourceBonus * 0.3
+
+    const raw =
+      VALUE_W_PRICE * priceScore + VALUE_W_RATING * quality + VALUE_W_WARRANTY * warrantyScore
+    o.valueScore = Math.round(raw * 100)
+  }
+}
+
+export async function compareParts(
+  filters: BrowsePartsFilters & { oem?: string; sort?: 'price' | 'value' } = {},
+) {
+  const sort = filters.sort === 'value' ? 'value' : 'price'
   const where: Record<string, unknown> = {
     status: 'PUBLISHED',
     inStock: true,
@@ -302,6 +354,7 @@ export async function compareParts(filters: BrowsePartsFilters & { oem?: string 
       warrantyMonths: item.warrantyMonths,
       inStock: item.inStock,
       imageThumbUrl: item.imageThumbUrl,
+      valueScore: null,
     }
 
     const existing = groups.get(groupKey)
@@ -320,12 +373,28 @@ export async function compareParts(filters: BrowsePartsFilters & { oem?: string 
         offerCount: 1,
         minPrice: offer.price,
         offers: [offer],
+        bestValueOfferId: null,
       })
     }
   }
 
   const result = Array.from(groups.values()).map((g) => {
+    // Le scoring qualité-prix est toujours calculé (affiché côté UI) ; le tri
+    // dépend du paramètre demandé. Le meilleur rapport qualité-prix est marqué
+    // dans les deux cas.
+    scoreOffers(g.offers)
+    const best = g.offers.reduce<CompareOffer | null>((acc, o) => {
+      if (o.valueScore == null) return acc
+      return acc == null || o.valueScore > (acc.valueScore ?? -1) ? o : acc
+    }, null)
+    g.bestValueOfferId = best?.id ?? null
+
     g.offers.sort((a, b) => {
+      if (sort === 'value') {
+        const av = a.valueScore ?? -1
+        const bv = b.valueScore ?? -1
+        if (bv !== av) return bv - av
+      }
       const ap = a.price ?? Number.POSITIVE_INFINITY
       const bp = b.price ?? Number.POSITIVE_INFINITY
       return ap - bp

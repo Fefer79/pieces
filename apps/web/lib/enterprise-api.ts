@@ -152,6 +152,17 @@ export type DashboardData = {
     vehicle: { id: string; brand: string; model: string; year: number; plate: string | null } | null
     totalSpent: number
   }[]
+  medianCostPerKm: number | null
+  moneyPits: MoneyPit[]
+}
+
+export type MoneyPit = {
+  vehicle: { id: string; brand: string; model: string; year: number; plate: string | null }
+  totalSpend: number
+  mileage: number
+  costPerKm: number
+  multipleOfMedian: number
+  excessSpend: number
 }
 
 export type EnterpriseMember = {

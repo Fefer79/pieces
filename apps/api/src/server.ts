@@ -26,7 +26,7 @@ import { enterpriseRoutes } from './modules/enterprise/enterprise.routes.js'
 import { driverRoutes } from './modules/driver/driver.routes.js'
 import { returnRoutes } from './modules/returns/return.routes.js'
 import multipart from '@fastify/multipart'
-import { startWorker, ensureMaintenanceReminderScheduled } from './modules/queue/worker.js'
+import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled } from './modules/queue/worker.js'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -86,6 +86,7 @@ const start = async () => {
     fastify.log.info(`Server listening on port ${env.PORT}`)
     startWorker(fastify.log)
     void ensureMaintenanceReminderScheduled(fastify.log)
+    void ensureBufferReplenishScheduled(fastify.log)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)

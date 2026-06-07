@@ -18,7 +18,16 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { getFleetAnalytics } = await import('./analytics.service.js')
+const { getFleetAnalytics, computeMoneyPits } = await import('./analytics.service.js')
+
+function entry(id: string, costPerKm: number, mileage = 100_000) {
+  return {
+    vehicle: { id, brand: 'X', model: 'Y', year: 2020, plate: id },
+    totalSpend: Math.round(costPerKm * mileage),
+    mileage,
+    costPerKm,
+  }
+}
 
 describe('enterprise/analytics.service', () => {
   beforeEach(() => {
@@ -89,5 +98,35 @@ describe('enterprise/analytics.service', () => {
     expect(res.avgCostPerKm).toBeNull()
     expect(res.costPerKmRanking).toEqual([])
     expect(res.spendByMonth).toHaveLength(12)
+  })
+
+  describe('computeMoneyPits', () => {
+    it('flags vehicles at >=1.5x the fleet median cost/km', () => {
+      // médiane de [10,12,14,40] = 13 → seuil 19.5 → seul le 40 dépasse
+      const res = computeMoneyPits([
+        entry('a', 10),
+        entry('b', 12),
+        entry('c', 14),
+        entry('d', 40),
+      ])
+      expect(res.medianCostPerKm).toBe(13)
+      expect(res.thresholdCostPerKm).toBe(19.5)
+      expect(res.moneyPits).toHaveLength(1)
+      expect(res.moneyPits[0]!.vehicle.id).toBe('d')
+      expect(res.moneyPits[0]!.multipleOfMedian).toBeCloseTo(3.1, 1)
+      // surcoût = (40 - 13) * 100000
+      expect(res.moneyPits[0]!.excessSpend).toBe(2_700_000)
+    })
+
+    it('returns no money pits for a fleet that is too small to compare', () => {
+      const res = computeMoneyPits([entry('a', 10), entry('b', 50)])
+      expect(res.moneyPits).toEqual([])
+      expect(res.medianCostPerKm).toBeNull()
+    })
+
+    it('returns no money pits when costs are homogeneous', () => {
+      const res = computeMoneyPits([entry('a', 10), entry('b', 11), entry('c', 12)])
+      expect(res.moneyPits).toEqual([])
+    })
   })
 })

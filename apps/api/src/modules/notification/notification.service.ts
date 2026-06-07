@@ -82,6 +82,18 @@ export async function notifyRiderAssignment(phone: string, deliveryId: string, p
   return sendNotification({ to: phone, channel: 'whatsapp', message })
 }
 
+export async function notifyBufferReplenish(
+  phone: string,
+  args: { itemCount: number; totalAmount: number; shareToken: string },
+) {
+  const { itemCount, totalAmount } = args
+  const montant = totalAmount.toLocaleString('fr-FR')
+  const message =
+    `📦 Stock tampon : ${itemCount} référence(s) sous le seuil. ` +
+    `Un bon de réapprovisionnement de ${montant} FCFA est prêt à valider sur Pièces.`
+  return sendNotification({ to: phone, channel: 'whatsapp', message })
+}
+
 export async function notifyMaintenanceDue(
   phone: string,
   args: { vehicle: string; part: string; status: 'OVERDUE' | 'DUE_SOON'; kmRemaining: number | null },

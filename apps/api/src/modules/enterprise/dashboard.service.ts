@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js'
 import { assertMember } from './enterprise.service.js'
+import { getFleetMoneyPits } from './analytics.service.js'
 
 const ACTIVE_ORDER_STATUSES = [
   'PENDING_PAYMENT',
@@ -66,6 +67,8 @@ export async function getEnterpriseDashboard(enterpriseId: string, userId: strin
     : []
   const vehicleById = new Map(vehicles.map((v) => [v.id, v]))
 
+  const { medianCostPerKm, moneyPits } = await getFleetMoneyPits(enterpriseId)
+
   return {
     vehiclesCount,
     membersCount,
@@ -75,6 +78,8 @@ export async function getEnterpriseDashboard(enterpriseId: string, userId: strin
       vehicle: t.vehicleId ? vehicleById.get(t.vehicleId) ?? null : null,
       totalSpent: t._sum.totalAmount ?? 0,
     })),
+    medianCostPerKm,
+    moneyPits,
   }
 }
 

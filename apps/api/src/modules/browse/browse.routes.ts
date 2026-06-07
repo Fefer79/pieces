@@ -133,13 +133,14 @@ export async function browseRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const query = request.query as { brand?: string; model?: string; year?: string; category?: string; oem?: string }
+      const query = request.query as { brand?: string; model?: string; year?: string; category?: string; oem?: string; sort?: string }
       const result = await compareParts({
         brand: query.brand,
         model: query.model,
         year: query.year ? parseInt(query.year, 10) : undefined,
         category: query.category,
         oem: query.oem,
+        sort: query.sort === 'value' ? 'value' : 'price',
       })
       return reply.status(200).send({ data: result })
     },

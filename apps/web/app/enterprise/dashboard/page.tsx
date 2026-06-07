@@ -274,6 +274,61 @@ export default function EnterpriseDashboardPage() {
         </div>
       )}
 
+      {dashboard && dashboard.moneyPits.length > 0 && (
+        <div className="mb-8 rounded-md border border-red-200 bg-red-50/40">
+          <div className="flex items-center justify-between border-b border-red-200 px-6 py-4">
+            <div>
+              <h2 className="font-display text-lg text-ink">
+                Véhicules « gouffres » détectés
+              </h2>
+              <p className="mt-1 text-xs text-muted">
+                Coût au km au moins 1,5× supérieur à la médiane de la flotte
+                {dashboard.medianCostPerKm != null && (
+                  <> ({dashboard.medianCostPerKm.toLocaleString('fr-FR')} F/km)</>
+                )}
+                . À investiguer : véhicule fatigué ou conduite.
+              </p>
+            </div>
+            <span className="rounded-full bg-red-100 px-2 py-0.5 font-mono text-[11px] text-red-700">
+              {dashboard.moneyPits.length} signalé{dashboard.moneyPits.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-red-200 bg-red-50 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-red-700/80">
+                <th className="px-6 py-3 text-left">Véhicule</th>
+                <th className="px-6 py-3 text-right">Coût / km</th>
+                <th className="px-6 py-3 text-right">vs médiane</th>
+                <th className="px-6 py-3 text-right">Surcoût estimé</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboard.moneyPits.map((m) => (
+                <tr key={m.vehicle.id} className="border-b border-red-200/60 last:border-0">
+                  <td className="px-6 py-3 text-sm text-ink">
+                    <Link href={`/enterprise/vehicles/${m.vehicle.id}`} className="hover:underline">
+                      {m.vehicle.brand} {m.vehicle.model} {m.vehicle.year}
+                    </Link>
+                    {m.vehicle.plate && (
+                      <span className="ml-2 font-mono text-[10px] text-muted">{m.vehicle.plate}</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-3 text-right text-sm tabular text-ink">
+                    {m.costPerKm.toLocaleString('fr-FR')} F
+                  </td>
+                  <td className="px-6 py-3 text-right text-sm tabular font-medium text-red-700">
+                    ×{m.multipleOfMedian.toLocaleString('fr-FR')}
+                  </td>
+                  <td className="px-6 py-3 text-right text-sm tabular text-red-700">
+                    {formatFcfa(m.excessSpend)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <div className="rounded-md border border-border bg-card">
         <div className="border-b border-border px-6 py-4">
           <h2 className="font-display text-lg text-ink">Véhicules les plus coûteux</h2>

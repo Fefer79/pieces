@@ -25,6 +25,7 @@ import {
   updateBufferStock,
   adjustBufferStock,
   deleteBufferStock,
+  scanAndReplenish,
   type BufferStockInput,
 } from './bufferStock.service.js'
 import {
@@ -345,6 +346,22 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { enterpriseId, id } = request.params as { enterpriseId: string; id: string }
       const data = await deleteBufferStock(enterpriseId, request.user.id, id)
+      return reply.send({ data })
+    },
+  )
+
+  // Déclenchement manuel du réapprovisionnement (le scan automatique tourne par
+  // ailleurs chaque jour). Génère les bons de réappro dus immédiatement.
+  fastify.post(
+    '/:enterpriseId/buffer-stock/replenish',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Génère les bons de réapprovisionnement dus (OWNER/MANAGER)' },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      await assertMember(enterpriseId, request.user.id, ['OWNER', 'MANAGER'])
+      const data = await scanAndReplenish({ enterpriseId })
       return reply.send({ data })
     },
   )

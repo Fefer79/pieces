@@ -70,6 +70,7 @@ type CompareOffer = {
   condition: string | null
   partSource: string | null
   warrantyMonths: number | null
+  valueScore: number | null
 }
 
 type CompareGroup = {
@@ -124,6 +125,7 @@ export default function ProductPage() {
   const [added, setAdded] = useState(false)
   const [buying, setBuying] = useState(false)
   const [offers, setOffers] = useState<CompareOffer[]>([])
+  const [offerSort, setOfferSort] = useState<'price' | 'value'>('value')
 
   useEffect(() => {
     if (!id) return
@@ -154,10 +156,11 @@ export default function ProductPage() {
   useEffect(() => {
     if (!item?.oemReference) return
     let cancelled = false
-    fetch(`/api/v1/browse/compare?oem=${encodeURIComponent(item.oemReference)}`)
-      .then(async (r) => (r.ok ? ((await r.json()).data as CompareGroup[]) : []))
-      .then((groups) => {
+    fetch(`/api/v1/browse/compare?oem=${encodeURIComponent(item.oemReference)}&sort=${offerSort}`)
+      .then(async (r) => (r.ok ? ((await r.json()).data as { groups: CompareGroup[] } | CompareGroup[]) : []))
+      .then((data) => {
         if (cancelled) return
+        const groups = Array.isArray(data) ? data : data.groups
         const all = groups.flatMap((g) => g.offers)
         setOffers(all.filter((o) => o.id !== item.id))
       })
@@ -165,7 +168,7 @@ export default function ProductPage() {
     return () => {
       cancelled = true
     }
-  }, [item?.oemReference, item?.id])
+  }, [item?.oemReference, item?.id, offerSort])
 
   // Galerie : photos dédiées sinon images principales de la fiche
   const gallery: string[] = item
@@ -426,27 +429,60 @@ export default function ProductPage() {
               )}
 
               {/* 6. Offres concurrentes */}
-              {offers.length > 0 && (
+              {offers.length > 0 && (() => {
+                const bestValueId = offers.reduce<CompareOffer | null>((acc, o) => {
+                  if (o.valueScore == null) return acc
+                  return acc == null || o.valueScore > (acc.valueScore ?? -1) ? o : acc
+                }, null)?.id
+                return (
                 <div className="mt-6">
-                  <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                    {offers.length} autre{offers.length > 1 ? 's' : ''} vendeur
-                    {offers.length > 1 ? 's' : ''} pour cette pièce
-                  </h2>
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                      {offers.length} autre{offers.length > 1 ? 's' : ''} vendeur
+                      {offers.length > 1 ? 's' : ''} pour cette pièce
+                    </h2>
+                    <div className="flex items-center gap-0.5 rounded-md border border-border bg-card p-0.5 text-[11px]">
+                      <button
+                        onClick={() => setOfferSort('value')}
+                        className={`rounded-sm px-2 py-1 font-medium ${offerSort === 'value' ? 'bg-ink-2 text-white' : 'text-muted hover:text-ink'}`}
+                      >
+                        Qualité-prix
+                      </button>
+                      <button
+                        onClick={() => setOfferSort('price')}
+                        className={`rounded-sm px-2 py-1 font-medium ${offerSort === 'price' ? 'bg-ink-2 text-white' : 'text-muted hover:text-ink'}`}
+                      >
+                        Prix
+                      </button>
+                    </div>
+                  </div>
                   <ul className="mt-2 divide-y divide-border rounded-md border border-border bg-card">
                     {offers.slice(0, 6).map((o) => (
                       <li key={o.id} className="flex items-center justify-between gap-3 px-4 py-3">
                         <div className="min-w-0">
-                          <Link
-                            href={`/produit/${o.id}`}
-                            className="truncate text-sm font-medium text-ink hover:underline"
-                          >
-                            {o.vendorName}
-                          </Link>
+                          <div className="flex items-center gap-1.5">
+                            <Link
+                              href={`/produit/${o.id}`}
+                              className="truncate text-sm font-medium text-ink hover:underline"
+                            >
+                              {o.vendorName}
+                            </Link>
+                            {o.id === bestValueId && (
+                              <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+                                Meilleur rapport
+                              </span>
+                            )}
+                          </div>
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             {o.condition && <ConditionChip condition={o.condition as Condition} />}
                             <span className="text-xs text-muted">
                               {o.vendorRating != null ? `${Math.round(o.vendorRating)}/100` : 'Nouveau'}
                             </span>
+                            {o.valueScore != null && (
+                              <span className="font-mono text-[10px] text-muted">
+                                · score {o.valueScore}
+                              </span>
+                            )}
                           </div>
                         </div>
                         {o.price != null && <Price amount={o.price} className="text-sm" />}
@@ -454,7 +490,8 @@ export default function ProductPage() {
                     ))}
                   </ul>
                 </div>
-              )}
+                )
+              })()}
 
               {/* CTA tertiaire WhatsApp */}
               <a
