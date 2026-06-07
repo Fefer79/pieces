@@ -103,8 +103,8 @@ build_one() {
 
   # PPTX for decks (slug starting with "pitch-deck"): strip the print-only HTML
   # (page-break separators, eyebrow/deck/callout wrappers) into clean slide
-  # markdown, then let pandoc build one slide per "##". Default pandoc theme —
-  # apply Pièces branding in PowerPoint via a reference-doc later if needed.
+  # markdown, then let pandoc build one slide per "##". Branding (navy/orange
+  # palette + Gloock/Instrument Sans fonts) comes from the Pièces reference-doc.
   if [[ "$slug" == pitch-deck* ]]; then
     local deckmd="$TMP_DIR/$slug.deck.md"
     perl -0pe '
@@ -117,7 +117,12 @@ build_one() {
       s{<p class="lead">(.*?)</p>}{> $1}g;
       s{<p>(.*?)</p>}{> $1}g;
     ' "$md" > "$deckmd"
-    "$PANDOC" "$deckmd" -o "$DOCS_DIR/$slug.pptx" --from gfm --slide-level=2
+    if [[ -f "$TEMPLATE_DIR/reference-pieces.pptx" ]]; then
+      "$PANDOC" "$deckmd" -o "$DOCS_DIR/$slug.pptx" --from gfm --slide-level=2 \
+        --reference-doc="$TEMPLATE_DIR/reference-pieces.pptx"
+    else
+      "$PANDOC" "$deckmd" -o "$DOCS_DIR/$slug.pptx" --from gfm --slide-level=2
+    fi
   fi
 
   # HTML for PDF rendering — logo header + CSS + embedded resources
