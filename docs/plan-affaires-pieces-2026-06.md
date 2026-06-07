@@ -17,9 +17,9 @@
 - **Suite Flotte (B2B)** : `Flotte Pro` (5 000 F/véh/mois) et `Flotte Pro +` (10 000 F/véh/mois) assurent le pilotage du coût total de possession, la détection des véhicules « gouffres », les alertes d'entretien, la livraison express, la facturation consolidée et la conformité fiscale.
 - **Programme Liaison** : les agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au vendeur de détail. Notre douve, c'est la **cartographie des acteurs de la chaîne** et la **digitalisation de leurs produits, même quand ils ne sont pas sur internet**.
 
-La plateforme est **construite et déployée** : marketplace, paiement à la livraison, dashboard flotte, calculateur ROI, bot WhatsApp, et un catalogue de **7 137 annonces** déjà ingérées. Le portail entreprise est en ligne sur `flotte.pieces.ci`.
+La plateforme est **construite et déployée** : marketplace, paiement à la livraison, dashboard flotte, calculateur ROI, bot conversationnel, et un catalogue de **7 137 annonces** déjà ingérées. Le portail entreprise est en ligne sur `flotte.pieces.ci`.
 
-**La demande** : nous levons un tour **Pre-seed de ~1,5 M USD (≈ 900 M FCFA)** pour financer 18 à 24 mois d'exécution : verrouiller le catalogue de 90 % des pièces du marché, prendre la verticale VTC via un partenariat Yango et atteindre les jalons d'un Seed.
+**La demande** : nous levons un tour **Pre-seed de ~1 M EUR (≈ 655 M FCFA)** pour financer 18 à 20 mois d'exécution : verrouiller le catalogue de 90 % des pièces du marché, prendre la verticale VTC via un partenariat Yango et atteindre les jalons d'un Seed.
 
 <div class="callout">
 <p class="lead">Objectif 18 mois : <strong>1 500 véhicules sous abonnement</strong>, <strong>600 commandes/jour</strong>, GMV mensuel &gt; 250 M FCFA, et break-even opérationnel à Abidjan.</p>
@@ -27,12 +27,12 @@ La plateforme est **construite et déployée** : marketplace, paiement à la liv
 
 ## 2. Le problème
 
-À Abidjan, acheter une pièce auto fiable, au bon prix, livrée dans la journée, est un parcours du combattant. Le marché est **principalement informel** : quelques acteurs sont en ligne, mais l'immense majorité des vendeurs (magasins d'Adjamé, Yopougon, Marcory) vendent sans catalogue, sans prix affiché, sans garantie, sans facture, sans traçabilité.
+À Abidjan, acheter une pièce auto fiable, au bon prix, livrée dans la journée, est un parcours du combattant. Le marché est **principalement informel** : quelques acteurs sont en ligne, mais l'immense majorité des vendeurs (magasins d'Adjamé, Yopougon, Marcory) vendent sans catalogue, sans prix affiché et avec des garanties diverses.
 
 Surtout, **entre l'importateur et le capot du véhicule, chaque intermédiaire ajoute sa marge** : grossiste, semi-grossiste, détaillant, et souvent le mécanicien à qui l'on confie l'achat. L'acheteur final paie l'accumulation de ces marges opaques, sans jamais voir le vrai prix.
 
 - **Le propriétaire** paie 30 à 60 % trop cher, faute de prix de référence et sans aucune garantie. Le surcoût grandit avec chaque intermédiaire sur la pièce.
-- **Le gestionnaire de flotte** perd **30 000 à 50 000 FCFA par jour et par véhicule immobilisé**, et ne sait pas où part son budget pièces.
+- **Le gestionnaire de flotte** perd **25 000 à 50 000 FCFA par jour et par véhicule immobilisé**, et ne sait pas où part son budget pièces.
 - **La confiance manque** : pièces contrefaites fréquentes, ni garantie, ni facture, ni recours.
 - **Le vendeur**, de l'importateur en gros au détaillant, n'a aucun moyen de toucher une clientèle au-delà de son comptoir.
 - **L'État** ne perçoit ni TVA ni traçabilité sur un pan entier de l'économie.
@@ -44,11 +44,11 @@ Pièces rend la chaîne **transparente et concurrentielle** : l'acheteur voit le
 | Brique | Ce qu'elle résout | Statut |
 |---|---|---|
 | **Marketplace + Garantie** | Confiance, prix transparent, garantie, facture | En production |
-| **Recherche pièce (texte / photo IA Gemini / VIN)** | Identification fiable, compatibilité véhicule CI | En production |
+| **Recherche pièce (texte / photo IA / VIN)** | Identification fiable, compatibilité véhicule CI | En production |
 | **Suite Flotte (Pro / Pro +)** | Pilotage coût, alertes, livraison express, conformité | En production |
 | **Calculateur ROI flotte** | Preuve chiffrée à la vente B2B | En production |
-| **Bot WhatsApp** | Canal d'entrée n°1 pour non-équipés | En production |
-| **Programme & app Liaison** | Onboarding vendeurs informels à grande échelle | V1, à industrialiser |
+| **Bot conversationnel** | Canal d'entrée n°1 | En production |
+| **Programme & app Liaison** | Onboarding vendeurs à grande échelle | V1, à industrialiser |
 | **Facturation normalisée FNE-CI / DGI** | Verrou réglementaire, récupération TVA flottes | Roadmap P1 |
 
 ## 4. Le marché
@@ -134,11 +134,11 @@ Stratégie en 5 mouvements sur 24 mois :
 - **M12-18, étendre BTP / transport collectif / corporate** : +2 500 véhicules au-delà du VTC.
 - **M18-24, sortir d'Abidjan** : Bouaké, San Pedro, puis un pilote sous-régional (Dakar/Cotonou).
 
-Canaux d'acquisition : Liaison terrain (80 % du sourcing offre), WhatsApp & radio populaire (demande), vente directe B2B (account executives), partenariats plateformes VTC, prescription experts-comptables/DAF.
+Canaux d'acquisition : commerciaux, Liaison terrain, réseaux sociaux, télé (demande), vente directe B2B (account executives), partenariats plateformes VTC, prescription experts-comptables/DAF.
 
 ## 8. Projections financières (3 ans)
 
-Hypothèses : 1 USD ≈ 600 FCFA. Lancement commercial H2 2026. Chiffres en projections, à valider sur données réelles.
+Hypothèses : 1 EUR ≈ 656 FCFA. Lancement commercial H2 2026. Chiffres en projections, à valider sur données réelles.
 
 | Indicateur | An 1 | An 2 | An 3 |
 |---|---|---|---|
@@ -155,7 +155,7 @@ L'an 3 atteint l'objectif stratégique : **5 000+ véhicules** sous abonnement e
 
 ### 9.1 Le besoin
 
-Pour « bien commencer » vers ces objectifs, il faut financer **18 à 24 mois** d'exécution jusqu'aux jalons d'un Seed. Construction du burn mensuel (FCFA) :
+Pour « bien commencer » vers ces objectifs, il faut financer **18 à 20 mois** d'exécution jusqu'aux jalons d'un Seed. Construction du burn mensuel (FCFA) :
 
 | Poste | M0-6 (build + Adjamé) | M7-12 (VTC + monétisation) | M13-18 (scale) |
 |---|---|---|---|
@@ -173,32 +173,32 @@ Burn net opérationnel cumulé M0-18 ≈ **300-350 M FCFA**, auquel s'ajoutent l
 ### 9.2 Recommandation
 
 <div class="callout">
-<p class="lead">Lever un <strong>Pre-seed de ~1,5 M USD (≈ 900 M FCFA)</strong> pour 18 à 24 mois de runway (fourchette <strong>1,2-1,8 M USD</strong> selon l'ambition de calendrier).</p>
+<p class="lead">Lever un <strong>Pre-seed de ~1 M EUR (≈ 655 M FCFA)</strong> pour ~18 à 20 mois de runway (fourchette <strong>0,7-1,3 M EUR</strong> selon l'ambition de calendrier).</p>
 <p>Le ticket visé se situe en haut de fourchette pre-seed (bas de fourchette seed) en Afrique de l'Ouest, justifié par l'intensité capitalistique du modèle (ops terrain + stock tampon). L'Afrique de l'Ouest a mené le financement early-stage au T1 2025.</p>
 </div>
 
 | Scénario | Montant | Runway | Logique |
 |---|---|---|---|
-| **Lean** | ~1,0 M USD (600 M F) | ~14-16 mois | Strict minimum, peu de marge d'erreur |
-| **Recommandé** | **~1,5 M USD (900 M F)** | **~20-24 mois** | Atteint les jalons du Seed avec coussin |
-| **Ambitieux** | ~2,0 M USD (1,2 Md F) | ~24 mois + | Compresse le calendrier, accélère le VTC et le BTP |
+| **Lean** | ~0,7 M EUR (460 M F) | ~12-14 mois | Strict minimum, peu de marge d'erreur |
+| **Recommandé** | **~1,0 M EUR (655 M F)** | **~18-20 mois** | Atteint les jalons du Seed avec coussin |
+| **Ambitieux** | ~1,3 M EUR (850 M F) | ~22-24 mois | Compresse le calendrier, accélère le VTC et le BTP |
 
-### 9.3 Emploi des fonds (scénario recommandé, 900 M FCFA)
+### 9.3 Emploi des fonds (scénario recommandé, 655 M FCFA)
 
 | Poste | Part | Montant |
 |---|---|---|
-| **Liaison & opérations terrain** | 30 % | 270 M F |
-| **Commercial & GTM (B2B + acquisition demande)** | 25 % | 225 M F |
-| **Produit & tech** | 25 % | 225 M F |
-| **G&A, finance, légal, conformité** | 10 % | 90 M F |
-| **Fonds de roulement & contingence** | 10 % | 90 M F |
+| **Liaison & opérations terrain** | 30 % | 195 M F |
+| **Commercial & GTM (B2B + acquisition demande)** | 25 % | 164 M F |
+| **Produit & tech** | 25 % | 164 M F |
+| **G&A, finance, légal, conformité** | 10 % | 66 M F |
+| **Fonds de roulement & contingence** | 10 % | 66 M F |
 
 ### 9.4 Jalons débloqués (conditions du Seed)
 
 - 600+ commandes/jour à M9, 1 500 véhicules sous abonnement à M12.
 - GMV mensuel > 250 M F, marge brute > 30 %, churn flotte < 5 %/mois à M12.
 - Partenariat Yango officialisé ; 3 cas clients VTC publiables ; FNE-CI en production.
-- **Seed 4-7 M USD** visé à M15-18 pour l'expansion nationale et sous-régionale.
+- **Seed 4-6 M EUR** visé à M15-18 pour l'expansion nationale et sous-régionale.
 
 ### 9.5 Investisseurs cibles
 
@@ -206,7 +206,7 @@ VC pan-africains (Partech, Janngo Capital, Ventures Platform, P1 Ventures, AAIC)
 
 ## 10. Équipe & organisation
 
-Recrutements prioritaires M0-M3 : **Head of Liaison** (l'arme stratégique), **Head of Sales B2B**, **Chief of Staff CEO**, **CTO confirmé**. Cible ~25 personnes à M12, ~55 à M24 (tech, commercial flotte, Liaison/ops, support WhatsApp, finance/conformité).
+Recrutements prioritaires M0-M3 : **Head of Liaison** (l'arme stratégique), **Head of Sales B2B**, **Chief of Staff CEO**, **CTO confirmé**. Cible ~25 personnes à M12, ~55 à M24 (tech, commercial flotte, Liaison/ops, support client, finance/conformité).
 
 ## 11. Risques majeurs & mitigations
 
@@ -221,8 +221,8 @@ Recrutements prioritaires M0-M3 : **Head of Liaison** (l'arme stratégique), **H
 
 ## 12. Pourquoi maintenant, pourquoi Pièces
 
-Le marché est gigantesque, fragmenté, mal servi. **Personne** ne combine la marketplace consommateur, la plateforme flotte B2B et le réseau terrain Liaison ; personne n'a la conformité FNE-CI native ni la base de compatibilité Côte d'Ivoire que nous construisons transaction par transaction. Ces trois éléments (**demande, offre, conformité**) forment un monopole défendable à 36 mois si l'exécution est tenue. **La fenêtre se referme dès qu'un acteur pan-africain capitalisé tente la même combinaison.**
+Le marché est gigantesque, fragmenté, mal servi. **Personne** ne combine la marketplace consommateur, la plateforme flotte B2B et la digitalisation des vendeurs de pièces détachées ; personne n'a la conformité FNE-CI native ni la base de compatibilité Côte d'Ivoire que nous construisons transaction par transaction. Ces trois éléments (**demande, offre, conformité**) forment un monopole défendable à 36 mois si l'exécution est tenue. **La fenêtre se referme dès qu'un acteur pan-africain capitalisé tente la même combinaison.**
 
 ---
 
-_Pièces : la pièce qu'il te faut, au juste prix, livrée et garantie. · Document interne confidentiel · Plan d'affaires v1.2 · Juin 2026. Sources marché : étude Pièces « Coûts d'exploitation VTC en Côte d'Ivoire » (mai 2026), Déclic Car / 7info & Digital Mag CI (Yango : 25 000 véhicules, 100 000 courses/jour, 160 entreprises, 2026), Africa Data Intelligence (VTC 2024), Ministère des Transports CI (parc ~1,2 M, 2022), Agence Ecofin & Jeune Afrique (retrait Uber 2025), Disrupt Africa / TechCabal (financement 2024-2025). Chiffres financiers : projections internes à valider sur données réelles._
+_Pièces : la pièce qu'il te faut, au juste prix, livrée et garantie. · Document interne confidentiel · Plan d'affaires v1.3 · Juin 2026. Chiffres financiers : projections internes à valider sur données réelles._
