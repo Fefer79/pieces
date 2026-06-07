@@ -1,25 +1,25 @@
 <p class="eyebrow">Plan d'affaires · Confidentiel</p>
 
-# Pièces — optimiser les dépenses automobiles en Côte d'Ivoire
+# Pièces : optimiser les dépenses automobiles en Côte d'Ivoire
 
-<p class="deck">Pièces optimise les dépenses automobiles de tout le monde — du propriétaire d'un seul véhicule au gestionnaire d'une flotte de mille. Marketplace + suite flotte + réseau terrain « Liaison », sur un marché de la pièce détachée massif, fragmenté et 100 % informel. Ce document présente le marché, le modèle, les projections et la levée Seed recherchée.</p>
+<p class="deck">Pièces optimise les dépenses automobiles de tout le monde, du propriétaire d'un seul véhicule au gestionnaire d'une flotte de mille. Marketplace, suite flotte et réseau terrain « Liaison », sur un marché de la pièce détachée massif et entièrement informel. Ce document couvre le marché, le modèle, les projections et la levée Seed recherchée.</p>
 
 <div class="callout">
 <p class="lead">Le marché ivoirien de la pièce auto pèse <strong>~250 milliards FCFA/an</strong>. Il est fragmenté, opaque et informel. Personne ne combine marketplace, flotte et onboarding terrain.</p>
-<p>Pièces vise 15–20 % du marché intermédié à 5 ans, soit 35–50 Mds FCFA de GMV et 4–6 Mds FCFA de revenu net annuel.</p>
+<p>Pièces vise 15-20 % du marché intermédié à 5 ans, soit 35-50 Mds FCFA de GMV et 4-6 Mds FCFA de revenu net annuel.</p>
 </div>
 
 ## 1. Résumé exécutif
 
-**Pièces optimise les dépenses automobiles de tout le monde en Côte d'Ivoire** — du propriétaire d'un seul véhicule au gestionnaire d'une flotte de mille. La plateforme réunit trois produits sur une seule infrastructure :
+**Pièces optimise les dépenses automobiles de tout le monde en Côte d'Ivoire**, du propriétaire d'un seul véhicule au gestionnaire d'une flotte de mille. La plateforme réunit trois produits sur une seule infrastructure :
 
-- **Marketplace tripartite** — le mécanicien identifie la pièce (recherche, photo IA, VIN), le propriétaire paie en Mobile Money via **escrow**, le vendeur livre. Prix affichés, condition de la pièce affichée (chip Neuf / Occasion / Ré-usiné / Aftermarket / OEM), garantie, facture.
-- **Suite Flotte (B2B)** — `Flotte Pro` (5 000 F/véh/mois) et `Flotte Pro +` (10 000 F/véh/mois) : pilotage du coût total de possession, détection des véhicules « gouffres », alertes d'entretien, livraison express, facturation consolidée, conformité fiscale.
-- **Programme Liaison** — les agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au vendeur de détail. Notre douve concurrentielle est la **cartographie des acteurs de la chaîne** et la **digitalisation de leurs produits, même quand ils ne sont pas sur internet**.
+- **Marketplace tripartite** : le mécanicien identifie la pièce (recherche, photo IA, VIN), le propriétaire paie en Mobile Money via **escrow**, le vendeur livre. Prix affiché, condition de la pièce affichée (chip Neuf / Occasion / Ré-usiné / Aftermarket / OEM), garantie, facture.
+- **Suite Flotte (B2B)** : `Flotte Pro` (5 000 F/véh/mois) et `Flotte Pro +` (10 000 F/véh/mois) assurent le pilotage du coût total de possession, la détection des véhicules « gouffres », les alertes d'entretien, la livraison express, la facturation consolidée et la conformité fiscale.
+- **Programme Liaison** : les agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au vendeur de détail. Notre douve, c'est la **cartographie des acteurs de la chaîne** et la **digitalisation de leurs produits, même quand ils ne sont pas sur internet**.
 
 La plateforme est **construite et déployée** : marketplace, escrow, dashboard flotte, calculateur ROI, bot WhatsApp, et un catalogue de **7 137 annonces** déjà ingérées (sources Jumia, CoinAfrique, global-auto). Le portail entreprise est en ligne sur `flotte.pieces.ci`.
 
-**La demande** : nous levons un tour **Seed de ~1,5 M USD (≈ 900 M FCFA)** pour financer 18–24 mois d'exécution — verrouiller Adjamé, prendre la verticale VTC via un partenariat Yango, et atteindre les jalons d'une Série A.
+**La demande** : nous levons un tour **Seed de ~1,5 M USD (≈ 900 M FCFA)** pour financer 18 à 24 mois d'exécution : verrouiller Adjamé, prendre la verticale VTC via un partenariat Yango et atteindre les jalons d'une Série A.
 
 <div class="callout">
 <p class="lead">Objectif 18 mois : <strong>1 500 véhicules sous abonnement</strong>, <strong>600 commandes/jour</strong>, GMV mensuel &gt; 250 M FCFA, et break-even opérationnel à Abidjan.</p>
@@ -29,17 +29,17 @@ La plateforme est **construite et déployée** : marketplace, escrow, dashboard 
 
 À Abidjan, acheter une pièce auto fiable, au bon prix, livrée dans la journée, est un parcours du combattant. Le marché est **100 % informel** : des milliers de vendeurs (magasins d'Adjamé, Yopougon, Marcory) vendent sans catalogue, sans prix affiché, sans garantie, sans facture, sans traçabilité.
 
-Surtout, **entre l'importateur et le capot du véhicule, chaque intermédiaire ajoute sa marge** — grossiste, semi-grossiste, détaillant, et souvent le mécanicien à qui l'on confie l'achat. L'acheteur final paie l'accumulation de ces marges opaques, sans jamais voir le vrai prix.
+Surtout, **entre l'importateur et le capot du véhicule, chaque intermédiaire ajoute sa marge** : grossiste, semi-grossiste, détaillant, et souvent le mécanicien à qui l'on confie l'achat. L'acheteur final paie l'accumulation de ces marges opaques, sans jamais voir le vrai prix.
 
-- **Le propriétaire** paie 30 à 60 % trop cher — autant de surcoût qu'il y a d'intermédiaires sur la pièce — faute de prix de référence, et sans aucune garantie.
+- **Le propriétaire** paie 30 à 60 % trop cher, faute de prix de référence et sans aucune garantie. Le surcoût grandit avec chaque intermédiaire sur la pièce.
 - **Le gestionnaire de flotte** perd **30 000 à 50 000 FCFA par jour et par véhicule immobilisé**, et ne sait pas où part son budget pièces.
 - **La confiance manque** : pièces contrefaites fréquentes, ni garantie, ni facture, ni recours.
-- **Le vendeur** — de l'importateur en gros au détaillant — n'a aucun moyen de toucher une clientèle au-delà de son comptoir.
+- **Le vendeur**, de l'importateur en gros au détaillant, n'a aucun moyen de toucher une clientèle au-delà de son comptoir.
 - **L'État** ne perçoit ni TVA ni traçabilité sur un pan entier de l'économie.
 
 ## 3. La solution & le produit
 
-Pièces rend la chaîne **transparente et concurrentielle** : l'acheteur voit le prix réel, compare les fournisseurs et achète au plus près de la source — quel que soit le nombre d'intermédiaires. Les marges opaques s'effondrent ; le surcoût disparaît.
+Pièces rend la chaîne **transparente et concurrentielle** : l'acheteur voit le prix réel, compare les fournisseurs et achète au plus près de la source, quel que soit le nombre d'intermédiaires. Les marges opaques s'effondrent et le surcoût disparaît.
 
 | Brique | Ce qu'elle résout | Statut |
 |---|---|---|
@@ -57,14 +57,14 @@ Pièces rend la chaîne **transparente et concurrentielle** : l'acheteur voit le
 
 ### 4.1 Dimensionnement (triangulation publique + bottom-up)
 
-Le parc automobile national est estimé à **~1,2 million de véhicules** (Ministère des Transports, 2022), dont la majorité circule dans le Grand Abidjan. Le chiffre d'affaires du secteur automobile ivoirien est de **~400–420 Mds FCFA/an**. Les importations de véhicules neufs ont triplé depuis 2017 (≈ 27 000 en 2024, objectif ~50 000 en 2025), rajeunissant le parc et augmentant la consommation de pièces de qualité.
+Le parc automobile national est estimé à **~1,2 million de véhicules** (Ministère des Transports, 2022), dont la majorité circule dans le Grand Abidjan. Le chiffre d'affaires du secteur automobile ivoirien est de **~400-420 Mds FCFA/an**. Les importations de véhicules neufs ont triplé depuis 2017 (≈ 27 000 en 2024, objectif ~50 000 en 2025), rajeunissant le parc et augmentant la consommation de pièces de qualité.
 
 Estimation bottom-up du marché de la **pièce détachée seule** (parc × dépense annuelle moyenne) :
 
 | Segment | Volume (Abidjan) | Dépense pièces/véh/an | Marché/an |
 |---|---|---|---|
 | Parc particulier | ~600 000 | 180 000 F | ~108 Mds F |
-| **VTC (Yango ~25 000, Heetch, inDrive, indép.)** | ~25 000–30 000 | 1 300 000 F | ~36 Mds F |
+| **VTC (Yango ~25 000, Heetch, inDrive, indép.)** | ~25 000-30 000 | 1 300 000 F | ~36 Mds F |
 | Taxis communaux / woro-woro | ~18 000 | 350 000 F | ~6 Mds F |
 | Transport collectif (gbaka, minicars) | ~12 000 | 600 000 F | ~7 Mds F |
 | BTP / engins légers | ~8 000 | 1 200 000 F | ~10 Mds F |
@@ -74,20 +74,20 @@ Estimation bottom-up du marché de la **pièce détachée seule** (parc × dépe
 En ajoutant Bouaké, San Pedro, Yamoussoukro, Korhogo → **marché national ~250 Mds FCFA/an** sur la pièce seule (le double avec la main-d'œuvre).
 
 <div class="callout">
-<p class="lead">TAM <strong>~250 Mds F</strong> (national, pièces) · SAM <strong>~172 Mds F</strong> (Abidjan adressable) · SOM 5 ans <strong>35–50 Mds F</strong> de GMV intermédié.</p>
+<p class="lead">TAM <strong>~250 Mds F</strong> (national, pièces) · SAM <strong>~172 Mds F</strong> (Abidjan adressable) · SOM 5 ans <strong>35-50 Mds F</strong> de GMV intermédié.</p>
 </div>
 
 ### 4.2 Le VTC : le meilleur point d'entrée
 
-Le secteur a explosé : de **5 000–6 000 chauffeurs en 2024** à **~30 000 véhicules VTC en activité début 2026** au niveau national (estimation Déclic Car), et plus de 20 000 emplois créés. **Uber a quitté la Côte d'Ivoire le 25 septembre 2025**, laissant **Yango ultra-dominant** : la plateforme revendique **~25 000 véhicules à Abidjan, ~100 000 courses par jour, et plus de 160 entreprises de flotte** créées dans son sillage (bureau régional Afrique de l'Ouest ouvert à Abidjan en juillet 2025). Heetch et inDrive complètent le marché.
+Le secteur a explosé : de **5 000-6 000 chauffeurs en 2024** à **~30 000 véhicules VTC en activité début 2026** au niveau national (estimation Déclic Car), et plus de 20 000 emplois créés. **Uber a quitté la Côte d'Ivoire le 25 septembre 2025**, laissant **Yango ultra-dominant** : la plateforme revendique **~25 000 véhicules à Abidjan, ~100 000 courses par jour, et plus de 160 entreprises de flotte** créées dans son sillage (bureau régional Afrique de l'Ouest ouvert à Abidjan en juillet 2025). Heetch et inDrive complètent le marché.
 
-La demande de mobilité est massive — **~4 milliards FCFA dépensés par jour en déplacements à Abidjan** — et Yango recrute en continu : le marché est tiré par la demande, pas saturé côté offre.
+La demande de mobilité est massive (**~4 milliards FCFA dépensés par jour en déplacements à Abidjan**) et Yango recrute en continu : le marché est tiré par la demande, pas saturé côté offre.
 
-Le VTC n'est pas le plus gros segment du parc, mais c'est **le meilleur point d'entrée** : un véhicule VTC roule **~44 000 km/an** (3× un particulier), use ses pièces 3× plus vite (dépense pièces **~1,3 M FCFA/véh/an**), et chaque jour d'immobilisation détruit directement du revenu (15 000–30 000 F/jour). Douleur aiguë, récurrente, mesurable — idéale pour prouver le ROI, bâtir les cas clients et la base de données fitments, avant d'étendre au parc entier. **Les ~160 entreprises de flotte du réseau Yango sont des cibles B2B concentrées et immédiatement adressables.**
+Le VTC n'est pas le plus gros segment du parc, mais c'est **le meilleur point d'entrée** : un véhicule VTC roule **~44 000 km/an** (3× un particulier), use ses pièces 3× plus vite (dépense pièces **~1,3 M FCFA/véh/an**), et chaque jour d'immobilisation détruit directement du revenu (15 000-30 000 F/jour). La douleur est aiguë, récurrente et mesurable : idéale pour prouver le ROI, bâtir les cas clients et la base de données fitments avant d'étendre au parc entier. **Les ~160 entreprises de flotte du réseau Yango sont des cibles B2B concentrées et immédiatement adressables.**
 
 ### 4.3 Dynamique
 
-Restriction de l'âge des véhicules importés, rajeunissement du parc, montée du Mobile Money (Orange Money, MTN, Wave), formalisation fiscale (FNE-CI) : tous les vents portent vers une digitalisation de l'après-vente automobile. La fenêtre est ouverte **maintenant**.
+Quatre tendances poussent dans le même sens : la restriction de l'âge des véhicules importés, le rajeunissement du parc, la montée du Mobile Money (Orange Money, MTN, Wave) et la formalisation fiscale (FNE-CI). L'après-vente automobile se digitalise, et le moment d'entrer, c'est **maintenant**.
 
 ## 5. Concurrence & douve
 
@@ -95,16 +95,16 @@ Restriction de l'âge des véhicules importés, rajeunissement du parc, montée 
 |---|---|---|
 | **Magasins + WhatsApp + Excel** | Le vrai concurrent (90 % des flux) | Rendre ce stack obsolète sans rupture de comportement |
 | **global-auto.online** | Seul catalogue web structuré | Catalogue miroité (veille prix permanente) ; ils ne voient pas nos prix |
-| **Jumia / Glovo / Yango Tech** | Capital, pourraient acquérir à 24–36 mois | Avance terrain + data fitments à industrialiser vite |
+| **Jumia / Glovo / Yango Tech** | Capital, pourraient acquérir à 24-36 mois | Avance terrain + data fitments à industrialiser vite |
 | **FleetOps (gestion partenaires Yango)** | Gère chauffeurs/loueurs (39 000+ suivis), pas le coût pièces | Partenaire d'intégration potentiel, pas concurrent sur la pièce |
 | **Outils fleet européens (Fleetio, Geotab)** | Génériques, non localisés | FCFA, fournisseurs CI, FNE-CI natif |
 
 **Notre douve, cumulée et défendable à 36 mois :**
 
-- **Le réseau Liaison & la cartographie de la chaîne** — agents terrain qui recensent et digitalisent tous les acteurs (importateurs en gros → détaillants, formels et informels) et leurs produits, même hors ligne. Objectif : 80 agents sous 12 mois.
-- **La data fitments Côte d'Ivoire** — quelle pièce va sur quel véhicule local ; inattaquable à 100 000 transactions.
-- **L'escrow Mobile Money + garantie Pièces** — confiance institutionnelle dans un marché de méfiance.
-- **La conformité FNE-CI native** — premier à émettre la facture normalisée DGI sur la pièce.
+- **Le réseau Liaison et la cartographie de la chaîne** : des agents terrain qui recensent et digitalisent tous les acteurs (importateurs en gros jusqu'aux détaillants, formels comme informels) et leurs produits, même hors ligne. Objectif : 80 agents sous 12 mois.
+- **La data fitments Côte d'Ivoire** : quelle pièce va sur quel véhicule local. Inattaquable à 100 000 transactions.
+- **L'escrow Mobile Money et la garantie Pièces** : de la confiance institutionnelle dans un marché de méfiance.
+- **La conformité FNE-CI native** : premier à émettre la facture normalisée DGI sur la pièce.
 
 ## 6. Modèle économique
 
@@ -112,7 +112,7 @@ Quatre flux de revenus :
 
 | Flux | Mécanique | Cible mature (an 3) |
 |---|---|---|
-| **Commission marketplace** | 5–10 % côté vendeur, prélevée à l'escrow | 45 % du revenu |
+| **Commission marketplace** | 5-10 % côté vendeur, prélevée à l'escrow | 45 % du revenu |
 | **Abonnement Flotte Pro** | 5 000 F / véh / mois | 35 % du revenu |
 | **Abonnement Flotte Pro +** | 10 000 F / véh / mois (livraison express) | 15 % du revenu |
 | **Conformité / facturation** | Forfait FNE-CI, prestations | 5 % du revenu |
@@ -120,7 +120,7 @@ Quatre flux de revenus :
 **Unit economics cibles :**
 
 - Panier moyen marketplace **32 000 F**, take rate **8 %** → **2 560 F** de revenu net par commande.
-- CAC mécanicien **< 1 500 F** (organique + Liaison) ; CAC flotte indépendante **25 000–60 000 F**.
+- CAC mécanicien **< 1 500 F** (organique + Liaison) ; CAC flotte indépendante **25 000-60 000 F**.
 - LTV Flotte Pro (24 mois, churn 4 %/mois) **~85 000 F/véhicule**.
 - **Ratio LTV/CAC > 4** sur tous les segments dès M12.
 
@@ -128,11 +128,11 @@ Quatre flux de revenus :
 
 Stratégie en 5 mouvements sur 24 mois :
 
-- **M0–6 — Verrouiller Adjamé/Yopougon** : 20 Liaisons, 300 vendeurs onboardés, 30 000 pièces publiées, 350 commandes/jour à M6.
-- **M3–12 — Prendre le VTC** : partenariat Yango (pilote 200 conducteurs gratuits 3 mois → déploiement masse), Heetch en parallèle, démarchage des flottes indépendantes (5–200 véhicules), 3 cas clients chiffrés (-20 % budget pièces).
-- **M6–15 — Devenir le standard FNE-CI** : intégration DGI, vente directe aux DAF (« vos chauffeurs achètent en cash → vous perdez la TVA »).
-- **M12–18 — Étendre BTP / transport collectif / corporate** : +2 500 véhicules au-delà du VTC.
-- **M18–24 — Sortir d'Abidjan** : Bouaké, San Pedro ; pilote sous-régional (Dakar/Cotonou).
+- **M0-6, verrouiller Adjamé/Yopougon** : 20 Liaisons, 300 vendeurs onboardés, 30 000 pièces publiées, 350 commandes/jour à M6.
+- **M3-12, prendre le VTC** : partenariat Yango (pilote 200 conducteurs gratuits 3 mois, puis déploiement de masse), Heetch en parallèle, démarchage des flottes indépendantes (5 à 200 véhicules), 3 cas clients chiffrés (-20 % budget pièces).
+- **M6-15, devenir le standard FNE-CI** : intégration DGI, vente directe aux DAF (« vos chauffeurs achètent en cash, donc vous perdez la TVA »).
+- **M12-18, étendre BTP / transport collectif / corporate** : +2 500 véhicules au-delà du VTC.
+- **M18-24, sortir d'Abidjan** : Bouaké, San Pedro, puis un pilote sous-régional (Dakar/Cotonou).
 
 Canaux d'acquisition : Liaison terrain (80 % du sourcing offre), WhatsApp & radio populaire (demande), vente directe B2B (account executives), partenariats plateformes VTC, prescription experts-comptables/DAF.
 
@@ -151,13 +151,13 @@ Hypothèses : 1 USD ≈ 600 FCFA. Lancement commercial H2 2026. Chiffres en proj
 
 L'an 3 atteint l'objectif stratégique : **5 000+ véhicules** sous abonnement et **~25 000 transactions marketplace/mois**, position de standard de fait sur la facturation normalisée.
 
-## 9. La levée — combien, pourquoi, pour quoi
+## 9. La levée : combien, pourquoi, pour quoi
 
 ### 9.1 Le besoin
 
 Pour « bien commencer » vers ces objectifs, il faut financer **18 à 24 mois** d'exécution jusqu'aux jalons d'une Série A. Construction du burn mensuel (FCFA) :
 
-| Poste | M0–6 (build + Adjamé) | M7–12 (VTC + monétisation) | M13–18 (scale) |
+| Poste | M0-6 (build + Adjamé) | M7-12 (VTC + monétisation) | M13-18 (scale) |
 |---|---|---|---|
 | Masse salariale | ~12 M/mois | ~22 M/mois | ~30 M/mois |
 | Liaison & ops terrain | inclus | inclus | inclus |
@@ -166,21 +166,21 @@ Pour « bien commencer » vers ces objectifs, il faut financer **18 à 24 mois**
 | Cloud, outils, bureau, légal | ~5 M/mois | ~7 M/mois | ~8 M/mois |
 | **Burn brut mensuel** | **~22 M** | **~40 M** | **~54 M** |
 | Revenu net (compensation) | ~0 | ~25 M (croissant) | ~50 M (≈ break-even) |
-| **Burn net mensuel** | ~22 M | ~15 M | ~0–5 M |
+| **Burn net mensuel** | ~22 M | ~15 M | ~0-5 M |
 
-Burn net opérationnel cumulé M0–18 ≈ **300–350 M FCFA**, auquel s'ajoutent le **fonds de roulement** (stock tampon SLA, ~100–150 M F), un **coussin de sécurité / contingence** (~150–200 M F) et une réserve de préparation Série A.
+Burn net opérationnel cumulé M0-18 ≈ **300-350 M FCFA**, auquel s'ajoutent le **fonds de roulement** (stock tampon SLA, ~100-150 M F), un **coussin de sécurité / contingence** (~150-200 M F) et une réserve de préparation Série A.
 
 ### 9.2 Recommandation
 
 <div class="callout">
-<p class="lead">Lever un <strong>Seed de ~1,5 M USD (≈ 900 M FCFA)</strong> pour 18–24 mois de runway — fourchette <strong>1,2–1,8 M USD</strong> selon l'ambition de calendrier.</p>
+<p class="lead">Lever un <strong>Seed de ~1,5 M USD (≈ 900 M FCFA)</strong> pour 18 à 24 mois de runway (fourchette <strong>1,2-1,8 M USD</strong> selon l'ambition de calendrier).</p>
 <p>Cohérent avec le marché 2025 (ticket Seed moyen ~1,6 M USD en Afrique, +26 % sur un an ; l'Afrique de l'Ouest a mené le financement au T1 2025).</p>
 </div>
 
 | Scénario | Montant | Runway | Logique |
 |---|---|---|---|
-| **Lean** | ~1,0 M USD (600 M F) | ~14–16 mois | Strict minimum, peu de marge d'erreur |
-| **Recommandé** | **~1,5 M USD (900 M F)** | **~20–24 mois** | Atteint les jalons Série A avec coussin |
+| **Lean** | ~1,0 M USD (600 M F) | ~14-16 mois | Strict minimum, peu de marge d'erreur |
+| **Recommandé** | **~1,5 M USD (900 M F)** | **~20-24 mois** | Atteint les jalons Série A avec coussin |
 | **Ambitieux** | ~2,0 M USD (1,2 Md F) | ~24 mois + | Compresse le calendrier, accélère le VTC et le BTP |
 
 ### 9.3 Emploi des fonds (scénario recommandé, 900 M FCFA)
@@ -198,7 +198,7 @@ Burn net opérationnel cumulé M0–18 ≈ **300–350 M FCFA**, auquel s'ajoute
 - 600+ commandes/jour à M9, 1 500 véhicules sous abonnement à M12.
 - GMV mensuel > 250 M F, marge brute > 30 %, churn flotte < 5 %/mois à M12.
 - Partenariat Yango officialisé ; 3 cas clients VTC publiables ; FNE-CI en production.
-- **Série A 4–7 M USD** visée à M15–18 pour l'expansion nationale et sous-régionale.
+- **Série A 4-7 M USD** visée à M15-18 pour l'expansion nationale et sous-régionale.
 
 ### 9.5 Investisseurs cibles
 
@@ -206,7 +206,7 @@ VC pan-africains (Partech, Janngo Capital, Ventures Platform, P1 Ventures, AAIC)
 
 ## 10. Équipe & organisation
 
-Recrutements prioritaires M0–M3 : **Head of Liaison** (l'arme stratégique), **Head of Sales B2B**, **Chief of Staff CEO**, **CTO confirmé**. Cible ~25 personnes à M12, ~55 à M24 (tech, commercial flotte, Liaison/ops, support WhatsApp, finance/conformité).
+Recrutements prioritaires M0-M3 : **Head of Liaison** (l'arme stratégique), **Head of Sales B2B**, **Chief of Staff CEO**, **CTO confirmé**. Cible ~25 personnes à M12, ~55 à M24 (tech, commercial flotte, Liaison/ops, support WhatsApp, finance/conformité).
 
 ## 11. Risques majeurs & mitigations
 
@@ -221,8 +221,8 @@ Recrutements prioritaires M0–M3 : **Head of Liaison** (l'arme stratégique), *
 
 ## 12. Pourquoi maintenant, pourquoi Pièces
 
-Le marché est gigantesque, fragmenté, mal servi. **Personne** ne combine la marketplace consommateur, la plateforme flotte B2B et le réseau terrain Liaison ; personne n'a la conformité FNE-CI native ni la base fitments Côte d'Ivoire que nous construisons transaction par transaction. Ces trois éléments — **demande, offre, conformité** — forment un monopole défendable à 36 mois si l'exécution est tenue. **La fenêtre se referme dès qu'un acteur pan-africain capitalisé tente la même combinaison.**
+Le marché est gigantesque, fragmenté, mal servi. **Personne** ne combine la marketplace consommateur, la plateforme flotte B2B et le réseau terrain Liaison ; personne n'a la conformité FNE-CI native ni la base fitments Côte d'Ivoire que nous construisons transaction par transaction. Ces trois éléments (**demande, offre, conformité**) forment un monopole défendable à 36 mois si l'exécution est tenue. **La fenêtre se referme dès qu'un acteur pan-africain capitalisé tente la même combinaison.**
 
 ---
 
-_Pièces — la pièce qu'il te faut, au juste prix, livrée et garantie. · Document interne confidentiel · Plan d'affaires v1.1 · Juin 2026. Sources marché : étude Pièces « Coûts d'exploitation VTC en Côte d'Ivoire » (mai 2026), Déclic Car / 7info & Digital Mag CI (Yango : 25 000 véhicules, 100 000 courses/jour, 160 entreprises — 2026), Africa Data Intelligence (VTC 2024), Ministère des Transports CI (parc ~1,2 M, 2022), Agence Ecofin & Jeune Afrique (retrait Uber 2025), Disrupt Africa / TechCabal (financement 2024–2025). Chiffres financiers : projections internes à valider sur données réelles._
+_Pièces : la pièce qu'il te faut, au juste prix, livrée et garantie. · Document interne confidentiel · Plan d'affaires v1.1 · Juin 2026. Sources marché : étude Pièces « Coûts d'exploitation VTC en Côte d'Ivoire » (mai 2026), Déclic Car / 7info & Digital Mag CI (Yango : 25 000 véhicules, 100 000 courses/jour, 160 entreprises, 2026), Africa Data Intelligence (VTC 2024), Ministère des Transports CI (parc ~1,2 M, 2022), Agence Ecofin & Jeune Afrique (retrait Uber 2025), Disrupt Africa / TechCabal (financement 2024-2025). Chiffres financiers : projections internes à valider sur données réelles._
