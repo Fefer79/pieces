@@ -15,10 +15,11 @@
 
 Acheter une pièce auto à Abidjan = un parcours du combattant. Le marché est **100 % informel** : pas de catalogue, pas de prix affiché, pas de garantie, pas de facture.
 
-- **Mécanicien** : perd 2 à 4 h par pièce à faire le tour des cantines.
+**Chaque intermédiaire ajoute sa marge** — importateur, grossiste, détaillant, mécanicien : l'acheteur paie l'accumulation, sans jamais voir le vrai prix.
+
 - **Propriétaire** : paie 30 à 60 % trop cher, sans garantie.
-- **Flotte** : perd **30 000 à 50 000 F/jour** par véhicule immobilisé.
-- **Vendeur** : enfermé dans sa cantine, invisible en ligne.
+- **Flotte** : perd **30 000 à 50 000 F/jour** par véhicule immobilisé ; budget pièces opaque.
+- **Vendeur** : enfermé dans son comptoir, invisible en ligne.
 - **État** : ni TVA, ni traçabilité.
 
 <div style="page-break-after: always;"></div>

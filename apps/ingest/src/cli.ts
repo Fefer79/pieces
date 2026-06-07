@@ -8,8 +8,9 @@ import { ingestGlobalAutoVehicles } from './pipeline/global-auto-vehicles.ts'
 import { ingestGlobalAutoProducts } from './pipeline/global-auto-products.ts'
 import { ingestJumia } from './pipeline/jumia.ts'
 import { ingestCoinAfrique } from './pipeline/coinafrique.ts'
+import { ingestBcg } from './pipeline/bcg.ts'
 
-type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models' | '3h' | 'global-auto-vehicles' | 'global-auto-products' | 'jumia' | 'coinafrique'
+type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models' | '3h' | 'global-auto-vehicles' | 'global-auto-products' | 'jumia' | 'coinafrique' | 'bcg'
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
@@ -25,7 +26,7 @@ async function main(): Promise<void> {
   const commit = values.commit ?? false
   const limit = values.limit ? Number.parseInt(values.limit, 10) : undefined
   if (!source) {
-    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h|global-auto-vehicles|global-auto-products|jumia|coinafrique> [--dry-run|--commit] [--limit=N]')
+    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h|global-auto-vehicles|global-auto-products|jumia|coinafrique|bcg> [--dry-run|--commit] [--limit=N]')
     process.exit(1)
   }
   switch (source) {
@@ -90,6 +91,14 @@ async function main(): Promise<void> {
       const mode = commit ? '(commit)' : '(dry-run)'
       console.log(`[ingest] coinafrique pièces auto ${mode}${limit ? ` limit=${limit}` : ''}`)
       const stats = await ingestCoinAfrique({ dryRun: effectiveDryRun, productLimit: limit })
+      console.log('[ingest] done', stats)
+      break
+    }
+    case 'bcg': {
+      const effectiveDryRun = commit ? false : true
+      const mode = commit ? '(commit)' : '(dry-run)'
+      console.log(`[ingest] bcg pièces auto ${mode}${limit ? ` limit=${limit}` : ''}`)
+      const stats = await ingestBcg({ dryRun: effectiveDryRun, productLimit: limit })
       console.log('[ingest] done', stats)
       break
     }

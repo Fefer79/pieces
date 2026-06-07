@@ -29,13 +29,17 @@ La plateforme est **construite et déployée** : marketplace, escrow, dashboard 
 
 À Abidjan, acheter une pièce auto fiable, au bon prix, livrée dans la journée, est un parcours du combattant. Le marché est **100 % informel** : des milliers de vendeurs (cantines d'Adjamé, Yopougon, Marcory) vendent sans catalogue, sans prix affiché, sans garantie, sans facture, sans traçabilité.
 
-- **Le mécanicien** perd 2 à 4 heures par pièce à faire le tour des cantines.
-- **Le propriétaire** paie 30 à 60 % trop cher, faute de référence de prix, et n'a aucune garantie.
+Surtout, **entre l'importateur et le capot du véhicule, chaque intermédiaire ajoute sa marge** — grossiste, semi-grossiste, détaillant, et souvent le mécanicien à qui l'on confie l'achat. L'acheteur final paie l'accumulation de ces marges opaques, sans jamais voir le vrai prix.
+
+- **Le propriétaire** paie 30 à 60 % trop cher — autant de surcoût qu'il y a d'intermédiaires sur la pièce — faute de prix de référence, et sans aucune garantie.
 - **Le gestionnaire de flotte** perd **30 000 à 50 000 FCFA par jour et par véhicule immobilisé**, et ne sait pas où part son budget pièces.
-- **Le vendeur informel** n'a aucun moyen de toucher une clientèle au-delà de sa cantine.
+- **La confiance manque** : pièces contrefaites fréquentes, ni garantie, ni facture, ni recours.
+- **Le vendeur** — de l'importateur en gros au détaillant — n'a aucun moyen de toucher une clientèle au-delà de son comptoir.
 - **L'État** ne perçoit ni TVA ni traçabilité sur un pan entier de l'économie.
 
 ## 3. La solution & le produit
+
+Pièces rend la chaîne **transparente et concurrentielle** : l'acheteur voit le prix réel, compare les fournisseurs et achète au plus près de la source — quel que soit le nombre d'intermédiaires. Les marges opaques s'effondrent ; le surcoût disparaît.
 
 | Brique | Ce qu'elle résout | Statut |
 |---|---|---|
