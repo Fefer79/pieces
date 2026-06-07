@@ -49,3 +49,6 @@ apps/web/public/sw [0-9]*.js
 # OpenNext / Cloudflare build output
 .open-next/
 .gstack/
+
+# Microsoft Office lock/temp files
+~$*
