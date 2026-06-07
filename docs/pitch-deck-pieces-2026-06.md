@@ -2,7 +2,7 @@
 
 # Pièces
 
-<p class="deck">L'infrastructure de confiance de la pièce auto en Côte d'Ivoire. Marketplace + flotte + réseau terrain, pour un marché de ~250 Mds FCFA/an, fragmenté et 100 % informel.</p>
+<p class="deck">Pièces optimise les dépenses automobiles de tout le monde en Côte d'Ivoire — du propriétaire d'un véhicule au gestionnaire d'une flotte. Marketplace + flotte + réseau terrain, sur un marché de ~250 Mds FCFA/an, fragmenté et 100 % informel.</p>
 
 <div class="callout">
 <p class="lead">La pièce qu'il te faut, <strong>au juste prix</strong>, livrée et garantie.</p>

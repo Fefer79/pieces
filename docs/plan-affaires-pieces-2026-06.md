@@ -1,8 +1,8 @@
 <p class="eyebrow">Plan d'affaires · Confidentiel</p>
 
-# Pièces — l'infrastructure de confiance de la pièce auto en Côte d'Ivoire
+# Pièces — optimiser les dépenses automobiles en Côte d'Ivoire
 
-<p class="deck">Marketplace tripartite + suite de gestion de flotte + réseau terrain « Liaison », pour un marché de la pièce détachée massif, fragmenté et 100 % informel. Ce document présente le marché, le modèle, les projections et la levée Seed recherchée.</p>
+<p class="deck">Pièces optimise les dépenses automobiles de tout le monde — du propriétaire d'un seul véhicule au gestionnaire d'une flotte de mille. Marketplace + suite flotte + réseau terrain « Liaison », sur un marché de la pièce détachée massif, fragmenté et 100 % informel. Ce document présente le marché, le modèle, les projections et la levée Seed recherchée.</p>
 
 <div class="callout">
 <p class="lead">Le marché ivoirien de la pièce auto pèse <strong>~250 milliards FCFA/an</strong>. Il est fragmenté, opaque et informel. Personne ne combine marketplace, flotte et onboarding terrain.</p>
@@ -11,7 +11,7 @@
 
 ## 1. Résumé exécutif
 
-**Pièces** digitalise l'achat de pièces détachées automobiles en Côte d'Ivoire. La plateforme réunit trois produits sur une seule infrastructure :
+**Pièces optimise les dépenses automobiles de tout le monde en Côte d'Ivoire** — du propriétaire d'un seul véhicule au gestionnaire d'une flotte de mille. La plateforme réunit trois produits sur une seule infrastructure :
 
 - **Marketplace tripartite** — le mécanicien identifie la pièce (recherche, photo IA, VIN), le propriétaire paie en Mobile Money via **escrow**, le vendeur livre. Prix affichés, condition de la pièce affichée (chip Neuf / Occasion / Ré-usiné / Aftermarket / OEM), garantie, facture.
 - **Suite Flotte (B2B)** — `Flotte Pro` (5 000 F/véh/mois) et `Flotte Pro +` (10 000 F/véh/mois) : pilotage du coût total de possession, détection des véhicules « gouffres », alertes d'entretien, livraison express, facturation consolidée, conformité fiscale.
