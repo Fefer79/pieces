@@ -255,6 +255,14 @@ Mêmes familles que le web ; valeurs en **points (pt)** pour l'impression A4.
 ### Header / logo (`docs/_template/header.html.tpl`)
 Fragment HTML injecté en tête de chaque PDF : SVG « Pièces » en Gloock `#00113a` + point accent orange `#ff6b00`, et un bloc méta à droite peuplé via `{{CATEGORY}}` / `{{SUBTITLE}}` au build.
 
+### Règle du point orange (convention de marque)
+**Le point orange touche toujours le wordmark.** Il est verrouillé au contact du « s » final de « Pièces », comme un point final qui en embrasse la queue. Il ne doit jamais flotter détaché, ni être recentré, ni être déplacé verticalement : le wordmark et le point forment un bloc indissociable, mis à l'échelle ensemble.
+
+Géométrie de référence (viewBox `0 0 181 80`) : texte `x=0 y=62`, Gloock `font-size=64`, `letter-spacing=-1`, `#00113a` ; cercle `cx=172 cy=54 r=8`, `#ff6b00`. Source unique :
+- SVG web : `apps/web/public/logo-pieces-light.svg`
+- SVG header docs : `docs/_template/header.html.tpl`
+- PNG haute résolution (transparent, 3620×1600) : `apps/web/public/logo-pieces-light.png` (copie dans `docs/_template/`)
+
 ### Ajouter un document
 1. Écrire le markdown dans `docs/mon-doc.md`.
 2. Ajouter une entrée au tableau `DOCS` de `build.sh` : `"mon-doc|Catégorie|Sous-titre · v1.0 · Mai 2026"`.
