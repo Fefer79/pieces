@@ -1,24 +1,24 @@
-<p class="eyebrow">Pitch deck · Seed · Confidentiel</p>
+<p class="eyebrow">Pitch deck · Pre-seed · Confidentiel</p>
 
 # Pièces
 
-<p class="deck">Pièces optimise les dépenses automobiles de tout le monde en Côte d'Ivoire — du propriétaire d'un véhicule au gestionnaire d'une flotte. Marketplace + flotte + réseau terrain, sur un marché de ~250 Mds FCFA/an, fragmenté et 100 % informel.</p>
+<p class="deck">Pièces optimise les dépenses automobiles de tout le monde en Côte d'Ivoire — du propriétaire d'un véhicule au gestionnaire d'une flotte. Marketplace + flotte + réseau terrain, sur un marché de ~250 Mds FCFA/an, fragmenté et largement informel.</p>
 
 <div class="callout">
 <p class="lead">La pièce qu'il te faut, <strong>au juste prix</strong>, livrée et garantie.</p>
-<p>Seed ~1,5 M USD · Juin 2026 · Abidjan</p>
+<p>Pre-seed ~1 M EUR · Juin 2026 · Abidjan</p>
 </div>
 
 <div style="page-break-after: always;"></div>
 
 ## Le problème
 
-Acheter une pièce auto à Abidjan = un parcours du combattant. Le marché est **100 % informel** : pas de catalogue, pas de prix affiché, pas de garantie, pas de facture.
+Acheter une pièce auto à Abidjan = un parcours du combattant. Le marché est **largement informel** : pas de catalogue, pas de prix affiché, pas de garantie, pas de facture.
 
 **Chaque intermédiaire ajoute sa marge** — importateur, grossiste, détaillant, mécanicien : l'acheteur paie l'accumulation, sans jamais voir le vrai prix.
 
 - **Propriétaire** : paie 30 à 60 % trop cher, sans garantie.
-- **Flotte** : perd **30 000 à 50 000 F/jour** par véhicule immobilisé ; budget pièces opaque.
+- **Flotte** : perd **25 000 à 50 000 F/jour** par véhicule immobilisé ; budget pièces opaque.
 - **Vendeur** : enfermé dans son comptoir, invisible en ligne.
 - **État** : ni TVA, ni traçabilité.
 
@@ -28,7 +28,7 @@ Acheter une pièce auto à Abidjan = un parcours du combattant. Le marché est *
 
 Trois produits, une seule infrastructure :
 
-- **Marketplace tripartite** — le mécanicien identifie, le propriétaire paie en **escrow Mobile Money**, le vendeur livre. Prix et condition affichés, garantie, facture.
+- **Marketplace tripartite** — le mécanicien identifie, le vendeur livre, le propriétaire **paie à la livraison**. Prix et condition affichés, garantie, facture.
 - **Suite Flotte (B2B)** — pilotage du coût total de possession, détection des véhicules « gouffres », livraison express, conformité fiscale.
 - **Réseau Liaison** — des agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au détaillant — même hors ligne.
 
@@ -40,8 +40,8 @@ Trois produits, une seule infrastructure :
 
 ## Le produit est déjà construit
 
-- Marketplace, **escrow Mobile Money**, garantie, facture — en production.
-- Recherche pièce par **texte / photo IA (Gemini) / VIN**, fitment véhicule CI.
+- Marketplace, **paiement à la livraison**, garantie, facture — en production.
+- Recherche pièce par **texte / photo IA / VIN**, fitment véhicule CI.
 - **Suite Flotte** (Pro 5 000 F · Pro + 10 000 F par véhicule/mois) + calculateur ROI.
 - **Bot WhatsApp**, portail entreprise en ligne sur `flotte.pieces.ci`.
 - **7 137 annonces** déjà ingérées au catalogue (Jumia, CoinAfrique, global-auto).
@@ -50,7 +50,7 @@ Trois produits, une seule infrastructure :
 
 ## Le marché
 
-Parc national **~1,2 M véhicules** (Min. Transports, 2022). Secteur auto **~400–420 Mds F/an**. À une take rate de 9–12 %, le SOM représente **4–6 Mds FCFA de revenu net annuel** (~6–10 M USD).
+Parc national **~1,2 M véhicules** (Min. Transports, 2022). Secteur auto **~400–420 Mds F/an**. À une take rate de ~10 %, le SOM représente **4–6 Mds FCFA de revenu net annuel**.
 
 | | Marché pièces / an |
 |---|---|
@@ -64,7 +64,7 @@ Parc national **~1,2 M véhicules** (Min. Transports, 2022). Secteur auto **~400
 
 - **Uber a quitté la Côte d'Ivoire (sept. 2025)** → **Yango ultra-dominant** : ~25 000 véhicules, **~100 000 courses/jour**, 160+ entreprises de flotte, HQ régional à Abidjan. Un partenaire flotte évident.
 - **Parc qui rajeunit** : importations de neuf triplées depuis 2017, restriction de l'âge des véhicules.
-- **Mobile Money massif** (Orange Money, MTN, Wave) → l'escrow devient possible.
+- **Mobile Money massif** (Orange Money, MTN, Wave) → paiement à la livraison fiable et traçable.
 - **Formalisation fiscale (FNE-CI)** → fenêtre pour devenir le standard de la facture pièce.
 
 <div class="callout">
@@ -86,11 +86,11 @@ Le VTC ivoirien a explosé : **~30 000 véhicules en 2026** (vs 5–6k en 2024),
 
 ## Modèle économique
 
-**Unit economics** : revenu net **2 560 F/commande** · LTV Flotte Pro **~85 000 F/véhicule** · **LTV/CAC > 4** dès M12.
+**Unit economics** : panier moyen **32 000 F**, take rate **10 %** → **3 200 F/commande** · LTV Flotte Pro **~85 000 F/véhicule** · **LTV/CAC > 4** dès M12.
 
 | Flux | Mécanique | An 3 |
 |---|---|---|
-| Commission marketplace | 5–10 % côté vendeur | 45 % |
+| Commission marketplace | 7–15 %, au paiement | 45 % |
 | Abonnement Flotte Pro | 5 000 F/véh/mois | 35 % |
 | Abonnement Flotte Pro + | 10 000 F/véh/mois | 15 % |
 | Conformité / facturation | forfait FNE-CI | 5 % |
@@ -115,7 +115,7 @@ Notre douve, défendable à 36 mois :
 
 - **Cartographie de la chaîne + réseau Liaison** — tous les acteurs (gros → détail, formels & informels) et leurs produits digitalisés, même hors ligne (objectif 80 agents en 12 mois).
 - **Data fitments Côte d'Ivoire** — inattaquable à 100 000 transactions.
-- **Escrow + garantie** — confiance dans un marché de méfiance.
+- **Paiement à la livraison + garantie** — confiance dans un marché de méfiance.
 - **FNE-CI natif** — verrou réglementaire.
 
 <div style="page-break-after: always;"></div>
@@ -135,11 +135,11 @@ Notre douve, défendable à 36 mois :
 ## La demande
 
 <div class="callout">
-<p class="lead">Seed <strong>~1,5 M USD (≈ 900 M FCFA)</strong> — 20 à 24 mois de runway.</p>
-<p>Fourchette 1,2–1,8 M USD. Cohérent avec le marché 2025 (ticket Seed moyen ~1,6 M USD).</p>
+<p class="lead">Pre-seed <strong>~1 M EUR (≈ 655 M FCFA)</strong> — 18 à 20 mois de runway.</p>
+<p>Fourchette 0,7–1,3 M EUR selon l'ambition de calendrier. Justifié par l'intensité capitalistique du modèle (ops terrain + stock tampon).</p>
 </div>
 
-**Jalons débloqués** : 1 500 véhicules abonnés, 600 commandes/jour, GMV > 250 M F/mois, break-even Abidjan à M18 → **Série A 4–7 M USD**.
+**Jalons débloqués** : 1 500 véhicules abonnés, 600 commandes/jour, GMV > 250 M F/mois, break-even Abidjan à M18 → **Seed 4–6 M EUR**.
 
 | Emploi des fonds | Part |
 |---|---|
