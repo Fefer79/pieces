@@ -110,6 +110,11 @@ Analyses détaillées exhaustives de zones spécifiques :
 - [Brochure commerciale Entreprises](./brochure-commerciale-entreprises-2026-06-03.md) — Présentation B2B dédiée aux gestionnaires de flotte (5 à 100+ véhicules) : Pro Flotte 3 niveaux + chauffeurs, pain points, ROI, dashboard, workflow approbation, cas d'usage, démarrage — Édition 2026-06-03
 - [Note de partenariat Yango](./pitch-partenariat-yango-2026-06.md) — Pitch B2B2C au réseau partenaires Yango : disponibilité flotte = volume de courses, coût caché de l'immobilisation, 3 formes de collaboration (référencement / co-marketing / intégration), proposition de pilote 60 j — Juin 2026 ([PDF](./pitch-partenariat-yango-2026-06.pdf))
 
+### Stratégie & financement (confidentiel)
+
+- [Plan d'affaires Pièces](./plan-affaires-pieces-2026-06.md) — Plan d'affaires complet pour la levée Seed : marché (TAM/SAM/SOM chiffré et sourcé), produit, modèle économique, GTM 5 mouvements, projections 3 ans, dimensionnement de la levée (~1,5 M USD, emploi des fonds, jalons Série A), risques — Juin 2026 ([PDF](./plan-affaires-pieces-2026-06.pdf))
+- [Pitch deck Pièces](./pitch-deck-pieces-2026-06.md) — Deck investisseur Seed (~14 slides) : problème, solution, marché, pourquoi maintenant (départ Uber / Yango dominant), modèle, GTM, douve, projections, demande de financement — Juin 2026 ([PDF](./pitch-deck-pieces-2026-06.pdf))
+
 ### Rétrospectives (`_bmad-output/implementation-artifacts/`)
 
 - [Epic 1 — Fondation & Auth](../_bmad-output/implementation-artifacts/epic-1-retro-2026-03-01.md)
