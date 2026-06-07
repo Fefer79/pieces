@@ -9,7 +9,7 @@
 
 ## 1. La thèse en 90 secondes
 
-Le marché ivoirien de la pièce auto est **massif, fragmenté, opaque, et 100% informel**. À Adjamé, Yopougon, Marcory, Koumassi, des milliers de vendeurs vendent des pièces neuves, d'occasion importées (Japon, Dubai), ré-usinées et aftermarket — sans catalogue, sans prix affichés, sans garantie, sans facture, sans traçabilité. Le mécanicien perd 2 à 4 heures par pièce à faire le tour des cantines. Le propriétaire paie 30 à 60% trop cher parce qu'il ne sait pas. Le gestionnaire de flotte VTC perd **30 000 à 50 000 FCFA par jour et par véhicule immobilisé**.
+Le marché ivoirien de la pièce auto est **massif, fragmenté, opaque, et 100% informel**. À Adjamé, Yopougon, Marcory, Koumassi, des milliers de vendeurs vendent des pièces neuves, d'occasion importées (Japon, Dubai), ré-usinées et aftermarket — sans catalogue, sans prix affichés, sans garantie, sans facture, sans traçabilité. Le mécanicien perd 2 à 4 heures par pièce à faire le tour des magasins. Le propriétaire paie 30 à 60% trop cher parce qu'il ne sait pas. Le gestionnaire de flotte VTC perd **30 000 à 50 000 FCFA par jour et par véhicule immobilisé**.
 
 **Pièces résout les trois douleurs avec un seul produit** :
 1. **Marketplace tripartite** (mécanicien identifie → propriétaire paie → vendeur livre) avec **escrow Mobile Money**, garantie, traçabilité.
@@ -42,7 +42,7 @@ Ajoute San Pedro, Bouaké, Yamoussoukro, Korhogo → **marché national ~210 Mds
 
 ### 2.2 Structure de l'offre — 5 catégories de vendeurs
 
-1. **Cantines d'Adjamé / Yopougon** (~3 000 acteurs estimés). Vendeurs informels, sans stock système, paiement cash, pas de facture. Notre cible Liaison prioritaire.
+1. **Magasins d'Adjamé / Yopougon** (~3 000 acteurs estimés). Vendeurs informels, sans stock système, paiement cash, pas de facture. Notre cible Liaison prioritaire.
 2. **Importateurs grossistes** (~150 acteurs). Conteneurs Japon / Dubai / Belgique, capacité de stock, parfois RCCM. Cible Flotte Pro côté approvisionnement.
 3. **Ré-usineurs / rectifieurs** (~80 acteurs). Vilebrequins, culasses, boîtes — savoir-faire rare et sous-valorisé. Premium pricing possible avec garantie Pièces.
 4. **Concessionnaires officiels** (Toyota, Nissan, Hyundai, etc.). Pièces neuves OEM, prix élevés, garantie constructeur. Notre concurrent direct sur le segment haut, partenaire potentiel sur la couverture.
@@ -122,7 +122,7 @@ Tout ce qui s'éloigne de ces règles trahit la promesse et doit être bloqué e
 
 ### Mouvement 1 — Verrouiller Adjamé / Yopougon (mois 0–6)
 
-**Objectif** : 300 vendeurs onboardés, 80% du stock visible des cantines majeures.
+**Objectif** : 300 vendeurs onboardés, 80% du stock visible des magasins majeurs.
 
 **Comment** :
 - Recruter et former **20 Liaisons** (commission 3 à 5% sur ventes générées + fixe modeste).
@@ -216,7 +216,7 @@ Tout ce qui s'éloigne de ces règles trahit la promesse et doit être bloqué e
 - Rémunération : fixe modeste (50 000 F/mois) + commission 3 à 5% sur ventes générées par leurs vendeurs onboardés. Plafond commissionable défini server-side, jamais affiché comme « recommandation » (voir `memory/feedback-liaison-commission.md`).
 
 **Canal #2 — Partenariats associations**.
-- UNATRCI, syndicats vendeurs Adjamé, chambres consulaires. Légitimité institutionnelle = porte ouverte sur les cantines historiques.
+- UNATRCI, syndicats vendeurs Adjamé, chambres consulaires. Légitimité institutionnelle = porte ouverte sur les magasins historiques.
 
 **Canal #3 — Bouche-à-oreille vendeur**.
 - Programme de parrainage vendeur → vendeur (5 000 F par vendeur amené qui fait sa première vente).
@@ -227,12 +227,12 @@ Tout ce qui s'éloigne de ces règles trahit la promesse et doit être bloqué e
 - 200+ groupes WhatsApp mécaniciens identifiés. Animation par community managers (2 ETP à M6), contenu utile (tutos identification pièces), pas de spam.
 
 **Canal #2 — Radio populaire et affichage Adjamé / Yopougon**.
-- Radio Yopougon, Radio Treichville, panneaux affichage cantines. Message simple : « Pièces.ci — la pièce qu'il te faut, au juste prix, livrée. »
+- Radio Yopougon, Radio Treichville, panneaux affichage magasins. Message simple : « Pièces.ci — la pièce qu'il te faut, au juste prix, livrée. »
 
 **Canal #3 — Bot WhatsApp officiel Pièces**.
 - Point d'entrée n°1 pour mécaniciens et propriétaires non équipés. À pousser via QR code sur factures, packaging, communication.
 
-**Canal #4 — Réseau Liaison** (les Liaisons recommandent Pièces aux mécaniciens qu'ils croisent en cantine).
+**Canal #4 — Réseau Liaison** (les Liaisons recommandent Pièces aux mécaniciens qu'ils croisent en magasin).
 
 ### 7.3 Acquisition flottes (B2B)
 

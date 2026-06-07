@@ -109,7 +109,7 @@ Le VTC ivoirien a explosé : **~30 000 véhicules en 2026** (vs 5–6k en 2024),
 
 ## Concurrence & douve
 
-Concurrent réel = **cantines + WhatsApp + Excel**. Aucun acteur structuré à l'échelle nationale.
+Concurrent réel = **magasins + WhatsApp + Excel**. Aucun acteur structuré à l'échelle nationale.
 
 Notre douve, défendable à 36 mois :
 

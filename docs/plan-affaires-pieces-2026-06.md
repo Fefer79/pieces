@@ -27,7 +27,7 @@ La plateforme est **construite et déployée** : marketplace, escrow, dashboard 
 
 ## 2. Le problème
 
-À Abidjan, acheter une pièce auto fiable, au bon prix, livrée dans la journée, est un parcours du combattant. Le marché est **100 % informel** : des milliers de vendeurs (cantines d'Adjamé, Yopougon, Marcory) vendent sans catalogue, sans prix affiché, sans garantie, sans facture, sans traçabilité.
+À Abidjan, acheter une pièce auto fiable, au bon prix, livrée dans la journée, est un parcours du combattant. Le marché est **100 % informel** : des milliers de vendeurs (magasins d'Adjamé, Yopougon, Marcory) vendent sans catalogue, sans prix affiché, sans garantie, sans facture, sans traçabilité.
 
 Surtout, **entre l'importateur et le capot du véhicule, chaque intermédiaire ajoute sa marge** — grossiste, semi-grossiste, détaillant, et souvent le mécanicien à qui l'on confie l'achat. L'acheteur final paie l'accumulation de ces marges opaques, sans jamais voir le vrai prix.
 
@@ -93,7 +93,7 @@ Restriction de l'âge des véhicules importés, rajeunissement du parc, montée 
 
 | Acteur | Menace | Notre réponse |
 |---|---|---|
-| **Cantines + WhatsApp + Excel** | Le vrai concurrent (90 % des flux) | Rendre ce stack obsolète sans rupture de comportement |
+| **Magasins + WhatsApp + Excel** | Le vrai concurrent (90 % des flux) | Rendre ce stack obsolète sans rupture de comportement |
 | **global-auto.online** | Seul catalogue web structuré | Catalogue miroité (veille prix permanente) ; ils ne voient pas nos prix |
 | **Jumia / Glovo / Yango Tech** | Capital, pourraient acquérir à 24–36 mois | Avance terrain + data fitments à industrialiser vite |
 | **FleetOps (gestion partenaires Yango)** | Gère chauffeurs/loueurs (39 000+ suivis), pas le coût pièces | Partenaire d'intégration potentiel, pas concurrent sur la pièce |
