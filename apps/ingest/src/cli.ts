@@ -9,8 +9,9 @@ import { ingestGlobalAutoProducts } from './pipeline/global-auto-products.ts'
 import { ingestJumia } from './pipeline/jumia.ts'
 import { ingestCoinAfrique } from './pipeline/coinafrique.ts'
 import { ingestBcg } from './pipeline/bcg.ts'
+import { ingestMobristore } from './pipeline/mobristore.ts'
 
-type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models' | '3h' | 'global-auto-vehicles' | 'global-auto-products' | 'jumia' | 'coinafrique' | 'bcg'
+type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models' | '3h' | 'global-auto-vehicles' | 'global-auto-products' | 'jumia' | 'coinafrique' | 'bcg' | 'mobristore'
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
@@ -26,7 +27,7 @@ async function main(): Promise<void> {
   const commit = values.commit ?? false
   const limit = values.limit ? Number.parseInt(values.limit, 10) : undefined
   if (!source) {
-    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h|global-auto-vehicles|global-auto-products|jumia|coinafrique|bcg> [--dry-run|--commit] [--limit=N]')
+    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h|global-auto-vehicles|global-auto-products|jumia|coinafrique|bcg|mobristore> [--dry-run|--commit] [--limit=N]')
     process.exit(1)
   }
   switch (source) {
@@ -99,6 +100,14 @@ async function main(): Promise<void> {
       const mode = commit ? '(commit)' : '(dry-run)'
       console.log(`[ingest] bcg pièces auto ${mode}${limit ? ` limit=${limit}` : ''}`)
       const stats = await ingestBcg({ dryRun: effectiveDryRun, productLimit: limit })
+      console.log('[ingest] done', stats)
+      break
+    }
+    case 'mobristore': {
+      const effectiveDryRun = commit ? false : true
+      const mode = commit ? '(commit)' : '(dry-run)'
+      console.log(`[ingest] mobristore pièces auto ${mode}${limit ? ` limit=${limit}` : ''}`)
+      const stats = await ingestMobristore({ dryRun: effectiveDryRun, productLimit: limit })
       console.log('[ingest] done', stats)
       break
     }
