@@ -70,6 +70,7 @@ DOCS=(
   "etude-couts-exploitation-vtc-ci-2026|Étude de marché|Coûts d'exploitation VTC — pièces & consommables · Mai 2026"
   "plan-affaires-pieces-2026-06|Plan d'affaires|Pièces — Levée Pre-seed (confidentiel) · Juin 2026"
   "pitch-deck-pieces-2026-06|Pitch deck|Pièces — Pre-seed (confidentiel) · Juin 2026"
+  "pitch-deck-yango-2026-06|Note de partenariat|Réseau Yango · Abidjan · Juin 2026"
   "brochure-vtc-grand-compte-2026-06-03|Brochure commerciale|Édition VTC grand compte (confidentielle) · 3 juin 2026"
   "offre-vtc-6000-vehicules-2026-06-03|Offre commerciale|VTC 6 000 véhicules · Juin 2026 · PCS-VTC-2026-06-001"
   "brochure-btp-grand-compte-2026-05|Brochure commerciale|Édition BTP grand compte (confidentielle) · Mai 2026"
@@ -108,6 +109,7 @@ build_one() {
   if [[ "$slug" == pitch-deck* ]]; then
     local deckmd="$TMP_DIR/$slug.deck.md"
     perl -0pe '
+      s{<style[^>]*>.*?</style>}{}gs;
       s{<div[^>]*page-break[^>]*></div>}{}g;
       s{<div class="callout">}{}g;
       s{</div>}{}g;

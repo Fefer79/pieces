@@ -109,6 +109,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 - [Brochure commerciale Pièces](./brochure-commerciale-pieces.md) — Présentation tous publics des services (mécanicien, propriétaire, vendeur, livreur, entreprise, WhatsApp) et comment y accéder — Rédigée 2026-05-27
 - [Brochure commerciale Entreprises](./brochure-commerciale-entreprises-2026-06-03.md) — Présentation B2B dédiée aux gestionnaires de flotte (5 à 100+ véhicules) : Pro Flotte 3 niveaux + chauffeurs, pain points, ROI, dashboard, workflow approbation, cas d'usage, démarrage — Édition 2026-06-03
 - [Note de partenariat Yango](./pitch-partenariat-yango-2026-06.md) — Pitch B2B2C au réseau partenaires Yango : disponibilité flotte = volume de courses, coût caché de l'immobilisation, 3 formes de collaboration (référencement / co-marketing / intégration), proposition de pilote 60 j — Juin 2026 ([PDF](./pitch-partenariat-yango-2026-06.pdf))
+- [Pitch deck Yango (paysage)](./pitch-deck-yango-2026-06.md) — Version slides paysage de la note de partenariat Yango, au standard Pièces v2 ; même argumentaire (disponibilité flotte = courses, coût caché, 3 formes de collaboration, pilote 60 j) exporté en PDF paysage **et PPTX 16:9** — Juin 2026 ([PDF](./pitch-deck-yango-2026-06.pdf) · [PPTX](./pitch-deck-yango-2026-06.pptx))
 
 ### Stratégie & financement (confidentiel)
 
