@@ -130,7 +130,7 @@ Conditions d'application :
 
 ### Phase roll-out (T0 + 30 à T0 + 90 jours)
 
-- Import CSV de la flotte complète (6 000 véhicules) — format simple : marque, modèle, année, immatriculation, km, type d'usage
+- Import Excel ou CSV de la flotte complète (6 000 véhicules) — modèle prêt à l'emploi (onglets Véhicules et Chauffeurs) : marque, modèle, année, immatriculation, km, type d'usage, chauffeur attitré
 - Onboarding des centres de maintenance (1 demi-journée par centre)
 - Enrôlement des chauffeurs et affectation aux véhicules (activation OTP, ~5 min par chauffeur)
 - Formation des gestionnaires (3 sessions de 2 h en visio ou présentiel)

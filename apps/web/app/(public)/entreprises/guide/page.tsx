@@ -12,7 +12,7 @@ const SECTIONS = [
   { id: 'creer-entreprise', label: '1 — Créer votre entreprise' },
   { id: 'inviter-equipe', label: '2 — Inviter votre équipe' },
   { id: 'enregistrer-flotte', label: '3 — Enregistrer votre flotte' },
-  { id: 'import-csv', label: '4 — Importer en masse (CSV)' },
+  { id: 'import-csv', label: '4 — Importer en masse (Excel ou CSV)' },
   { id: 'fiche-vehicule', label: '5 — Fiche véhicule' },
   { id: 'rechercher', label: '6 — Rechercher des pièces' },
   { id: 'commander', label: '7 — Commander pour un véhicule' },
@@ -225,31 +225,43 @@ export default function EnterpriseGuidePage() {
             />
           </Section>
 
-          {/* 4 — Import CSV */}
-          <Section id="import-csv" title="4 — Importer en masse via CSV">
+          {/* 4 — Import Excel / CSV */}
+          <Section id="import-csv" title="4 — Importer en masse (Excel ou CSV)">
             <p>
-              Pour les flottes de plus de 20 véhicules, l&apos;import CSV est
-              le moyen le plus rapide. Le système accepte des en-têtes en{' '}
-              <strong>français ou en anglais</strong>.
+              Pour les flottes de plus de 20 véhicules, l&apos;import en masse est
+              le moyen le plus rapide. Le plus simple : téléchargez notre{' '}
+              <strong>modèle Excel d&apos;onboarding</strong>, remplissez les onglets
+              « Véhicules » et « Chauffeurs », puis importez-le depuis le tableau de
+              bord. Vous pouvez aussi importer un fichier CSV — les en-têtes sont
+              acceptés en <strong>français ou en anglais</strong>.
             </p>
+            <Steps
+              steps={[
+                'Téléchargez le modèle Excel depuis la page d\'import (bouton « Télécharger le modèle »).',
+                'Renseignez vos chauffeurs dans l\'onglet « Chauffeurs », puis importez-les en premier.',
+                'Renseignez vos véhicules dans l\'onglet « Véhicules » et importez-les ensuite.',
+                'Renseignez la colonne « Chauffeur attitré » pour affecter automatiquement chaque véhicule à son chauffeur.',
+              ]}
+            />
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              Format attendu
+              Format CSV (alternative)
             </p>
             <pre className="my-3 overflow-x-auto rounded-md bg-surface p-4 text-xs text-ink">
-{`marque,modele,annee,immatriculation,kilometrage,usage,groupe
-Toyota,Hilux,2018,AB-1234-CI,145000,CHANTIER,Yopougon
-Renault,Master,2020,EF-9012-CI,68000,LIVRAISON,Treichville
-Mercedes,Sprinter,2019,GH-3456-CI,92000,TRANSPORT,Treichville`}
+{`marque,modele,annee,immatriculation,kilometrage,usage,groupe,chauffeur
+Toyota,Hilux,2018,AB-1234-CI,145000,CHANTIER,Yopougon,Koffi Yao
+Renault,Master,2020,EF-9012-CI,68000,LIVRAISON,Treichville,Awa Traoré
+Mercedes,Sprinter,2019,GH-3456-CI,92000,TRANSPORT,Treichville,`}
             </pre>
             <p className="text-sm text-muted">
               Colonnes obligatoires : <code>marque</code>, <code>modele</code>,{' '}
-              <code>annee</code>. Toutes les autres sont optionnelles.
-              Les lignes invalides sont rapportées ligne par ligne — les lignes
-              valides sont créées normalement.
+              <code>annee</code>. Toutes les autres sont optionnelles. La colonne{' '}
+              <code>chauffeur</code> affecte le véhicule au chauffeur portant ce nom
+              (importez vos chauffeurs d&apos;abord). Les lignes invalides sont
+              rapportées ligne par ligne — les lignes valides sont créées normalement.
             </p>
             <Screenshot
               src="/guide/04-csv-import.svg"
-              caption="Page d'import CSV avec preview du format et compte-rendu des erreurs"
+              caption="Page d'import avec téléchargement du modèle Excel et compte-rendu des erreurs"
             />
             <Tip>
               <strong>Format VIN :</strong> 17 caractères alphanumériques (sans I, O, Q).

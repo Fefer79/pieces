@@ -144,7 +144,7 @@ Rappel : **Flotte Pro + = Flotte Pro + couche urgence**, donc toute fonctionnali
 | Utilisateurs et véhicules | 2 / illim. | Illimités | Illimités |
 | Centres de maintenance déclarés | 1 centre | Illimités | Illimités |
 | Rattachement véhicule → centre + jour livraison hebdo | — | ✓ | ✓ |
-| Import CSV de la flotte | ✓ | ✓ | ✓ |
+| Import Excel/CSV de la flotte (véhicules + chauffeurs) | ✓ | ✓ | ✓ |
 | Fiche véhicule basique + historique commandes | ✓ | ✓ | ✓ |
 | Fiche véhicule enrichie (coût cumulé, YTD, vs flotte) | — | ✓ | ✓ |
 | **Gestion des chauffeurs** |  |  |  |
@@ -217,7 +217,7 @@ Sur 300 M FCFA de budget annuel, l'économie cible est de 60 à 90 M FCFA par an
 
 ## Comment démarrer
 - Créez votre compte entreprise sur pieces.ci (signature en ligne, RCCM facultatif).
-- Importez le CSV de votre flotte (format simple : marque, modèle, année, plaque, km).
+- Importez votre flotte avec notre modèle Excel (onglets Véhicules et Chauffeurs) ou un CSV — la colonne « Chauffeur attitré » affecte chaque véhicule à son chauffeur automatiquement.
 - Activation automatique de l'essai Flotte Pro 30 jours — toutes les fonctionnalités, sans carte bancaire.
 - Déclarez vos centres de maintenance et rattachez vos véhicules.
 - Invitez vos membres (gestionnaires, mécaniciens, comptables) avec rôles distincts.

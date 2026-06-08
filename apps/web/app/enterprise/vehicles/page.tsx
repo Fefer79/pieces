@@ -74,7 +74,7 @@ export default function EnterpriseVehiclesPage() {
             href="/enterprise/vehicles/import"
             className="rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-ink hover:bg-surface"
           >
-            Importer CSV
+            Importer
           </Link>
           <button
             onClick={() => setShowCreate(true)}
@@ -123,7 +123,7 @@ export default function EnterpriseVehiclesPage() {
           <tbody>
             {loading && <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-muted">Chargement…</td></tr>}
             {!loading && vehicles.length === 0 && (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Aucun véhicule. Ajoutez-en un ou importez un CSV.</td></tr>
+              <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Aucun véhicule. Ajoutez-en un ou importez un fichier Excel/CSV.</td></tr>
             )}
             {vehicles.map((v) => (
               <tr key={v.id} className="border-b border-border last:border-0 hover:bg-surface">

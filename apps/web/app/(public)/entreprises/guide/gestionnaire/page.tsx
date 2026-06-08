@@ -94,7 +94,7 @@ export default function ManagerGuidePage() {
               'Par VIN : saisissez le numéro à 17 caractères de la carte grise et cliquez « Décoder » — marque, modèle et année se remplissent automatiquement.',
               'Par menus : choisissez Marque → Modèle → Année → Motorisation dans les listes déroulantes du catalogue.',
               'Complétez l\'immatriculation, le kilométrage, l\'usage (transport, chantier, livraison…) et un groupe optionnel.',
-              'Enregistrez. Pour une grande flotte, utilisez l\'import CSV en masse.',
+              'Enregistrez. Pour une grande flotte, utilisez l\'import en masse : téléchargez le modèle Excel depuis Véhicules → Importer, remplissez-le et téléversez-le (CSV également accepté).',
             ]} />
             <Tip>Choisir la <strong>motorisation</strong> améliore la précision des pièces compatibles
               proposées plus tard lors des commandes.</Tip>
@@ -121,6 +121,9 @@ export default function ManagerGuidePage() {
             ]} />
             <Tip><strong>Important :</strong> le numéro de téléphone doit être exactement celui que le
               chauffeur utilisera pour se connecter — c'est la clé du rattachement automatique.</Tip>
+            <Tip><strong>En masse :</strong> depuis <strong>Chauffeurs → Importer</strong>, utilisez
+              l'onglet « Chauffeurs » du modèle Excel (ou un CSV) pour créer tous vos chauffeurs d'un
+              coup. Les doublons de numéro sont signalés et ignorés.</Tip>
           </Section>
 
           <Section id="affectation" title="5 — Affecter un véhicule">
@@ -130,6 +133,9 @@ export default function ManagerGuidePage() {
               de véhicule, l'ancienne affectation est clôturée et une nouvelle ouverte. Sélectionnez
               <strong> « Non affecté »</strong> pour désaffecter.
             </p>
+            <Tip><strong>À l'import :</strong> remplissez la colonne <strong>« Chauffeur attitré »</strong>
+              de l'onglet Véhicules avec le nom du chauffeur pour créer l'affectation automatiquement
+              au moment de l'import (pensez à importer les chauffeurs d'abord).</Tip>
             <p>Le véhicule affecté devient le véhicule par défaut des relevés journaliers du chauffeur.</p>
           </Section>
 

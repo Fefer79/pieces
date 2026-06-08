@@ -103,7 +103,7 @@ ROI net projeté :
 1. **Réunion de cadrage** (1 h) — nous présentons l'outil sur 5 véhicules et leurs chauffeurs, en conditions réelles.
 2. **Pilote 30 jours** sur 50 à 100 véhicules — toutes les fonctionnalités activées (pièces + chauffeurs), sans engagement, sans carte bancaire.
 3. **Bilan pilote + offre commerciale détaillée** — projection chiffrée sur votre parc complet, conditions de contrat, gouvernance opérationnelle.
-4. **Roll-out progressif** sur les 6 000 véhicules — accompagnement Pièces (un Liaison senior dédié), import CSV de la flotte, enrôlement des chauffeurs, formation des centres de maintenance, intégration aux outils existants.
+4. **Roll-out progressif** sur les 6 000 véhicules — accompagnement Pièces (un Liaison senior dédié), import Excel/CSV de la flotte (véhicules et chauffeurs), enrôlement des chauffeurs, formation des centres de maintenance, intégration aux outils existants.
 
 ## Contact
 
