@@ -11,6 +11,8 @@
     "./validators/*": "./validators/*.ts",
     "./constants": "./constants/index.ts",
     "./constants/*": "./constants/*.ts",
+    "./contracts": "./contracts/index.ts",
+    "./contracts/*": "./contracts/*.ts",
     "./env": "./env.ts",
     "./eslint-config": "./eslint-config/index.js"
   },
