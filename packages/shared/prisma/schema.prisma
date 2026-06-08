@@ -202,6 +202,7 @@ model Vendor {
   kyc                 VendorKyc?
   guaranteeSignatures VendorGuaranteeSignature[]
   catalogItems        CatalogItem[]
+  contracts           VendorContract[]
 
   @@map("vendors")
   @@index([phone], name: "idx_vendors_phone")
@@ -229,6 +230,46 @@ model VendorKyc {
   createdAt      DateTime @default(now()) @map("created_at")
 
   @@map("vendor_kyc")
+}
+
+enum VendorContractStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
+// Contrat d'adhésion vendeur (CGU) envoyé par lien et signé électroniquement.
+// Un enregistrement par lien généré ; statut PENDING jusqu'à signature.
+model VendorContract {
+  id              String               @id @default(uuid())
+  token           String               @unique
+  contractVersion String               @map("contract_version")
+  status          VendorContractStatus @default(PENDING)
+
+  // Vendeur existant (optionnel : un lien peut être envoyé à un prospect).
+  vendorId String? @map("vendor_id")
+  vendor   Vendor? @relation(fields: [vendorId], references: [id])
+
+  // Informations pré-remplies par l'émetteur du lien (admin / liaison).
+  sellerName String  @map("seller_name")
+  shopName   String? @map("shop_name")
+  phone      String?
+
+  // Émetteur du lien (traçabilité).
+  createdById String? @map("created_by_id")
+
+  // Preuve d'acceptation.
+  signedName        String?   @map("signed_name")
+  signedAt          DateTime? @map("signed_at")
+  acceptedIp        String?   @map("accepted_ip")
+  acceptedUserAgent String?   @map("accepted_user_agent")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("vendor_contracts")
+  @@index([vendorId], name: "idx_vendor_contracts_vendor")
+  @@index([status], name: "idx_vendor_contracts_status")
 }
 
 model DataDeletionRequest {

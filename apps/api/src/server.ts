@@ -25,6 +25,7 @@ import { liaisonRoutes } from './modules/liaison/liaison.routes.js'
 import { enterpriseRoutes } from './modules/enterprise/enterprise.routes.js'
 import { driverRoutes } from './modules/driver/driver.routes.js'
 import { returnRoutes } from './modules/returns/return.routes.js'
+import { vendorContractRoutes } from './modules/vendorContract/vendorContract.routes.js'
 import multipart from '@fastify/multipart'
 import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled } from './modules/queue/worker.js'
 
@@ -74,6 +75,7 @@ export function buildApp() {
   fastify.register(enterpriseRoutes, { prefix: '/api/v1/enterprises' })
   fastify.register(driverRoutes, { prefix: '/api/v1/driver' })
   fastify.register(returnRoutes, { prefix: '/api/v1' })
+  fastify.register(vendorContractRoutes, { prefix: '/api/v1/vendor-contracts' })
 
   return fastify
 }

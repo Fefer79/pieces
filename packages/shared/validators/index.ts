@@ -29,6 +29,12 @@ export { createSellerReviewSchema, createDeliveryReviewSchema, openDisputeSchema
 export { updatePreferencesSchema, sendNotificationSchema } from './notification'
 export { liaisonCreateVendorSchema, liaisonUpdateVendorSchema, liaisonCreatePartSchema, liaisonUpdatePartSchema } from './liaison'
 export {
+  createVendorContractSchema,
+  vendorContractTokenParamsSchema,
+  acceptVendorContractSchema,
+} from './vendorContract'
+export type { CreateVendorContractInput, AcceptVendorContractInput } from './vendorContract'
+export {
   driverStatusSchema,
   createDriverSchema,
   updateDriverSchema,
