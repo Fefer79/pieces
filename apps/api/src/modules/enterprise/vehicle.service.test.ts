@@ -11,9 +11,13 @@ const vehicleFindMany = vi.fn()
 const vehicleFindFirst = vi.fn()
 const vehicleCreate = vi.fn()
 const vehicleCreateMany = vi.fn()
+const vehicleCreateManyAndReturn = vi.fn()
 const vehicleUpdate = vi.fn()
 const vehicleDelete = vi.fn()
 const enterpriseMemberFindUnique = vi.fn()
+const driverFindMany = vi.fn()
+const driverAssignmentUpdateMany = vi.fn()
+const driverAssignmentCreate = vi.fn()
 const orderFindMany = vi.fn()
 const orderGroupBy = vi.fn()
 
@@ -24,8 +28,16 @@ vi.mock('../../lib/prisma.js', () => ({
       findFirst: (...a: unknown[]) => vehicleFindFirst(...a),
       create: (...a: unknown[]) => vehicleCreate(...a),
       createMany: (...a: unknown[]) => vehicleCreateMany(...a),
+      createManyAndReturn: (...a: unknown[]) => vehicleCreateManyAndReturn(...a),
       update: (...a: unknown[]) => vehicleUpdate(...a),
       delete: (...a: unknown[]) => vehicleDelete(...a),
+    },
+    driver: {
+      findMany: (...a: unknown[]) => driverFindMany(...a),
+    },
+    driverAssignment: {
+      updateMany: (...a: unknown[]) => driverAssignmentUpdateMany(...a),
+      create: (...a: unknown[]) => driverAssignmentCreate(...a),
     },
     order: {
       findMany: (...a: unknown[]) => orderFindMany(...a),
@@ -333,6 +345,58 @@ describe('enterprise/vehicle.service', () => {
       await expect(importVehiclesFromXlsx('e1', 'u1', buf)).rejects.toMatchObject({
         statusCode: 400, code: 'IMPORT_HEADER_INVALID',
       })
+    })
+  })
+
+  describe('driver assignment via the « Chauffeur attitré » column', () => {
+    function csvOf(...lines: string[]) { return lines.join('\n') }
+
+    it('assigns vehicles to matching drivers (case-insensitive)', async () => {
+      vehicleCreateManyAndReturn.mockResolvedValueOnce([{ id: 'v1' }, { id: 'v2' }])
+      driverFindMany.mockResolvedValueOnce([
+        { id: 'd1', name: 'Koffi Yao' },
+        { id: 'd2', name: 'Awa Traoré' },
+      ])
+      const csv = csvOf(
+        'marque,modele,annee,chauffeur',
+        'Toyota,Hilux,2018,koffi yao',
+        'Renault,Master,2020,Awa Traoré',
+      )
+
+      const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+      expect(result.created).toBe(2)
+      expect(result.assigned).toBe(2)
+      expect(result.errors).toEqual([])
+      expect(vehicleCreateMany).not.toHaveBeenCalled()
+      expect(driverAssignmentCreate).toHaveBeenCalledWith({ data: { driverId: 'd1', vehicleId: 'v1' } })
+      expect(driverAssignmentCreate).toHaveBeenCalledWith({ data: { driverId: 'd2', vehicleId: 'v2' } })
+      // L'affectation active précédente est clôturée d'abord.
+      expect(driverAssignmentUpdateMany).toHaveBeenCalledTimes(2)
+    })
+
+    it('reports an unknown driver name but still creates the vehicle', async () => {
+      vehicleCreateManyAndReturn.mockResolvedValueOnce([{ id: 'v1' }])
+      driverFindMany.mockResolvedValueOnce([{ id: 'd1', name: 'Koffi Yao' }])
+      const csv = csvOf('marque,modele,annee,chauffeur', 'Toyota,Hilux,2018,Inconnu')
+
+      const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+      expect(result.created).toBe(1)
+      expect(result.assigned).toBe(0)
+      expect(result.errors[0]!.message).toMatch(/chauffeur introuvable/)
+      expect(driverAssignmentCreate).not.toHaveBeenCalled()
+    })
+
+    it('uses bulk createMany when no driver column is filled', async () => {
+      vehicleCreateMany.mockResolvedValueOnce({ count: 1 })
+      const csv = csvOf('marque,modele,annee,chauffeur', 'Toyota,Hilux,2018,')
+
+      const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+      expect(result.created).toBe(1)
+      expect(vehicleCreateManyAndReturn).not.toHaveBeenCalled()
+      expect(driverFindMany).not.toHaveBeenCalled()
     })
   })
 })

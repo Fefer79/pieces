@@ -309,6 +309,15 @@ const COLUMN_ALIASES: Record<string, keyof VehicleInput> = {
   photo_url: 'photoUrl',
 }
 
+// En-têtes (normalisés) désignant le chauffeur attitré du véhicule.
+const DRIVER_NAME_HEADERS = new Set([
+  'chauffeur attitré',
+  'chauffeur attribué',
+  'chauffeur',
+  'conducteur',
+  'driver',
+])
+
 const VALID_USAGE: VehicleUsageType[] = [
   'TRANSPORT',
   'CHANTIER',
@@ -320,6 +329,8 @@ const VALID_USAGE: VehicleUsageType[] = [
 type ImportError = { line: number; message: string }
 type ImportResult = {
   created: number
+  // Nombre d'affectations chauffeur↔véhicule créées via la colonne « Chauffeur attitré ».
+  assigned?: number
   errors: ImportError[]
 }
 
@@ -352,9 +363,11 @@ async function importVehicleRows(
   if (!headerRow) {
     throw new AppError('IMPORT_EMPTY', 400, { message: emptyMessage })
   }
-  const mapping: (keyof VehicleInput | null)[] = headerRow.map(
-    (col) => COLUMN_ALIASES[normalizeHeader(col)] ?? null,
-  )
+  const mapping: (keyof VehicleInput | 'driverName' | null)[] = headerRow.map((col) => {
+    const norm = normalizeHeader(col)
+    if (DRIVER_NAME_HEADERS.has(norm)) return 'driverName'
+    return COLUMN_ALIASES[norm] ?? null
+  })
 
   if (!mapping.includes('brand') || !mapping.includes('model') || !mapping.includes('year')) {
     throw new AppError('IMPORT_HEADER_INVALID', 400, {
@@ -363,7 +376,7 @@ async function importVehicleRows(
   }
 
   const errors: ImportError[] = []
-  const valid: VehicleInput[] = []
+  const valid: { input: VehicleInput; driverName?: string; line: number }[] = []
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i]
@@ -374,7 +387,7 @@ async function importVehicleRows(
       if (key) obj[key] = (row[c] ?? '').trim()
     }
     const parsed = parseRow(obj, i + 1, errors)
-    if (parsed) valid.push(parsed)
+    if (parsed) valid.push({ input: parsed, driverName: obj.driverName || undefined, line: i + 1 })
   }
 
   if (valid.length === 0) {
@@ -382,15 +395,86 @@ async function importVehicleRows(
   }
 
   const now = new Date()
-  await prisma.vehicle.createMany({
-    data: valid.map((v) => ({
-      enterpriseId,
-      ...v,
-      mileageUpdatedAt: v.mileage != null ? now : null,
-    })),
-  })
+  const data = valid.map((v) => ({
+    enterpriseId,
+    ...v.input,
+    mileageUpdatedAt: v.input.mileage != null ? now : null,
+  }))
 
-  return { created: valid.length, errors }
+  // Sans colonne chauffeur : insertion en masse, pas besoin des IDs créés.
+  if (valid.every((v) => !v.driverName)) {
+    await prisma.vehicle.createMany({ data })
+    return { created: valid.length, errors }
+  }
+
+  // Avec affectations : on récupère les IDs (createManyAndReturn préserve
+  // l'ordre d'insertion sur Postgres) pour lier chaque véhicule à son chauffeur.
+  const created = await prisma.vehicle.createManyAndReturn({ data, select: { id: true } })
+  const links: { vehicleId: string; driverName?: string; line: number }[] = []
+  for (const [idx, v] of valid.entries()) {
+    const row = created[idx]
+    if (row) links.push({ vehicleId: row.id, driverName: v.driverName, line: v.line })
+  }
+  const assigned = await assignDriversToVehicles(enterpriseId, links, errors)
+
+  return { created: valid.length, assigned, errors }
+}
+
+/**
+ * Lie chaque véhicule au chauffeur nommé (résolution par nom, insensible à la
+ * casse). Renvoie le nombre d'affectations créées ; pousse une erreur par ligne
+ * pour les noms introuvables, ambigus ou un chauffeur déjà affecté dans l'import.
+ */
+async function assignDriversToVehicles(
+  enterpriseId: string,
+  rows: { vehicleId: string; driverName?: string; line: number }[],
+  errors: ImportError[],
+): Promise<number> {
+  const toAssign = rows.filter((r) => r.driverName)
+  if (toAssign.length === 0) return 0
+
+  const drivers = await prisma.driver.findMany({
+    where: { enterpriseId },
+    select: { id: true, name: true },
+  })
+  const byName = new Map<string, { id: string; name: string }[]>()
+  for (const d of drivers) {
+    const key = d.name.trim().toLowerCase()
+    const list = byName.get(key) ?? []
+    list.push(d)
+    byName.set(key, list)
+  }
+
+  const usedDrivers = new Set<string>()
+  let assigned = 0
+  for (const r of toAssign) {
+    const name = r.driverName
+    if (!name) continue
+    const matches = byName.get(name.trim().toLowerCase()) ?? []
+    const only = matches[0]
+    if (!only) {
+      errors.push({ line: r.line, message: `chauffeur introuvable : ${name}` })
+      continue
+    }
+    if (matches.length > 1) {
+      errors.push({ line: r.line, message: `chauffeur ambigu (plusieurs « ${name} »)` })
+      continue
+    }
+    const driverId = only.id
+    if (usedDrivers.has(driverId)) {
+      errors.push({ line: r.line, message: `chauffeur « ${name} » déjà affecté dans ce fichier` })
+      continue
+    }
+    usedDrivers.add(driverId)
+    // Clôt l'affectation active courante puis ouvre la nouvelle.
+    await prisma.driverAssignment.updateMany({
+      where: { driverId, endedAt: null },
+      data: { endedAt: new Date() },
+    })
+    await prisma.driverAssignment.create({ data: { driverId, vehicleId: r.vehicleId } })
+    assigned++
+  }
+  return assigned
 }
 
 

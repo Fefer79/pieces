@@ -7,6 +7,7 @@ import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 
 type ImportResult = {
   created: number
+  assigned?: number
   errors: { line: number; message: string }[]
 }
 
@@ -68,13 +69,18 @@ export default function VehicleImportPage() {
           <code className="rounded-sm bg-surface px-1.5 py-0.5">motorisation</code>,{' '}
           <code className="rounded-sm bg-surface px-1.5 py-0.5">kilometrage</code>,{' '}
           <code className="rounded-sm bg-surface px-1.5 py-0.5">usage</code> (TRANSPORT|CHANTIER|LIVRAISON|DIRECTION|AUTRE),{' '}
-          <code className="rounded-sm bg-surface px-1.5 py-0.5">groupe</code>.
+          <code className="rounded-sm bg-surface px-1.5 py-0.5">groupe</code>,{' '}
+          <code className="rounded-sm bg-surface px-1.5 py-0.5">chauffeur</code>.
         </p>
         <pre className="mt-3 overflow-x-auto rounded-sm bg-surface p-3 text-xs text-ink">
-{`marque,modele,annee,immatriculation,kilometrage,usage,groupe
-Toyota,Hilux,2018,AB-1234-CI,85000,CHANTIER,Yopougon
-Renault,Master,2020,CD-5678-CI,45000,LIVRAISON,Treichville`}
+{`marque,modele,annee,immatriculation,kilometrage,usage,groupe,chauffeur
+Toyota,Hilux,2018,AB-1234-CI,85000,CHANTIER,Yopougon,Koffi Yao
+Renault,Master,2020,CD-5678-CI,45000,LIVRAISON,Treichville,Awa Traoré`}
         </pre>
+        <p className="mt-3 text-xs text-muted">
+          La colonne <strong>chauffeur</strong> affecte le véhicule au chauffeur portant ce nom.
+          Importez d'abord vos chauffeurs pour que l'affectation fonctionne.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 rounded-md border border-border bg-card p-5">
@@ -98,7 +104,10 @@ Renault,Master,2020,CD-5678-CI,45000,LIVRAISON,Treichville`}
         <div className="mt-6 rounded-md border border-border bg-card p-5">
           <h2 className="font-display text-lg text-ink">Résultat</h2>
           <p className="mt-2 text-sm text-ink">
-            <span className="font-semibold tabular">{result.created}</span> véhicule{result.created > 1 ? 's' : ''} créé{result.created > 1 ? 's' : ''}.
+            <span className="font-semibold tabular">{result.created}</span> véhicule{result.created > 1 ? 's' : ''} créé{result.created > 1 ? 's' : ''}
+            {result.assigned ? (
+              <> · <span className="font-semibold tabular">{result.assigned}</span> affecté{result.assigned > 1 ? 's' : ''} à un chauffeur</>
+            ) : null}.
           </p>
           {result.errors.length > 0 && (
             <div className="mt-4">
