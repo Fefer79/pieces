@@ -66,6 +66,7 @@ import {
   updateMileage,
   deleteEnterpriseVehicle,
   importVehiclesFromCsv,
+  importVehiclesFromXlsx,
   getVehicleAnalytics,
 } from './vehicle.service.js'
 import {
@@ -705,7 +706,7 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
       preHandler: [requireAuth],
       schema: {
         tags: ['Enterprise'],
-        description: 'Import CSV de véhicules (multipart/form-data, champ "file")',
+        description: 'Import CSV ou Excel (.xlsx) de véhicules (multipart/form-data, champ "file")',
         security: [{ BearerAuth: [] }],
         consumes: ['multipart/form-data'],
       },
@@ -715,12 +716,16 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
       const file = await request.file()
       if (!file) {
         return reply.status(400).send({
-          error: { code: 'FILE_REQUIRED', message: 'Fichier CSV requis', statusCode: 400 },
+          error: { code: 'FILE_REQUIRED', message: 'Fichier CSV ou Excel requis', statusCode: 400 },
         })
       }
       const buf = await file.toBuffer()
-      const csv = buf.toString('utf8')
-      const result = await importVehiclesFromCsv(enterpriseId, request.user.id, csv)
+      const isXlsx =
+        (file.filename?.toLowerCase().endsWith('.xlsx') ?? false) ||
+        file.mimetype.includes('spreadsheetml')
+      const result = isXlsx
+        ? await importVehiclesFromXlsx(enterpriseId, request.user.id, buf)
+        : await importVehiclesFromCsv(enterpriseId, request.user.id, buf.toString('utf8'))
       return reply.status(result.created > 0 ? 201 : 200).send({ data: result })
     },
   )

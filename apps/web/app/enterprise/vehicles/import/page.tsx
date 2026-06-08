@@ -40,11 +40,25 @@ export default function VehicleImportPage() {
       <div className="mb-6">
         <Link href="/enterprise/vehicles" className="text-sm text-muted hover:underline">← Véhicules</Link>
         <h1 className="mt-2 font-display text-3xl text-ink">Importer des véhicules</h1>
-        <p className="mt-1 text-sm text-muted">Téléversez un fichier CSV pour créer plusieurs véhicules d'un coup.</p>
+        <p className="mt-1 text-sm text-muted">Téléversez un fichier Excel (.xlsx) ou CSV pour créer plusieurs véhicules d'un coup.</p>
+      </div>
+
+      <div className="mb-6 rounded-md border border-ink-2/20 bg-ink-2/5 p-5">
+        <h2 className="mb-1 font-display text-lg text-ink">Modèle Excel</h2>
+        <p className="text-sm text-muted">
+          Téléchargez la fiche d'onboarding, remplissez l'onglet « Véhicules », puis importez-la ici.
+        </p>
+        <a
+          href="/modele-onboarding-flotte.xlsx"
+          download
+          className="mt-3 inline-block rounded-md border border-ink-2 px-4 py-2 text-sm font-semibold text-ink-2 hover:bg-ink-2 hover:text-white"
+        >
+          ↓ Télécharger le modèle (.xlsx)
+        </a>
       </div>
 
       <div className="mb-6 rounded-md border border-border bg-card p-5">
-        <h2 className="mb-2 font-display text-lg text-ink">Format attendu</h2>
+        <h2 className="mb-2 font-display text-lg text-ink">Format CSV (alternative)</h2>
         <p className="text-sm text-muted">
           Première ligne : en-têtes. Colonnes obligatoires : <code className="rounded-sm bg-surface px-1.5 py-0.5">marque</code>,{' '}
           <code className="rounded-sm bg-surface px-1.5 py-0.5">modele</code>,{' '}
@@ -66,7 +80,7 @@ Renault,Master,2020,CD-5678-CI,45000,LIVRAISON,Treichville`}
       <form onSubmit={handleSubmit} className="space-y-4 rounded-md border border-border bg-card p-5">
         <input
           type="file"
-          accept=".csv,text/csv"
+          accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           className="block w-full text-sm text-ink file:mr-4 file:rounded-md file:border-0 file:bg-ink-2 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
         />

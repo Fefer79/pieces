@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import ExcelJS from 'exceljs'
 
 vi.stubEnv('DATABASE_URL', 'postgresql://localhost:5432/pieces')
 vi.stubEnv('SUPABASE_URL', 'https://test.supabase.co')
@@ -41,6 +42,7 @@ const {
   createEnterpriseVehicle,
   updateMileage,
   importVehiclesFromCsv,
+  importVehiclesFromXlsx,
   getVehicleAnalytics,
 } = await import('./vehicle.service.js')
 
@@ -162,14 +164,14 @@ describe('enterprise/vehicle.service', () => {
 
     it('rejects an empty file', async () => {
       await expect(importVehiclesFromCsv('e1', 'u1', '')).rejects.toMatchObject({
-        statusCode: 400, code: 'CSV_EMPTY',
+        statusCode: 400, code: 'IMPORT_EMPTY',
       })
     })
 
     it('rejects a header missing required columns', async () => {
       const csv = csvOf('marque,modele', 'Toyota,Hilux')
       await expect(importVehiclesFromCsv('e1', 'u1', csv)).rejects.toMatchObject({
-        statusCode: 400, code: 'CSV_HEADER_INVALID',
+        statusCode: 400, code: 'IMPORT_HEADER_INVALID',
       })
     })
 
@@ -270,6 +272,66 @@ describe('enterprise/vehicle.service', () => {
       await expect(importVehiclesFromCsv('e1', 'u1', csv)).rejects.toMatchObject({
         statusCode: 403,
         code: 'ENTERPRISE_INSUFFICIENT_ROLE',
+      })
+    })
+  })
+
+  describe('importVehiclesFromXlsx', () => {
+    // Builds an .xlsx buffer; `sheets` maps sheet name → rows (incl. header).
+    async function xlsxOf(sheets: Record<string, string[][]>): Promise<Buffer> {
+      const wb = new ExcelJS.Workbook()
+      for (const [name, rows] of Object.entries(sheets)) {
+        const ws = wb.addWorksheet(name)
+        rows.forEach((r) => ws.addRow(r))
+      }
+      return Buffer.from(await wb.xlsx.writeBuffer())
+    }
+
+    it('imports the « Véhicules » sheet with template-style headers', async () => {
+      vehicleCreateMany.mockResolvedValueOnce({ count: 2 })
+      const buf = await xlsxOf({
+        'Mode d\'emploi': [['ignorer']],
+        Entreprise: [['Nom', 'Transports Yopougon']],
+        Véhicules: [
+          ['Marque *', 'Modèle *', 'Année *', 'Immatriculation', "Type d'usage", 'Groupe / Site'],
+          ['Toyota', 'Hilux', '2018', 'AB-1234-CI', 'CHANTIER', 'Yopougon'],
+          ['Renault', 'Master', '2020', 'CD-5678-CI', 'LIVRAISON', 'Treichville'],
+        ],
+      })
+
+      const result = await importVehiclesFromXlsx('e1', 'u1', buf)
+
+      expect(result.created).toBe(2)
+      expect(result.errors).toEqual([])
+      const callArg = vehicleCreateMany.mock.calls[0]![0] as {
+        data: Array<{ brand: string; usageType: string; groupName: string }>
+      }
+      expect(callArg.data[0]).toMatchObject({
+        brand: 'Toyota', usageType: 'CHANTIER', groupName: 'Yopougon',
+      })
+    })
+
+    it('reports row errors and skips invalid rows', async () => {
+      vehicleCreateMany.mockResolvedValueOnce({ count: 1 })
+      const buf = await xlsxOf({
+        Véhicules: [
+          ['Marque *', 'Modèle *', 'Année *', "Type d'usage"],
+          ['Toyota', 'Hilux', '2018', 'CHANTIER'],   // row 2 — OK
+          ['Peugeot', 'Partner', '2019', 'DRIFT'],   // row 3 — bad usage enum
+        ],
+      })
+
+      const result = await importVehiclesFromXlsx('e1', 'u1', buf)
+
+      expect(result.created).toBe(1)
+      expect(result.errors).toHaveLength(1)
+      expect(result.errors[0]!.line).toBe(3)
+    })
+
+    it('rejects a sheet missing required columns', async () => {
+      const buf = await xlsxOf({ Véhicules: [['Marque *', 'Modèle *'], ['Toyota', 'Hilux']] })
+      await expect(importVehiclesFromXlsx('e1', 'u1', buf)).rejects.toMatchObject({
+        statusCode: 400, code: 'IMPORT_HEADER_INVALID',
       })
     })
   })

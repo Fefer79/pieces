@@ -4,6 +4,7 @@ Champs alignés sur le schéma Prisma (Enterprise / Vehicle / Driver)."""
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.comments import Comment
 from openpyxl.utils import get_column_letter
 
 NAVY = "00113A"
@@ -62,6 +63,9 @@ for tag, txt in steps:
     r += 1
 
 def style_header(ws, headers, hints, row=1):
+    """En-têtes en ligne 1 ; les indices de saisie sont des commentaires de
+    cellule (survol) pour que la 1re ligne de données reste la ligne 2 —
+    importable sans ligne parasite."""
     for c, (h, hint) in enumerate(zip(headers, hints), start=1):
         cell = ws.cell(row=row, column=c, value=h)
         cell.fill = navy_fill
@@ -69,11 +73,9 @@ def style_header(ws, headers, hints, row=1):
         cell.alignment = Alignment(wrap_text=True, vertical="center", horizontal="center")
         cell.border = border
         if hint:
-            hc = ws.cell(row=row + 1, column=c, value=hint)
-            hc.font = hint_font
-            hc.fill = light_fill
-            hc.alignment = wrap
-            hc.border = border
+            cm = Comment(hint, "Pièces")
+            cm.width, cm.height = 200, 60
+            cell.comment = cm
     ws.row_dimensions[row].height = 30
 
 # ---------------------------------------------------------------- Entreprise
@@ -130,17 +132,17 @@ style_header(wv, veh_headers, veh_hints)
 widths = [16, 16, 8, 16, 20, 16, 12, 18, 18, 20]
 for i, w in enumerate(widths, start=1):
     wv.column_dimensions[get_column_letter(i)].width = w
-# borders for entry rows
-for row in range(3, 60):
+# borders for entry rows (data starts row 2)
+for row in range(2, 60):
     for c in range(1, len(veh_headers) + 1):
         wv.cell(row=row, column=c).border = border
 dv_usage = DataValidation(type="list",
     formula1='"TRANSPORT,CHANTIER,LIVRAISON,DIRECTION,AUTRE"', allow_blank=True)
 wv.add_data_validation(dv_usage)
-dv_usage.add(f"H3:H59")
+dv_usage.add("H2:H59")
 dv_year = DataValidation(type="whole", operator="between", formula1="1980", formula2="2030", allow_blank=True)
-wv.add_data_validation(dv_year); dv_year.add("C3:C59")
-wv.freeze_panes = "A3"
+wv.add_data_validation(dv_year); dv_year.add("C2:C59")
+wv.freeze_panes = "A2"
 
 # ---------------------------------------------------------------- Chauffeurs
 wd = wb.create_sheet("Chauffeurs")
@@ -150,11 +152,16 @@ dr_hints = ["Prénom Nom", "+2250700000000", "", "B, C, D…", "JJ/MM/AAAA", "re
 style_header(wd, dr_headers, dr_hints)
 for i, w in enumerate([24, 20, 18, 16, 16, 34], start=1):
     wd.column_dimensions[get_column_letter(i)].width = w
-for row in range(3, 40):
+for row in range(2, 40):
     for c in range(1, len(dr_headers) + 1):
         wd.cell(row=row, column=c).border = border
-wd.freeze_panes = "A3"
+wd.freeze_panes = "A2"
 
-out = "/Users/mac/dev/pieces/docs/onboarding/modele-onboarding-flotte.xlsx"
-wb.save(out)
-print("saved", out)
+outs = [
+    "/Users/mac/dev/pieces/docs/onboarding/modele-onboarding-flotte.xlsx",
+    # Servi en téléchargement depuis la page d'import du tableau de bord.
+    "/Users/mac/dev/pieces/apps/web/public/modele-onboarding-flotte.xlsx",
+]
+for out in outs:
+    wb.save(out)
+    print("saved", out)

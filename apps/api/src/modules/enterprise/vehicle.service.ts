@@ -1,3 +1,4 @@
+import ExcelJS from 'exceljs'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
@@ -298,9 +299,12 @@ const COLUMN_ALIASES: Record<string, keyof VehicleInput> = {
   mileage: 'mileage',
   usage: 'usageType',
   usage_type: 'usageType',
+  "type d'usage": 'usageType',
+  "type d usage": 'usageType',
   groupe: 'groupName',
   group: 'groupName',
   group_name: 'groupName',
+  site: 'groupName',
   photo: 'photoUrl',
   photo_url: 'photoUrl',
 }
@@ -319,24 +323,49 @@ type ImportResult = {
   errors: ImportError[]
 }
 
+/** Normalise un en-tête : minuscule, sans « * », sans « (…) », partie avant « / ». */
+function normalizeHeader(raw: string): string {
+  const base = raw.toLowerCase().replace(/\*/g, '').replace(/\([^)]*\)/g, '')
+  const slash = base.indexOf('/')
+  return (slash === -1 ? base : base.slice(0, slash)).trim()
+}
+
 export async function importVehiclesFromCsv(
   enterpriseId: string,
   userId: string,
   csv: string,
 ): Promise<ImportResult> {
+  return importVehicleRows(enterpriseId, userId, parseCsv(csv), 'Fichier CSV vide')
+}
+
+export async function importVehiclesFromXlsx(
+  enterpriseId: string,
+  userId: string,
+  buffer: Buffer,
+): Promise<ImportResult> {
+  const rows = await extractXlsxRows(buffer)
+  return importVehicleRows(enterpriseId, userId, rows, 'Feuille « Véhicules » vide')
+}
+
+async function importVehicleRows(
+  enterpriseId: string,
+  userId: string,
+  rows: string[][],
+  emptyMessage: string,
+): Promise<ImportResult> {
   await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
 
-  const rows = parseCsv(csv)
   const [headerRow] = rows
   if (!headerRow) {
-    throw new AppError('CSV_EMPTY', 400, { message: 'Fichier CSV vide' })
+    throw new AppError('IMPORT_EMPTY', 400, { message: emptyMessage })
   }
-  const header = headerRow.map((h) => h.trim().toLowerCase())
-  const mapping: (keyof VehicleInput | null)[] = header.map((col) => COLUMN_ALIASES[col] ?? null)
+  const mapping: (keyof VehicleInput | null)[] = headerRow.map(
+    (col) => COLUMN_ALIASES[normalizeHeader(col)] ?? null,
+  )
 
   if (!mapping.includes('brand') || !mapping.includes('model') || !mapping.includes('year')) {
-    throw new AppError('CSV_HEADER_INVALID', 400, {
-      message: 'Colonnes obligatoires manquantes : marque, modele, annee',
+    throw new AppError('IMPORT_HEADER_INVALID', 400, {
+      message: 'Colonnes obligatoires manquantes : marque, modèle, année',
     })
   }
 
@@ -369,6 +398,34 @@ export async function importVehiclesFromCsv(
   })
 
   return { created: valid.length, errors }
+}
+
+/** Extrait les lignes de la feuille « Véhicules » (ou la 1re feuille à défaut). */
+async function extractXlsxRows(buffer: Buffer): Promise<string[][]> {
+  const wb = new ExcelJS.Workbook()
+  try {
+    // exceljs types lag behind @types/node's generic Buffer — cast is safe.
+    await wb.xlsx.load(buffer as unknown as Parameters<typeof wb.xlsx.load>[0])
+  } catch {
+    throw new AppError('IMPORT_XLSX_INVALID', 400, { message: 'Fichier Excel illisible' })
+  }
+  const sheet =
+    wb.worksheets.find((s) => normalizeHeader(s.name).startsWith('véhicule')) ??
+    wb.worksheets.find((s) => normalizeHeader(s.name).startsWith('vehicule')) ??
+    wb.worksheets[0]
+  if (!sheet) {
+    throw new AppError('IMPORT_EMPTY', 400, { message: 'Classeur Excel vide' })
+  }
+  const rows: string[][] = []
+  sheet.eachRow({ includeEmpty: false }, (row) => {
+    const cells: string[] = []
+    const count = row.cellCount
+    for (let c = 1; c <= count; c++) {
+      cells.push(String(row.getCell(c).text ?? '').trim())
+    }
+    rows.push(cells)
+  })
+  return rows
 }
 
 function parseRow(
