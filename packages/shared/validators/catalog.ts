@@ -15,12 +15,15 @@ export const catalogItemParamsSchema = z.object({
 export const partConditionSchema = z.enum(['NEW', 'USED', 'REFURBISHED'])
 export const partSourceSchema = z.enum(['OEM', 'AFTERMARKET', 'COMPATIBLE'])
 
-export const MIN_COMMISSION_FCFA = 1000
-export const MIN_COMMISSION_RATE = 0.05
+// Plus de plancher de commission : un vendeur peut être référencé à 0 %
+// (stratégie d'acquisition de données — Pièces peut ajouter sa propre marge via
+// `platformMarkup`). Constantes conservées (= 0) pour compatibilité ascendante.
+export const MIN_COMMISSION_FCFA = 0
+export const MIN_COMMISSION_RATE = 0
 
-export function minCommissionFor(price: number): number {
-  if (!price || price <= 0) return MIN_COMMISSION_FCFA
-  return Math.max(MIN_COMMISSION_FCFA, Math.round(price * MIN_COMMISSION_RATE))
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function minCommissionFor(_price: number): number {
+  return 0
 }
 
 export const MAX_PHOTOS_PER_ITEM = 3
@@ -54,6 +57,8 @@ export const adminUpdateCatalogItemSchema = z
     partSource: partSourceSchema.nullable().optional(),
     status: catalogItemStatusSchema.optional(),
     inStock: z.boolean().optional(),
+    // Marge Pièces ajoutée au prix vendeur (invisible côté vendeur). 0 = aucune.
+    platformMarkup: z.number().int().min(0).nullable().optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: 'Aucun champ à modifier' })
 

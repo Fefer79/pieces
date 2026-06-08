@@ -59,6 +59,7 @@ async function buildOrderItems(qtyById: Map<string, number>) {
       partSource: true,
       vendorId: true,
       commissionAmount: true,
+      platformMarkup: true,
       vendor: { select: { id: true, shopName: true, status: true } },
     },
   })
@@ -67,8 +68,13 @@ async function buildOrderItems(qtyById: Map<string, number>) {
     throw new AppError('ORDER_NO_VALID_ITEMS', 400, { message: 'Aucun article valide trouvé' })
   }
 
+  // Prix payé par l'acheteur = prix vendeur + marge Pièces (markup). La marge est
+  // figée dans le snapshot pour le calcul du reversement vendeur.
+  const effectivePrice = (item: { price: number | null; platformMarkup: number }) =>
+    (item.price ?? 0) + (item.platformMarkup ?? 0)
+
   const totalAmount = catalogItems.reduce(
-    (sum, item) => sum + (item.price ?? 0) * (qtyById.get(item.id) ?? 1),
+    (sum, item) => sum + effectivePrice(item) * (qtyById.get(item.id) ?? 1),
     0,
   )
 
@@ -78,11 +84,12 @@ async function buildOrderItems(qtyById: Map<string, number>) {
     vendorShopName: item.vendor.shopName,
     name: item.name ?? 'Pièce',
     category: item.category,
-    priceSnapshot: item.price ?? 0,
+    priceSnapshot: effectivePrice(item),
     quantity: qtyById.get(item.id) ?? 1,
     condition: item.condition,
     partSource: item.partSource,
     commissionAmount: item.commissionAmount,
+    platformMarkup: item.platformMarkup ?? 0,
     imageThumbUrl: item.imageThumbUrl,
   }))
 

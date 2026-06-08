@@ -32,6 +32,7 @@ export {
   createVendorContractSchema,
   vendorContractTokenParamsSchema,
   acceptVendorContractSchema,
+  commissionModelSchema,
 } from './vendorContract'
 export type { CreateVendorContractInput, AcceptVendorContractInput } from './vendorContract'
 export {

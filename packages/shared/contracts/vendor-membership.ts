@@ -1,5 +1,3 @@
-import { MIN_COMMISSION_FCFA, MIN_COMMISSION_RATE } from '../validators/catalog.js'
-
 /**
  * Source de vérité unique du contrat d'adhésion vendeur (CGU).
  * Consommé par la page d'acceptation web ET le générateur de PDF API,
@@ -8,13 +6,13 @@ import { MIN_COMMISSION_FCFA, MIN_COMMISSION_RATE } from '../validators/catalog.
  * Toute modification de fond DOIT incrémenter VENDOR_CONTRACT_VERSION :
  * la version est figée sur chaque acceptation (preuve de consentement).
  */
-export const VENDOR_CONTRACT_VERSION = '1.0'
+export const VENDOR_CONTRACT_VERSION = '1.1'
 
 /** Date d'entrée en vigueur de la présente version (affichée et figée). */
 export const VENDOR_CONTRACT_EFFECTIVE_DATE = '2026-06-08'
 
-const commissionPct = `${(MIN_COMMISSION_RATE * 100).toLocaleString('fr-FR')} %`
-const commissionFloor = `${MIN_COMMISSION_FCFA.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} FCFA`
+/** Mod\u00E8le de r\u00E9mun\u00E9ration choisi \u00E0 la g\u00E9n\u00E9ration du lien. */
+export type CommissionModel = 'COMMISSION' | 'REFERRAL'
 
 export interface ContractArticle {
   /** Numéro d'article (1-indexé). */
@@ -41,6 +39,31 @@ export interface VendorContract {
   articles: ContractArticle[]
   /** Mentions de clôture (droit applicable, etc.). */
   closing: string[]
+}
+
+// Article 4 — modèle COMMISSION : le Vendeur fixe librement sa commission (0 %
+// possible depuis la suppression du plancher). Pièces se rémunère par la commission.
+const ARTICLE_4_COMMISSION: ContractArticle = {
+  number: 4,
+  title: 'Prix et commission de la Plateforme',
+  paragraphs: [
+    'Le Vendeur fixe librement le prix de vente de ses pièces, exprimé en FCFA.',
+    'En contrepartie du service de mise en relation, d’encaissement sécurisé et de visibilité, Pièces perçoit une commission sur chaque pièce vendue via la Plateforme. Le montant de la commission est fixé librement par le Vendeur lors de la publication ; il peut être nul. Le Vendeur conserve le prix de vente diminué de cette commission.',
+    'La commission applicable est figée (« snapshot ») au moment de la création de la commande : une modification ultérieure du barème ou du prix n’affecte pas les commandes déjà passées.',
+  ],
+}
+
+// Article 4 — modèle REFERRAL (référencement 0 %) : aucune commission ; Pièces
+// se rémunère via sa propre marge ajoutée au prix affiché à l’acheteur, sans
+// incidence sur le montant reversé au Vendeur.
+const ARTICLE_4_REFERRAL: ContractArticle = {
+  number: 4,
+  title: 'Prix et référencement sans commission',
+  paragraphs: [
+    'Le Vendeur fixe librement le prix de vente de ses pièces, exprimé en FCFA. Ce prix correspond au montant qui lui est reversé après bonne fin de la vente.',
+    'Dans le cadre du présent référencement, Pièces ne prélève aucune commission sur les ventes du Vendeur (0 %). Le présent Contrat a pour objet de référencer l’offre du Vendeur et d’en assurer la visibilité sur la Plateforme.',
+    'Pièces se réserve la faculté d’ajouter sa propre marge au prix affiché à l’acheteur. Cette marge constitue la seule rémunération de Pièces sur ces ventes ; elle est sans incidence sur le montant reversé au Vendeur, qui demeure égal à son prix de vente.',
+  ],
 }
 
 export const VENDOR_CONTRACT: VendorContract = {
@@ -88,15 +111,7 @@ export const VENDOR_CONTRACT: VendorContract = {
         'Le Vendeur garantit qu’il détient les pièces qu’il met en vente, qu’elles sont licites et qu’elles ne proviennent ni de vol, ni de recel, ni de contrefaçon.',
       ],
     },
-    {
-      number: 4,
-      title: 'Prix et commission de la Plateforme',
-      paragraphs: [
-        'Le Vendeur fixe librement le prix de vente de ses pièces, exprimé en FCFA.',
-        `En contrepartie du service de mise en relation, d’encaissement sécurisé et de visibilité, Pièces perçoit une commission sur chaque pièce vendue via la Plateforme. Le montant de la commission est fixé par le Vendeur lors de la publication, sans pouvoir être inférieur au plancher de ${commissionPct} du prix de la pièce, avec un minimum de ${commissionFloor} par pièce.`,
-        'La commission applicable est figée (« snapshot ») au moment de la création de la commande : une modification ultérieure du barème ou du prix n’affecte pas les commandes déjà passées.',
-      ],
-    },
+    ARTICLE_4_COMMISSION,
     {
       number: 5,
       title: 'Paiement sécurisé (séquestre) et reversement',
@@ -180,4 +195,18 @@ export const VENDOR_CONTRACT: VendorContract = {
   closing: [
     'Fait pour valoir ce que de droit. L’acceptation électronique du présent Contrat est horodatée et conservée par Pièces à titre de preuve.',
   ],
+}
+
+/**
+ * Renvoie le contrat avec l’Article 4 correspondant au modèle de rémunération.
+ * `VENDOR_CONTRACT` (modèle COMMISSION) reste la valeur par défaut.
+ */
+export function getVendorContract(model: CommissionModel = 'COMMISSION'): VendorContract {
+  if (model === 'REFERRAL') {
+    return {
+      ...VENDOR_CONTRACT,
+      articles: VENDOR_CONTRACT.articles.map((a) => (a.number === 4 ? ARTICLE_4_REFERRAL : a)),
+    }
+  }
+  return VENDOR_CONTRACT
 }

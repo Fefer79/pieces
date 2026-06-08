@@ -154,6 +154,7 @@ interface AdminCatalogItemPatch {
   partSource?: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
   inStock?: boolean
+  platformMarkup?: number | null
 }
 
 export async function updateAdminCatalogItem(id: string, patch: AdminCatalogItemPatch) {
@@ -174,6 +175,7 @@ export async function updateAdminCatalogItem(id: string, patch: AdminCatalogItem
     data.price = patch.price
     data.priceUpdatedAt = new Date()
   }
+  if (patch.platformMarkup !== undefined) data.platformMarkup = patch.platformMarkup ?? 0
 
   await prisma.catalogItem.update({ where: { id }, data })
   return getAdminCatalogItem(id)

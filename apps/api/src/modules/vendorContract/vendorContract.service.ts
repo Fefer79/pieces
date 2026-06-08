@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { VENDOR_CONTRACT, VENDOR_CONTRACT_VERSION } from 'shared/contracts'
+import { getVendorContract, VENDOR_CONTRACT_VERSION } from 'shared/contracts'
 import type { CreateVendorContractInput, AcceptVendorContractInput } from 'shared/validators'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
@@ -34,6 +34,7 @@ export async function createVendorContract(createdById: string, input: CreateVen
     data: {
       token,
       contractVersion: VENDOR_CONTRACT_VERSION,
+      commissionModel: input.commissionModel ?? 'COMMISSION',
       vendorId: input.vendorId ?? null,
       sellerName: input.sellerName,
       shopName: input.shopName ?? null,
@@ -44,6 +45,7 @@ export async function createVendorContract(createdById: string, input: CreateVen
       id: true,
       token: true,
       contractVersion: true,
+      commissionModel: true,
       status: true,
       sellerName: true,
       shopName: true,
@@ -65,6 +67,7 @@ export async function getVendorContractByToken(token: string) {
     select: {
       token: true,
       contractVersion: true,
+      commissionModel: true,
       status: true,
       sellerName: true,
       shopName: true,
@@ -81,7 +84,7 @@ export async function getVendorContractByToken(token: string) {
   return {
     ...contract,
     url: contractUrl(token),
-    content: VENDOR_CONTRACT,
+    content: getVendorContract(contract.commissionModel),
   }
 }
 

@@ -238,6 +238,12 @@ enum VendorContractStatus {
   REVOKED
 }
 
+// Modèle de rémunération du contrat : commission classique ou référencement 0 %.
+enum ContractCommissionModel {
+  COMMISSION
+  REFERRAL
+}
+
 // Contrat d'adhésion vendeur (CGU) envoyé par lien et signé électroniquement.
 // Un enregistrement par lien généré ; statut PENDING jusqu'à signature.
 model VendorContract {
@@ -245,6 +251,7 @@ model VendorContract {
   token           String               @unique
   contractVersion String               @map("contract_version")
   status          VendorContractStatus @default(PENDING)
+  commissionModel ContractCommissionModel @default(COMMISSION) @map("commission_model")
 
   // Vendeur existant (optionnel : un lien peut être envoyé à un prospect).
   vendorId String? @map("vendor_id")
@@ -315,6 +322,9 @@ model CatalogItem {
   priceAlertFlag       Boolean           @default(false) @map("price_alert_flag")
   commissionAmount     Int?              @map("commission_amount")
   commissionAcceptedAt DateTime?         @map("commission_accepted_at")
+  // Marge ajoutée par Pièces au prix vendeur (invisible côté vendeur). S'ajoute
+  // au prix payé par l'acheteur ; sert le modèle « référencement 0 % ».
+  platformMarkup       Int               @default(0) @map("platform_markup")
   externalSource       String?           @map("external_source")
   externalSourceId     String?           @map("external_source_id")
   externalSourceUrl    String?           @map("external_source_url")
@@ -833,6 +843,9 @@ model OrderItem {
   condition       PartCondition? // snapshot de la condition à la commande
   partSource      PartSource?    @map("part_source")
   commissionAmount Int?    @map("commission_amount")
+  // Snapshot de la marge Pièces (incluse dans priceSnapshot ; déduite du
+  // reversement vendeur : payout = priceSnapshot - platformMarkup - commission).
+  platformMarkup  Int      @default(0) @map("platform_markup")
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@map("order_items")

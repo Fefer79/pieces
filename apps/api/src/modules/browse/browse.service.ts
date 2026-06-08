@@ -184,6 +184,7 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
         oemReference: true,
         vehicleCompatibility: true,
         price: true,
+        platformMarkup: true,
         imageThumbUrl: true,
         imageMediumUrl: true,
         vendor: { select: { id: true, shopName: true } },
@@ -193,9 +194,18 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
   ])
 
   return {
-    items,
+    items: items.map(withMarkupPrice),
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   }
+}
+
+// Prix affiché à l'acheteur = prix vendeur + marge Pièces. La marge n'est pas
+// exposée séparément (repliée dans le prix), pour rester invisible au vendeur.
+function withMarkupPrice<T extends { price: number | null; platformMarkup: number }>(
+  item: T,
+): Omit<T, 'platformMarkup'> {
+  const { platformMarkup, ...rest } = item
+  return { ...rest, price: (rest.price ?? 0) + (platformMarkup ?? 0) }
 }
 
 export interface CompareOffer {
@@ -320,6 +330,7 @@ export async function compareParts(
       condition: true,
       partSource: true,
       price: true,
+      platformMarkup: true,
       warrantyMonths: true,
       inStock: true,
       imageThumbUrl: true,
@@ -348,7 +359,7 @@ export async function compareParts(
       vendorName: item.vendor.shopName,
       vendorRating: item.vendor.aggregateRating,
       vendorOrdersDelivered: item.vendor.ordersDelivered,
-      price: item.price,
+      price: item.price == null ? null : item.price + (item.platformMarkup ?? 0),
       condition: item.condition,
       partSource: item.partSource,
       warrantyMonths: item.warrantyMonths,
@@ -452,6 +463,7 @@ export async function searchParts(query: string, filters: { category?: string; p
         oemReference: true,
         vehicleCompatibility: true,
         price: true,
+        platformMarkup: true,
         imageThumbUrl: true,
         imageMediumUrl: true,
         vendor: { select: { id: true, shopName: true } },
@@ -462,7 +474,7 @@ export async function searchParts(query: string, filters: { category?: string; p
 
   return {
     query: correctedQuery,
-    items,
+    items: items.map(withMarkupPrice),
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   }
 }
@@ -518,6 +530,7 @@ export async function getPublicItemDetail(id: string) {
       condition: true,
       partSource: true,
       price: true,
+      platformMarkup: true,
       warrantyMonths: true,
       inStock: true,
       imageOriginalUrl: true,
@@ -549,5 +562,5 @@ export async function getPublicItemDetail(id: string) {
     throw new AppError('ITEM_NOT_FOUND', 404, { message: 'Pièce introuvable' })
   }
 
-  return item
+  return withMarkupPrice(item)
 }

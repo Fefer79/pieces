@@ -1,5 +1,5 @@
 import PDFDocument from 'pdfkit'
-import { VENDOR_CONTRACT, VENDOR_CONTRACT_EFFECTIVE_DATE } from 'shared/contracts'
+import { getVendorContract, VENDOR_CONTRACT_EFFECTIVE_DATE } from 'shared/contracts'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 
@@ -27,6 +27,7 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
     where: { token },
     select: {
       contractVersion: true,
+      commissionModel: true,
       status: true,
       sellerName: true,
       shopName: true,
@@ -40,6 +41,8 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
   if (!contract) {
     throw new AppError('CONTRACT_NOT_FOUND', 404, { message: 'Contrat introuvable' })
   }
+
+  const contractContent = getVendorContract(contract.commissionModel)
 
   return new Promise<Buffer>((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: MARGIN, bufferPages: true })
@@ -55,7 +58,7 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
       .fillColor(MUTED)
       .font('Helvetica')
       .fontSize(8)
-      .text(VENDOR_CONTRACT.editor.description, MARGIN, MARGIN + 30)
+      .text(contractContent.editor.description, MARGIN, MARGIN + 30)
 
     doc
       .fillColor(MUTED)
@@ -75,11 +78,11 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
     y += 22
 
     // ---- Title --------------------------------------------------------------
-    doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(18).text(VENDOR_CONTRACT.title, MARGIN, y, {
+    doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(18).text(contractContent.title, MARGIN, y, {
       width: CONTENT_WIDTH,
     })
     y = doc.y + 4
-    doc.fillColor(MUTED).font('Helvetica').fontSize(10).text(VENDOR_CONTRACT.subtitle, MARGIN, y, {
+    doc.fillColor(MUTED).font('Helvetica').fontSize(10).text(contractContent.subtitle, MARGIN, y, {
       width: CONTENT_WIDTH,
     })
     y = doc.y + 6
@@ -107,7 +110,7 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
 
     // ---- Préambule ----------------------------------------------------------
     doc.font('Helvetica').fontSize(9.5).fillColor(INK)
-    for (const para of VENDOR_CONTRACT.preamble) {
+    for (const para of contractContent.preamble) {
       doc.text(para, MARGIN, y, { width: CONTENT_WIDTH, align: 'justify' })
       y = doc.y + 7
     }
@@ -121,7 +124,7 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
       return doc.y
     }
 
-    for (const art of VENDOR_CONTRACT.articles) {
+    for (const art of contractContent.articles) {
       y = ensureSpace(48)
       doc
         .fillColor(NAVY)
@@ -157,7 +160,7 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
     // ---- Clôture ------------------------------------------------------------
     y = ensureSpace(40)
     doc.font('Helvetica-Oblique').fontSize(9).fillColor(MUTED)
-    for (const para of VENDOR_CONTRACT.closing) {
+    for (const para of contractContent.closing) {
       doc.text(para, MARGIN, y + 6, { width: CONTENT_WIDTH, align: 'justify' })
       y = doc.y + 6
     }
@@ -211,7 +214,7 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
         .font('Helvetica')
         .fontSize(7.5)
         .text(
-          `Pièces — ${VENDOR_CONTRACT.editor.contact}   ·   Contrat d’adhésion vendeur v${contract.contractVersion}   ·   Page ${i - range.start + 1}/${range.count}`,
+          `Pièces — ${contractContent.editor.contact}   ·   Contrat d’adhésion vendeur v${contract.contractVersion}   ·   Page ${i - range.start + 1}/${range.count}`,
           MARGIN,
           doc.page.height - MARGIN + 8,
           { width: CONTENT_WIDTH, align: 'center' },

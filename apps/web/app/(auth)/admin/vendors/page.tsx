@@ -29,6 +29,7 @@ function ContractLinkGenerator() {
   const [sellerName, setSellerName] = useState('')
   const [shopName, setShopName] = useState('')
   const [phone, setPhone] = useState('')
+  const [model, setModel] = useState<'COMMISSION' | 'REFERRAL'>('COMMISSION')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [result, setResult] = useState<GeneratedContract | null>(null)
@@ -42,7 +43,7 @@ function ContractLinkGenerator() {
     }
     setBusy(true)
     try {
-      const payload: Record<string, string> = { sellerName: sellerName.trim() }
+      const payload: Record<string, string> = { sellerName: sellerName.trim(), commissionModel: model }
       if (shopName.trim()) payload.shopName = shopName.trim()
       if (phone.trim()) payload.phone = phone.trim()
       const data = await adminFetch<GeneratedContract>('/vendor-contracts', {
@@ -63,6 +64,7 @@ function ContractLinkGenerator() {
     setSellerName('')
     setShopName('')
     setPhone('')
+    setModel('COMMISSION')
     setErr(null)
     setCopied(false)
   }
@@ -110,6 +112,18 @@ function ContractLinkGenerator() {
             <label className="block text-sm text-ink">
               Téléphone (WhatsApp)
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+225XXXXXXXXXX" className="mt-1 w-full rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm" />
+            </label>
+            <label className="block text-sm text-ink">
+              Modèle
+              <select value={model} onChange={(e) => setModel(e.target.value as 'COMMISSION' | 'REFERRAL')} className="mt-1 w-full rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm">
+                <option value="COMMISSION">Commission (le vendeur fixe sa commission)</option>
+                <option value="REFERRAL">Référencement 0 % (marge Pièces)</option>
+              </select>
+              <span className="mt-1 block text-xs text-muted">
+                {model === 'REFERRAL'
+                  ? 'Aucune commission. Pièces se rémunère via sa marge ajoutée au prix.'
+                  : 'Le vendeur fixe librement sa commission (0 % possible).'}
+              </span>
             </label>
             {err && <p className="text-sm text-error-fg">{err}</p>}
             <button onClick={generate} disabled={busy} className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50">

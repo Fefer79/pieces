@@ -47,13 +47,12 @@ interface CatalogItem {
   imageJobError: string | null
 }
 
-const MIN_COMMISSION_FCFA = 1000
-const MIN_COMMISSION_RATE = 0.05
 const MAX_PHOTOS = 3
 
-function minCommissionFor(price: number): number {
-  if (!price || price <= 0) return MIN_COMMISSION_FCFA
-  return Math.max(MIN_COMMISSION_FCFA, Math.round(price * MIN_COMMISSION_RATE))
+// Plus de plancher : le vendeur fixe librement sa commission (0 FCFA possible).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function minCommissionFor(_price: number): number {
+  return 0
 }
 
 export default function VendorCatalogDetailPage() {
@@ -628,7 +627,7 @@ export default function VendorCatalogDetailPage() {
             return (
               <>
                 <div className="mb-1.5 font-mono text-[11px] text-muted">
-                  Minimum pour ce prix : <span className="font-semibold text-ink">{minRequired.toLocaleString('fr-FR')} FCFA</span>
+                  Vous fixez librement votre commission <span className="font-semibold text-ink">(0 FCFA possible)</span>
                 </div>
                 <input
                   id="commission"

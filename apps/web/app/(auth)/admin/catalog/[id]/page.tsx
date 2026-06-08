@@ -32,6 +32,7 @@ interface CatalogItem {
   category: string | null
   oemReference: string | null
   price: number | null
+  platformMarkup: number
   suggestedPrice: number | null
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
   condition: 'NEW' | 'USED' | 'REFURBISHED' | null
@@ -71,6 +72,7 @@ interface FormState {
   category: string
   oemReference: string
   price: string
+  platformMarkup: string
   condition: '' | 'NEW' | 'USED' | 'REFURBISHED'
   partSource: '' | 'OEM' | 'AFTERMARKET' | 'COMPATIBLE'
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
@@ -83,6 +85,7 @@ function toForm(item: CatalogItem): FormState {
     category: item.category ?? '',
     oemReference: item.oemReference ?? '',
     price: item.price != null ? String(item.price) : '',
+    platformMarkup: item.platformMarkup ? String(item.platformMarkup) : '',
     condition: item.condition ?? '',
     partSource: item.partSource ?? '',
     status: item.status,
@@ -128,6 +131,7 @@ export default function AdminCatalogItemPage() {
         category: form.category.trim() || null,
         oemReference: form.oemReference.trim() || null,
         price: form.price.trim() === '' ? null : Number(form.price),
+        platformMarkup: form.platformMarkup.trim() === '' ? 0 : Number(form.platformMarkup),
         condition: form.condition || null,
         partSource: form.partSource || null,
         status: form.status,
@@ -388,6 +392,20 @@ export default function AdminCatalogItemPage() {
                 Prix suggéré : {fmtFcfa(item.suggestedPrice)}
               </span>
             )}
+          </Field>
+          <Field label="Marge Pièces (FCFA)">
+            <input
+              type="number"
+              min={0}
+              value={form.platformMarkup}
+              onChange={(e) => set('platformMarkup', e.target.value)}
+              className={inputCls}
+              placeholder="0"
+            />
+            <span className="mt-1 block text-xs text-muted-2">
+              Ajoutée au prix vendeur, invisible côté vendeur. Acheteur paie{' '}
+              {fmtFcfa((Number(form.price) || 0) + (Number(form.platformMarkup) || 0))}.
+            </span>
           </Field>
           <Field label="Condition">
             <select
