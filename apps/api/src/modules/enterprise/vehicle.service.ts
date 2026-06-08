@@ -1,7 +1,7 @@
-import ExcelJS from 'exceljs'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { normalizeHeader, extractSheetRows } from './xlsxImport.js'
 import type { VehicleUsageType } from '@prisma/client'
 
 type VehicleInput = {
@@ -323,13 +323,6 @@ type ImportResult = {
   errors: ImportError[]
 }
 
-/** Normalise un en-tête : minuscule, sans « * », sans « (…) », partie avant « / ». */
-function normalizeHeader(raw: string): string {
-  const base = raw.toLowerCase().replace(/\*/g, '').replace(/\([^)]*\)/g, '')
-  const slash = base.indexOf('/')
-  return (slash === -1 ? base : base.slice(0, slash)).trim()
-}
-
 export async function importVehiclesFromCsv(
   enterpriseId: string,
   userId: string,
@@ -343,7 +336,7 @@ export async function importVehiclesFromXlsx(
   userId: string,
   buffer: Buffer,
 ): Promise<ImportResult> {
-  const rows = await extractXlsxRows(buffer)
+  const rows = await extractSheetRows(buffer, (name) => name.startsWith('véhicule') || name.startsWith('vehicule'))
   return importVehicleRows(enterpriseId, userId, rows, 'Feuille « Véhicules » vide')
 }
 
@@ -400,33 +393,6 @@ async function importVehicleRows(
   return { created: valid.length, errors }
 }
 
-/** Extrait les lignes de la feuille « Véhicules » (ou la 1re feuille à défaut). */
-async function extractXlsxRows(buffer: Buffer): Promise<string[][]> {
-  const wb = new ExcelJS.Workbook()
-  try {
-    // exceljs types lag behind @types/node's generic Buffer — cast is safe.
-    await wb.xlsx.load(buffer as unknown as Parameters<typeof wb.xlsx.load>[0])
-  } catch {
-    throw new AppError('IMPORT_XLSX_INVALID', 400, { message: 'Fichier Excel illisible' })
-  }
-  const sheet =
-    wb.worksheets.find((s) => normalizeHeader(s.name).startsWith('véhicule')) ??
-    wb.worksheets.find((s) => normalizeHeader(s.name).startsWith('vehicule')) ??
-    wb.worksheets[0]
-  if (!sheet) {
-    throw new AppError('IMPORT_EMPTY', 400, { message: 'Classeur Excel vide' })
-  }
-  const rows: string[][] = []
-  sheet.eachRow({ includeEmpty: false }, (row) => {
-    const cells: string[] = []
-    const count = row.cellCount
-    for (let c = 1; c <= count; c++) {
-      cells.push(String(row.getCell(c).text ?? '').trim())
-    }
-    rows.push(cells)
-  })
-  return rows
-}
 
 function parseRow(
   obj: Record<string, string>,
@@ -488,7 +454,7 @@ function parseRow(
   }
 }
 
-function parseCsv(input: string): string[][] {
+export function parseCsv(input: string): string[][] {
   const rows: string[][] = []
   let row: string[] = []
   let cell = ''

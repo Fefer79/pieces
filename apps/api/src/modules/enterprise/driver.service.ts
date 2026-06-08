@@ -1,6 +1,8 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { normalizeHeader, extractSheetRows } from './xlsxImport.js'
+import { parseCsv } from './vehicle.service.js'
 import type { DriverStatus, DriverIncidentType, DriverIncidentSeverity } from '@prisma/client'
 
 const MANAGE_ROLES = ['OWNER', 'MANAGER'] as const
@@ -338,4 +340,183 @@ export async function getDriverAnalytics(
     // Rentabilité nette : CA − carburant − dépenses − pièces − coût incidents.
     profit: netRevenue - partsSpend - incidentCost,
   }
+}
+
+// --- Import en masse (CSV / Excel) ---------------------------------------
+// En-têtes acceptés (insensible à la casse, FR/EN). Feuille « Chauffeurs ».
+//   nom complet|nom|name, téléphone|tel|phone, n° de permis|permis|license,
+//   catégorie permis|catégorie|license_category, date d'embauche|embauche,
+//   notes|remarques
+
+type DriverImportInput = {
+  name: string
+  phone: string
+  licenseNumber?: string
+  licenseCategory?: string
+  hiredAt?: Date
+  notes?: string
+}
+
+const DRIVER_COLUMN_ALIASES: Record<string, keyof DriverImportInput> = {
+  'nom complet': 'name',
+  nom: 'name',
+  name: 'name',
+  téléphone: 'phone',
+  telephone: 'phone',
+  tel: 'phone',
+  phone: 'phone',
+  'n° de permis': 'licenseNumber',
+  'numéro de permis': 'licenseNumber',
+  permis: 'licenseNumber',
+  'license number': 'licenseNumber',
+  'catégorie permis': 'licenseCategory',
+  'catégorie de permis': 'licenseCategory',
+  catégorie: 'licenseCategory',
+  'license category': 'licenseCategory',
+  "date d'embauche": 'hiredAt',
+  embauche: 'hiredAt',
+  'hired at': 'hiredAt',
+  notes: 'notes',
+  note: 'notes',
+  remarques: 'notes',
+}
+
+type ImportError = { line: number; message: string }
+type DriverImportResult = { created: number; errors: ImportError[] }
+
+export async function importDriversFromCsv(
+  enterpriseId: string,
+  userId: string,
+  csv: string,
+): Promise<DriverImportResult> {
+  return importDriverRows(enterpriseId, userId, parseCsv(csv), 'Fichier CSV vide')
+}
+
+export async function importDriversFromXlsx(
+  enterpriseId: string,
+  userId: string,
+  buffer: Buffer,
+): Promise<DriverImportResult> {
+  const rows = await extractSheetRows(buffer, (name) => name.startsWith('chauffeur'))
+  return importDriverRows(enterpriseId, userId, rows, 'Feuille « Chauffeurs » vide')
+}
+
+/** Met le numéro au format +225XXXXXXXXXX, en récupérant un éventuel 0 perdu par Excel. */
+function normalizePhone(raw: string): string | null {
+  let digits = raw.replace(/[^\d+]/g, '')
+  if (digits.startsWith('+')) {
+    digits = '+' + digits.slice(1).replace(/\D/g, '')
+  } else if (digits.startsWith('225')) {
+    digits = '+' + digits
+  } else if (digits.length === 10) {
+    digits = '+225' + digits // numéro local 0X……
+  } else if (digits.length === 9) {
+    digits = '+2250' + digits // Excel a mangé le 0 initial
+  } else {
+    digits = '+225' + digits
+  }
+  return /^\+225\d{10}$/.test(digits) ? digits : null
+}
+
+/** Parse une date JJ/MM/AAAA ou AAAA-MM-JJ ; null si invalide/vide. */
+function parseHiredAt(raw: string): Date | null {
+  const v = raw.trim()
+  if (!v) return null
+  const fr = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(v)
+  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(v)
+  let y: number, m: number, d: number
+  if (fr) {
+    d = Number(fr[1]); m = Number(fr[2]); y = Number(fr[3])
+  } else if (iso) {
+    y = Number(iso[1]); m = Number(iso[2]); d = Number(iso[3])
+  } else {
+    return null
+  }
+  const date = new Date(Date.UTC(y, m - 1, d))
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+async function importDriverRows(
+  enterpriseId: string,
+  userId: string,
+  rows: string[][],
+  emptyMessage: string,
+): Promise<DriverImportResult> {
+  await assertMember(enterpriseId, userId, [...MANAGE_ROLES])
+
+  const [headerRow] = rows
+  if (!headerRow) {
+    throw new AppError('IMPORT_EMPTY', 400, { message: emptyMessage })
+  }
+  const mapping: (keyof DriverImportInput | null)[] = headerRow.map(
+    (col) => DRIVER_COLUMN_ALIASES[normalizeHeader(col)] ?? null,
+  )
+  if (!mapping.includes('name') || !mapping.includes('phone')) {
+    throw new AppError('IMPORT_HEADER_INVALID', 400, {
+      message: 'Colonnes obligatoires manquantes : nom, téléphone',
+    })
+  }
+
+  const errors: ImportError[] = []
+  const valid: DriverImportInput[] = []
+  const seenPhones = new Set<string>()
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i]
+    if (!row || row.every((c) => c.trim() === '')) continue
+    const obj: Record<string, string> = {}
+    for (let c = 0; c < row.length; c++) {
+      const key = mapping[c]
+      if (key) obj[key] = (row[c] ?? '').trim()
+    }
+    const line = i + 1
+    if (!obj.name || !obj.phone) {
+      errors.push({ line, message: 'nom ou téléphone manquant' })
+      continue
+    }
+    const phone = normalizePhone(obj.phone)
+    if (!phone) {
+      errors.push({ line, message: `téléphone invalide : ${obj.phone}` })
+      continue
+    }
+    if (seenPhones.has(phone)) {
+      errors.push({ line, message: `numéro en double dans le fichier : ${phone}` })
+      continue
+    }
+    seenPhones.add(phone)
+    valid.push({
+      name: obj.name,
+      phone,
+      licenseNumber: obj.licenseNumber || undefined,
+      licenseCategory: obj.licenseCategory || undefined,
+      hiredAt: obj.hiredAt ? (parseHiredAt(obj.hiredAt) ?? undefined) : undefined,
+      notes: obj.notes || undefined,
+    })
+  }
+
+  if (valid.length === 0) {
+    return { created: 0, errors }
+  }
+
+  // Numéros déjà présents dans la flotte → signalés, non recréés.
+  const existing = await prisma.driver.findMany({
+    where: { enterpriseId, phone: { in: valid.map((v) => v.phone) } },
+    select: { phone: true },
+  })
+  const existingPhones = new Set(existing.map((e) => e.phone))
+  const toCreate = valid.filter((v) => {
+    if (existingPhones.has(v.phone)) {
+      errors.push({ line: 0, message: `numéro déjà enregistré : ${v.phone}` })
+      return false
+    }
+    return true
+  })
+
+  if (toCreate.length > 0) {
+    await prisma.driver.createMany({
+      data: toCreate.map((v) => ({ enterpriseId, ...v })),
+    })
+  }
+
+  return { created: toCreate.length, errors }
 }

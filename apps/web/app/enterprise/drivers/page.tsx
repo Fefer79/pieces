@@ -54,12 +54,20 @@ export default function DriversPage() {
           <h1 className="font-display text-3xl text-ink">Chauffeurs</h1>
           <p className="mt-1 text-sm text-muted">Onboarding, affectation et performance de vos chauffeurs.</p>
         </div>
-        <button
-          onClick={() => setCreating(true)}
-          className="flex-shrink-0 rounded-md bg-ink-2 px-4 py-2 text-sm font-semibold text-white hover:bg-ink"
-        >
-          + Onboarder
-        </button>
+        <div className="flex flex-shrink-0 items-center gap-2">
+          <Link
+            href="/enterprise/drivers/import"
+            className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-ink hover:bg-surface"
+          >
+            Importer
+          </Link>
+          <button
+            onClick={() => setCreating(true)}
+            className="rounded-md bg-ink-2 px-4 py-2 text-sm font-semibold text-white hover:bg-ink"
+          >
+            + Onboarder
+          </button>
+        </div>
       </div>
 
       {error && <div className="mb-4 rounded-md bg-error-bg p-3 text-sm text-error-fg">{error}</div>}

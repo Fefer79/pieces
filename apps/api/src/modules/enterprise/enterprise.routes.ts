@@ -79,6 +79,8 @@ import {
   addDriverDailyRecord,
   addDriverIncident,
   getDriverAnalytics,
+  importDriversFromCsv,
+  importDriversFromXlsx,
 } from './driver.service.js'
 import { getEnterpriseDashboard, exportEnterpriseOrdersCsv } from './dashboard.service.js'
 import { getFleetAnalytics } from './analytics.service.js'
@@ -884,6 +886,36 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
         request.body as Parameters<typeof createEnterpriseDriver>[2],
       )
       return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/drivers/import',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        description: 'Import CSV ou Excel (.xlsx) de chauffeurs (multipart/form-data, champ "file")',
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const file = await request.file()
+      if (!file) {
+        return reply.status(400).send({
+          error: { code: 'FILE_REQUIRED', message: 'Fichier CSV ou Excel requis', statusCode: 400 },
+        })
+      }
+      const buf = await file.toBuffer()
+      const isXlsx =
+        (file.filename?.toLowerCase().endsWith('.xlsx') ?? false) ||
+        file.mimetype.includes('spreadsheetml')
+      const result = isXlsx
+        ? await importDriversFromXlsx(enterpriseId, request.user.id, buf)
+        : await importDriversFromCsv(enterpriseId, request.user.id, buf.toString('utf8'))
+      return reply.status(result.created > 0 ? 201 : 200).send({ data: result })
     },
   )
 
