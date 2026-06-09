@@ -351,7 +351,7 @@ export async function importVehiclesFromXlsx(
   return importVehicleRows(enterpriseId, userId, rows, 'Feuille « Véhicules » vide')
 }
 
-async function importVehicleRows(
+export async function importVehicleRows(
   enterpriseId: string,
   userId: string,
   rows: string[][],

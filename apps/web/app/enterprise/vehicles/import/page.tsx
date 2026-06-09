@@ -44,6 +44,12 @@ export default function VehicleImportPage() {
         <p className="mt-1 text-sm text-muted">Téléversez un fichier Excel (.xlsx) ou CSV pour créer plusieurs véhicules d'un coup.</p>
       </div>
 
+      <div className="mb-6 rounded-md border border-ink-2/30 bg-ink-2/5 p-4">
+        <p className="text-sm text-ink">
+          Vous venez de Yango ? <Link href="/enterprise/import" className="font-semibold text-ink-2 hover:underline">Importez l'export conducteurs Yango directement</Link> — chauffeurs, véhicules et affectations en un seul fichier.
+        </p>
+      </div>
+
       <div className="mb-6 rounded-md border border-ink-2/20 bg-ink-2/5 p-5">
         <h2 className="mb-1 font-display text-lg text-ink">Modèle Excel</h2>
         <p className="text-sm text-muted">

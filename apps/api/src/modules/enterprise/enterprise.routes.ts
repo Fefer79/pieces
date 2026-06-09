@@ -47,6 +47,7 @@ import {
   scanAndSendReminders,
   type ScheduleInput,
 } from './maintenance.service.js'
+import { importYangoFromCsv, importYangoFromXlsx } from './yangoImport.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth } from '../../plugins/auth.js'
 import {
@@ -729,6 +730,40 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
         ? await importVehiclesFromXlsx(enterpriseId, request.user.id, buf)
         : await importVehiclesFromCsv(enterpriseId, request.user.id, buf.toString('utf8'))
       return reply.status(result.created > 0 ? 201 : 200).send({ data: result })
+    },
+  )
+
+  // ---- Import Yango (fichier unique chauffeurs + véhicules) -------------
+
+  fastify.post(
+    '/:enterpriseId/import/yango',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        description:
+          "Import d'un export conducteurs Yango (CSV « ; » ou .xlsx) : crée chauffeurs + véhicules (dédoublonnés par plaque) + affectation, en un seul fichier (multipart/form-data, champ \"file\")",
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const file = await request.file()
+      if (!file) {
+        return reply.status(400).send({
+          error: { code: 'FILE_REQUIRED', message: 'Fichier CSV ou Excel requis', statusCode: 400 },
+        })
+      }
+      const buf = await file.toBuffer()
+      const isXlsx =
+        (file.filename?.toLowerCase().endsWith('.xlsx') ?? false) ||
+        file.mimetype.includes('spreadsheetml')
+      const result = isXlsx
+        ? await importYangoFromXlsx(enterpriseId, request.user.id, buf)
+        : await importYangoFromCsv(enterpriseId, request.user.id, buf.toString('utf8'))
+      const created = result.drivers.created + result.vehicles.created
+      return reply.status(created > 0 ? 201 : 200).send({ data: result })
     },
   )
 

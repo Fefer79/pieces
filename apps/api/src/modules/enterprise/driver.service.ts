@@ -436,7 +436,7 @@ function parseHiredAt(raw: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date
 }
 
-async function importDriverRows(
+export async function importDriverRows(
   enterpriseId: string,
   userId: string,
   rows: string[][],
