@@ -1,9 +1,17 @@
 import ExcelJS from 'exceljs'
 import { AppError } from '../../lib/appError.js'
 
-/** Normalise un en-tête : minuscule, sans « * », sans « (…) », partie avant « / ». */
+/**
+ * Normalise un en-tête : minuscule, apostrophes courbes (’ ‘ ´) → droite ('),
+ * sans « * », sans « (…) », partie avant « / ». L'unification des apostrophes
+ * permet aux exports Yango (« Numéro d’immatriculation ») de matcher les alias.
+ */
 export function normalizeHeader(raw: string): string {
-  const base = raw.toLowerCase().replace(/\*/g, '').replace(/\([^)]*\)/g, '')
+  const base = raw
+    .toLowerCase()
+    .replace(/[’‘´`]/g, "'")
+    .replace(/\*/g, '')
+    .replace(/\([^)]*\)/g, '')
   const slash = base.indexOf('/')
   return (slash === -1 ? base : base.slice(0, slash)).trim()
 }

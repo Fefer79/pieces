@@ -197,6 +197,26 @@ describe('enterprise/vehicle.service', () => {
       expect(result.errors).toEqual([])
     })
 
+    it('ingère nativement l’export Yango « liste voitures » (apostrophe courbe, « ; », colonnes en plus)', async () => {
+      vehicleCreateMany.mockResolvedValueOnce({ count: 2 })
+      // En-tête réel de summary_cars_list.csv : « Numéro d’immatriculation » (U+2019).
+      const csv = csvOf(
+        'ID;Statut;Nom de code;Marque;Modèle;Année;Numéro d’immatriculation;Couleur;NIV;Certificat;Date de création;Voiture de parc',
+        'id1;Actif;1738WWCI01;Suzuki;Dzire;2026;1738WWCI01;white;;;2026-02-28T19:43:30Z;Yes',
+        'id1;Actif;1696WWCI01;Suzuki;S-Presso;2026;1696WWCI01;white;;;2026-02-28T19:44:34Z;Yes',
+      )
+
+      const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+      expect(result.created).toBe(2)
+      expect(result.errors).toEqual([])
+      const callArg = vehicleCreateMany.mock.calls[0]![0] as {
+        data: Array<{ brand: string; model: string; year: number; plate: string }>
+      }
+      expect(callArg.data[0]).toMatchObject({ brand: 'Suzuki', model: 'Dzire', year: 2026, plate: '1738WWCI01' })
+      expect(callArg.data[1]).toMatchObject({ brand: 'Suzuki', model: 'S-Presso', year: 2026, plate: '1696WWCI01' })
+    })
+
     it('parses a realistic Ivorian fleet row with all optional fields', async () => {
       vehicleCreateMany.mockResolvedValueOnce({ count: 1 })
       const csv = csvOf(

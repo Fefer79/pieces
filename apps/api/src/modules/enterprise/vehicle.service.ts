@@ -273,9 +273,12 @@ export async function deleteEnterpriseVehicle(
 
 // --- CSV import ----------------------------------------------------------
 // Header row required. Accepted columns (case-insensitive, FR or EN):
-//   marque|brand, modele|model, annee|year, vin, immatriculation|plate,
+//   marque|brand, modele|model, annee|year, vin,
+//   immatriculation|plaque|numéro d'immatriculation|plate,
 //   motorisation|engine, kilometrage|mileage, usage|usage_type,
 //   groupe|group_name, photo_url
+// L'alias « numéro d'immatriculation » accepte l'export Yango « liste voitures »
+// (summary_cars_list.csv) directement ; les colonnes inconnues sont ignorées.
 
 const COLUMN_ALIASES: Record<string, keyof VehicleInput> = {
   marque: 'brand',
@@ -288,6 +291,9 @@ const COLUMN_ALIASES: Record<string, keyof VehicleInput> = {
   year: 'year',
   vin: 'vin',
   immatriculation: 'plate',
+  // Export Yango « liste voitures » (summary_cars_list) : colonne plaque.
+  "numéro d'immatriculation": 'plate',
+  "no d'immatriculation": 'plate',
   plaque: 'plate',
   plate: 'plate',
   motorisation: 'engine',
