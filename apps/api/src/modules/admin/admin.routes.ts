@@ -26,6 +26,8 @@ import {
   getAdminLiaisonActivity,
   getAdminExternalImports,
   getAdminExternalImportStats,
+  replaceAdminFitments,
+  type AdminFitmentInput,
   exportCsv,
 } from './admin.service.js'
 import { prisma } from '../../lib/prisma.js'
@@ -48,6 +50,7 @@ import {
   adminUpdateCatalogItemSchema,
   adminUpdateVendorSchema,
   reorderPhotosSchema,
+  replaceFitmentsSchema,
   createSubscriptionSchema,
   updateSubscriptionSchema,
 } from 'shared/validators'
@@ -214,6 +217,27 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const { photoIds } = request.body as { photoIds: string[] }
       const data = await reorderAdminPhotos(id, photoIds)
       request.log.info({ event: 'ADMIN_CATALOG_PHOTOS_REORDERED', itemId: id })
+      return reply.status(200).send({ data })
+    },
+  )
+
+  // Admin: replace the vehicle-compatibility (fitment) list of an annonce.
+  // Unlike the vendor-facing catalog API, this is not gated by vendor ownership.
+  fastify.put(
+    '/catalog/:id/fitments',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Remplace les compatibilités véhicule d\'une annonce (admin)',
+        body: zodToFastify(replaceFitmentsSchema),
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const { fitments } = request.body as { fitments: AdminFitmentInput[] }
+      const data = await replaceAdminFitments(id, fitments)
+      request.log.info({ event: 'ADMIN_CATALOG_FITMENTS_REPLACED', itemId: id, count: data.length })
       return reply.status(200).send({ data })
     },
   )

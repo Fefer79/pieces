@@ -179,6 +179,43 @@ export async function updateAdminCatalogItem(id: string, patch: AdminCatalogItem
   return getAdminCatalogItem(id)
 }
 
+// Admin fitment correction — bypasses the vendor-ownership guard used by the
+// SELLER-facing catalog API. An admin may fix compatibility on any annonce,
+// including externally-imported ones (subject to overwrite on next import).
+export interface AdminFitmentInput {
+  brand: string
+  model?: string | null
+  yearFrom?: number | null
+  yearTo?: number | null
+  engine?: string | null
+}
+
+export async function replaceAdminFitments(itemId: string, fitments: AdminFitmentInput[]) {
+  const exists = await prisma.catalogItem.findUnique({ where: { id: itemId }, select: { id: true } })
+  if (!exists) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Annonce introuvable' })
+  }
+  return prisma.$transaction(async (tx) => {
+    await tx.catalogItemFitment.deleteMany({ where: { catalogItemId: itemId } })
+    if (fitments.length > 0) {
+      await tx.catalogItemFitment.createMany({
+        data: fitments.map((f) => ({
+          catalogItemId: itemId,
+          brand: f.brand,
+          model: f.model ?? null,
+          yearFrom: f.yearFrom ?? null,
+          yearTo: f.yearTo ?? null,
+          engine: f.engine ?? null,
+        })),
+      })
+    }
+    return tx.catalogItemFitment.findMany({
+      where: { catalogItemId: itemId },
+      orderBy: [{ brand: 'asc' }, { model: 'asc' }, { yearFrom: 'asc' }],
+    })
+  })
+}
+
 interface AdminVendorPatch {
   contactName?: string
   phone?: string

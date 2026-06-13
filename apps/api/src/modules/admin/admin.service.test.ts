@@ -15,6 +15,9 @@ const mockVendorFindMany = vi.fn()
 const mockVendorFindUnique = vi.fn()
 const mockVendorUpdate = vi.fn()
 const mockDisputeCount = vi.fn()
+const mockFitmentDeleteMany = vi.fn()
+const mockFitmentCreateMany = vi.fn()
+const mockFitmentFindMany = vi.fn()
 const mockCatalogFindMany = vi.fn()
 const mockCatalogCount = vi.fn()
 const mockCatalogGroupBy = vi.fn()
@@ -52,6 +55,19 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...args: unknown[]) => mockCatalogFindUnique(...args),
       update: (...args: unknown[]) => mockCatalogUpdate(...args),
     },
+    catalogItemFitment: {
+      deleteMany: (...args: unknown[]) => mockFitmentDeleteMany(...args),
+      createMany: (...args: unknown[]) => mockFitmentCreateMany(...args),
+      findMany: (...args: unknown[]) => mockFitmentFindMany(...args),
+    },
+    $transaction: (fn: (tx: unknown) => unknown) =>
+      fn({
+        catalogItemFitment: {
+          deleteMany: (...args: unknown[]) => mockFitmentDeleteMany(...args),
+          createMany: (...args: unknown[]) => mockFitmentCreateMany(...args),
+          findMany: (...args: unknown[]) => mockFitmentFindMany(...args),
+        },
+      }),
   },
 }))
 
@@ -63,6 +79,7 @@ const {
   getAdminExternalImportStats,
   getAdminCatalogItem,
   updateAdminCatalogItem,
+  replaceAdminFitments,
   updateAdminVendor,
 } = await import('./admin.service.js')
 
@@ -234,6 +251,39 @@ describe('admin.service', () => {
         statusCode: 404,
       })
       expect(mockCatalogUpdate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('replaceAdminFitments', () => {
+    it('wipes then recreates fitments and returns the fresh list', async () => {
+      mockCatalogFindUnique.mockResolvedValueOnce({ id: 'c1' }) // existence check
+      const fresh = [{ id: 'f1', brand: 'Toyota', model: 'Corolla' }]
+      mockFitmentFindMany.mockResolvedValueOnce(fresh)
+
+      const result = await replaceAdminFitments('c1', [
+        { brand: 'Toyota', model: 'Corolla', yearFrom: 2015, yearTo: 2020, engine: null },
+      ])
+
+      expect(mockFitmentDeleteMany).toHaveBeenCalledWith({ where: { catalogItemId: 'c1' } })
+      const createArgs = mockFitmentCreateMany.mock.calls[0][0]
+      expect(createArgs.data[0]).toMatchObject({ catalogItemId: 'c1', brand: 'Toyota', yearFrom: 2015 })
+      expect(result).toBe(fresh)
+    })
+
+    it('clears fitments without inserting when given an empty list', async () => {
+      mockCatalogFindUnique.mockResolvedValueOnce({ id: 'c1' })
+      mockFitmentFindMany.mockResolvedValueOnce([])
+
+      await replaceAdminFitments('c1', [])
+
+      expect(mockFitmentDeleteMany).toHaveBeenCalledWith({ where: { catalogItemId: 'c1' } })
+      expect(mockFitmentCreateMany).not.toHaveBeenCalled()
+    })
+
+    it('throws 404 when the item does not exist', async () => {
+      mockCatalogFindUnique.mockResolvedValueOnce(null)
+      await expect(replaceAdminFitments('missing', [])).rejects.toMatchObject({ statusCode: 404 })
+      expect(mockFitmentDeleteMany).not.toHaveBeenCalled()
     })
   })
 

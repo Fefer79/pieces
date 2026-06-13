@@ -77,6 +77,26 @@ interface FormState {
   inStock: boolean
 }
 
+interface FitmentRow {
+  brand: string
+  model: string
+  yearFrom: string
+  yearTo: string
+  engine: string
+}
+
+const MAX_FITMENTS = 50
+
+function toFitRows(fitments: Fitment[]): FitmentRow[] {
+  return fitments.map((f) => ({
+    brand: f.brand,
+    model: f.model ?? '',
+    yearFrom: f.yearFrom != null ? String(f.yearFrom) : '',
+    yearTo: f.yearTo != null ? String(f.yearTo) : '',
+    engine: f.engine ?? '',
+  }))
+}
+
 function toForm(item: CatalogItem): FormState {
   return {
     name: item.name ?? '',
@@ -99,6 +119,9 @@ export default function AdminCatalogItemPage() {
   const [saving, setSaving] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
   const [photoBusy, setPhotoBusy] = useState(false)
+  const [fitRows, setFitRows] = useState<FitmentRow[]>([])
+  const [fitSaving, setFitSaving] = useState(false)
+  const [fitSavedFlash, setFitSavedFlash] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const load = useCallback(async () => {
@@ -106,6 +129,7 @@ export default function AdminCatalogItemPage() {
       const data = await adminFetch<CatalogItem>(`/admin/catalog/${id}`)
       setItem(data)
       setForm(toForm(data))
+      setFitRows(toFitRows(data.fitments))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur de chargement')
     }
@@ -198,6 +222,55 @@ export default function AdminCatalogItemPage() {
       setError(e instanceof Error ? e.message : 'Échec du réordonnancement')
     } finally {
       setPhotoBusy(false)
+    }
+  }
+
+  const setFit = (index: number, key: keyof FitmentRow, value: string) =>
+    setFitRows((rows) => rows.map((r, i) => (i === index ? { ...r, [key]: value } : r)))
+
+  const addFitRow = () =>
+    setFitRows((rows) =>
+      rows.length >= MAX_FITMENTS
+        ? rows
+        : [...rows, { brand: '', model: '', yearFrom: '', yearTo: '', engine: '' }],
+    )
+
+  const removeFitRow = (index: number) =>
+    setFitRows((rows) => rows.filter((_, i) => i !== index))
+
+  async function saveFitments() {
+    const fitments = fitRows
+      .filter((r) => r.brand.trim() !== '')
+      .map((r) => ({
+        brand: r.brand.trim(),
+        model: r.model.trim() || null,
+        yearFrom: r.yearFrom.trim() === '' ? null : Number(r.yearFrom),
+        yearTo: r.yearTo.trim() === '' ? null : Number(r.yearTo),
+        engine: r.engine.trim() || null,
+      }))
+    const invalid = fitments.find(
+      (f) => f.yearFrom != null && f.yearTo != null && f.yearFrom > f.yearTo,
+    )
+    if (invalid) {
+      setError(`Année invalide pour ${invalid.brand} : l’année de début est après l’année de fin`)
+      return
+    }
+    setFitSaving(true)
+    setError(null)
+    try {
+      const data = await adminFetch<Fitment[]>(`/admin/catalog/${id}/fitments`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fitments }),
+      })
+      setItem((prev) => (prev ? { ...prev, fitments: data } : prev))
+      setFitRows(toFitRows(data))
+      setFitSavedFlash(true)
+      setTimeout(() => setFitSavedFlash(false), 2000)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur lors de l’enregistrement des compatibilités')
+    } finally {
+      setFitSaving(false)
     }
   }
 
@@ -449,29 +522,104 @@ export default function AdminCatalogItemPage() {
         </div>
       </section>
 
-      {/* Fitments (read-only here) */}
-      {item.fitments.length > 0 && (
-        <section className="mb-5 rounded-md border border-border bg-card p-4">
-          <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
-            Compatibilités véhicule ({item.fitments.length})
+      {/* Fitments — editable */}
+      <section className="mb-5 rounded-md border border-border bg-card p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+            Compatibilités véhicule ({fitRows.length})
           </div>
-          <div className="flex flex-wrap gap-2">
-            {item.fitments.slice(0, 40).map((f) => (
-              <span
-                key={f.id}
-                className="rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-muted"
+          <button
+            type="button"
+            disabled={fitRows.length >= MAX_FITMENTS}
+            onClick={addFitRow}
+            className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-ink hover:border-border-strong disabled:opacity-40"
+          >
+            + Ajouter une compatibilité
+          </button>
+        </div>
+
+        {item.vendor.isExternal && (
+          <p className="mb-3 text-xs text-muted-2">
+            ⚠️ Cette annonce provient d’une source externe : les compatibilités peuvent être
+            écrasées lors d’un prochain import.
+          </p>
+        )}
+
+        {fitRows.length === 0 ? (
+          <p className="text-sm text-muted-2">Aucune compatibilité. Ajoutez-en une.</p>
+        ) : (
+          <div className="space-y-2">
+            <div className="hidden grid-cols-[1.4fr_1.4fr_0.8fr_0.8fr_1.2fr_auto] gap-2 px-1 font-mono text-[10px] uppercase tracking-[0.08em] text-muted md:grid">
+              <span>Marque</span>
+              <span>Modèle</span>
+              <span>Année déb.</span>
+              <span>Année fin</span>
+              <span>Moteur</span>
+              <span />
+            </div>
+            {fitRows.map((r, idx) => (
+              <div
+                key={idx}
+                className="grid grid-cols-2 gap-2 md:grid-cols-[1.4fr_1.4fr_0.8fr_0.8fr_1.2fr_auto]"
               >
-                {f.brand}
-                {f.model ? ` ${f.model}` : ''}
-                {f.yearFrom ? ` (${f.yearFrom}${f.yearTo ? `–${f.yearTo}` : '+'})` : ''}
-              </span>
+                <input
+                  value={r.brand}
+                  onChange={(e) => setFit(idx, 'brand', e.target.value)}
+                  placeholder="Toyota"
+                  className={inputCls}
+                />
+                <input
+                  value={r.model}
+                  onChange={(e) => setFit(idx, 'model', e.target.value)}
+                  placeholder="Corolla"
+                  className={inputCls}
+                />
+                <input
+                  type="number"
+                  value={r.yearFrom}
+                  onChange={(e) => setFit(idx, 'yearFrom', e.target.value)}
+                  placeholder="2015"
+                  className={inputCls}
+                />
+                <input
+                  type="number"
+                  value={r.yearTo}
+                  onChange={(e) => setFit(idx, 'yearTo', e.target.value)}
+                  placeholder="2020"
+                  className={inputCls}
+                />
+                <input
+                  value={r.engine}
+                  onChange={(e) => setFit(idx, 'engine', e.target.value)}
+                  placeholder="1.8L"
+                  className={inputCls}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeFitRow(idx)}
+                  className="justify-self-start rounded-md border border-border px-2.5 py-2 text-xs text-error-fg hover:border-error-fg/40 md:justify-self-center"
+                  title="Supprimer cette compatibilité"
+                >
+                  Suppr.
+                </button>
+              </div>
             ))}
-            {item.fitments.length > 40 && (
-              <span className="text-xs text-muted-2">+{item.fitments.length - 40} autres…</span>
-            )}
           </div>
-        </section>
-      )}
+        )}
+
+        <div className="mt-5 flex items-center gap-3">
+          <button
+            type="button"
+            disabled={fitSaving}
+            onClick={saveFitments}
+            className="rounded-full bg-ink-2 px-5 py-2 text-sm font-semibold text-white hover:bg-ink disabled:opacity-50"
+          >
+            {fitSaving ? 'Enregistrement…' : 'Enregistrer les compatibilités'}
+          </button>
+          {fitSavedFlash && <span className="text-sm text-success-fg">✓ Enregistré</span>}
+          <span className="text-xs text-muted-2">Les lignes sans marque sont ignorées.</span>
+        </div>
+      </section>
 
       <style jsx>{`
         :global(.input) {
