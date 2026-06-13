@@ -65,6 +65,29 @@ const STATUS_CHIP: Record<string, ChipVariant> = {
 
 const inputCls =
   'w-full rounded-md border border-border bg-surface px-2.5 py-2 text-sm text-ink focus:border-border-strong focus:outline-none'
+const selectCls = `${inputCls} disabled:cursor-not-allowed disabled:text-muted`
+
+// Public browse catalogue (marque → modèle → motorisation), même source que le
+// VehiclePicker côté acheteur. Pas d'auth requise pour ces endpoints.
+async function getBrowseList<T>(url: string): Promise<T[]> {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return []
+    const body = await res.json()
+    return (body.data as T[]) ?? []
+  } catch {
+    return []
+  }
+}
+
+// Garde la valeur courante sélectionnable même si elle n'est pas (encore) dans
+// la liste chargée — ex. fitment importé dont la casse diffère du catalogue.
+function withCurrent(options: string[], current: string): string[] {
+  if (!current) return options
+  return options.some((o) => o.toLowerCase() === current.toLowerCase())
+    ? options
+    : [current, ...options]
+}
 
 interface FormState {
   name: string
@@ -122,7 +145,12 @@ export default function AdminCatalogItemPage() {
   const [fitRows, setFitRows] = useState<FitmentRow[]>([])
   const [fitSaving, setFitSaving] = useState(false)
   const [fitSavedFlash, setFitSavedFlash] = useState(false)
+  const [brands, setBrands] = useState<string[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    getBrowseList<string>('/api/v1/browse/brands').then(setBrands)
+  }, [])
 
   const load = useCallback(async () => {
     try {
@@ -225,8 +253,8 @@ export default function AdminCatalogItemPage() {
     }
   }
 
-  const setFit = (index: number, key: keyof FitmentRow, value: string) =>
-    setFitRows((rows) => rows.map((r, i) => (i === index ? { ...r, [key]: value } : r)))
+  const patchFit = (index: number, patch: Partial<FitmentRow>) =>
+    setFitRows((rows) => rows.map((r, i) => (i === index ? { ...r, ...patch } : r)))
 
   const addFitRow = () =>
     setFitRows((rows) =>
@@ -558,51 +586,13 @@ export default function AdminCatalogItemPage() {
               <span />
             </div>
             {fitRows.map((r, idx) => (
-              <div
+              <FitmentRowEditor
                 key={idx}
-                className="grid grid-cols-2 gap-2 md:grid-cols-[1.4fr_1.4fr_0.8fr_0.8fr_1.2fr_auto]"
-              >
-                <input
-                  value={r.brand}
-                  onChange={(e) => setFit(idx, 'brand', e.target.value)}
-                  placeholder="Toyota"
-                  className={inputCls}
-                />
-                <input
-                  value={r.model}
-                  onChange={(e) => setFit(idx, 'model', e.target.value)}
-                  placeholder="Corolla"
-                  className={inputCls}
-                />
-                <input
-                  type="number"
-                  value={r.yearFrom}
-                  onChange={(e) => setFit(idx, 'yearFrom', e.target.value)}
-                  placeholder="2015"
-                  className={inputCls}
-                />
-                <input
-                  type="number"
-                  value={r.yearTo}
-                  onChange={(e) => setFit(idx, 'yearTo', e.target.value)}
-                  placeholder="2020"
-                  className={inputCls}
-                />
-                <input
-                  value={r.engine}
-                  onChange={(e) => setFit(idx, 'engine', e.target.value)}
-                  placeholder="1.8L"
-                  className={inputCls}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeFitRow(idx)}
-                  className="justify-self-start rounded-md border border-border px-2.5 py-2 text-xs text-error-fg hover:border-error-fg/40 md:justify-self-center"
-                  title="Supprimer cette compatibilité"
-                >
-                  Suppr.
-                </button>
-              </div>
+                row={r}
+                brands={brands}
+                onPatch={(patch) => patchFit(idx, patch)}
+                onRemove={() => removeFitRow(idx)}
+              />
             ))}
           </div>
         )}
@@ -643,6 +633,122 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
         {label}
       </label>
       {children}
+    </div>
+  )
+}
+
+// Une ligne de compatibilité en cascade : Marque → Modèle → Motorisation via le
+// catalogue véhicules public, années en plage libre (yearFrom–yearTo).
+function FitmentRowEditor({
+  row,
+  brands,
+  onPatch,
+  onRemove,
+}: {
+  row: FitmentRow
+  brands: string[]
+  onPatch: (patch: Partial<FitmentRow>) => void
+  onRemove: () => void
+}) {
+  const [models, setModels] = useState<string[]>([])
+  const [engines, setEngines] = useState<string[]>([])
+
+  useEffect(() => {
+    let active = true
+    const p = row.brand
+      ? getBrowseList<string>(`/api/v1/browse/brands/${encodeURIComponent(row.brand)}/models`)
+      : Promise.resolve<string[]>([])
+    p.then((m) => {
+      if (active) setModels(m)
+    })
+    return () => {
+      active = false
+    }
+  }, [row.brand])
+
+  useEffect(() => {
+    let active = true
+    const base = `/api/v1/browse/brands/${encodeURIComponent(row.brand)}/models/${encodeURIComponent(row.model)}`
+    const p =
+      row.brand && row.model
+        ? getBrowseList<string>(`${base}/engines`)
+        : Promise.resolve<string[]>([])
+    p.then((e) => {
+      if (active) setEngines(e)
+    })
+    return () => {
+      active = false
+    }
+  }, [row.brand, row.model])
+
+  const brandOptions = withCurrent(brands, row.brand)
+  const modelOptions = withCurrent(models, row.model)
+  const engineOptions = withCurrent(engines, row.engine)
+
+  return (
+    <div className="grid grid-cols-2 gap-2 md:grid-cols-[1.4fr_1.4fr_0.8fr_0.8fr_1.2fr_auto]">
+      <select
+        value={row.brand}
+        onChange={(e) => onPatch({ brand: e.target.value, model: '', engine: '' })}
+        className={selectCls}
+      >
+        <option value="">— Marque —</option>
+        {brandOptions.map((b) => (
+          <option key={b} value={b}>
+            {b}
+          </option>
+        ))}
+      </select>
+      <select
+        value={row.model}
+        disabled={!row.brand}
+        onChange={(e) => onPatch({ model: e.target.value, engine: '' })}
+        className={selectCls}
+      >
+        <option value="">{row.brand ? '— Modèle —' : '—'}</option>
+        {modelOptions.map((m) => (
+          <option key={m} value={m}>
+            {m}
+          </option>
+        ))}
+      </select>
+      <input
+        type="number"
+        value={row.yearFrom}
+        onChange={(e) => onPatch({ yearFrom: e.target.value })}
+        placeholder="2015"
+        className={inputCls}
+      />
+      <input
+        type="number"
+        value={row.yearTo}
+        onChange={(e) => onPatch({ yearTo: e.target.value })}
+        placeholder="2020"
+        className={inputCls}
+      />
+      <select
+        value={row.engine}
+        disabled={!row.model}
+        onChange={(e) => onPatch({ engine: e.target.value })}
+        className={selectCls}
+      >
+        <option value="">
+          {row.model && engineOptions.length === 0 ? 'Non répertoriée' : '— Motorisation —'}
+        </option>
+        {engineOptions.map((eng) => (
+          <option key={eng} value={eng}>
+            {eng}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="justify-self-start rounded-md border border-border px-2.5 py-2 text-xs text-error-fg hover:border-error-fg/40 md:justify-self-center"
+        title="Supprimer cette compatibilité"
+      >
+        Suppr.
+      </button>
     </div>
   )
 }
