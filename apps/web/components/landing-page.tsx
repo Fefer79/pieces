@@ -1,7 +1,9 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
 import { BrowseContent } from './browse-content'
+import { PartSearchAutocomplete } from './part-search-autocomplete'
 import { useAuth } from '@/lib/auth-context'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
@@ -9,6 +11,22 @@ export function LandingPage({ children }: { children?: ReactNode }) {
   const { isAuthenticated, user } = useAuth()
   const { vehicle, clearVehicle } = useSelectedVehicle()
   const isAdmin = user?.roles?.includes('ADMIN') ?? false
+  const router = useRouter()
+  const [headerQuery, setHeaderQuery] = useState('')
+
+  // Recherche depuis le header — scopée au véhicule sélectionné si présent
+  // (le /search retombe sinon sur le véhicule en localStorage).
+  const goSearch = (term: string) => {
+    const q = term.trim()
+    if (q.length < 2) return
+    const params = new URLSearchParams({ q })
+    if (vehicle?.brand) {
+      params.set('brand', vehicle.brand)
+      if (vehicle.model) params.set('model', vehicle.model)
+      if (vehicle.year) params.set('year', vehicle.year)
+    }
+    router.push(`/search?${params.toString()}`)
+  }
 
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
@@ -25,23 +43,16 @@ export function LandingPage({ children }: { children?: ReactNode }) {
             </span>
           </a>
 
-          {/* Contact block — centered */}
-          <div className="hidden items-center justify-center gap-5 text-sm md:flex">
-            <a
-              href="mailto:contact@pieces.ci"
-              className="text-ink transition-colors hover:text-accent"
-            >
-              contact@pieces.ci
-            </a>
-            <span className="text-muted-2" aria-hidden>·</span>
-            <a
-              href="https://wa.me/2250709021708"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-ink transition-colors hover:text-accent"
-            >
-              (225) 07 09 02 17 08
-            </a>
+          {/* Recherche pièce — scopée au véhicule, navigue vers /search */}
+          <div className="hidden md:block">
+            <PartSearchAutocomplete
+              value={headerQuery}
+              onChange={setHeaderQuery}
+              onSubmit={goSearch}
+              vehicle={vehicle ? { brand: vehicle.brand, model: vehicle.model, year: vehicle.year } : null}
+              placeholder="Nom de la pièce ou référence OEM…"
+              className="mx-auto w-full max-w-xl"
+            />
           </div>
 
           <div className="flex items-center justify-end gap-3">
