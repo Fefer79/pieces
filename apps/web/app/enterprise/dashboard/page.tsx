@@ -16,6 +16,7 @@ import {
   type Enterprise,
   type DashboardData,
 } from '@/lib/enterprise-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 const VendorMapPicker = dynamic(
   () => import('@/components/vendor-map-picker').then((m) => m.VendorMapPicker),
@@ -200,18 +201,18 @@ export default function EnterpriseDashboardPage() {
               )}
             </div>
           </div>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
-                <th className="px-6 py-3 text-left">Véhicule</th>
-                <th className="px-6 py-3 text-left">Entretien</th>
-                <th className="px-6 py-3 text-right">Reste</th>
-                <th className="px-6 py-3 text-right">Estimation</th>
-                <th className="px-6 py-3 text-left">Statut</th>
-                <th className="px-6 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <Thead>
+              <Tr hover={false}>
+                <Th>Véhicule</Th>
+                <Th>Entretien</Th>
+                <Th align="right">Reste</Th>
+                <Th align="right">Estimation</Th>
+                <Th>Statut</Th>
+                <Th align="right">Action</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {maintenance.alerts.slice(0, 10).map((a) => {
                 const badgeClass =
                   a.status === 'OVERDUE'
@@ -222,32 +223,32 @@ export default function EnterpriseDashboardPage() {
                 const statusLabel =
                   a.status === 'OVERDUE' ? 'En retard' : a.status === 'DUE_SOON' ? 'Bientôt' : 'Jamais fait'
                 return (
-                  <tr key={a.scheduleId} className="border-b border-border last:border-0">
-                    <td className="px-6 py-3 text-sm text-ink">
-                      <Link href={`/enterprise/vehicles/${a.vehicleId}`} className="hover:underline">
+                  <Tr key={a.scheduleId}>
+                    <Td className="text-ink">
+                      <Link href={`/enterprise/vehicles/${a.vehicleId}`} className="font-semibold hover:underline">
                         {a.brand} {a.model} {a.year}
                       </Link>
                       {a.plate && <span className="ml-2 font-mono text-[10px] text-muted">{a.plate}</span>}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-muted">
+                    </Td>
+                    <Td className="text-muted">
                       {a.label ?? KIND_LABEL_FR[a.kind] ?? a.kind}
-                    </td>
-                    <td className="px-6 py-3 text-right text-sm tabular text-muted">
+                    </Td>
+                    <Td num className="text-muted">
                       {a.kmRemaining != null
                         ? a.kmRemaining < 0
                           ? `−${Math.abs(a.kmRemaining).toLocaleString('fr-FR')} km`
                           : `${a.kmRemaining.toLocaleString('fr-FR')} km`
                         : '—'}
-                    </td>
-                    <td className="px-6 py-3 text-right text-sm tabular text-muted">
+                    </Td>
+                    <Td num className="text-muted">
                       {a.estimatedDaysToDue != null ? `~${a.estimatedDaysToDue} j` : '—'}
-                    </td>
-                    <td className="px-6 py-3">
+                    </Td>
+                    <Td>
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${badgeClass}`}>
                         {statusLabel}
                       </span>
-                    </td>
-                    <td className="px-6 py-3 text-right">
+                    </Td>
+                    <Td num>
                       <button
                         onClick={() => {
                           setCartVehicle({
@@ -260,12 +261,12 @@ export default function EnterpriseDashboardPage() {
                       >
                         🛒 Commander
                       </button>
-                    </td>
-                  </tr>
+                    </Td>
+                  </Tr>
                 )
               })}
-            </tbody>
-          </table>
+            </Tbody>
+          </Table>
           {maintenance.alerts.length > 10 && (
             <div className="border-t border-border px-6 py-3 text-xs text-muted">
               + {maintenance.alerts.length - 10} autres alertes
