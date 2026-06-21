@@ -277,6 +277,25 @@ Géométrie de référence (viewBox `0 0 196 80`) : texte `x=0 y=62`, Gloock `fo
 - Labels forms toujours explicites (pas de placeholder-only).
 - Dark mode : respectera `prefers-color-scheme` + toggle quand implémenté.
 
+## Redesign 2026-06 — direction validée _(proposé, non encore codé)_
+
+> Refonte décidée par l'owner (« repenser tout le design »). **Marque inchangée** : navy `#00113A` + orange `#FF6B00`, Gloock / Instrument Sans / DM Mono, chips condition, décompo prix. On refond **composition, hiérarchie, densité** — pas l'identité. Maquettes haute-fidélité dans le projet Claude Design « Pieces: Côte d'Ivoire marketplace » (3 fichiers : *Parcours acheteur* · *Back-office* · *Onboarding/Rider/Flotte*). La piste « 3 directions radicales » (Atelier / Marché / Reçu) a été explorée puis **écartée**.
+
+**Principes de composition :**
+- Plus d'air ; **bordures subtiles plutôt qu'ombres lourdes** ; surfaces off-white.
+- Tout prix FCFA en **DM Mono tabular** ; labels/eyebrows en mono uppercase.
+- Le **navy structure** (barre utilitaire, sidebars, en-têtes de modules, footer) ; l'**orange reste rare** (CTA principal + accents seulement).
+
+**Composant signature « Reçu » (transparence).** Le bloc décompo prix devient un composant récurrent à **en-tête navy** (eyebrow mono + titre Gloock), lignes avec **points de conduite (dotted leaders)**, total en DM Mono, sceau séquestre vert (`neuf-bg`/`neuf-fg`). Présent sur : carrousel d'accueil, fiche produit, `/choose`. Matérialise l'USP transparence à chaque moment d'achat.
+
+**Accueil `/browse`.** Carrousel promo affiché **à la 1ʳᵉ visite uniquement**, puis masqué (flag `hasSeenIntro` en localStorage) pour laisser la recherche/entonnoir en tête aux visites suivantes. L'entonnoir 2 cartes (Identifiez le véhicule → Trouvez la pièce) reste le cœur.
+
+**Back-office (desktop dense).** Shell commun = **sidebar navy contextualisée par rôle** (logo, bloc contexte rôle/entité, nav, user) + topbar (titre + actions) + **cartes-stats DM Mono** + **tables denses** (chips condition/statut inline, prix alignés à droite `tabular` + `nowrap`). Décliné pour vendeur, admin, flotte. Le **rider reste mobile** (terrain : carte course COD, legs retrait→livraison).
+
+**Onboarding (mobile-first PWA).** OTP 6 cellules (filled navy / active halo orange) ; **choix de rôle** en cartes (Mécanicien · Propriétaire · Vendeur · Livreur · Entreprise).
+
+**Vitrine flotte.pieces.ci.** Hero + 3 tiers `FLEET_PLANS` (Gratuit / Flotte Pro 5 000 F / Flotte Pro+ 10 000 F par véh./mois, essai 30 j). Aucun langage SLA/pénalité ; livraison = bénéfice service.
+
 ## Decisions Log
 | Date | Decision | Rationale |
 |---|---|---|
@@ -288,5 +307,9 @@ Géométrie de référence (viewBox `0 0 196 80`) : texte `x=0 y=62`, Gloock `fo
 | 2026-05-29 | DESIGN.md réaligné sur le code réel | Réécriture après audit de `globals.css` (`@theme`), `layout.tsx` et `chip.tsx`. Corrections : Gloock chargé via `<link>` (pas next/font), DM Mono limité au poids 400, Instrument Sans variable. Dark mode marqué _(proposé)_ car non implémenté. Tokens documentés par nom utility. |
 | 2026-05-29 | Système documentaire intégré au design system | Section « Document & Print Design » ajoutée à partir de `docs/_template/` (style.css print, header SVG, pipeline Pandoc+Chrome). Mêmes polices/couleurs que le web. Écart relevé : README dit 14 docs, réalité = 25. |
 | 2026-05-29 | `/browse` réorganisé en 2 cartes (entonnoir) | Demande owner. Carte 1 « Identifiez votre véhicule » (Mon véhicule · VIN · WhatsApp, Mon véhicule à gauche) puis Carte 2 « Trouvez votre pièce » (recherche à prédictions + Photo IA). « Parcourir par catégorie » déplacé sous les cartes, conditionné à la sélection d'un véhicule (tuiles scopées). Remplace l'ancienne barre 4-onglets Photo·VIN·Véhicule·WhatsApp. |
+| 2026-06-21 | Redesign « évolution forte » validé (mockups) | Owner : « repenser tout le design ». Marque conservée ; refonte composition/hiérarchie/densité. 3 fichiers de maquettes dans Claude Design. Piste « 3 directions radicales » écartée. → voir section « Redesign 2026-06 ». _(proposé)_ |
+| 2026-06-21 | Décompo prix → composant signature « Reçu » | En-tête navy + dotted leaders + total DM Mono + sceau séquestre vert. Répété carrousel / fiche produit / `/choose`. Renforce l'USP transparence partout. _(proposé)_ |
+| 2026-06-21 | Carrousel `/browse` = 1ʳᵉ visite seulement | Masqué après le 1ᵉʳ passage via flag localStorage `hasSeenIntro` ; la recherche/entonnoir prend la tête ensuite. Demande owner. _(proposé)_ |
+| 2026-06-21 | Back-office = shell desktop dense ; rider mobile | Sidebar navy contextualisée par rôle + tables denses pour vendeur/admin/flotte. Rider reste terrain (mobile). Choix owner « desktop dense ». _(proposé)_ |
 </content>
 </invoke>
