@@ -69,19 +69,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex min-h-screen bg-surface">
-      <aside className="hidden w-56 shrink-0 border-r border-border bg-card lg:block">
-        <div className="p-4">
-          <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Pièces Admin</div>
+      <aside className="hidden w-60 shrink-0 flex-col bg-ink text-white lg:flex">
+        {/* Logo */}
+        <div className="flex h-16 items-center px-5">
+          <Link href="/" className="font-display text-2xl text-white">
+            Pièces<span className="text-accent">.</span>
+          </Link>
         </div>
-        <nav className="px-2">
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
+          <h4 className="px-2.5 pb-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
+            Administration
+          </h4>
           {NAV.map((n) => {
             const active = pathname === n.href || (n.href !== '/admin' && pathname.startsWith(n.href))
             return (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`block rounded-sm px-3 py-2 text-sm transition-colors ${
-                  active ? 'bg-ink-2 text-white' : 'text-ink hover:bg-surface'
+                className={`flex items-center gap-3 rounded-md border-l-[3px] px-2.5 py-2.5 text-[13.5px] font-medium transition-colors ${
+                  active
+                    ? 'border-accent bg-white/[0.09] text-white'
+                    : 'border-transparent text-white/72 hover:bg-white/[0.06] hover:text-white'
                 }`}
               >
                 {n.label}

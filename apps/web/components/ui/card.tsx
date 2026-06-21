@@ -40,7 +40,7 @@ export function StatCard({
       <div className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
         {label}
       </div>
-      <div className="font-display text-[28px] leading-none tabular">{value}</div>
+      <div className="font-mono text-[27px] leading-none tabular text-ink">{value}</div>
       {delta && <div className={`mt-1.5 text-[11px] font-medium ${deltaClass}`}>{delta}</div>}
     </div>
   )
