@@ -104,25 +104,33 @@ export default function DeliveryDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-md border border-border bg-card p-4 border-l-4 border-l-ink-2">
-          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-            📍 Ramassage · Vendeur
+      {/* Itinéraire : retrait → livraison (timeline verticale) */}
+      <ol className="rounded-md border border-border bg-card p-5">
+        <li className="relative flex gap-3.5 pb-5">
+          {/* trait reliant le marqueur retrait au marqueur livraison */}
+          <span className="absolute bottom-0 left-[6px] top-5 w-0.5 bg-border" aria-hidden />
+          <span className="relative z-10 mt-0.5 h-3.5 w-3.5 flex-shrink-0 rounded-full border-[3px] border-ink-2 bg-card" aria-hidden />
+          <div className="min-w-0">
+            <div className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-2">
+              Ramassage · Vendeur
+            </div>
+            <p className="mt-1 text-sm font-medium text-ink">
+              {delivery.pickupAddress ?? <span className="font-normal text-muted-2">Adresse non renseignée</span>}
+            </p>
           </div>
-          <p className="mt-2 text-sm text-ink">
-            {delivery.pickupAddress ?? <span className="text-muted-2">Adresse non renseignée</span>}
-          </p>
-        </div>
-
-        <div className="rounded-md border border-border bg-card p-4 border-l-4 border-l-accent">
-          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-            🏁 Livraison · Client
+        </li>
+        <li className="relative flex gap-3.5">
+          <span className="relative z-10 mt-0.5 h-3.5 w-3.5 flex-shrink-0 rounded-full border-[3px] border-accent bg-card" aria-hidden />
+          <div className="min-w-0">
+            <div className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted-2">
+              Livraison · Client
+            </div>
+            <p className="mt-1 text-sm font-medium text-ink">
+              {delivery.deliveryAddress ?? <span className="font-normal text-muted-2">Adresse non renseignée</span>}
+            </p>
           </div>
-          <p className="mt-2 text-sm text-ink">
-            {delivery.deliveryAddress ?? <span className="text-muted-2">Adresse non renseignée</span>}
-          </p>
-        </div>
-      </div>
+        </li>
+      </ol>
 
       <div className="mt-6 space-y-2.5">
         {delivery.status === 'ASSIGNED' && (
