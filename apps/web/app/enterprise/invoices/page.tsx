@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 import { createClient } from '@/lib/supabase'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface Invoice {
   id: string
@@ -179,56 +180,56 @@ export default function EnterpriseInvoicesPage() {
 
       {/* Invoice list */}
       <div className="mt-6 overflow-x-auto rounded-md border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-surface text-left">
-              <th className="px-4 py-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">Date</th>
-              <th className="px-4 py-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">N° Facture</th>
-              <th className="px-4 py-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">Véhicule</th>
-              <th className="px-4 py-2 text-right font-mono text-[10px] uppercase tracking-[0.08em] text-muted">HT</th>
-              <th className="px-4 py-2 text-right font-mono text-[10px] uppercase tracking-[0.08em] text-muted">TVA</th>
-              <th className="px-4 py-2 text-right font-mono text-[10px] uppercase tracking-[0.08em] text-muted">TTC</th>
-              <th className="px-4 py-2 text-right font-mono text-[10px] uppercase tracking-[0.08em] text-muted">DGI</th>
-              <th className="px-4 py-2 text-right font-mono text-[10px] uppercase tracking-[0.08em] text-muted">PDF</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <Thead>
+            <Tr hover={false}>
+              <Th>Date</Th>
+              <Th>N° Facture</Th>
+              <Th>Véhicule</Th>
+              <Th align="right">HT</Th>
+              <Th align="right">TVA</Th>
+              <Th align="right">TTC</Th>
+              <Th align="right">DGI</Th>
+              <Th align="right">PDF</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
             {loading ? (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-muted">Chargement…</td></tr>
+              <Tr><Td colSpan={8} align="center" className="py-8 text-muted">Chargement…</Td></Tr>
             ) : invoices.length === 0 ? (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-sm text-muted">Aucune facture sur cette période.</td></tr>
+              <Tr><Td colSpan={8} align="center" className="py-8 text-muted">Aucune facture sur cette période.</Td></Tr>
             ) : (
               invoices.map((inv) => (
-                <tr key={inv.id} className="border-t border-border">
-                  <td className="px-4 py-2.5 text-xs text-ink">{new Date(inv.issuedAt).toLocaleDateString('fr-FR')}</td>
-                  <td className="px-4 py-2.5 text-xs font-mono text-ink">{inv.invoiceNumber}</td>
-                  <td className="px-4 py-2.5 text-xs text-muted">
+                <Tr key={inv.id}>
+                  <Td className="text-xs text-ink">{new Date(inv.issuedAt).toLocaleDateString('fr-FR')}</Td>
+                  <Td className="text-xs font-mono text-ink">{inv.invoiceNumber}</Td>
+                  <Td className="text-xs text-muted">
                     {inv.order.vehicle ? `${inv.order.vehicle.brand} ${inv.order.vehicle.model}` : '—'}
                     {inv.order.vehicle?.plate && <span className="ml-1 font-mono">{inv.order.vehicle.plate}</span>}
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-xs">{fcfa(inv.subtotalHt)}</td>
-                  <td className="px-4 py-2.5 text-right font-mono text-xs text-muted">{fcfa(inv.tvaAmount)}</td>
-                  <td className="px-4 py-2.5 text-right font-mono text-xs font-semibold">{fcfa(inv.totalTtc)}</td>
-                  <td className="px-4 py-2.5 text-right">
+                  </Td>
+                  <Td num className="text-xs">{fcfa(inv.subtotalHt)}</Td>
+                  <Td num className="text-xs text-muted">{fcfa(inv.tvaAmount)}</Td>
+                  <Td num className="text-xs font-semibold">{fcfa(inv.totalTtc)}</Td>
+                  <Td align="right">
                     {inv.fneValidationNumber ? (
                       <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-800">Validé</span>
                     ) : (
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800">FNE à venir</span>
                     )}
-                  </td>
-                  <td className="px-4 py-2.5 text-right">
+                  </Td>
+                  <Td align="right">
                     <button
                       onClick={() => download(`/${enterpriseId}/invoices/${inv.id}.pdf`, `${inv.invoiceNumber}.pdf`)}
                       className="text-xs text-accent hover:underline"
                     >
                       Télécharger
                     </button>
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))
             )}
-          </tbody>
-        </table>
+          </Tbody>
+        </Table>
       </div>
 
       <p className="mt-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">

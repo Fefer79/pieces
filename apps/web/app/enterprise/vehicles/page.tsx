@@ -9,6 +9,7 @@ import {
   type FleetVehicle,
 } from '@/lib/enterprise-api'
 import { VehiclePicker, type VehicleSelection } from '@/components/vehicle-picker'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 const USAGE_LABEL: Record<NonNullable<FleetVehicle['usageType']>, string> = {
   TRANSPORT: 'Transport',
@@ -110,40 +111,40 @@ export default function EnterpriseVehiclesPage() {
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       <div className="overflow-hidden rounded-md border border-border bg-card">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
-              <th className="px-6 py-3 text-left">Véhicule</th>
-              <th className="px-6 py-3 text-left">Plaque</th>
-              <th className="px-6 py-3 text-left">Usage</th>
-              <th className="px-6 py-3 text-left">Groupe</th>
-              <th className="px-6 py-3 text-right">Kilométrage</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-muted">Chargement…</td></tr>}
+        <Table>
+          <Thead>
+            <Tr hover={false}>
+              <Th>Véhicule</Th>
+              <Th>Plaque</Th>
+              <Th>Usage</Th>
+              <Th>Groupe</Th>
+              <Th align="right">Kilométrage</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {loading && <Tr><Td colSpan={5} align="center" className="py-8 text-muted">Chargement…</Td></Tr>}
             {!loading && vehicles.length === 0 && (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Aucun véhicule. Ajoutez-en un ou importez un fichier Excel/CSV.</td></tr>
+              <Tr><Td colSpan={5} align="center" className="py-12 text-muted">Aucun véhicule. Ajoutez-en un ou importez un fichier Excel/CSV.</Td></Tr>
             )}
             {vehicles.map((v) => (
-              <tr key={v.id} className="border-b border-border last:border-0 hover:bg-surface">
-                <td className="px-6 py-3 text-sm text-ink">
+              <Tr key={v.id}>
+                <Td className="text-ink">
                   <Link href={`/enterprise/vehicles/${v.id}`} className="hover:underline">
                     {v.brand} {v.model} {v.year}
                   </Link>
-                </td>
-                <td className="px-6 py-3 text-sm text-muted tabular">{v.plate ?? '—'}</td>
-                <td className="px-6 py-3 text-sm text-muted">
+                </Td>
+                <Td num className="text-muted">{v.plate ?? '—'}</Td>
+                <Td className="text-muted">
                   {v.usageType ? USAGE_LABEL[v.usageType] : '—'}
-                </td>
-                <td className="px-6 py-3 text-sm text-muted">{v.groupName ?? '—'}</td>
-                <td className="px-6 py-3 text-right text-sm text-muted tabular">
+                </Td>
+                <Td className="text-muted">{v.groupName ?? '—'}</Td>
+                <Td num className="text-muted">
                   {v.mileage != null ? `${v.mileage.toLocaleString('fr-FR')} km` : '—'}
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             ))}
-          </tbody>
-        </table>
+          </Tbody>
+        </Table>
       </div>
 
       {showCreate && (

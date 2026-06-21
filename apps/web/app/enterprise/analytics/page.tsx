@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface FleetAnalytics {
   totalSpend: number
@@ -126,41 +127,39 @@ export default function FleetAnalyticsPage() {
 
               {data.costPerKmRanking.length > 0 && (
                 <Card title="Coût au kilomètre — véhicules les plus coûteux">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-surface/50">
-                        <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
-                          <th className="px-2 py-2 font-medium">Véhicule</th>
-                          <th className="px-2 py-2 font-medium text-right">Dépense</th>
-                          <th className="px-2 py-2 font-medium text-right">Km</th>
-                          <th className="px-2 py-2 font-medium text-right">Coût / km</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.costPerKmRanking.map((r) => (
-                          <tr key={r.vehicle.id} className="border-t border-border">
-                            <td className="px-2 py-2 text-ink">
-                              <Link href={`/enterprise/vehicles/${r.vehicle.id}`} className="hover:underline">
-                                {r.vehicle.brand} {r.vehicle.model} {r.vehicle.year}
-                              </Link>
-                              {r.vehicle.plate && (
-                                <span className="ml-2 font-mono text-[10px] text-muted">{r.vehicle.plate}</span>
-                              )}
-                            </td>
-                            <td className="px-2 py-2 text-right tabular text-muted">
-                              {r.totalSpend.toLocaleString('fr-FR')} F
-                            </td>
-                            <td className="px-2 py-2 text-right tabular text-muted">
-                              {r.mileage.toLocaleString('fr-FR')}
-                            </td>
-                            <td className="px-2 py-2 text-right font-semibold tabular text-ink">
-                              {r.costPerKm.toLocaleString('fr-FR')} F
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <Table>
+                    <Thead>
+                      <Tr hover={false}>
+                        <Th>Véhicule</Th>
+                        <Th align="right">Dépense</Th>
+                        <Th align="right">Km</Th>
+                        <Th align="right">Coût / km</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {data.costPerKmRanking.map((r) => (
+                        <Tr key={r.vehicle.id}>
+                          <Td className="text-ink">
+                            <Link href={`/enterprise/vehicles/${r.vehicle.id}`} className="hover:underline">
+                              {r.vehicle.brand} {r.vehicle.model} {r.vehicle.year}
+                            </Link>
+                            {r.vehicle.plate && (
+                              <span className="ml-2 font-mono text-[10px] text-muted">{r.vehicle.plate}</span>
+                            )}
+                          </Td>
+                          <Td num className="text-muted">
+                            {r.totalSpend.toLocaleString('fr-FR')} F
+                          </Td>
+                          <Td num className="text-muted">
+                            {r.mileage.toLocaleString('fr-FR')}
+                          </Td>
+                          <Td num className="font-semibold text-ink">
+                            {r.costPerKm.toLocaleString('fr-FR')} F
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
                 </Card>
               )}
             </>

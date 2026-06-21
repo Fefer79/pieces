@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { adminFetch, downloadCsv } from '@/lib/admin-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface Client {
   id: string
@@ -62,31 +63,31 @@ export default function AdminClientsPage() {
       {!data ? <div className="text-sm text-muted">Chargement…</div> : (
         <>
           <div className="overflow-x-auto rounded-md border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                  <th className="px-3 py-2">Nom</th>
-                  <th className="px-3 py-2">Téléphone</th>
-                  <th className="px-3 py-2">Email</th>
-                  <th className="px-3 py-2">Rôles</th>
-                  <th className="px-3 py-2 text-right">Commandes</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th>Nom</Th>
+                  <Th>Téléphone</Th>
+                  <Th>Email</Th>
+                  <Th>Rôles</Th>
+                  <Th align="right">Commandes</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {data.users.map((u) => (
-                  <tr key={u.id} className="border-t border-border">
-                    <td className="px-3 py-2">
+                  <Tr key={u.id}>
+                    <Td>
                       <Link href={`/admin/clients/${u.id}`} className="text-ink-2 hover:underline">{u.name ?? '(sans nom)'}</Link>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{u.phone ?? '—'}</td>
-                    <td className="px-3 py-2 text-xs">{u.email ?? '—'}</td>
-                    <td className="px-3 py-2 text-xs">{u.roles.join(', ')}</td>
-                    <td className="px-3 py-2 text-right font-mono">{u._count.initiatedOrders}</td>
-                  </tr>
+                    </Td>
+                    <Td className="text-xs">{u.phone ?? '—'}</Td>
+                    <Td className="text-xs">{u.email ?? '—'}</Td>
+                    <Td className="text-xs">{u.roles.join(', ')}</Td>
+                    <Td num>{u._count.initiatedOrders}</Td>
+                  </Tr>
                 ))}
-                {data.users.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-sm text-muted">Aucun client.</td></tr>}
-              </tbody>
-            </table>
+                {data.users.length === 0 && <Tr hover={false}><Td colSpan={5} align="center" className="py-6 text-muted">Aucun client.</Td></Tr>}
+              </Tbody>
+            </Table>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted">
             <div>{data.pagination.total} clients · page {data.pagination.page}/{data.pagination.totalPages}</div>

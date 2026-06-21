@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { adminFetch } from '@/lib/admin-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 type IngestSource =
   | 'HAUTOPARTS_3H'
@@ -188,40 +189,40 @@ export default function AdminExternalImportsPage() {
       ) : (
         <>
           <div className="overflow-x-auto rounded-md border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                  <th className="px-3 py-2"></th>
-                  <th className="px-3 py-2">Titre</th>
-                  <th className="px-3 py-2">Catégorie</th>
-                  <th className="px-3 py-2">OEM</th>
-                  <th className="px-3 py-2 text-right">Prix</th>
-                  <th className="px-3 py-2">Statut</th>
-                  <th className="px-3 py-2">Source</th>
-                  <th className="px-3 py-2">Lien</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th></Th>
+                  <Th>Titre</Th>
+                  <Th>Catégorie</Th>
+                  <Th>OEM</Th>
+                  <Th align="right">Prix</Th>
+                  <Th>Statut</Th>
+                  <Th>Source</Th>
+                  <Th>Lien</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {data.items.map((it) => (
-                  <tr key={it.id} className="border-t border-border align-top">
-                    <td className="px-3 py-2">
+                  <Tr key={it.id} className="align-top">
+                    <Td>
                       {it.imageOriginalUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={it.imageOriginalUrl} alt="" className="h-12 w-12 rounded-sm object-cover" />
                       ) : (
                         <div className="h-12 w-12 rounded-sm bg-surface" />
                       )}
-                    </td>
-                    <td className="px-3 py-2">
+                    </Td>
+                    <Td>
                       <div className="font-medium text-ink-2">{it.name}</div>
                       <div className="font-mono text-[10px] text-muted">{it.externalSourceId ?? '—'}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{it.category ?? '—'}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{it.oemReference ?? '—'}</td>
-                    <td className="px-3 py-2 text-right font-mono">{formatPrice(it.price)}</td>
-                    <td className="px-3 py-2 text-xs">{it.status}</td>
-                    <td className="px-3 py-2 text-xs">{it.externalSource ? SOURCE_LABELS[it.externalSource] : '—'}</td>
-                    <td className="px-3 py-2 text-xs">
+                    </Td>
+                    <Td className="text-xs">{it.category ?? '—'}</Td>
+                    <Td className="font-mono text-xs">{it.oemReference ?? '—'}</Td>
+                    <Td num>{formatPrice(it.price)}</Td>
+                    <Td className="text-xs">{it.status}</Td>
+                    <Td className="text-xs">{it.externalSource ? SOURCE_LABELS[it.externalSource] : '—'}</Td>
+                    <Td className="text-xs">
                       {it.externalSourceUrl ? (
                         <a
                           href={it.externalSourceUrl}
@@ -232,14 +233,14 @@ export default function AdminExternalImportsPage() {
                           ↗
                         </a>
                       ) : '—'}
-                    </td>
-                  </tr>
+                    </Td>
+                  </Tr>
                 ))}
                 {data.items.length === 0 && (
-                  <tr><td colSpan={8} className="p-6 text-center text-sm text-muted">Aucun import externe.</td></tr>
+                  <Tr hover={false}><Td colSpan={8} align="center" className="py-6 text-muted">Aucun import externe.</Td></Tr>
                 )}
-              </tbody>
-            </table>
+              </Tbody>
+            </Table>
           </div>
 
           <div className="mt-3 flex items-center justify-between text-sm text-muted">

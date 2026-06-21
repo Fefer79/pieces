@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { adminFetch, fmtFcfa } from '@/lib/admin-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface Detail {
   enterprise: {
@@ -45,58 +46,58 @@ export default function AdminEnterpriseDetailPage() {
       <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-md border border-border bg-card p-4">
           <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Membres ({e.members.length})</div>
-          <table className="w-full text-sm">
-            <tbody>
+          <Table>
+            <Tbody>
               {e.members.map((m) => (
-                <tr key={m.id} className="border-t border-border">
-                  <td className="py-2">{m.user.name ?? '—'}</td>
-                  <td className="py-2 text-xs">{m.user.phone ?? m.user.email ?? '—'}</td>
-                  <td className="py-2 text-xs">{m.role}</td>
-                </tr>
+                <Tr key={m.id}>
+                  <Td>{m.user.name ?? '—'}</Td>
+                  <Td className="text-xs">{m.user.phone ?? m.user.email ?? '—'}</Td>
+                  <Td className="text-xs">{m.role}</Td>
+                </Tr>
               ))}
-              {e.members.length === 0 && <tr><td className="py-4 text-center text-xs text-muted">Aucun membre.</td></tr>}
-            </tbody>
-          </table>
+              {e.members.length === 0 && <Tr hover={false}><Td colSpan={3} align="center" className="py-6 text-muted">Aucun membre.</Td></Tr>}
+            </Tbody>
+          </Table>
         </div>
 
         <div className="rounded-md border border-border bg-card p-4">
           <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Parc auto ({e.vehicles.length})</div>
-          <table className="w-full text-sm">
-            <tbody>
+          <Table>
+            <Tbody>
               {e.vehicles.map((v) => (
-                <tr key={v.id} className="border-t border-border">
-                  <td className="py-2">{v.brand} {v.model} ({v.year})</td>
-                  <td className="py-2 text-xs font-mono">{v.plate ?? '—'}</td>
-                  <td className="py-2 text-right text-xs font-mono">{v.mileage ? `${v.mileage.toLocaleString('fr-FR')} km` : '—'}</td>
-                </tr>
+                <Tr key={v.id}>
+                  <Td>{v.brand} {v.model} ({v.year})</Td>
+                  <Td className="text-xs font-mono">{v.plate ?? '—'}</Td>
+                  <Td num className="text-xs">{v.mileage ? `${v.mileage.toLocaleString('fr-FR')} km` : '—'}</Td>
+                </Tr>
               ))}
-              {e.vehicles.length === 0 && <tr><td className="py-4 text-center text-xs text-muted">Aucun véhicule.</td></tr>}
-            </tbody>
-          </table>
+              {e.vehicles.length === 0 && <Tr hover={false}><Td colSpan={3} align="center" className="py-6 text-muted">Aucun véhicule.</Td></Tr>}
+            </Tbody>
+          </Table>
         </div>
       </div>
 
       <div className="rounded-md border border-border bg-card p-4">
         <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Commandes ({data.orders.length})</div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-              <th className="py-1">Date</th>
-              <th className="py-1">Statut</th>
-              <th className="py-1 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <Thead>
+            <Tr hover={false}>
+              <Th>Date</Th>
+              <Th>Statut</Th>
+              <Th align="right">Total</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
             {data.orders.map((o) => (
-              <tr key={o.id} className="border-t border-border">
-                <td className="py-2 text-xs">{o.createdAt.slice(0, 10)}</td>
-                <td className="py-2 text-xs">{o.status}</td>
-                <td className="py-2 text-right font-mono">{fmtFcfa(o.totalAmount)}</td>
-              </tr>
+              <Tr key={o.id}>
+                <Td className="text-xs">{o.createdAt.slice(0, 10)}</Td>
+                <Td className="text-xs">{o.status}</Td>
+                <Td num>{fmtFcfa(o.totalAmount)}</Td>
+              </Tr>
             ))}
-            {data.orders.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-xs text-muted">Aucune commande.</td></tr>}
-          </tbody>
-        </table>
+            {data.orders.length === 0 && <Tr hover={false}><Td colSpan={3} align="center" className="py-6 text-muted">Aucune commande.</Td></Tr>}
+          </Tbody>
+        </Table>
       </div>
     </div>
   )

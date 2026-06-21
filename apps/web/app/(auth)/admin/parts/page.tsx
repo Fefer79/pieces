@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { adminFetch, downloadCsv, fmtFcfa } from '@/lib/admin-api'
 import { Chip } from '@/components/ui/chip'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface Item {
   id: string
@@ -80,47 +81,47 @@ export default function AdminPartsPage() {
       ) : (
         <>
           <div className="overflow-x-auto rounded-md border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                  <th className="px-3 py-2">Photo</th>
-                  <th className="px-3 py-2">Nom</th>
-                  <th className="px-3 py-2">Vendeur</th>
-                  <th className="px-3 py-2 text-right">Prix</th>
-                  <th className="px-3 py-2 text-right">Commission</th>
-                  <th className="px-3 py-2">Statut</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th>Photo</Th>
+                  <Th>Nom</Th>
+                  <Th>Vendeur</Th>
+                  <Th align="right">Prix</Th>
+                  <Th align="right">Commission</Th>
+                  <Th>Statut</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {data.items.map((it) => {
                   const src = it.photos[0]?.urlThumb ?? it.photos[0]?.urlOriginal
                   return (
-                    <tr key={it.id} className="border-t border-border">
-                      <td className="px-3 py-2">
+                    <Tr key={it.id}>
+                      <Td>
                         {src ? <img src={src} alt="" className="h-10 w-10 rounded-sm object-cover" /> : <div className="h-10 w-10 rounded-sm bg-surface" />}
-                      </td>
-                      <td className="px-3 py-2">
+                      </Td>
+                      <Td>
                         <Link href={`/admin/catalog/${it.id}`} className="font-medium text-ink hover:text-accent hover:underline">{it.name ?? '—'}</Link>
                         <div className="text-xs text-muted">{it.category ?? ''}</div>
-                      </td>
-                      <td className="px-3 py-2">
+                      </Td>
+                      <Td>
                         <Link href={`/admin/vendors/${it.vendor.id}`} className="text-ink-2 hover:underline">{it.vendor.shopName}</Link>
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono">{fmtFcfa(it.price)}</td>
-                      <td className="px-3 py-2 text-right font-mono">{fmtFcfa(it.commissionAmount)}</td>
-                      <td className="px-3 py-2">
+                      </Td>
+                      <Td num>{fmtFcfa(it.price)}</Td>
+                      <Td num>{fmtFcfa(it.commissionAmount)}</Td>
+                      <Td>
                         {it.status === 'PUBLISHED' && <Chip variant="status-ok">Publié</Chip>}
                         {it.status === 'DRAFT' && <Chip variant="status-warn">Brouillon</Chip>}
                         {it.status === 'ARCHIVED' && <Chip variant="plain">Archivé</Chip>}
-                      </td>
-                    </tr>
+                      </Td>
+                    </Tr>
                   )
                 })}
                 {data.items.length === 0 && (
-                  <tr><td colSpan={6} className="p-6 text-center text-sm text-muted">Aucune pièce.</td></tr>
+                  <Tr hover={false}><Td colSpan={6} align="center" className="py-6 text-muted">Aucune pièce.</Td></Tr>
                 )}
-              </tbody>
-            </table>
+              </Tbody>
+            </Table>
           </div>
 
           <div className="mt-3 flex items-center justify-between text-sm text-muted">

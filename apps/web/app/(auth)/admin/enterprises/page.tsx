@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { adminFetch } from '@/lib/admin-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface Enterprise {
   id: string
@@ -46,31 +47,31 @@ export default function AdminEnterprisesPage() {
       {!data ? <div className="text-sm text-muted">Chargement…</div> : (
         <>
           <div className="overflow-x-auto rounded-md border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                  <th className="px-3 py-2">Nom</th>
-                  <th className="px-3 py-2">Commune</th>
-                  <th className="px-3 py-2">RCCM</th>
-                  <th className="px-3 py-2 text-right">Véhicules</th>
-                  <th className="px-3 py-2 text-right">Membres</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th>Nom</Th>
+                  <Th>Commune</Th>
+                  <Th>RCCM</Th>
+                  <Th align="right">Véhicules</Th>
+                  <Th align="right">Membres</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {data.enterprises.map((e) => (
-                  <tr key={e.id} className="border-t border-border">
-                    <td className="px-3 py-2">
+                  <Tr key={e.id}>
+                    <Td>
                       <Link href={`/admin/enterprises/${e.id}`} className="text-ink-2 hover:underline">{e.name}</Link>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{e.commune ?? '—'}</td>
-                    <td className="px-3 py-2 text-xs">{e.rccm ?? '—'}</td>
-                    <td className="px-3 py-2 text-right font-mono">{e._count.vehicles}</td>
-                    <td className="px-3 py-2 text-right font-mono">{e._count.members}</td>
-                  </tr>
+                    </Td>
+                    <Td className="text-xs">{e.commune ?? '—'}</Td>
+                    <Td className="text-xs">{e.rccm ?? '—'}</Td>
+                    <Td num>{e._count.vehicles}</Td>
+                    <Td num>{e._count.members}</Td>
+                  </Tr>
                 ))}
-                {data.enterprises.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-sm text-muted">Aucune entreprise.</td></tr>}
-              </tbody>
-            </table>
+                {data.enterprises.length === 0 && <Tr hover={false}><Td colSpan={5} align="center" className="py-6 text-muted">Aucune entreprise.</Td></Tr>}
+              </Tbody>
+            </Table>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted">
             <div>{data.pagination.total} entreprises · page {data.pagination.page}/{data.pagination.totalPages}</div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { adminFetch } from '@/lib/admin-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface LiaisonDetail {
   id: string
@@ -120,35 +121,35 @@ export default function AdminLiaisonDetailPage() {
         {data.managedVendors.length === 0 ? (
           <p className="text-sm text-muted">Aucun vendeur géré.</p>
         ) : (
-          <div className="overflow-x-auto rounded-md border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                  <th className="px-3 py-2">Boutique</th>
-                  <th className="px-3 py-2">Contact</th>
-                  <th className="px-3 py-2">Commune</th>
-                  <th className="px-3 py-2">Statut</th>
-                  <th className="px-3 py-2 text-right">Pièces</th>
-                  <th className="px-3 py-2 text-right">Créé le</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="rounded-md border border-border bg-card">
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th>Boutique</Th>
+                  <Th>Contact</Th>
+                  <Th>Commune</Th>
+                  <Th>Statut</Th>
+                  <Th align="right">Pièces</Th>
+                  <Th align="right">Créé le</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {data.managedVendors.map((v) => (
-                  <tr key={v.id} className="border-t border-border">
-                    <td className="px-3 py-2">{v.shopName}</td>
-                    <td className="px-3 py-2 text-xs">
+                  <Tr key={v.id}>
+                    <Td>{v.shopName}</Td>
+                    <Td className="text-xs">
                       {v.contactName} · {v.phone}
-                    </td>
-                    <td className="px-3 py-2 text-xs">{v.commune ?? '—'}</td>
-                    <td className="px-3 py-2 text-xs">{v.status}</td>
-                    <td className="px-3 py-2 text-right font-mono">{v._count.catalogItems}</td>
-                    <td className="px-3 py-2 text-right text-xs">
+                    </Td>
+                    <Td className="text-xs">{v.commune ?? '—'}</Td>
+                    <Td className="text-xs">{v.status}</Td>
+                    <Td num>{v._count.catalogItems}</Td>
+                    <Td num className="text-xs">
                       {new Date(v.createdAt).toLocaleDateString('fr-FR')}
-                    </td>
-                  </tr>
+                    </Td>
+                  </Tr>
                 ))}
-              </tbody>
-            </table>
+              </Tbody>
+            </Table>
           </div>
         )}
       </section>
@@ -160,47 +161,47 @@ export default function AdminLiaisonDetailPage() {
         {data.liaisonCatalogItems.length === 0 ? (
           <p className="text-sm text-muted">Aucune pièce saisie.</p>
         ) : (
-          <div className="overflow-x-auto rounded-md border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                  <th className="px-3 py-2">Pièce</th>
-                  <th className="px-3 py-2">Vendeur</th>
-                  <th className="px-3 py-2 text-right">Prix</th>
-                  <th className="px-3 py-2 text-right">Commission</th>
-                  <th className="px-3 py-2">Agréée</th>
-                  <th className="px-3 py-2">Statut</th>
-                  <th className="px-3 py-2 text-right">Créée le</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="rounded-md border border-border bg-card">
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th>Pièce</Th>
+                  <Th>Vendeur</Th>
+                  <Th align="right">Prix</Th>
+                  <Th align="right">Commission</Th>
+                  <Th>Agréée</Th>
+                  <Th>Statut</Th>
+                  <Th align="right">Créée le</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {data.liaisonCatalogItems.map((p) => (
-                  <tr key={p.id} className="border-t border-border">
-                    <td className="px-3 py-2">{p.name ?? '—'}</td>
-                    <td className="px-3 py-2 text-xs">{p.vendor.shopName}</td>
-                    <td className="px-3 py-2 text-right font-mono">
+                  <Tr key={p.id}>
+                    <Td>{p.name ?? '—'}</Td>
+                    <Td className="text-xs">{p.vendor.shopName}</Td>
+                    <Td num>
                       {p.price != null ? `${p.price.toLocaleString('fr-FR')} F` : '—'}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono">
+                    </Td>
+                    <Td num>
                       {p.commissionAmount != null
                         ? `${p.commissionAmount.toLocaleString('fr-FR')} F`
                         : '—'}
-                    </td>
-                    <td className="px-3 py-2 text-xs">
+                    </Td>
+                    <Td className="text-xs">
                       {p.commissionAcceptedAt ? (
                         <span className="text-[#148C50]">✓</span>
                       ) : (
                         <span className="text-accent">⏳</span>
                       )}
-                    </td>
-                    <td className="px-3 py-2 text-xs">{p.status}</td>
-                    <td className="px-3 py-2 text-right text-xs">
+                    </Td>
+                    <Td className="text-xs">{p.status}</Td>
+                    <Td num className="text-xs">
                       {new Date(p.createdAt).toLocaleDateString('fr-FR')}
-                    </td>
-                  </tr>
+                    </Td>
+                  </Tr>
                 ))}
-              </tbody>
-            </table>
+              </Tbody>
+            </Table>
           </div>
         )}
       </section>
@@ -213,36 +214,36 @@ export default function AdminLiaisonDetailPage() {
           <p className="text-sm text-muted">Aucune activité enregistrée.</p>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-md border border-border bg-card">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                    <th className="px-3 py-2">Date</th>
-                    <th className="px-3 py-2">Action</th>
-                    <th className="px-3 py-2">Cible</th>
-                    <th className="px-3 py-2">Détails</th>
-                  </tr>
-                </thead>
-                <tbody>
+            <div className="rounded-md border border-border bg-card">
+              <Table>
+                <Thead>
+                  <Tr hover={false}>
+                    <Th>Date</Th>
+                    <Th>Action</Th>
+                    <Th>Cible</Th>
+                    <Th>Détails</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
                   {activity.items.map((a) => (
-                    <tr key={a.id} className="border-t border-border align-top">
-                      <td className="px-3 py-2 text-xs whitespace-nowrap">
+                    <Tr key={a.id} className="align-top">
+                      <Td className="text-xs whitespace-nowrap">
                         {new Date(a.createdAt).toLocaleString('fr-FR')}
-                      </td>
-                      <td className="px-3 py-2 text-xs">
+                      </Td>
+                      <Td className="text-xs">
                         {ACTION_LABELS[a.action] ?? a.action}
-                      </td>
-                      <td className="px-3 py-2 text-xs">
+                      </Td>
+                      <Td className="text-xs">
                         {a.targetType}
                         {a.targetId ? ` · ${a.targetId.slice(0, 8)}…` : ''}
-                      </td>
-                      <td className="px-3 py-2 text-[11px] font-mono text-muted-2">
+                      </Td>
+                      <Td className="text-[11px] font-mono text-muted-2">
                         {a.payload ? JSON.stringify(a.payload) : '—'}
-                      </td>
-                    </tr>
+                      </Td>
+                    </Tr>
                   ))}
-                </tbody>
-              </table>
+                </Tbody>
+              </Table>
             </div>
             <div className="mt-3 flex items-center justify-between text-sm text-muted">
               <div>

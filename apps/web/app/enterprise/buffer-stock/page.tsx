@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 type StockStatus = 'OUT' | 'LOW' | 'BELOW_TARGET' | 'OK'
 
@@ -215,39 +216,39 @@ export default function EnterpriseBufferStockPage() {
         </div>
       ) : (
         <div className="rounded-md border border-border bg-card">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
-                <th className="px-6 py-3 text-left">Pièce</th>
-                <th className="px-6 py-3 text-left">Fournisseur</th>
-                <th className="px-6 py-3 text-right">Cible</th>
-                <th className="px-6 py-3 text-right">Actuel</th>
-                <th className="px-6 py-3 text-left">Statut</th>
-                <th className="px-6 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <Thead>
+              <Tr hover={false}>
+                <Th>Pièce</Th>
+                <Th>Fournisseur</Th>
+                <Th align="right">Cible</Th>
+                <Th align="right">Actuel</Th>
+                <Th>Statut</Th>
+                <Th align="right">Actions</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-b border-border last:border-0">
-                  <td className="px-6 py-3 text-sm text-ink">
+                <Tr key={r.id}>
+                  <Td className="text-ink">
                     {r.catalogItem.name ?? 'Sans nom'}
                     {r.catalogItem.oemReference && (
                       <p className="mt-0.5 font-mono text-[10px] text-muted">
                         Réf. {r.catalogItem.oemReference}
                       </p>
                     )}
-                  </td>
-                  <td className="px-6 py-3 text-sm text-muted">{r.catalogItem.vendor.shopName}</td>
-                  <td className="px-6 py-3 text-right text-sm tabular text-muted">{r.targetQty}</td>
-                  <td className="px-6 py-3 text-right text-sm font-semibold tabular text-ink">
+                  </Td>
+                  <Td className="text-muted">{r.catalogItem.vendor.shopName}</Td>
+                  <Td num className="text-muted">{r.targetQty}</Td>
+                  <Td num className="font-semibold text-ink">
                     {r.currentQty}
-                  </td>
-                  <td className="px-6 py-3">
+                  </Td>
+                  <Td>
                     <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_CLASS[r.status]}`}>
                       {STATUS_LABEL[r.status]}
                     </span>
-                  </td>
-                  <td className="px-6 py-3 text-right">
+                  </Td>
+                  <Td align="right">
                     <button
                       onClick={() => handleAdjust(r.id, +1)}
                       className="mr-1 rounded-sm border border-border px-2 py-1 text-[11px] text-ink hover:bg-surface"
@@ -268,11 +269,11 @@ export default function EnterpriseBufferStockPage() {
                     >
                       ✕
                     </button>
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))}
-            </tbody>
-          </table>
+            </Tbody>
+          </Table>
         </div>
       )}
 

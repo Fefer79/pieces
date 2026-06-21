@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { adminFetch, fmtFcfa } from '@/lib/admin-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
@@ -156,59 +157,57 @@ export default function AdminVendorDetailPage() {
 
       <div className="mb-6 rounded-md border border-border bg-card p-4">
         <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Transactions ({data.transactions.length})</div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                <th className="py-1">Date</th>
-                <th className="py-1">Article</th>
-                <th className="py-1 text-right">Prix</th>
-                <th className="py-1 text-right">Qté</th>
-                <th className="py-1 text-right">Commission</th>
-                <th className="py-1">Commande</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.transactions.map((t) => (
-                <tr key={t.id} className="border-t border-border">
-                  <td className="py-2 text-xs">{t.createdAt.slice(0, 10)}</td>
-                  <td className="py-2">{t.name}</td>
-                  <td className="py-2 text-right font-mono">{fmtFcfa(t.priceSnapshot)}</td>
-                  <td className="py-2 text-right font-mono">{t.quantity}</td>
-                  <td className="py-2 text-right font-mono">{fmtFcfa(t.commissionAmount)}</td>
-                  <td className="py-2 text-xs">{t.order.status}</td>
-                </tr>
-              ))}
-              {data.transactions.length === 0 && <tr><td colSpan={6} className="py-4 text-center text-xs text-muted">Aucune transaction.</td></tr>}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <Thead>
+            <Tr hover={false}>
+              <Th>Date</Th>
+              <Th>Article</Th>
+              <Th align="right">Prix</Th>
+              <Th align="right">Qté</Th>
+              <Th align="right">Commission</Th>
+              <Th>Commande</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {data.transactions.map((t) => (
+              <Tr key={t.id}>
+                <Td className="text-xs">{t.createdAt.slice(0, 10)}</Td>
+                <Td>{t.name}</Td>
+                <Td num>{fmtFcfa(t.priceSnapshot)}</Td>
+                <Td num>{t.quantity}</Td>
+                <Td num>{fmtFcfa(t.commissionAmount)}</Td>
+                <Td className="text-xs">{t.order.status}</Td>
+              </Tr>
+            ))}
+            {data.transactions.length === 0 && (
+              <Tr hover={false}><Td colSpan={6} align="center" className="py-6 text-muted">Aucune transaction.</Td></Tr>
+            )}
+          </Tbody>
+        </Table>
       </div>
 
       <div className="rounded-md border border-border bg-card p-4">
         <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Articles catalogue ({data.items.length})</div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                <th className="py-1">Nom</th>
-                <th className="py-1 text-right">Prix</th>
-                <th className="py-1 text-right">Commission</th>
-                <th className="py-1">Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((it) => (
-                <tr key={it.id} className="border-t border-border">
-                  <td className="py-2">{it.name ?? '—'}</td>
-                  <td className="py-2 text-right font-mono">{fmtFcfa(it.price)}</td>
-                  <td className="py-2 text-right font-mono">{fmtFcfa(it.commissionAmount)}</td>
-                  <td className="py-2 text-xs">{it.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <Thead>
+            <Tr hover={false}>
+              <Th>Nom</Th>
+              <Th align="right">Prix</Th>
+              <Th align="right">Commission</Th>
+              <Th>Statut</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {data.items.map((it) => (
+              <Tr key={it.id}>
+                <Td>{it.name ?? '—'}</Td>
+                <Td num>{fmtFcfa(it.price)}</Td>
+                <Td num>{fmtFcfa(it.commissionAmount)}</Td>
+                <Td className="text-xs">{it.status}</Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
       </div>
     </div>
   )

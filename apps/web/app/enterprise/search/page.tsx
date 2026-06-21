@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
 import { Price } from '@/components/ui/price'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface SearchResult {
   id: string
@@ -334,21 +335,21 @@ export default function EnterpriseSearchPage() {
 
                   {open && (
                     <div className="border-t border-border">
-                      <table className="w-full text-sm">
-                        <thead className="bg-surface/50">
-                          <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
-                            <th className="px-4 py-2 font-medium">Fournisseur</th>
-                            <th className="px-4 py-2 font-medium">Note</th>
-                            <th className="px-4 py-2 font-medium">État</th>
-                            <th className="px-4 py-2 font-medium">Garantie</th>
-                            <th className="px-4 py-2 font-medium text-right">Prix</th>
-                            <th className="px-4 py-2 font-medium">Dispo</th>
-                          </tr>
-                        </thead>
-                        <tbody>
+                      <Table>
+                        <Thead>
+                          <Tr hover={false}>
+                            <Th>Fournisseur</Th>
+                            <Th>Note</Th>
+                            <Th>État</Th>
+                            <Th>Garantie</Th>
+                            <Th align="right">Prix</Th>
+                            <Th>Dispo</Th>
+                          </Tr>
+                        </Thead>
+                        <Tbody>
                           {g.offers.map((o) => (
-                            <tr key={o.id} className="border-t border-border">
-                              <td className="px-4 py-2 text-ink">
+                            <Tr key={o.id}>
+                              <Td className="text-ink">
                                 {o.vendorName}
                                 {o.id === cheapest?.id && (
                                   <span className="ml-2 rounded-full bg-[#148C50]/10 px-2 py-0.5 font-mono text-[10px] text-[#148C50]">
@@ -360,8 +361,8 @@ export default function EnterpriseSearchPage() {
                                     Mieux noté
                                   </span>
                                 )}
-                              </td>
-                              <td className="px-4 py-2 text-muted">
+                              </Td>
+                              <Td className="text-muted">
                                 {o.vendorRating != null ? (
                                   <span className="tabular text-ink">
                                     {Math.round(o.vendorRating)}/100
@@ -372,34 +373,34 @@ export default function EnterpriseSearchPage() {
                                 ) : (
                                   <span className="font-mono text-[10px] text-muted-2">N/A</span>
                                 )}
-                              </td>
-                              <td className="px-4 py-2 text-muted">
+                              </Td>
+                              <Td className="text-muted">
                                 {o.condition === 'NEW' && 'Neuf'}
                                 {o.condition === 'USED' && 'Occasion'}
                                 {o.condition === 'REFURBISHED' && 'Ré-usiné'}
                                 {!o.condition && '—'}
-                              </td>
-                              <td className="px-4 py-2 text-muted">
+                              </Td>
+                              <Td className="text-muted">
                                 {o.warrantyMonths != null ? `${o.warrantyMonths} mois` : '—'}
-                              </td>
-                              <td className="px-4 py-2 text-right">
+                              </Td>
+                              <Td align="right">
                                 {o.price != null ? (
                                   <Price amount={o.price} className="font-semibold text-ink" />
                                 ) : (
                                   <span className="text-muted">—</span>
                                 )}
-                              </td>
-                              <td className="px-4 py-2">
+                              </Td>
+                              <Td>
                                 {o.inStock ? (
                                   <span className="text-[#148C50]">✓ Stock</span>
                                 ) : (
                                   <span className="text-muted-2">Épuisé</span>
                                 )}
-                              </td>
-                            </tr>
+                              </Td>
+                            </Tr>
                           ))}
-                        </tbody>
-                      </table>
+                        </Tbody>
+                      </Table>
                     </div>
                   )}
                 </li>

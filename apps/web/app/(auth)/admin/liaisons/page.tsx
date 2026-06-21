@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { adminFetch } from '@/lib/admin-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface LiaisonRow {
   id: string
@@ -45,52 +46,51 @@ export default function AdminLiaisonsPage() {
         <div className="text-sm text-muted">Chargement…</div>
       ) : (
         <div className="overflow-x-auto rounded-md border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                <th className="px-3 py-2">Nom</th>
-                <th className="px-3 py-2">Contact</th>
-                <th className="px-3 py-2">Rôles</th>
-                <th className="px-3 py-2 text-right">Vendeurs</th>
-                <th className="px-3 py-2 text-right">Pièces</th>
-                <th className="px-3 py-2 text-right">À agréer</th>
-                <th className="px-3 py-2 text-right">Actions log</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <Thead>
+              <Tr hover={false}>
+                <Th>Nom</Th>
+                <Th>Contact</Th>
+                <Th>Rôles</Th>
+                <Th align="right">Vendeurs</Th>
+                <Th align="right">Pièces</Th>
+                <Th align="right">À agréer</Th>
+                <Th align="right">Actions log</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {data.map((l) => (
-                <tr key={l.id} className="border-t border-border">
-                  <td className="px-3 py-2">
+                <Tr key={l.id}>
+                  <Td>
                     <Link href={`/admin/liaisons/${l.id}`} className="text-ink-2 hover:underline">
                       {l.name ?? '(sans nom)'}
                     </Link>
-                  </td>
-                  <td className="px-3 py-2 text-xs">
+                  </Td>
+                  <Td className="text-xs">
                     {l.phone ?? '—'}
                     {l.email ? ` · ${l.email}` : ''}
-                  </td>
-                  <td className="px-3 py-2 text-xs">{l.roles.join(', ')}</td>
-                  <td className="px-3 py-2 text-right font-mono">{l.stats.vendors}</td>
-                  <td className="px-3 py-2 text-right font-mono">{l.stats.parts}</td>
-                  <td
-                    className={`px-3 py-2 text-right font-mono ${
-                      l.stats.pendingAcceptance > 0 ? 'text-accent font-semibold' : ''
-                    }`}
+                  </Td>
+                  <Td className="text-xs">{l.roles.join(', ')}</Td>
+                  <Td num>{l.stats.vendors}</Td>
+                  <Td num>{l.stats.parts}</Td>
+                  <Td
+                    num
+                    className={l.stats.pendingAcceptance > 0 ? 'text-accent font-semibold' : ''}
                   >
                     {l.stats.pendingAcceptance}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono">{l.stats.activities}</td>
-                </tr>
+                  </Td>
+                  <Td num>{l.stats.activities}</Td>
+                </Tr>
               ))}
               {data.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="p-6 text-center text-sm text-muted">
+                <Tr hover={false}>
+                  <Td colSpan={7} align="center" className="py-6 text-muted">
                     Aucun Liaison.
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               )}
-            </tbody>
-          </table>
+            </Tbody>
+          </Table>
         </div>
       )}
     </div>

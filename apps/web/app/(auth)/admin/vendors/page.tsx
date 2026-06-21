@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { adminFetch, downloadCsv } from '@/lib/admin-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 interface Vendor {
   id: string
@@ -182,32 +183,32 @@ export default function AdminVendorsPage() {
       {!data ? <div className="text-sm text-muted">Chargement…</div> : (
         <>
           <div className="overflow-x-auto rounded-md border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-                  <th className="px-3 py-2">Boutique</th>
-                  <th className="px-3 py-2">Contact</th>
-                  <th className="px-3 py-2">Statut</th>
-                  <th className="px-3 py-2 text-right">Articles</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th>Boutique</Th>
+                  <Th>Contact</Th>
+                  <Th>Statut</Th>
+                  <Th align="right">Articles</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {data.vendors.map((v) => (
-                  <tr key={v.id} className="border-t border-border">
-                    <td className="px-3 py-2">
+                  <Tr key={v.id}>
+                    <Td>
                       <Link href={`/admin/vendors/${v.id}`} className="font-medium text-ink-2 hover:underline">{v.shopName}</Link>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
+                    </Td>
+                    <Td className="text-xs">
                       <div>{v.user?.phone ?? v.phone}</div>
                       <div className="text-muted">{v.user?.email ?? ''}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{v.status}</td>
-                    <td className="px-3 py-2 text-right font-mono">{v._count.catalogItems}</td>
-                  </tr>
+                    </Td>
+                    <Td className="text-xs">{v.status}</Td>
+                    <Td num>{v._count.catalogItems}</Td>
+                  </Tr>
                 ))}
-                {data.vendors.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-sm text-muted">Aucun vendeur.</td></tr>}
-              </tbody>
-            </table>
+                {data.vendors.length === 0 && <Tr hover={false}><Td colSpan={4} align="center" className="py-6 text-muted">Aucun vendeur.</Td></Tr>}
+              </Tbody>
+            </Table>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-muted">
             <div>{data.pagination.total} vendeurs · page {data.pagination.page}/{data.pagination.totalPages}</div>

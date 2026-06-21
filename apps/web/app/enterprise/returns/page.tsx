@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { apiFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 type ReturnReason = 'DEFECTIVE' | 'WRONG_PART' | 'NOT_AS_DESCRIBED' | 'NO_LONGER_NEEDED' | 'OTHER'
 type ReturnStatus = 'REQUESTED' | 'ACCEPTED' | 'PICKED_UP' | 'INSPECTED' | 'REFUNDED' | 'REJECTED' | 'CANCELLED'
@@ -226,41 +227,41 @@ export default function EnterpriseReturnsPage() {
         </div>
       ) : (
         <div className="rounded-md border border-border bg-card">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
-                <th className="px-6 py-3 text-left">Demandé</th>
-                <th className="px-6 py-3 text-left">Commande</th>
-                <th className="px-6 py-3 text-left">Motif</th>
-                <th className="px-6 py-3 text-left">Statut</th>
-                <th className="px-6 py-3 text-right">Remboursement</th>
-                <th className="px-6 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <Thead>
+              <Tr hover={false}>
+                <Th>Demandé</Th>
+                <Th>Commande</Th>
+                <Th>Motif</Th>
+                <Th>Statut</Th>
+                <Th align="right">Remboursement</Th>
+                <Th align="right">Actions</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {returns.map((r) => (
-                <tr key={r.id} className="border-b border-border last:border-0">
-                  <td className="px-6 py-3 text-sm text-muted">
+                <Tr key={r.id}>
+                  <Td className="text-muted">
                     {new Date(r.requestedAt).toLocaleDateString('fr-FR')}
-                  </td>
-                  <td className="px-6 py-3 font-mono text-[11px] text-ink">
+                  </Td>
+                  <Td className="font-mono text-[11px] text-ink">
                     {r.orderId.slice(0, 8)}…
-                  </td>
-                  <td className="px-6 py-3 text-sm text-ink">
+                  </Td>
+                  <Td className="text-ink">
                     {REASON_LABEL[r.reason]}
                     {r.description && (
                       <p className="mt-0.5 text-xs text-muted line-clamp-1">{r.description}</p>
                     )}
-                  </td>
-                  <td className="px-6 py-3">
+                  </Td>
+                  <Td>
                     <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_CLASS[r.status]}`}>
                       {STATUS_LABEL[r.status]}
                     </span>
-                  </td>
-                  <td className="px-6 py-3 text-right text-sm tabular text-ink">
+                  </Td>
+                  <Td num className="text-ink">
                     {r.refundAmount != null ? `${r.refundAmount.toLocaleString('fr-FR')} F` : '—'}
-                  </td>
-                  <td className="px-6 py-3 text-right">
+                  </Td>
+                  <Td align="right">
                     {(r.status === 'REQUESTED' || r.status === 'ACCEPTED') && (
                       <button
                         onClick={() => handleCancel(r.id)}
@@ -269,11 +270,11 @@ export default function EnterpriseReturnsPage() {
                         Annuler
                       </button>
                     )}
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))}
-            </tbody>
-          </table>
+            </Tbody>
+          </Table>
         </div>
       )}
 

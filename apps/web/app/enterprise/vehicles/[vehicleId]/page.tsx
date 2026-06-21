@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { enterpriseFetch, getActiveEnterpriseId, type FleetVehicle, type MaintenanceCenter } from '@/lib/enterprise-api'
 import { setCartVehicle } from '@/lib/cart'
 import { buildMaintenanceSearchHref } from 'shared/constants'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 const DAY_LABEL: Record<number, string> = {
   0: 'Dimanche', 1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi',
@@ -346,36 +347,34 @@ export default function VehicleDetailPage() {
       {analytics && analytics.items.length > 0 && (
         <div className="mb-4 rounded-md border border-border bg-card p-4">
           <h2 className="mb-3 font-display text-lg text-ink">Pièces achetées ({analytics.items.length})</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-surface/50">
-                <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
-                  <th className="px-2 py-2 font-medium">Date</th>
-                  <th className="px-2 py-2 font-medium">Pièce</th>
-                  <th className="px-2 py-2 font-medium">Catégorie</th>
-                  <th className="px-2 py-2 font-medium">Fournisseur</th>
-                  <th className="px-2 py-2 font-medium text-right">Qté</th>
-                  <th className="px-2 py-2 font-medium text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {analytics.items.map((it) => (
-                  <tr key={it.id} className="border-t border-border">
-                    <td className="px-2 py-2 font-mono text-[11px] text-muted">
-                      {it.orderPaidAt ? new Date(it.orderPaidAt).toLocaleDateString('fr-FR') : '—'}
-                    </td>
-                    <td className="px-2 py-2 text-ink">{it.name}</td>
-                    <td className="px-2 py-2 text-muted">{it.category ?? '—'}</td>
-                    <td className="px-2 py-2 text-muted">{it.vendorShopName}</td>
-                    <td className="px-2 py-2 text-right tabular">{it.quantity}</td>
-                    <td className="px-2 py-2 text-right font-semibold tabular text-ink">
-                      {it.lineTotal.toLocaleString('fr-FR')} F
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <Thead>
+              <Tr hover={false}>
+                <Th>Date</Th>
+                <Th>Pièce</Th>
+                <Th>Catégorie</Th>
+                <Th>Fournisseur</Th>
+                <Th align="right">Qté</Th>
+                <Th align="right">Total</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {analytics.items.map((it) => (
+                <Tr key={it.id}>
+                  <Td className="font-mono text-[11px] text-muted">
+                    {it.orderPaidAt ? new Date(it.orderPaidAt).toLocaleDateString('fr-FR') : '—'}
+                  </Td>
+                  <Td className="text-ink">{it.name}</Td>
+                  <Td className="text-muted">{it.category ?? '—'}</Td>
+                  <Td className="text-muted">{it.vendorShopName}</Td>
+                  <Td num>{it.quantity}</Td>
+                  <Td num className="font-semibold text-ink">
+                    {it.lineTotal.toLocaleString('fr-FR')} F
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
         </div>
       )}
 
@@ -388,59 +387,57 @@ export default function VehicleDetailPage() {
         </div>
 
         {schedules.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-surface/50">
-                <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
-                  <th className="px-2 py-2 font-medium">Type</th>
-                  <th className="px-2 py-2 font-medium text-right">Intervalle</th>
-                  <th className="px-2 py-2 font-medium text-right">Dernier (km)</th>
-                  <th className="px-2 py-2 font-medium text-right">Prochain (km)</th>
-                  <th className="px-2 py-2 font-medium">Statut</th>
-                  <th className="px-2 py-2 font-medium text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {schedules.map((s) => (
-                  <tr key={s.id} className="border-t border-border">
-                    <td className="px-2 py-2 text-ink">{s.label ?? KIND_LABEL[s.kind]}</td>
-                    <td className="px-2 py-2 text-right tabular text-muted">
-                      {s.intervalKm.toLocaleString('fr-FR')} km
-                    </td>
-                    <td className="px-2 py-2 text-right tabular text-muted">
-                      {s.lastDoneAtKm != null ? s.lastDoneAtKm.toLocaleString('fr-FR') : '—'}
-                    </td>
-                    <td className="px-2 py-2 text-right tabular text-muted">
-                      {s.nextDueAtKm != null ? s.nextDueAtKm.toLocaleString('fr-FR') : '—'}
-                    </td>
-                    <td className="px-2 py-2">
-                      <StatusBadge status={s.status} kmRemaining={s.kmRemaining} />
-                    </td>
-                    <td className="px-2 py-2 text-right">
-                      <button
-                        onClick={() => handleOrderPart(s.kind)}
-                        className="mr-1 rounded-sm border border-accent/40 bg-accent/5 px-2 py-1 text-[11px] font-medium text-accent hover:bg-accent/10"
-                      >
-                        🛒 Commander
-                      </button>
-                      <button
-                        onClick={() => handleMarkDone(s.id)}
-                        className="mr-1 rounded-sm border border-border px-2 py-1 text-[11px] text-ink hover:bg-surface"
-                      >
-                        ✓ Fait
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSchedule(s.id)}
-                        className="rounded-sm border border-red-200 px-2 py-1 text-[11px] text-red-600 hover:bg-red-50"
-                      >
-                        ✕
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <Thead>
+              <Tr hover={false}>
+                <Th>Type</Th>
+                <Th align="right">Intervalle</Th>
+                <Th align="right">Dernier (km)</Th>
+                <Th align="right">Prochain (km)</Th>
+                <Th>Statut</Th>
+                <Th align="right">Action</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {schedules.map((s) => (
+                <Tr key={s.id}>
+                  <Td className="text-ink">{s.label ?? KIND_LABEL[s.kind]}</Td>
+                  <Td num className="text-muted">
+                    {s.intervalKm.toLocaleString('fr-FR')} km
+                  </Td>
+                  <Td num className="text-muted">
+                    {s.lastDoneAtKm != null ? s.lastDoneAtKm.toLocaleString('fr-FR') : '—'}
+                  </Td>
+                  <Td num className="text-muted">
+                    {s.nextDueAtKm != null ? s.nextDueAtKm.toLocaleString('fr-FR') : '—'}
+                  </Td>
+                  <Td>
+                    <StatusBadge status={s.status} kmRemaining={s.kmRemaining} />
+                  </Td>
+                  <Td align="right">
+                    <button
+                      onClick={() => handleOrderPart(s.kind)}
+                      className="mr-1 rounded-sm border border-accent/40 bg-accent/5 px-2 py-1 text-[11px] font-medium text-accent hover:bg-accent/10"
+                    >
+                      🛒 Commander
+                    </button>
+                    <button
+                      onClick={() => handleMarkDone(s.id)}
+                      className="mr-1 rounded-sm border border-border px-2 py-1 text-[11px] text-ink hover:bg-surface"
+                    >
+                      ✓ Fait
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSchedule(s.id)}
+                      className="rounded-sm border border-red-200 px-2 py-1 text-[11px] text-red-600 hover:bg-red-50"
+                    >
+                      ✕
+                    </button>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
         )}
 
         <form onSubmit={handleCreateSchedule} className="mt-4 flex flex-wrap items-end gap-2 border-t border-border pt-4">

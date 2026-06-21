@@ -294,39 +294,39 @@ export default function EnterpriseDashboardPage() {
               {dashboard.moneyPits.length} signalé{dashboard.moneyPits.length > 1 ? 's' : ''}
             </span>
           </div>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-red-200 bg-red-50 font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-red-700/80">
-                <th className="px-6 py-3 text-left">Véhicule</th>
-                <th className="px-6 py-3 text-right">Coût / km</th>
-                <th className="px-6 py-3 text-right">vs médiane</th>
-                <th className="px-6 py-3 text-right">Surcoût estimé</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <Thead>
+              <Tr hover={false}>
+                <Th className="bg-red-50 text-red-700/80 border-red-200">Véhicule</Th>
+                <Th align="right" className="bg-red-50 text-red-700/80 border-red-200">Coût / km</Th>
+                <Th align="right" className="bg-red-50 text-red-700/80 border-red-200">vs médiane</Th>
+                <Th align="right" className="bg-red-50 text-red-700/80 border-red-200">Surcoût estimé</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {dashboard.moneyPits.map((m) => (
-                <tr key={m.vehicle.id} className="border-b border-red-200/60 last:border-0">
-                  <td className="px-6 py-3 text-sm text-ink">
+                <Tr key={m.vehicle.id} className="border-red-200/60">
+                  <Td className="text-ink">
                     <Link href={`/enterprise/vehicles/${m.vehicle.id}`} className="hover:underline">
                       {m.vehicle.brand} {m.vehicle.model} {m.vehicle.year}
                     </Link>
                     {m.vehicle.plate && (
                       <span className="ml-2 font-mono text-[10px] text-muted">{m.vehicle.plate}</span>
                     )}
-                  </td>
-                  <td className="px-6 py-3 text-right text-sm tabular text-ink">
+                  </Td>
+                  <Td num className="text-ink">
                     {m.costPerKm.toLocaleString('fr-FR')} F
-                  </td>
-                  <td className="px-6 py-3 text-right text-sm tabular font-medium text-red-700">
+                  </Td>
+                  <Td num className="font-medium text-red-700">
                     ×{m.multipleOfMedian.toLocaleString('fr-FR')}
-                  </td>
-                  <td className="px-6 py-3 text-right text-sm tabular text-red-700">
+                  </Td>
+                  <Td num className="text-red-700">
                     {formatFcfa(m.excessSpend)}
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))}
-            </tbody>
-          </table>
+            </Tbody>
+          </Table>
         </div>
       )}
 
@@ -335,24 +335,24 @@ export default function EnterpriseDashboardPage() {
           <h2 className="font-display text-lg text-ink">Véhicules les plus coûteux</h2>
           <p className="mt-1 text-xs text-muted">Sur toute la période — top 5 par dépenses cumulées.</p>
         </div>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
-              <th className="px-6 py-3 text-left">Véhicule</th>
-              <th className="px-6 py-3 text-left">Plaque</th>
-              <th className="px-6 py-3 text-right">Total dépensé</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <Thead>
+            <Tr hover={false}>
+              <Th>Véhicule</Th>
+              <Th>Plaque</Th>
+              <Th align="right">Total dépensé</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
             {!dashboard && (
-              <tr><td colSpan={3} className="px-6 py-8 text-center text-sm text-muted">Chargement…</td></tr>
+              <Tr><Td colSpan={3} align="center" className="py-8 text-muted">Chargement…</Td></Tr>
             )}
             {dashboard && dashboard.topVehiclesByCost.length === 0 && (
-              <tr><td colSpan={3} className="px-6 py-8 text-center text-sm text-muted">Aucune commande payée pour le moment.</td></tr>
+              <Tr><Td colSpan={3} align="center" className="py-8 text-muted">Aucune commande payée pour le moment.</Td></Tr>
             )}
             {dashboard?.topVehiclesByCost.map((t, i) => (
-              <tr key={i} className="border-b border-border last:border-0">
-                <td className="px-6 py-3 text-sm text-ink">
+              <Tr key={i}>
+                <Td className="text-ink">
                   {t.vehicle ? (
                     <Link href={`/enterprise/vehicles/${t.vehicle.id}`} className="hover:underline">
                       {t.vehicle.brand} {t.vehicle.model} {t.vehicle.year}
@@ -360,15 +360,15 @@ export default function EnterpriseDashboardPage() {
                   ) : (
                     <span className="text-muted">—</span>
                   )}
-                </td>
-                <td className="px-6 py-3 text-sm text-muted">{t.vehicle?.plate ?? '—'}</td>
-                <td className="px-6 py-3 text-right text-sm font-medium tabular text-ink">
+                </Td>
+                <Td className="text-muted">{t.vehicle?.plate ?? '—'}</Td>
+                <Td num className="font-medium text-ink">
                   {formatFcfa(t.totalSpent)}
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             ))}
-          </tbody>
-        </table>
+          </Tbody>
+        </Table>
       </div>
     </div>
   )

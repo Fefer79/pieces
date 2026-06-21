@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { statusLabels, getStatusColor } from '@/lib/order-status'
 import { Price } from '@/components/ui/price'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -166,71 +167,68 @@ export default function EnterpriseOrdersPage() {
 
       {/* Table */}
       <div className="overflow-hidden rounded-md border border-border bg-card">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
-              <th className="px-6 py-3 text-left"># Commande</th>
-              <th className="px-6 py-3 text-left">Statut</th>
-              <th className="px-6 py-3 text-right">Montant</th>
-              <th className="px-6 py-3 text-left">Date</th>
-              <th className="px-6 py-3 text-right">Articles</th>
-              <th className="px-6 py-3 text-right">Devis</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <Thead>
+            <Tr hover={false}>
+              <Th># Commande</Th>
+              <Th>Statut</Th>
+              <Th align="right">Montant</Th>
+              <Th>Date</Th>
+              <Th align="right">Articles</Th>
+              <Th align="right">Devis</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
             {loading && (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted">
+              <Tr>
+                <Td colSpan={6} align="center" className="py-12 text-muted">
                   Chargement…
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             )}
 
             {!loading && filteredOrders.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted">
+              <Tr>
+                <Td colSpan={6} align="center" className="py-12 text-muted">
                   Aucune commande{statusFilter || searchQuery ? ' correspondant aux filtres' : ''}.
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             )}
 
-            {!loading && filteredOrders.map((order, idx) => {
+            {!loading && filteredOrders.map((order) => {
               const color = getStatusColor(order.status)
               return (
-                <tr
-                  key={order.id}
-                  className={`transition-colors hover:bg-surface ${idx > 0 ? 'border-t border-border' : ''}`}
-                >
-                  <td className="px-6 py-4 font-mono text-sm font-medium tabular text-ink">
+                <Tr key={order.id}>
+                  <Td num className="font-mono font-medium text-ink">
                     #{order.id.slice(0, 8)}
-                  </td>
-                  <td className="px-6 py-4">
+                  </Td>
+                  <Td>
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-[0.04em] ${color.bg} ${color.text}`}>
                       {statusLabels[order.status] ?? order.status}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
+                  </Td>
+                  <Td align="right">
                     <Price amount={order.totalAmount} className="text-sm" />
-                  </td>
-                  <td className="px-6 py-4 font-mono text-sm tabular text-muted">
+                  </Td>
+                  <Td className="font-mono tabular text-muted">
                     {new Date(order.createdAt).toLocaleDateString('fr-CI')}
-                  </td>
-                  <td className="px-6 py-4 text-right font-mono text-sm tabular text-muted">
+                  </Td>
+                  <Td num className="font-mono text-muted">
                     {order.items.reduce((sum, i) => sum + i.quantity, 0)}
-                  </td>
-                  <td className="px-6 py-4 text-right">
+                  </Td>
+                  <Td align="right">
                     <button
                       onClick={() => downloadDevis(order.id)}
                       className="text-sm font-medium text-ink-2 hover:underline"
                     >
                       PDF
                     </button>
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               )
             })}
-          </tbody>
-        </table>
+          </Tbody>
+        </Table>
       </div>
 
       {/* Pagination */}

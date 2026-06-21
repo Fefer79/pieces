@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { enterpriseFetch, getActiveEnterpriseId, type FleetVehicle } from '@/lib/enterprise-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 type VehicleRef = { id: string; brand: string; model: string; plate: string | null }
 
@@ -159,28 +160,28 @@ export default function DriverDetailPage() {
         {driver.dailyRecords.length === 0 ? (
           <p className="text-sm text-muted">Aucun relevé. Le chauffeur peut saisir depuis son espace, ou ajoutez-en un ici.</p>
         ) : (
-          <div className="overflow-x-auto rounded-md border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-surface text-left text-[11px] uppercase tracking-wide text-muted">
-                  <th className="px-3 py-2">Date</th><th className="px-3 py-2">Véhicule</th>
-                  <th className="px-3 py-2 text-right">CA</th><th className="px-3 py-2 text-right">Carburant</th>
-                  <th className="px-3 py-2 text-right">Dépenses</th><th className="px-3 py-2 text-right">Km</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="rounded-md border border-border">
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th>Date</Th><Th>Véhicule</Th>
+                  <Th align="right">CA</Th><Th align="right">Carburant</Th>
+                  <Th align="right">Dépenses</Th><Th align="right">Km</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                 {driver.dailyRecords.map((r) => (
-                  <tr key={r.id} className="border-t border-border">
-                    <td className="px-3 py-2 tabular">{r.date.slice(0, 10)}</td>
-                    <td className="px-3 py-2 text-muted">{r.vehicle ? `${r.vehicle.brand} ${r.vehicle.model}` : '—'}</td>
-                    <td className="px-3 py-2 text-right tabular text-ink">{fmt(r.revenue)}</td>
-                    <td className="px-3 py-2 text-right tabular text-muted">{fmt(r.fuelCost)}</td>
-                    <td className="px-3 py-2 text-right tabular text-muted">{fmt(r.otherExpenses)}</td>
-                    <td className="px-3 py-2 text-right tabular text-muted">{r.kmDriven ?? '—'}</td>
-                  </tr>
+                  <Tr key={r.id}>
+                    <Td className="tabular">{r.date.slice(0, 10)}</Td>
+                    <Td className="text-muted">{r.vehicle ? `${r.vehicle.brand} ${r.vehicle.model}` : '—'}</Td>
+                    <Td num className="text-ink">{fmt(r.revenue)}</Td>
+                    <Td num className="text-muted">{fmt(r.fuelCost)}</Td>
+                    <Td num className="text-muted">{fmt(r.otherExpenses)}</Td>
+                    <Td num className="text-muted">{r.kmDriven ?? '—'}</Td>
+                  </Tr>
                 ))}
-              </tbody>
-            </table>
+              </Tbody>
+            </Table>
           </div>
         )}
       </Section>

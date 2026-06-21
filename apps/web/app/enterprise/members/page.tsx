@@ -8,6 +8,7 @@ import {
   getActiveEnterpriseId,
   type EnterpriseMember,
 } from '@/lib/enterprise-api'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 const ROLE_LABEL: Record<EnterpriseMember['role'], string> = {
   OWNER: 'Propriétaire',
@@ -71,28 +72,28 @@ export default function EnterpriseMembersPage() {
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
       <div className="overflow-hidden rounded-md border border-border bg-card">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
-              <th className="px-6 py-3 text-left">Nom</th>
-              <th className="px-6 py-3 text-left">Rôle</th>
-              <th className="px-6 py-3 text-left">Téléphone</th>
-              <th className="px-6 py-3 text-left">Email</th>
-              <th className="px-6 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-muted">Chargement…</td></tr>}
+        <Table>
+          <Thead>
+            <Tr hover={false}>
+              <Th>Nom</Th>
+              <Th>Rôle</Th>
+              <Th>Téléphone</Th>
+              <Th>Email</Th>
+              <Th align="right">Actions</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {loading && <Tr><Td colSpan={5} align="center" className="py-8 text-muted">Chargement…</Td></Tr>}
             {!loading && members.length === 0 && (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Aucun membre. Invitez-en un pour commencer.</td></tr>
+              <Tr><Td colSpan={5} align="center" className="py-12 text-muted">Aucun membre. Invitez-en un pour commencer.</Td></Tr>
             )}
             {members.map((m) => (
-              <tr key={m.id} className="border-b border-border last:border-0">
-                <td className="px-6 py-3 text-sm text-ink">{m.user.name ?? '—'}</td>
-                <td className="px-6 py-3 text-sm text-muted">{ROLE_LABEL[m.role]}</td>
-                <td className="px-6 py-3 text-sm text-muted tabular">{m.user.phone ?? '—'}</td>
-                <td className="px-6 py-3 text-sm text-muted">{m.user.email ?? '—'}</td>
-                <td className="px-6 py-3 text-right">
+              <Tr key={m.id}>
+                <Td className="text-ink">{m.user.name ?? '—'}</Td>
+                <Td className="text-muted">{ROLE_LABEL[m.role]}</Td>
+                <Td className="text-muted tabular">{m.user.phone ?? '—'}</Td>
+                <Td className="text-muted">{m.user.email ?? '—'}</Td>
+                <Td align="right">
                   {m.role !== 'OWNER' && (
                     <button
                       onClick={() => handleRemove(m.id)}
@@ -101,11 +102,11 @@ export default function EnterpriseMembersPage() {
                       Retirer
                     </button>
                   )}
-                </td>
-              </tr>
+                </Td>
+              </Tr>
             ))}
-          </tbody>
-        </table>
+          </Tbody>
+        </Table>
       </div>
 
       {showInvite && (

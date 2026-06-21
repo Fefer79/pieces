@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { enterpriseFetch, getActiveEnterpriseId, type MaintenanceCenter } from '@/lib/enterprise-api'
 import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
+import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 const DAY_LABEL: Record<number, string> = {
   0: 'Dimanche',
@@ -203,39 +204,39 @@ export default function EnterpriseCentersPage() {
         </div>
       ) : (
         <div className="rounded-md border border-border bg-card">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
-                <th className="px-6 py-3 text-left">Nom</th>
-                <th className="px-6 py-3 text-left">Commune</th>
-                <th className="px-6 py-3 text-left">Livraison</th>
-                <th className="px-6 py-3 text-right">Véhicules</th>
-                <th className="px-6 py-3 text-left">Statut</th>
-                <th className="px-6 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <Thead>
+              <Tr hover={false}>
+                <Th>Nom</Th>
+                <Th>Commune</Th>
+                <Th>Livraison</Th>
+                <Th align="right">Véhicules</Th>
+                <Th>Statut</Th>
+                <Th align="right">Actions</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {centers.map((c) => (
-                <tr key={c.id} className="border-b border-border last:border-0">
-                  <td className="px-6 py-3 text-sm text-ink">
+                <Tr key={c.id}>
+                  <Td className="text-ink">
                     {c.name}
                     {c.contactName && (
                       <p className="mt-0.5 font-mono text-[10px] text-muted">{c.contactName}{c.contactPhone ? ` · ${c.contactPhone}` : ''}</p>
                     )}
-                  </td>
-                  <td className="px-6 py-3 text-sm text-muted">{c.commune ?? '—'}</td>
-                  <td className="px-6 py-3 text-sm text-muted">
+                  </Td>
+                  <Td className="text-muted">{c.commune ?? '—'}</Td>
+                  <Td className="text-muted">
                     {c.deliveryDayOfWeek != null ? DAY_LABEL[c.deliveryDayOfWeek] : '—'}
-                  </td>
-                  <td className="px-6 py-3 text-right text-sm tabular text-ink">{c.vehiclesCount}</td>
-                  <td className="px-6 py-3">
+                  </Td>
+                  <Td num className="text-ink">{c.vehiclesCount}</Td>
+                  <Td>
                     {c.active ? (
                       <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">Actif</span>
                     ) : (
                       <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600">Inactif</span>
                     )}
-                  </td>
-                  <td className="px-6 py-3 text-right">
+                  </Td>
+                  <Td align="right">
                     <button
                       onClick={() => handleToggleActive(c)}
                       className="mr-1 rounded-sm border border-border px-2 py-1 text-[11px] text-ink hover:bg-surface"
@@ -248,11 +249,11 @@ export default function EnterpriseCentersPage() {
                     >
                       Supprimer
                     </button>
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))}
-            </tbody>
-          </table>
+            </Tbody>
+          </Table>
         </div>
       )}
 
