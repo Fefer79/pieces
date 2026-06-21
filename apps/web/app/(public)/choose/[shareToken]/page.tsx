@@ -234,6 +234,7 @@ export default function OwnerChoicePage() {
             {/* Sidebar: breakdown + payment */}
             <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
               <PriceBreakdown
+                title="Le détail, avant de payer"
                 lines={priceLines}
                 total={grandTotal}
                 note={

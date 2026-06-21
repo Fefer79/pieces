@@ -350,6 +350,7 @@ export default function ProductPage() {
               {item.price != null ? (
                 <div className="mt-5">
                   <PriceBreakdown
+                    title="Le détail, avant de payer"
                     lines={priceLines}
                     total={item.price * qty}
                     note="Livraison et main d'œuvre calculées à la commande — aucun frais caché."
