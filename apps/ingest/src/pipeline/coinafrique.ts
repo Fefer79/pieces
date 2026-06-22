@@ -25,14 +25,15 @@ export type CoinAfriqueStats = {
   outputPath: string | null
   vendorId: string | null
   itemsUpserted: number
+  fitmentsCreated: number
 }
 
-type IngestPrisma = Pick<PrismaClient, 'vendor' | 'catalogItem'>
+type IngestPrisma = Pick<PrismaClient, 'vendor' | 'catalogItem' | 'catalogItemFitment'>
 
 export async function loadCoinAfriqueItems(
   items: CoinAfriqueNormalized[],
   db: IngestPrisma = prisma,
-): Promise<{ vendorId: string; itemsUpserted: number }> {
+): Promise<{ vendorId: string; itemsUpserted: number; fitmentsCreated: number }> {
   const vendor = await db.vendor.upsert({
     where: { externalSource: EXTERNAL_SOURCE_SLUG },
     create: {
@@ -48,8 +49,9 @@ export async function loadCoinAfriqueItems(
   })
 
   let itemsUpserted = 0
+  let fitmentsCreated = 0
   for (const item of items) {
-    await db.catalogItem.upsert({
+    const row = await db.catalogItem.upsert({
       where: {
         uq_catalog_items_external: {
           externalSource: item.externalSource,
@@ -84,8 +86,23 @@ export async function loadCoinAfriqueItems(
       },
     })
     itemsUpserted += 1
+
+    // Fitments déduits du titre — remplacés en bloc pour rester en phase avec l'upstream.
+    await db.catalogItemFitment.deleteMany({ where: { catalogItemId: row.id } })
+    if (item.fitments.length > 0) {
+      await db.catalogItemFitment.createMany({
+        data: item.fitments.map((f) => ({
+          catalogItemId: row.id,
+          brand: f.brand,
+          model: f.model,
+          yearFrom: f.yearFrom,
+          yearTo: f.yearTo,
+        })),
+      })
+      fitmentsCreated += item.fitments.length
+    }
   }
-  return { vendorId: vendor.id, itemsUpserted }
+  return { vendorId: vendor.id, itemsUpserted, fitmentsCreated }
 }
 
 function isoDate(): string {
@@ -105,6 +122,7 @@ export async function ingestCoinAfrique(
     outputPath: null,
     vendorId: null,
     itemsUpserted: 0,
+    fitmentsCreated: 0,
   }
 
   const normalized: CoinAfriqueNormalized[] = []
@@ -142,10 +160,11 @@ export async function ingestCoinAfrique(
     console.log(`[coinafrique] dump écrit dans ${outPath}`)
   } else {
     console.log(`[coinafrique] commit en DB de ${normalized.length} produits…`)
-    const { vendorId, itemsUpserted } = await loadCoinAfriqueItems(normalized)
+    const { vendorId, itemsUpserted, fitmentsCreated } = await loadCoinAfriqueItems(normalized)
     stats.vendorId = vendorId
     stats.itemsUpserted = itemsUpserted
-    console.log(`[coinafrique] ${itemsUpserted} produits upserted sous vendor ${vendorId}`)
+    stats.fitmentsCreated = fitmentsCreated
+    console.log(`[coinafrique] ${itemsUpserted} produits upserted (${fitmentsCreated} fitments) sous vendor ${vendorId}`)
   }
   return stats
 }

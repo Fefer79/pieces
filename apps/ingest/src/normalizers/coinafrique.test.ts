@@ -51,6 +51,18 @@ describe('normalizeCoinAfriqueProduct', () => {
     expect(n.partSource).toBe('OEM')
   })
 
+  it('derives vehicle fitments from the title', () => {
+    expect(nz(normalizeCoinAfriqueProduct({ ...baseRaw, name: 'Phare BMW' })).fitments).toEqual([
+      { brand: 'BMW', model: null, yearFrom: null, yearTo: null },
+    ])
+    // Marque du véhicule détectée même quand un équipementier (Bosch) précède.
+    expect(nz(normalizeCoinAfriqueProduct({ ...baseRaw, name: 'Pièces Bosch pour BMW' })).fitments).toEqual([
+      { brand: 'BMW', model: null, yearFrom: null, yearTo: null },
+    ])
+    // Aucune marque véhicule → pas de fitment (reste générique).
+    expect(nz(normalizeCoinAfriqueProduct({ ...baseRaw, name: 'Batterie de voiture' })).fitments).toEqual([])
+  })
+
   it('returns null when the name is empty', () => {
     expect(normalizeCoinAfriqueProduct({ ...baseRaw, name: '   ' })).toBeNull()
   })

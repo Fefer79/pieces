@@ -16,14 +16,17 @@ function makeItem(overrides: Partial<CoinAfriqueNormalized> = {}): CoinAfriqueNo
     condition: 'NEW',
     partSource: 'AFTERMARKET',
     imageOriginalUrl: 'https://images.coinafrique.com/thumb.jpg',
+    fitments: [],
     ...overrides,
   }
 }
 
 function makeDb() {
   const vendor = { upsert: vi.fn(async () => ({ id: 'vendor-shadow-coin' })) }
-  const catalogItem = { upsert: vi.fn(async () => ({})) }
-  return { db: { vendor, catalogItem } as never, vendor, catalogItem }
+  let n = 0
+  const catalogItem = { upsert: vi.fn(async () => ({ id: `item-${n++}` })) }
+  const catalogItemFitment = { deleteMany: vi.fn(async () => ({ count: 0 })), createMany: vi.fn(async () => ({ count: 0 })) }
+  return { db: { vendor, catalogItem, catalogItemFitment } as never, vendor, catalogItem, catalogItemFitment }
 }
 
 describe('loadCoinAfriqueItems', () => {
@@ -46,6 +49,32 @@ describe('loadCoinAfriqueItems', () => {
     expect(second.create.price).toBeNull()
     expect(second.create.condition).toBe('USED')
 
-    expect(result).toEqual({ vendorId: 'vendor-shadow-coin', itemsUpserted: 2 })
+    expect(result).toEqual({ vendorId: 'vendor-shadow-coin', itemsUpserted: 2, fitmentsCreated: 0 })
+  })
+
+  it('writes the item fitments (replace-wholesale) and counts them', async () => {
+    const { db, catalogItem, catalogItemFitment } = makeDb()
+    const items = [
+      makeItem({ name: 'Phare BMW', fitments: [{ brand: 'BMW', model: null, yearFrom: null, yearTo: null }] }),
+      makeItem({
+        externalSourceId: '5920093',
+        name: 'Moteur Hyundai Kia',
+        fitments: [
+          { brand: 'HYUNDAI', model: null, yearFrom: null, yearTo: null },
+          { brand: 'KIA', model: null, yearFrom: null, yearTo: null },
+        ],
+      }),
+    ]
+
+    const result = await loadCoinAfriqueItems(items, db)
+
+    // Chaque pièce voit ses fitments purgés puis recréés.
+    expect(catalogItemFitment.deleteMany).toHaveBeenCalledTimes(2)
+    const firstCreate = catalogItemFitment.createMany.mock.calls[0][0] as {
+      data: Array<{ catalogItemId: string; brand: string }>
+    }
+    expect(firstCreate.data).toEqual([{ catalogItemId: 'item-0', brand: 'BMW', model: null, yearFrom: null, yearTo: null }])
+    expect(catalogItem.upsert).toHaveBeenCalledTimes(2)
+    expect(result.fitmentsCreated).toBe(3)
   })
 })

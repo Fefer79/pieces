@@ -4,8 +4,8 @@ export { VEHICLE_BRANDS, VEHICLE_DATA, BRAND_NAMES, getEngines, VEHICLE_TYPES, D
 export type { VehicleType, VehicleTypeId } from './vehicles'
 export { PART_CATEGORIES, PART_CATALOG, UNIVERSAL_CATEGORIES, isUniversalCategory } from './categories'
 export type { PartCategory } from './categories'
-export { parseCompatibilityText } from './fitment'
-export type { ParsedFitment } from './fitment'
+export { parseCompatibilityText, extractFitmentsFromName } from './fitment'
+export type { ParsedFitment, NameFitment } from './fitment'
 export {
   MAINTENANCE_KIND_TO_PART,
   buildMaintenanceSearchHref,

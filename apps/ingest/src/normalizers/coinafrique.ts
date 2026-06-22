@@ -1,4 +1,5 @@
 import type { PartCondition, PartSource } from '@prisma/client'
+import { extractFitmentsFromName, type NameFitment } from 'shared/constants'
 import type { CoinAfriqueProductRaw } from '../sources/coinafrique.ts'
 
 export const EXTERNAL_SOURCE_SLUG = 'COINAFRIQUE_CI'
@@ -16,6 +17,8 @@ export type CoinAfriqueNormalized = {
   condition: PartCondition
   partSource: PartSource
   imageOriginalUrl: string | null
+  /** Fitments déduits du titre (la marque du véhicule y est noyée). */
+  fitments: NameFitment[]
 }
 
 const PART_BRANDS = [
@@ -68,5 +71,6 @@ export function normalizeCoinAfriqueProduct(raw: CoinAfriqueProductRaw): CoinAfr
     condition: detectCondition(name),
     partSource: classifyPartSource(brand),
     imageOriginalUrl: raw.imageUrl ?? null,
+    fitments: extractFitmentsFromName(name),
   }
 }
