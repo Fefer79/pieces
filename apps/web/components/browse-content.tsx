@@ -175,7 +175,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
       </div>
 
       <div className="mx-auto max-w-md px-4 py-6 lg:max-w-[1280px] lg:px-0">
-       <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+       <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
         {/* ───── CARTE 1 — Identifier le véhicule ───── */}
         <section className="rounded-lg border border-border bg-card p-4 lg:p-6">
           <h2 className="flex items-center gap-2.5 font-display text-lg text-ink lg:text-xl">
@@ -351,7 +351,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             Vous ne connaissez pas le nom de la pièce ? Prenez-la en photo, notre IA la reconnaît.
           </p>
 
-          <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-stretch">
+          <div className="mt-4 flex flex-col gap-3">
             {/* Barre de recherche (nom ou référence OEM) */}
             <div className="flex-1">
               <PartSearchAutocomplete
@@ -375,7 +375,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             />
             <button
               onClick={() => (variant === 'desktop' ? fileInputRef.current?.click() : router.push('/browse/photo'))}
-              className="flex items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 py-3 text-sm font-medium text-ink transition-all hover:border-ink-2 hover:shadow-sm active:scale-[0.98] lg:w-auto"
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 py-3 text-sm font-medium text-ink transition-all hover:border-ink-2 hover:shadow-sm active:scale-[0.98]"
               style={{ minHeight: 48 }}
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white">
