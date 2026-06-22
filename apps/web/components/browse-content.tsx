@@ -317,18 +317,17 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                 href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Bonjour, voici la photo de ma carte grise.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-h-[88px] items-center justify-between rounded-lg border border-green-100 bg-green-50 py-3 pl-4 transition-transform active:scale-[0.98]"
-                style={{ paddingRight: 10 }}
+                className="flex min-h-[180px] flex-col items-center justify-center gap-3 rounded-md border border-green-200 bg-green-50 px-6 py-8 text-center transition-all hover:border-green-300 hover:shadow-sm active:scale-[0.98]"
               >
-                <div>
-                  <p className="text-sm font-medium text-green-800">Envoyez une photo de la carte grise sur WhatsApp.</p>
-                </div>
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                    <path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" />
-                    <path fillRule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.2.32.558.523.95.523h.3c1.796 0 3.241 1.51 3.241 3.3v7.2c0 1.79-1.445 3.3-3.241 3.3H5.241C3.445 20.1 2 18.59 2 16.8V9.6c0-1.79 1.445-3.3 3.241-3.3h.3c.392 0 .75-.203.95-.523l.821-1.317a2.616 2.616 0 012.332-1.39zM12 10.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" clipRule="evenodd" />
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="h-7 w-7">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884" />
                   </svg>
-                </div>
+                </span>
+                <span className="text-sm font-medium text-green-900">Envoyer la carte grise sur WhatsApp</span>
+                <span className="max-w-[40ch] text-xs text-green-800/80">
+                  Prenez votre carte grise en photo et envoyez-la nous : on identifie votre véhicule pour vous.
+                </span>
               </a>
                 )}
               </div>
