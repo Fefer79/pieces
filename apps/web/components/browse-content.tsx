@@ -68,8 +68,6 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
     motor: persistedVehicle.motor ?? '',
   } : null
 
-  const activeTypeLabel = VEHICLE_TYPES.find((t) => t.id === vehicleType)?.label ?? VEHICLE_TYPES[0]?.label ?? ''
-
   const [waMenuOpen, setWaMenuOpen] = useState(false)
 
   const clearVehicle = () => {
@@ -174,10 +172,13 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
       </div>
 
       <div className="mx-auto max-w-md px-4 py-6 lg:max-w-[1280px] lg:px-0">
+       <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
         {/* ───── CARTE 1 — Identifier le véhicule ───── */}
         <section className="rounded-lg border border-border bg-card p-4 lg:p-6">
-          <h2 className="font-display text-lg text-ink lg:text-xl">1. Identifiez votre véhicule</h2>
-          <p className="mt-1 text-[13px] text-muted">Choisissez la méthode qui vous convient.</p>
+          <h2 className="flex items-center gap-2.5 font-display text-lg text-ink lg:text-xl">
+            <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-ink-2 font-sans text-sm font-semibold text-white">1</span>
+            Identifiez votre véhicule
+          </h2>
 
           {/* Bloc unique : rail de types (gauche) + onglets méthode & contenu (droite) */}
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:gap-5">
@@ -215,7 +216,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             <div className="min-w-0 flex-1">
               <div role="tablist" aria-label="Méthode d'identification" className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border lg:overflow-x-visible">
                 {([
-                  { id: 'vehicle' as const, label: `Sélectionnez votre ${activeTypeLabel.toLowerCase()}` },
+                  { id: 'vehicle' as const, label: 'Mon véhicule' },
                   { id: 'vin' as const, label: 'Code VIN' },
                   { id: 'whatsapp' as const, label: 'WhatsApp' },
                 ]).map((m) => {
@@ -333,8 +334,11 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         </section>
 
         {/* ───── CARTE 2 — Trouver la pièce ───── */}
-        <section className="mt-5 rounded-lg border border-border bg-card p-4 lg:p-6">
-          <h2 className="font-display text-lg text-ink lg:text-xl">2. Trouvez votre pièce</h2>
+        <section className="rounded-lg border border-border bg-card p-4 lg:p-6">
+          <h2 className="flex items-center gap-2.5 font-display text-lg text-ink lg:text-xl">
+            <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-ink-2 font-sans text-sm font-semibold text-white">2</span>
+            Trouvez votre pièce
+          </h2>
           {!vehicle && (
             <p className="mt-1 text-[13px] text-muted">
               Astuce : sélectionnez d’abord votre véhicule pour ne voir que les pièces compatibles.
@@ -377,7 +381,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                   <path fillRule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.2.32.558.523.95.523h.3c1.796 0 3.241 1.51 3.241 3.3v7.2c0 1.79-1.445 3.3-3.241 3.3H5.241C3.445 20.1 2 18.59 2 16.8V9.6c0-1.79 1.445-3.3 3.241-3.3h.3c.392 0 .75-.203.95-.523l.821-1.317a2.616 2.616 0 012.332-1.39zM12 10.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" clipRule="evenodd" />
                 </svg>
               </span>
-              Photo de la pièce
+              Photo IA
             </button>
           </div>
 
@@ -387,7 +391,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
           {searchQuery.trim().length >= 2 && searchResults.length > 0 && (
             <div className="mt-4 space-y-2">
               <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Résultats</h3>
-              <div className="grid gap-3 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid gap-3">
                 {searchResults.map((item) => (
                   <Link
                     key={item.id}
@@ -424,6 +428,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             </div>
           )}
         </section>
+       </div>
 
         {/* ───── Parcourir par catégorie — seulement après sélection du véhicule ───── */}
         {vehicle && (

@@ -30,6 +30,83 @@ export function TypeIcon({ icon }: { icon: string }) {
   )
 }
 
+/**
+ * Champ de cascade façon « carte » (cf. maquette redesign 2026-06) : libellé mono
+ * en haut, valeur en gras, fond vert + coche quand renseigné, bordure navy quand
+ * c'est le prochain champ à remplir, chevron sinon. Le <select> natif reste sous
+ * la surface stylée pour garder l'accessibilité.
+ */
+function CascadeField({
+  label,
+  value,
+  placeholder,
+  disabled,
+  active,
+  options,
+  onChange,
+  ariaLabel,
+}: {
+  label: string
+  value: string
+  placeholder: string
+  disabled: boolean
+  active: boolean
+  options: string[]
+  onChange: (v: string) => void
+  ariaLabel: string
+}) {
+  const filled = !!value
+  const box = filled
+    ? 'border-green-300 bg-green-50'
+    : active && !disabled
+      ? 'border-ink-2 bg-card'
+      : 'border-border bg-card'
+  return (
+    <div
+      className={`relative rounded-md border px-3 py-2.5 transition-colors ${box} ${
+        disabled ? 'opacity-50' : ''
+      }`}
+    >
+      <span className="block font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted">
+        {label}
+      </span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        className="mt-0.5 w-full cursor-pointer appearance-none bg-transparent pr-6 text-sm font-semibold text-ink outline-none disabled:cursor-not-allowed"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" aria-hidden>
+        {filled ? (
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-green-600">
+            <path
+              fillRule="evenodd"
+              d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0l-3.5-3.5a1 1 0 1 1 1.4-1.4l2.8 2.8 6.8-6.8a1 1 0 0 1 1.4 0Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-muted-2">
+            <path
+              fillRule="evenodd"
+              d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        )}
+      </span>
+    </div>
+  )
+}
+
 interface VehicleTypeSelectorProps {
   /** Appelé après confirmation d'un véhicule complet. */
   onConfirmed?: () => void
@@ -96,9 +173,6 @@ export function VehicleTypeSelector({ onConfirmed, type: controlledType }: Vehic
     onConfirmed?.()
   }
 
-  const selectClass =
-    'w-full rounded-sm border border-border-strong bg-card px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)] disabled:opacity-50'
-
   const content = (
     <div className="min-w-0 flex-1">
       {available ? (
@@ -108,31 +182,47 @@ export function VehicleTypeSelector({ onConfirmed, type: controlledType }: Vehic
               Sélectionnez votre {activeType?.label.toLowerCase()}
             </p>
           )}
-          <div className="space-y-3 lg:grid lg:grid-cols-4 lg:gap-3 lg:space-y-0">
-                <select value={brand} onChange={(e) => changeBrand(e.target.value)} className={selectClass} style={{ minHeight: 48 }} aria-label="Marque">
-                  <option value="">— Marque —</option>
-                  {brandNames.map((b) => (
-                    <option key={b} value={b}>{b}</option>
-                  ))}
-                </select>
-                <select value={model} onChange={(e) => changeModel(e.target.value)} disabled={!brand} className={selectClass} style={{ minHeight: 48 }} aria-label="Modèle">
-                  <option value="">— Modèle —</option>
-                  {models.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-                <select value={year} onChange={(e) => changeYear(e.target.value)} disabled={!model} className={selectClass} style={{ minHeight: 48 }} aria-label="Année">
-                  <option value="">— Année —</option>
-                  {years.map((y) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
-                <select value={motor} onChange={(e) => setMotor(e.target.value)} disabled={!year || engines.length === 0} className={selectClass} style={{ minHeight: 48 }} aria-label="Motorisation">
-                  <option value="">— Motorisation —</option>
-                  {engines.map((eng) => (
-                    <option key={eng} value={eng}>{eng}</option>
-                  ))}
-                </select>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <CascadeField
+                  label="Marque"
+                  ariaLabel="Marque"
+                  value={brand}
+                  placeholder="— Choisir —"
+                  disabled={false}
+                  active={!brand}
+                  options={brandNames}
+                  onChange={changeBrand}
+                />
+                <CascadeField
+                  label="Modèle"
+                  ariaLabel="Modèle"
+                  value={model}
+                  placeholder="— Choisir —"
+                  disabled={!brand}
+                  active={!!brand && !model}
+                  options={models}
+                  onChange={changeModel}
+                />
+                <CascadeField
+                  label="Année"
+                  ariaLabel="Année"
+                  value={year}
+                  placeholder="— Choisir —"
+                  disabled={!model}
+                  active={!!model && !year}
+                  options={years.map((y) => String(y))}
+                  onChange={changeYear}
+                />
+                <CascadeField
+                  label="Motorisation"
+                  ariaLabel="Motorisation"
+                  value={motor}
+                  placeholder="— Choisir —"
+                  disabled={!year || engines.length === 0}
+                  active={!!year && !motor && engines.length > 0}
+                  options={engines}
+                  onChange={setMotor}
+                />
               </div>
               <div className="mt-4 lg:mt-5 lg:max-w-sm">
                 <Button variant="accent" size="lg" block onClick={confirm} disabled={!brand || !model}>

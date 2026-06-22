@@ -5,7 +5,6 @@ import { BrowseContent } from '@/components/browse-content'
 import { MobileDrawer } from '@/components/mobile-drawer'
 import { BottomNav } from '@/components/bottom-nav'
 import { PromoCarousel, type PromoSlide } from '@/components/ui/promo-carousel'
-import { FirstVisitOnly } from '@/components/first-visit-only'
 
 function PromoArt({ src, alt }: { src: string; alt: string }) {
   return (
@@ -73,11 +72,9 @@ export default function BrowsePage() {
       {/* Desktop */}
       <div className="hidden lg:block">
         <LandingPage>
-          <FirstVisitOnly>
-            <div className="mx-auto max-w-[1280px] px-6 pt-8">
-              <PromoCarousel slides={PROMO_SLIDES} />
-            </div>
-          </FirstVisitOnly>
+          <div className="mx-auto max-w-[1280px] px-6 pt-8">
+            <PromoCarousel slides={PROMO_SLIDES} />
+          </div>
         </LandingPage>
       </div>
 
@@ -115,12 +112,10 @@ export default function BrowsePage() {
           </a>
         </div>
 
-        {/* Mobile carousel — 1ʳᵉ visite uniquement */}
-        <FirstVisitOnly>
-          <div className="px-4 pb-4">
-            <PromoCarousel slides={PROMO_SLIDES} />
-          </div>
-        </FirstVisitOnly>
+        {/* Mobile carousel */}
+        <div className="px-4 pb-4">
+          <PromoCarousel slides={PROMO_SLIDES} />
+        </div>
 
         {/* Browse content (sélection véhicule + recherche + catégories) */}
         <BrowseContent variant="mobile" />
