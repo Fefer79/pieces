@@ -245,7 +245,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                 {method === 'vehicle' && <VehicleTypeSelector type={vehicleType} />}
 
                 {method === 'vin' && (
-              <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+              <div className="flex flex-col gap-4">
                 {variant === 'mobile' && (
                   <button
                     onClick={() => router.push('/browse/vin')}
@@ -295,7 +295,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                     />
                     <button
                       onClick={() => vinFileInputRef.current?.click()}
-                      className="flex min-h-[100px] items-center justify-center rounded-md border border-border bg-surface px-4 py-4 text-center transition-all hover:border-border-strong hover:shadow-sm active:scale-[0.98] lg:col-span-2"
+                      className="flex min-h-[100px] items-center justify-center rounded-md border border-border bg-surface px-4 py-4 text-center transition-all hover:border-border-strong hover:shadow-sm active:scale-[0.98]"
                     >
                       <div className="flex flex-col items-center gap-2">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white">
