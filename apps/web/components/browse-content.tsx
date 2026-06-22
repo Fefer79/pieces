@@ -342,18 +342,13 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
             <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-ink-2 font-sans text-sm font-semibold text-white">2</span>
             Trouvez votre pièce
           </h2>
-          {!vehicle && (
-            <p className="mt-1 text-[13px] text-muted">
-              Astuce : sélectionnez d’abord votre véhicule pour ne voir que les pièces compatibles.
-            </p>
-          )}
-          <p className="mt-1 text-[13px] text-muted">
-            Vous ne connaissez pas le nom de la pièce ? Prenez-la en photo, notre IA la reconnaît.
-          </p>
 
-          <div className="mt-4 flex flex-col gap-3">
-            {/* Barre de recherche (nom ou référence OEM) */}
-            <div className="flex-1">
+          <div className="mt-5 flex flex-col gap-6">
+            {/* Méthode 1 — par nom ou référence OEM */}
+            <div>
+              <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                Par nom ou référence
+              </p>
               <PartSearchAutocomplete
                 value={searchQuery}
                 onChange={setSearchQuery}
@@ -361,31 +356,43 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                 vehicle={vehicle}
                 placeholder="Nom de la pièce ou référence OEM…"
               />
+              {!vehicle && (
+                <p className="mt-2 text-[13px] text-muted">
+                  Astuce : sélectionnez d’abord votre véhicule pour ne voir que les pièces compatibles.
+                </p>
+              )}
             </div>
 
-            {/* Photo de la pièce — identification IA */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                if (e.target.files?.[0]) router.push('/browse/photo')
-              }}
-            />
-            <button
-              onClick={() => (variant === 'desktop' ? fileInputRef.current?.click() : router.push('/browse/photo'))}
-              className="flex w-full items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 py-3 text-sm font-medium text-ink transition-all hover:border-ink-2 hover:shadow-sm active:scale-[0.98]"
-              style={{ minHeight: 48 }}
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                  <path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" />
-                  <path fillRule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.2.32.558.523.95.523h.3c1.796 0 3.241 1.51 3.241 3.3v7.2c0 1.79-1.445 3.3-3.241 3.3H5.241C3.445 20.1 2 18.59 2 16.8V9.6c0-1.79 1.445-3.3 3.241-3.3h.3c.392 0 .75-.203.95-.523l.821-1.317a2.616 2.616 0 012.332-1.39zM12 10.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" clipRule="evenodd" />
-                </svg>
-              </span>
-              Photo IA
-            </button>
+            {/* Méthode 2 — par photo (identification IA) */}
+            <div>
+              <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                Par photo
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) router.push('/browse/photo')
+                }}
+              />
+              <button
+                onClick={() => (variant === 'desktop' ? fileInputRef.current?.click() : router.push('/browse/photo'))}
+                className="flex min-h-[120px] w-full flex-col items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 py-5 text-center transition-all hover:border-ink-2 hover:shadow-sm active:scale-[0.98]"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+                    <path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" />
+                    <path fillRule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.2.32.558.523.95.523h.3c1.796 0 3.241 1.51 3.241 3.3v7.2c0 1.79-1.445 3.3-3.241 3.3H5.241C3.445 20.1 2 18.59 2 16.8V9.6c0-1.79 1.445-3.3 3.241-3.3h.3c.392 0 .75-.203.95-.523l.821-1.317a2.616 2.616 0 012.332-1.39zM12 10.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" clipRule="evenodd" />
+                  </svg>
+                </span>
+                <span className="text-sm font-medium text-ink">Photo IA</span>
+                <span className="max-w-[40ch] text-xs text-muted">
+                  Vous ne connaissez pas le nom de la pièce ? Prenez-la en photo, notre IA la reconnaît.
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Résultats de recherche */}
