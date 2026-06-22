@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Price } from '@/components/ui/price'
+import { ConditionChip } from '@/components/ui/chip'
 import { VehicleTypeSelector, TypeIcon } from '@/components/vehicle-type-selector'
 import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
 import { CategoryCarousel, type CategoryTile } from '@/components/ui/category-carousel'
@@ -52,6 +53,8 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
       id: string
       name: string | null
       category: string | null
+      condition: 'NEW' | 'USED' | 'REFURBISHED' | null
+      oemReference: string | null
       price: number | null
       imageThumbUrl: string | null
       vendor: { shopName: string }
@@ -407,8 +410,16 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ink">{item.name ?? 'Pièce'}</p>
-                      <p className="text-xs text-muted">{item.category ?? '—'} · {item.vendor.shopName}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-medium text-ink">{item.name ?? 'Pièce'}</p>
+                        {item.condition && <ConditionChip condition={item.condition} />}
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted">
+                        {item.category ?? '—'} · {item.vendor.shopName}
+                        {item.oemReference ? (
+                          <span className="font-mono text-muted-2"> · {item.oemReference}</span>
+                        ) : null}
+                      </p>
                     </div>
                     {item.price != null && <Price amount={item.price} className="self-center text-sm" />}
                   </Link>
