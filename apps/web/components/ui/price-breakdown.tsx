@@ -33,8 +33,10 @@ export function PriceBreakdown({
     <div className={`overflow-hidden rounded-lg border border-border bg-card ${className}`}>
       {title && (
         <div className="bg-ink px-5 py-4">
-          <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#9FB0CF]">{eyebrow}</p>
-          <h3 className="mt-1.5 font-display text-xl text-white">{title}</h3>
+          {eyebrow && (
+            <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#9FB0CF]">{eyebrow}</p>
+          )}
+          <h3 className={`font-display text-xl text-white ${eyebrow ? 'mt-1.5' : ''}`}>{title}</h3>
         </div>
       )}
       <div className="p-5">

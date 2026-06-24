@@ -1,4 +1,4 @@
-export { ABIDJAN_COMMUNES } from './communes'
+export { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES } from './communes'
 export type { AbidjanCommune } from './communes'
 export { VEHICLE_BRANDS, VEHICLE_DATA, BRAND_NAMES, getEngines, VEHICLE_TYPES, DEFAULT_VEHICLE_TYPE } from './vehicles'
 export type { VehicleType, VehicleTypeId } from './vehicles'

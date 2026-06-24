@@ -12,6 +12,7 @@ import { MiniCartButton } from '@/components/cart/mini-cart'
 import { useCart } from '@/lib/cart'
 import { useSelectedVehicle, type SelectedVehicle } from '@/lib/selected-vehicle'
 import { apiFetch } from '@/lib/enterprise-api'
+import { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES } from 'shared/constants'
 
 const WA_NUMBER = '2250709021708'
 
@@ -126,6 +127,7 @@ export default function ProductPage() {
   const [buying, setBuying] = useState(false)
   const [offers, setOffers] = useState<CompareOffer[]>([])
   const [offerSort, setOfferSort] = useState<'price' | 'value'>('value')
+  const [deliveryCommune, setDeliveryCommune] = useState<string>('')
 
   useEffect(() => {
     if (!id) return
@@ -179,8 +181,22 @@ export default function ProductPage() {
         )
     : []
 
+  const deliveryFee: number | null =
+    deliveryCommune && deliveryCommune in ABIDJAN_DELIVERY_FEES
+      ? ABIDJAN_DELIVERY_FEES[deliveryCommune as keyof typeof ABIDJAN_DELIVERY_FEES]
+      : null
+
   const priceLines: PriceLine[] =
-    item?.price != null ? [{ label: `Prix pièce × ${qty}`, amount: item.price * qty }] : []
+    item?.price != null
+      ? [
+          { label: `Prix pièce × ${qty}`, amount: item.price * qty },
+          ...(deliveryFee != null
+            ? [{ label: `Livraison · ${deliveryCommune}`, amount: deliveryFee }]
+            : []),
+        ]
+      : []
+
+  const priceTotal = item?.price != null ? item.price * qty + (deliveryFee ?? 0) : 0
 
   const compatibility = useMemo(() => {
     if (!item || !vehicle || item.fitments.length === 0) return null
@@ -218,12 +234,10 @@ export default function ProductPage() {
     if (res.ok) router.push(`/choose/${res.data.shareToken}`)
   }
 
-  const warrantyBadge =
+  const warrantyLabel =
     item?.warrantyMonths && item.warrantyMonths > 0
-      ? `Garantie ${item.warrantyMonths} mois`
-      : item?.condition === 'USED'
-        ? 'Occasion garantie 30 j'
-        : 'Retour sous 48 h'
+      ? `Garantie : ${item.warrantyMonths} mois`
+      : 'Garantie : 7J'
 
   return (
     <div className="min-h-dvh bg-surface pb-24 lg:pb-8">
@@ -323,6 +337,9 @@ export default function ProductPage() {
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {item.condition && <ConditionChip condition={item.condition} />}
                 {item.partSource && <PartSourceChip source={item.partSource} />}
+                <span className="inline-flex items-center rounded-full bg-success-bg px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-[0.04em] leading-tight text-success-fg">
+                  {warrantyLabel}
+                </span>
                 {!item.inStock && (
                   <span className="rounded-sm bg-surface px-2 py-1 text-xs font-medium text-muted">
                     Rupture de stock
@@ -334,27 +351,47 @@ export default function ProductPage() {
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card px-4 py-3">
                 <div>
                   <p className="text-sm font-semibold text-ink">{item.vendor.shopName}</p>
-                  <p className="mt-0.5 text-xs text-muted">
-                    {item.vendor.aggregateRating != null
-                      ? `Note vendeur ${Math.round(item.vendor.aggregateRating)}/100`
-                      : 'Nouveau vendeur'}
-                    {item.vendor.ordersDelivered > 0 && ` · ${item.vendor.ordersDelivered} livrées`}
-                  </p>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <span className="text-sm leading-none tracking-tight text-border-strong" aria-hidden>
+                      ★★★★★
+                    </span>
+                    <span className="text-xs text-muted">0 avis</span>
+                  </div>
                 </div>
-                <span className="rounded-full bg-success-bg px-2.5 py-1 text-[11.5px] font-semibold text-success-fg">
-                  🛡️ {warrantyBadge}
-                </span>
               </div>
 
-              {/* 5. Prix (recalculé × quantité) */}
+              {/* 5. Prix (recalculé × quantité + livraison) */}
               {item.price != null ? (
-                <div className="mt-5">
-                  <PriceBreakdown
-                    title="Le détail, avant de payer"
-                    lines={priceLines}
-                    total={item.price * qty}
-                    note="Livraison et main d'œuvre calculées à la commande — aucun frais caché."
-                  />
+                <div className="mt-5 space-y-3">
+                  {/* Lieu de livraison → frais de livraison */}
+                  <div className="rounded-md border border-border bg-card px-4 py-3">
+                    <label
+                      htmlFor="delivery-commune"
+                      className="block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+                    >
+                      Lieu de livraison
+                    </label>
+                    <select
+                      id="delivery-commune"
+                      value={deliveryCommune}
+                      onChange={(e) => setDeliveryCommune(e.target.value)}
+                      className="mt-1.5 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-accent focus:outline-none"
+                    >
+                      <option value="">Choisir votre commune…</option>
+                      {ABIDJAN_COMMUNES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1.5 text-xs text-muted">
+                      {deliveryFee != null
+                        ? `Frais de livraison vers ${deliveryCommune} : ${deliveryFee.toLocaleString('fr-FR')} FCFA.`
+                        : 'Sélectionnez votre commune pour calculer les frais de livraison.'}
+                    </p>
+                  </div>
+
+                  <PriceBreakdown title="Prix" eyebrow="" lines={priceLines} total={priceTotal} />
                 </div>
               ) : (
                 <div className="mt-5 rounded-md border border-border bg-card p-5 text-sm text-muted">
