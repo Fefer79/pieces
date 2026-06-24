@@ -32,7 +32,8 @@ export interface UploadPartExtras {
   category?: string
   vehicleCompatibility?: string
   condition?: 'NEW' | 'USED' | 'REFURBISHED'
-  warrantyMonths?: number
+  warrantyValue?: number
+  warrantyUnit?: 'DAY' | 'WEEK' | 'MONTH'
   serialPhoto?: { buffer: Buffer; fileName: string; mimeType: string }
 }
 
@@ -93,7 +94,8 @@ export async function uploadPartImage(
       ...(extras.category && { category: extras.category }),
       ...(extras.vehicleCompatibility && { vehicleCompatibility: extras.vehicleCompatibility }),
       ...(extras.condition && { condition: extras.condition }),
-      ...(extras.warrantyMonths !== undefined && { warrantyMonths: extras.warrantyMonths }),
+      ...(extras.warrantyValue !== undefined && { warrantyValue: extras.warrantyValue }),
+      ...(extras.warrantyUnit !== undefined && { warrantyUnit: extras.warrantyUnit }),
       ...(serialPhotoUrl && { serialPhotoUrl }),
       photos: {
         create: {
@@ -243,7 +245,8 @@ export interface UpdateCatalogItemData {
   price?: number
   condition?: 'NEW' | 'USED' | 'REFURBISHED'
   partSource?: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
-  warrantyMonths?: number
+  warrantyValue?: number
+  warrantyUnit?: 'DAY' | 'WEEK' | 'MONTH'
   commissionAmount?: number
   commissionAccepted?: boolean
 }
@@ -279,7 +282,8 @@ export async function updateItem(
   if (data.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = data.vehicleCompatibility
   if (data.condition !== undefined) updateData.condition = data.condition
   if (data.partSource !== undefined) updateData.partSource = data.partSource
-  if (data.warrantyMonths !== undefined) updateData.warrantyMonths = data.warrantyMonths
+  if (data.warrantyValue !== undefined) updateData.warrantyValue = data.warrantyValue
+  if (data.warrantyUnit !== undefined) updateData.warrantyUnit = data.warrantyUnit
 
   if (data.price !== undefined) {
     updateData.price = data.price
@@ -346,7 +350,7 @@ export async function publishItem(userId: string, itemId: string) {
     throw new AppError('CATALOG_CONDITION_REQUIRED', 422, { message: 'L\'état de la pièce (Neuf / Occasion / Reconditionné) est obligatoire pour publier' })
   }
 
-  if (item.warrantyMonths === null || item.warrantyMonths === undefined) {
+  if (item.warrantyValue === null || item.warrantyValue === undefined) {
     throw new AppError('CATALOG_WARRANTY_REQUIRED', 422, { message: 'La garantie vendeur est obligatoire pour publier' })
   }
 

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Chip } from '@/components/ui/chip'
 import { Price } from '@/components/ui/price'
+import { WARRANTY_UNITS, type WarrantyUnit } from 'shared/constants'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -38,7 +39,8 @@ interface CatalogItem {
   priceAlertFlag: boolean
   condition: 'NEW' | 'USED' | 'REFURBISHED' | null
   partSource: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
-  warrantyMonths: number | null
+  warrantyValue: number | null
+  warrantyUnit: WarrantyUnit | null
   commissionAmount: number | null
   commissionAcceptedAt: string | null
   photos: CatalogPhoto[]
@@ -82,7 +84,8 @@ export default function VendorCatalogDetailPage() {
   const [price, setPrice] = useState('')
   const [condition, setCondition] = useState<'NEW' | 'USED' | 'REFURBISHED' | ''>('')
   const [partSource, setPartSource] = useState<'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | ''>('')
-  const [warrantyMonths, setWarrantyMonths] = useState<string>('')
+  const [warrantyValue, setWarrantyValue] = useState<string>('')
+  const [warrantyUnit, setWarrantyUnit] = useState<WarrantyUnit>('MONTH')
   const [commissionAmount, setCommissionAmount] = useState<string>('')
   const [commissionAccepted, setCommissionAccepted] = useState<boolean>(false)
   const [photoUploading, setPhotoUploading] = useState(false)
@@ -122,7 +125,8 @@ export default function VendorCatalogDetailPage() {
       setPrice(data.price !== null ? String(data.price) : '')
       setCondition(data.condition ?? '')
       setPartSource(data.partSource ?? '')
-      setWarrantyMonths(data.warrantyMonths !== null ? String(data.warrantyMonths) : '')
+      setWarrantyValue(data.warrantyValue !== null ? String(data.warrantyValue) : '')
+      setWarrantyUnit(data.warrantyUnit ?? 'MONTH')
       setCommissionAmount(data.commissionAmount !== null ? String(data.commissionAmount) : '')
       setCommissionAccepted(!!data.commissionAcceptedAt)
     } catch {
@@ -159,9 +163,11 @@ export default function VendorCatalogDetailPage() {
       if (partSource !== (item?.partSource ?? '')) {
         body.partSource = partSource || null
       }
-      const currentWarranty = item?.warrantyMonths !== null && item?.warrantyMonths !== undefined ? String(item.warrantyMonths) : ''
-      if (warrantyMonths !== currentWarranty && warrantyMonths !== '') {
-        body.warrantyMonths = parseInt(warrantyMonths, 10)
+      const currentWarrantyValue = item?.warrantyValue !== null && item?.warrantyValue !== undefined ? String(item.warrantyValue) : ''
+      const currentWarrantyUnit = item?.warrantyUnit ?? 'MONTH'
+      if (warrantyValue !== '' && (warrantyValue !== currentWarrantyValue || warrantyUnit !== currentWarrantyUnit)) {
+        body.warrantyValue = parseInt(warrantyValue, 10)
+        body.warrantyUnit = warrantyUnit
       }
       const currentCommission = item?.commissionAmount !== null && item?.commissionAmount !== undefined ? String(item.commissionAmount) : ''
       if (commissionAmount !== currentCommission && commissionAmount !== '') {
@@ -596,21 +602,30 @@ export default function VendorCatalogDetailPage() {
           <label htmlFor="warranty" className={LABEL}>
             Garantie vendeur <span className="text-accent">*</span>
           </label>
-          <select
-            id="warranty"
-            value={warrantyMonths}
-            onChange={(e) => setWarrantyMonths(e.target.value)}
-            className={INPUT}
-          >
-            <option value="">— Choisir la durée —</option>
-            <option value="0">Sans garantie</option>
-            <option value="1">1 mois</option>
-            <option value="3">3 mois</option>
-            <option value="6">6 mois</option>
-            <option value="12">1 an</option>
-            <option value="24">2 ans</option>
-            <option value="36">3 ans</option>
-          </select>
+          <div className="flex gap-2">
+            <input
+              id="warranty"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={365}
+              value={warrantyValue}
+              onChange={(e) => setWarrantyValue(e.target.value)}
+              placeholder="Durée"
+              className={`${INPUT} flex-1`}
+            />
+            <select
+              aria-label="Unité de garantie"
+              value={warrantyUnit}
+              onChange={(e) => setWarrantyUnit(e.target.value as WarrantyUnit)}
+              className={`${INPUT} flex-1`}
+            >
+              {WARRANTY_UNITS.map((u) => (
+                <option key={u.value} value={u.value}>{u.label}</option>
+              ))}
+            </select>
+          </div>
+          <p className="mt-1 text-xs text-muted">Mettez 0 pour « sans garantie ».</p>
         </div>
 
         <div className="rounded-md border border-border-strong bg-surface p-4">

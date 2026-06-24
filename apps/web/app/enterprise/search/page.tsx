@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
+import { formatWarranty, type WarrantyUnit } from 'shared/constants'
 import { Price } from '@/components/ui/price'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
@@ -23,7 +24,8 @@ interface CompareOffer {
   price: number | null
   condition: string | null
   partSource: string | null
-  warrantyMonths: number | null
+  warrantyValue: number | null
+  warrantyUnit: WarrantyUnit | null
   inStock: boolean
   imageThumbUrl: string | null
 }
@@ -381,7 +383,7 @@ export default function EnterpriseSearchPage() {
                                 {!o.condition && '—'}
                               </Td>
                               <Td className="text-muted">
-                                {o.warrantyMonths != null ? `${o.warrantyMonths} mois` : '—'}
+                                {formatWarranty(o.warrantyValue, o.warrantyUnit) ?? '—'}
                               </Td>
                               <Td align="right">
                                 {o.price != null ? (

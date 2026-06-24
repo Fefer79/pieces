@@ -281,7 +281,8 @@ describe('Catalog Routes', () => {
         status: 'DRAFT',
         price: 5000,
         condition: 'NEUF',
-        warrantyMonths: 6,
+        warrantyValue: 6,
+        warrantyUnit: 'MONTH',
         commissionAmount: 500,
         commissionAcceptedAt: new Date(),
       })

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { liaisonFetch } from '@/lib/liaison-api'
 import { minCommissionFor } from 'shared/validators'
+import { WARRANTY_UNITS, type WarrantyUnit } from 'shared/constants'
 
 const CONDITIONS = [
   { value: 'NEW', label: 'Neuf' },
@@ -42,7 +43,8 @@ export interface PartFormInitial {
   fitments?: FitmentEntry[]
   price?: number | null
   condition?: Condition
-  warrantyMonths?: number | null
+  warrantyValue?: number | null
+  warrantyUnit?: WarrantyUnit | null
   commissionAmount?: number | null
   inStock?: boolean
 }
@@ -64,8 +66,11 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
   )
   const [price, setPrice] = useState(initial?.price != null ? String(initial.price) : '')
   const [condition, setCondition] = useState<Condition>(initial?.condition ?? 'USED')
-  const [warrantyMonths, setWarrantyMonths] = useState(
-    initial?.warrantyMonths != null ? String(initial.warrantyMonths) : '',
+  const [warrantyValue, setWarrantyValue] = useState(
+    initial?.warrantyValue != null ? String(initial.warrantyValue) : '',
+  )
+  const [warrantyUnit, setWarrantyUnit] = useState<WarrantyUnit>(
+    initial?.warrantyUnit ?? 'MONTH',
   )
 
   const [commission, setCommission] = useState(
@@ -127,7 +132,8 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
       vehicleCompatibility: vehicleCompatibility || undefined,
       price: price ? Number(price) : undefined,
       condition,
-      warrantyMonths: warrantyMonths ? Number(warrantyMonths) : undefined,
+      warrantyValue: warrantyValue ? Number(warrantyValue) : undefined,
+      warrantyUnit: warrantyValue ? warrantyUnit : undefined,
       commissionAmount: commission ? Number(commission) : undefined,
       inStock,
       fitments,
@@ -331,16 +337,29 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
         </button>
       </Field>
 
-      <Field label="Garantie (mois)">
-        <input
-          type="number"
-          inputMode="numeric"
-          value={warrantyMonths}
-          onChange={(e) => setWarrantyMonths(e.target.value)}
-          className="liaison-input"
-          min={0}
-          max={60}
-        />
+      <Field label="Garantie">
+        <div className="flex gap-2">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={warrantyValue}
+            onChange={(e) => setWarrantyValue(e.target.value)}
+            className="liaison-input flex-1"
+            placeholder="Durée"
+            min={0}
+            max={365}
+          />
+          <select
+            aria-label="Unité de garantie"
+            value={warrantyUnit}
+            onChange={(e) => setWarrantyUnit(e.target.value as WarrantyUnit)}
+            className="liaison-input flex-1"
+          >
+            {WARRANTY_UNITS.map((u) => (
+              <option key={u.value} value={u.value}>{u.label}</option>
+            ))}
+          </select>
+        </div>
       </Field>
 
       <label className="flex items-center gap-3">

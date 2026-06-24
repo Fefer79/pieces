@@ -58,7 +58,8 @@ export async function catalogRoutes(fastify: FastifyInstance) {
           category: fields.category || undefined,
           vehicleCompatibility: fields.vehicleCompatibility || undefined,
           condition: (fields.condition as 'NEW' | 'USED' | 'REFURBISHED' | undefined) || undefined,
-          warrantyMonths: fields.warrantyMonths ? parseInt(fields.warrantyMonths, 10) : undefined,
+          warrantyValue: fields.warrantyValue ? parseInt(fields.warrantyValue, 10) : undefined,
+          warrantyUnit: (fields.warrantyUnit as 'DAY' | 'WEEK' | 'MONTH' | undefined) || undefined,
           serialPhoto: serialPhotoBuffer ? { buffer: serialPhotoBuffer, fileName: serialPhotoName, mimeType: serialPhotoMime } : undefined,
         },
       )

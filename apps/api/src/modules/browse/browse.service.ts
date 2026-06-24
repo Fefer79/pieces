@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js'
-import { VEHICLE_BRANDS, BRAND_NAMES, getEngines as getEnginesData, PART_CATEGORIES, UNIVERSAL_CATEGORIES } from 'shared/constants'
+import { VEHICLE_BRANDS, BRAND_NAMES, getEngines as getEnginesData, PART_CATEGORIES, UNIVERSAL_CATEGORIES, warrantyToDays } from 'shared/constants'
+import type { WarrantyUnit } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
 
 export interface VinDecodeResult {
@@ -207,7 +208,8 @@ export interface CompareOffer {
   price: number | null
   condition: string | null
   partSource: string | null
-  warrantyMonths: number | null
+  warrantyValue: number | null
+  warrantyUnit: WarrantyUnit | null
   inStock: boolean
   imageThumbUrl: string | null
   // Score « rapport qualité-prix » sur 100 (rempli au moment du regroupement,
@@ -253,7 +255,7 @@ const SOURCE_QUALITY: Record<string, number> = {
 function scoreOffers(offers: CompareOffer[]): void {
   const prices = offers.map((o) => o.price).filter((p): p is number => p != null && p > 0)
   const minPrice = prices.length ? Math.min(...prices) : null
-  const maxWarranty = Math.max(1, ...offers.map((o) => o.warrantyMonths ?? 0))
+  const maxWarranty = Math.max(1, ...offers.map((o) => warrantyToDays(o.warrantyValue, o.warrantyUnit)))
 
   for (const o of offers) {
     if (o.price == null || o.price <= 0 || minPrice == null) {
@@ -265,7 +267,7 @@ function scoreOffers(offers: CompareOffer[]): void {
     // Note vendeur 0-100 → 0-1 ; 0,5 par défaut si pas encore noté.
     const ratingScore = o.vendorRating != null ? o.vendorRating / 100 : 0.5
     // Garantie relative + qualité de source.
-    const warrantyScore = (o.warrantyMonths ?? 0) / maxWarranty
+    const warrantyScore = warrantyToDays(o.warrantyValue, o.warrantyUnit) / maxWarranty
     const sourceBonus = o.partSource ? (SOURCE_QUALITY[o.partSource] ?? 0.6) : 0.6
     const quality = ratingScore * 0.7 + sourceBonus * 0.3
 
@@ -320,7 +322,8 @@ export async function compareParts(
       condition: true,
       partSource: true,
       price: true,
-      warrantyMonths: true,
+      warrantyValue: true,
+      warrantyUnit: true,
       inStock: true,
       imageThumbUrl: true,
       vendor: {
@@ -351,7 +354,8 @@ export async function compareParts(
       price: item.price,
       condition: item.condition,
       partSource: item.partSource,
-      warrantyMonths: item.warrantyMonths,
+      warrantyValue: item.warrantyValue,
+      warrantyUnit: item.warrantyUnit,
       inStock: item.inStock,
       imageThumbUrl: item.imageThumbUrl,
       valueScore: null,
@@ -518,7 +522,8 @@ export async function getPublicItemDetail(id: string) {
       condition: true,
       partSource: true,
       price: true,
-      warrantyMonths: true,
+      warrantyValue: true,
+      warrantyUnit: true,
       inStock: true,
       imageOriginalUrl: true,
       imageThumbUrl: true,

@@ -97,6 +97,12 @@ enum GuaranteeType {
   WARRANTY_30D
 }
 
+enum WarrantyUnit {
+  DAY
+  WEEK
+  MONTH
+}
+
 enum CatalogItemStatus {
   DRAFT
   PUBLISHED
@@ -310,7 +316,8 @@ model CatalogItem {
   inStock              Boolean           @default(true) @map("in_stock")
   condition            PartCondition?
   partSource           PartSource?       @map("part_source")
-  warrantyMonths       Int?              @map("warranty_months")
+  warrantyValue        Int?              @map("warranty_value")
+  warrantyUnit         WarrantyUnit?     @map("warranty_unit")
   priceUpdatedAt       DateTime?         @map("price_updated_at")
   priceAlertFlag       Boolean           @default(false) @map("price_alert_flag")
   commissionAmount     Int?              @map("commission_amount")

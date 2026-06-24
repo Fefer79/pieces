@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { VEHICLE_BRANDS, getEngines, PART_CATALOG } from 'shared/constants'
+import { VEHICLE_BRANDS, getEngines, PART_CATALOG, WARRANTY_UNITS, type WarrantyUnit } from 'shared/constants'
 import { Button } from '@/components/ui/button'
 
 type SupabaseClient = ReturnType<typeof createClient>
@@ -42,7 +42,8 @@ export default function VendorCatalogUploadPage() {
 
   // Condition and warranty (required at publication)
   const [condition, setCondition] = useState<'NEW' | 'USED' | 'REFURBISHED' | ''>('')
-  const [warrantyMonths, setWarrantyMonths] = useState<string>('')
+  const [warrantyValue, setWarrantyValue] = useState<string>('')
+  const [warrantyUnit, setWarrantyUnit] = useState<WarrantyUnit>('MONTH')
 
   // Optional info fields
   const [partName, setPartName] = useState('')
@@ -164,7 +165,10 @@ export default function VendorCatalogUploadPage() {
       if (vehicleCompat) formData.append('vehicleCompatibility', vehicleCompat)
       if (categoryStr) formData.append('category', categoryStr)
       if (condition) formData.append('condition', condition)
-      if (warrantyMonths) formData.append('warrantyMonths', warrantyMonths)
+      if (warrantyValue) {
+        formData.append('warrantyValue', warrantyValue)
+        formData.append('warrantyUnit', warrantyUnit)
+      }
 
       try {
         const res = await fetch('/api/v1/catalog/items/upload', {
@@ -368,21 +372,29 @@ export default function VendorCatalogUploadPage() {
           </div>
         </div>
         <Field id="warranty" label="Garantie vendeur">
-          <select
-            id="warranty"
-            value={warrantyMonths}
-            onChange={(e) => setWarrantyMonths(e.target.value)}
-            className={SELECT_CLASS}
-          >
-            <option value="">— Choisir la durée de garantie —</option>
-            <option value="0">Sans garantie (vente en l&apos;état)</option>
-            <option value="1">1 mois</option>
-            <option value="3">3 mois</option>
-            <option value="6">6 mois</option>
-            <option value="12">1 an</option>
-            <option value="24">2 ans</option>
-            <option value="36">3 ans</option>
-          </select>
+          <div className="flex gap-2">
+            <input
+              id="warranty"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={365}
+              value={warrantyValue}
+              onChange={(e) => setWarrantyValue(e.target.value)}
+              placeholder="Durée (0 = sans garantie)"
+              className={`${SELECT_CLASS} flex-1`}
+            />
+            <select
+              aria-label="Unité de garantie"
+              value={warrantyUnit}
+              onChange={(e) => setWarrantyUnit(e.target.value as WarrantyUnit)}
+              className={`${SELECT_CLASS} flex-1`}
+            >
+              {WARRANTY_UNITS.map((u) => (
+                <option key={u.value} value={u.value}>{u.label}</option>
+              ))}
+            </select>
+          </div>
         </Field>
       </FieldGroup>
 

@@ -192,7 +192,8 @@ export async function createPartForVendor(
       vehicleCompatibility: parsed.data.vehicleCompatibility,
       price: parsed.data.price,
       condition: parsed.data.condition,
-      warrantyMonths: parsed.data.warrantyMonths,
+      warrantyValue: parsed.data.warrantyValue,
+      warrantyUnit: parsed.data.warrantyUnit,
       commissionAmount,
       inStock: parsed.data.inStock,
       imageOriginalUrl: parsed.data.imageOriginalUrl,
@@ -241,7 +242,8 @@ export async function getLiaisonPart(liaisonId: string, vendorId: string, partId
       vehicleCompatibility: true,
       price: true,
       condition: true,
-      warrantyMonths: true,
+      warrantyValue: true,
+      warrantyUnit: true,
       commissionAmount: true,
       commissionAcceptedAt: true,
       inStock: true,
@@ -307,7 +309,8 @@ export async function updatePartForVendor(
   if (d.oemReference !== undefined) updateData.oemReference = d.oemReference
   if (d.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = d.vehicleCompatibility
   if (d.condition !== undefined) updateData.condition = d.condition
-  if (d.warrantyMonths !== undefined) updateData.warrantyMonths = d.warrantyMonths
+  if (d.warrantyValue !== undefined) updateData.warrantyValue = d.warrantyValue
+  if (d.warrantyUnit !== undefined) updateData.warrantyUnit = d.warrantyUnit
   if (d.inStock !== undefined) updateData.inStock = d.inStock
   if (d.price !== undefined) {
     updateData.price = d.price

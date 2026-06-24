@@ -11,3 +11,5 @@ export {
   buildMaintenanceSearchHref,
 } from './maintenance-parts'
 export type { MaintenanceKindKey, MaintenancePartHint } from './maintenance-parts'
+export { WARRANTY_UNITS, warrantyToDays, formatWarranty, isWarrantyUnit } from './warranty'
+export type { WarrantyUnit } from './warranty'

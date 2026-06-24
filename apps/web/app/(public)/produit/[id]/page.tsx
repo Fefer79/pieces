@@ -12,7 +12,7 @@ import { MiniCartButton } from '@/components/cart/mini-cart'
 import { useCart } from '@/lib/cart'
 import { useSelectedVehicle, type SelectedVehicle } from '@/lib/selected-vehicle'
 import { apiFetch } from '@/lib/enterprise-api'
-import { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES } from 'shared/constants'
+import { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES, formatWarranty, type WarrantyUnit } from 'shared/constants'
 
 const WA_NUMBER = '2250709021708'
 
@@ -50,7 +50,8 @@ type ProductDetail = {
   condition: Condition | null
   partSource: PartSource | null
   price: number | null
-  warrantyMonths: number | null
+  warrantyValue: number | null
+  warrantyUnit: WarrantyUnit | null
   inStock: boolean
   imageOriginalUrl: string | null
   imageThumbUrl: string | null
@@ -70,7 +71,8 @@ type CompareOffer = {
   price: number | null
   condition: string | null
   partSource: string | null
-  warrantyMonths: number | null
+  warrantyValue: number | null
+  warrantyUnit: WarrantyUnit | null
   valueScore: number | null
 }
 
@@ -234,10 +236,8 @@ export default function ProductPage() {
     if (res.ok) router.push(`/choose/${res.data.shareToken}`)
   }
 
-  const warrantyLabel =
-    item?.warrantyMonths && item.warrantyMonths > 0
-      ? `Garantie : ${item.warrantyMonths} mois`
-      : 'Garantie : 7J'
+  const warrantyText = formatWarranty(item?.warrantyValue, item?.warrantyUnit)
+  const warrantyLabel = warrantyText ? `Garantie : ${warrantyText}` : 'Garantie : 7J'
 
   return (
     <div className="min-h-dvh bg-surface pb-24 lg:pb-8">
@@ -431,10 +431,10 @@ export default function ProductPage() {
                     <dd className="font-mono text-ink">{item.oemReference}</dd>
                   </div>
                 )}
-                {item.warrantyMonths != null && item.warrantyMonths > 0 && (
+                {warrantyText && (
                   <div className="flex justify-between gap-4 px-4 py-2.5">
                     <dt className="text-muted">Garantie</dt>
-                    <dd className="text-ink">{item.warrantyMonths} mois</dd>
+                    <dd className="text-ink">{warrantyText}</dd>
                   </div>
                 )}
                 <div className="flex justify-between gap-4 px-4 py-2.5">
