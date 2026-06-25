@@ -534,6 +534,8 @@ export async function getPublicItemDetail(id: string) {
         select: {
           id: true,
           shopName: true,
+          phone: true,
+          isExternal: true,
           aggregateRating: true,
           avgReviewRating: true,
           ordersDelivered: true,
@@ -554,5 +556,12 @@ export async function getPublicItemDetail(id: string) {
     throw new AppError('ITEM_NOT_FOUND', 404, { message: 'Pièce introuvable' })
   }
 
-  return item
+  // Téléphone vendeur exposé (révélé au clic côté front) UNIQUEMENT pour les
+  // annonces externes type CoinAfrique : le parcours commande/escrow gère les
+  // vendeurs de la plateforme, donc on ne divulgue pas leur numéro. On filtre
+  // aussi le numéro bidon du vendeur fantôme (échoue le format mobile +225).
+  const { isExternal, phone, ...vendorPublic } = item.vendor
+  const sellerPhone = isExternal && /^\+225\d{10}$/.test(phone) ? phone : null
+
+  return { ...item, vendor: { ...vendorPublic, phone: sellerPhone } }
 }

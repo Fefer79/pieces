@@ -36,6 +36,8 @@ type Fitment = {
 type Vendor = {
   id: string
   shopName: string
+  /** Numéro vendeur (annonces externes type CoinAfrique), révélé au clic. Sinon null. */
+  phone: string | null
   aggregateRating: number | null
   avgReviewRating: number | null
   ordersDelivered: number
@@ -130,6 +132,7 @@ export default function ProductPage() {
   const [offers, setOffers] = useState<CompareOffer[]>([])
   const [offerSort, setOfferSort] = useState<'price' | 'value'>('value')
   const [deliveryCommune, setDeliveryCommune] = useState<string>('')
+  const [phoneRevealed, setPhoneRevealed] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -358,6 +361,23 @@ export default function ProductPage() {
                     <span className="text-xs text-muted">0 avis</span>
                   </div>
                 </div>
+                {item.vendor.phone &&
+                  (phoneRevealed ? (
+                    <a
+                      href={`tel:${item.vendor.phone}`}
+                      className="text-sm font-semibold text-accent hover:underline"
+                    >
+                      {item.vendor.phone}
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setPhoneRevealed(true)}
+                      className="rounded-sm border border-border-strong px-3 py-1.5 text-xs font-semibold text-ink hover:bg-surface"
+                    >
+                      Voir le numéro
+                    </button>
+                  ))}
               </div>
 
               {/* 5. Prix (recalculé × quantité + livraison) */}
