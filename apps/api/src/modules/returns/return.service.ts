@@ -37,6 +37,33 @@ export function canTransition(from: ReturnStatus, to: ReturnStatus): boolean {
   return TRANSITIONS[from].includes(to)
 }
 
+// Identité du demandeur pour les contrôles d'accès retours.
+export type ReturnRequester = { id: string; roles: string[] }
+
+async function isEnterpriseMember(enterpriseId: string, userId: string): Promise<boolean> {
+  const member = await prisma.enterpriseMember.findUnique({
+    where: { uq_enterprise_member: { enterpriseId, userId } },
+    select: { id: true },
+  })
+  return member !== null
+}
+
+// Le user possède-t-il un des vendeurs présents sur la commande ?
+async function userOwnsVendorOnOrder(userId: string, orderId: string): Promise<boolean> {
+  const items = await prisma.orderItem.findMany({
+    where: { orderId },
+    select: { vendorId: true },
+    distinct: ['vendorId'],
+  })
+  const vendorIds = items.map((i) => i.vendorId)
+  if (vendorIds.length === 0) return false
+  const vendor = await prisma.vendor.findFirst({
+    where: { userId, id: { in: vendorIds } },
+    select: { id: true },
+  })
+  return vendor !== null
+}
+
 export async function createReturn(userId: string, data: CreateReturnInput) {
   // Verify the order exists; capture enterpriseId for indexing.
   const order = await prisma.order.findUnique({
@@ -44,12 +71,18 @@ export async function createReturn(userId: string, data: CreateReturnInput) {
     select: { id: true, enterpriseId: true, initiatorId: true, status: true },
   })
   if (!order) throw new AppError('ORDER_NOT_FOUND', 404)
-  // Only the initiator or an enterprise member can request a return — for MVP
-  // we restrict to initiator; full enterprise-member check can be added later.
-  if (order.initiatorId !== userId && !order.enterpriseId) {
-    throw new AppError('NOT_AUTHORIZED', 403, {
-      message: 'Vous ne pouvez pas demander de retour sur cette commande',
-    })
+  // Seul l'initiateur, ou un membre de l'entreprise rattachée, peut demander un
+  // retour. (Bug corrigé : l'ancienne condition laissait passer n'importe qui
+  // dès que la commande avait un enterpriseId.)
+  if (order.initiatorId !== userId) {
+    const allowed = order.enterpriseId
+      ? await isEnterpriseMember(order.enterpriseId, userId)
+      : false
+    if (!allowed) {
+      throw new AppError('NOT_AUTHORIZED', 403, {
+        message: 'Vous ne pouvez pas demander de retour sur cette commande',
+      })
+    }
   }
   // Optional orderItem must belong to this order.
   if (data.orderItemId) {
@@ -78,7 +111,14 @@ export async function createReturn(userId: string, data: CreateReturnInput) {
   })
 }
 
-export async function listReturnsForEnterprise(enterpriseId: string) {
+export async function listReturnsForEnterprise(enterpriseId: string, requester: ReturnRequester) {
+  // Empêche l'énumération cross-tenant : il faut être membre de l'entreprise
+  // (ou admin) pour lister ses retours.
+  if (!requester.roles.includes('ADMIN') && !(await isEnterpriseMember(enterpriseId, requester.id))) {
+    throw new AppError('NOT_AUTHORIZED', 403, {
+      message: 'Accès réservé aux membres de cette entreprise',
+    })
+  }
   return prisma.returnOrder.findMany({
     where: { enterpriseId },
     orderBy: { requestedAt: 'desc' },
@@ -94,7 +134,7 @@ export async function listReturnsForUser(userId: string) {
   })
 }
 
-export async function getReturn(returnId: string) {
+export async function getReturn(returnId: string, requester: ReturnRequester) {
   const r = await prisma.returnOrder.findUnique({
     where: { id: returnId },
     include: {
@@ -102,19 +142,47 @@ export async function getReturn(returnId: string) {
     },
   })
   if (!r) throw new AppError('RETURN_NOT_FOUND', 404)
+
+  // Lecture autorisée : demandeur, admin, membre de l'entreprise, ou vendeur
+  // d'un article de la commande. Sinon 403 (anti-IDOR).
+  const isAdmin = requester.roles.includes('ADMIN')
+  const isOwner = r.requestedById === requester.id
+  let allowed = isAdmin || isOwner
+  if (!allowed && r.order.enterpriseId) {
+    allowed = await isEnterpriseMember(r.order.enterpriseId, requester.id)
+  }
+  if (!allowed) {
+    allowed = await userOwnsVendorOnOrder(requester.id, r.orderId)
+  }
+  if (!allowed) {
+    throw new AppError('NOT_AUTHORIZED', 403, { message: 'Accès refusé à ce retour' })
+  }
+
   return r
 }
 
 export async function transitionReturn(
   returnId: string,
   toStatus: ReturnStatus,
+  requester: ReturnRequester,
   options: { resolutionNote?: string | null; refundAmount?: number | null } = {},
 ) {
   const r = await prisma.returnOrder.findUnique({
     where: { id: returnId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, orderId: true },
   })
   if (!r) throw new AppError('RETURN_NOT_FOUND', 404)
+
+  // Seul un admin ou un vendeur d'un article de la commande peut faire avancer
+  // le retour (accepter / inspecter / rembourser). Empêche tout vendeur tiers
+  // d'agir sur le retour d'une commande qui n'est pas la sienne.
+  const isAdmin = requester.roles.includes('ADMIN')
+  if (!isAdmin && !(await userOwnsVendorOnOrder(requester.id, r.orderId))) {
+    throw new AppError('NOT_AUTHORIZED', 403, {
+      message: 'Seul le vendeur de la commande peut traiter ce retour',
+    })
+  }
+
   if (!canTransition(r.status, toStatus)) {
     throw new AppError('INVALID_RETURN_TRANSITION', 409, {
       message: `Transition ${r.status} → ${toStatus} non autorisée`,

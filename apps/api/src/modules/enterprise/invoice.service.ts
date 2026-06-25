@@ -102,7 +102,11 @@ export async function listInvoicesForEnterprise(
   })
 }
 
-export async function getInvoicePdf(invoiceId: string, userId: string): Promise<Buffer> {
+export async function getInvoicePdf(
+  invoiceId: string,
+  userId: string,
+  enterpriseId?: string,
+): Promise<Buffer> {
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     include: {
@@ -117,6 +121,11 @@ export async function getInvoicePdf(invoiceId: string, userId: string): Promise<
     },
   })
   if (!invoice) throw new AppError('INVOICE_NOT_FOUND', 404, { message: 'Facture introuvable' })
+  // Cohérence : la facture doit appartenir à l'entreprise du chemin (anti-IDOR
+  // par énumération depuis une autre entreprise).
+  if (enterpriseId && invoice.enterpriseId !== enterpriseId) {
+    throw new AppError('INVOICE_NOT_FOUND', 404, { message: 'Facture introuvable' })
+  }
   if (invoice.enterpriseId) {
     await assertMember(invoice.enterpriseId, userId)
   } else if (invoice.order.initiatorId !== userId) {

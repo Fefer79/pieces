@@ -76,7 +76,7 @@ export async function deliveryRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/mine',
     {
-      preHandler: [requireAuth],
+      preHandler: [requireAuth, requireRole('RIDER')],
       schema: {
         tags: ['Deliveries'],
         description: 'Mes livraisons (Rider)',

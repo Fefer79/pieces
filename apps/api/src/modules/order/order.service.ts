@@ -30,6 +30,42 @@ function generateShareToken(): string {
   return randomBytes(16).toString('hex')
 }
 
+// Identité du demandeur pour les contrôles d'accès commande.
+export type OrderRequester = { id: string; roles: string[] }
+
+// Le user possède-t-il un des vendeurs présents sur la commande ?
+async function userOwnsVendorOnOrder(
+  userId: string,
+  items: { vendorId: string }[],
+): Promise<boolean> {
+  const vendorIds = [...new Set(items.map((i) => i.vendorId))]
+  if (vendorIds.length === 0) return false
+  const vendor = await prisma.vendor.findFirst({
+    where: { userId, id: { in: vendorIds } },
+    select: { id: true },
+  })
+  return vendor !== null
+}
+
+// Autorise la LECTURE d'une commande : admin, initiateur, membre de l'entreprise
+// rattachée, ou vendeur d'un article. Sinon 403. Empêche l'IDOR (lecture par id).
+async function assertOrderReadAccess(
+  order: { initiatorId: string; enterpriseId: string | null; items: { vendorId: string }[] },
+  requester: OrderRequester,
+): Promise<void> {
+  if (requester.roles.includes('ADMIN')) return
+  if (order.initiatorId === requester.id) return
+  if (order.enterpriseId) {
+    const member = await prisma.enterpriseMember.findUnique({
+      where: { uq_enterprise_member: { enterpriseId: order.enterpriseId, userId: requester.id } },
+      select: { id: true },
+    })
+    if (member) return
+  }
+  if (await userOwnsVendorOnOrder(requester.id, order.items)) return
+  throw new AppError('ORDER_FORBIDDEN', 403, { message: "Vous n'avez pas accès à cette commande" })
+}
+
 // Somme des quantités par pièce (un même catalogItemId peut apparaître plusieurs fois).
 function qtyMapFromItems(items: { catalogItemId: string; quantity?: number }[]): Map<string, number> {
   const qtyById = new Map<string, number>()
@@ -248,7 +284,7 @@ export async function getOrderByShareToken(shareToken: string) {
   return order
 }
 
-export async function getOrderById(orderId: string) {
+export async function getOrderById(orderId: string, requester: OrderRequester) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
@@ -261,7 +297,30 @@ export async function getOrderById(orderId: string) {
     throw new AppError('ORDER_NOT_FOUND', 404, { message: 'Commande introuvable' })
   }
 
+  await assertOrderReadAccess(order, requester)
+
   return order
+}
+
+// Confirmation vendeur : seul un vendeur d'un article de la commande (ou un
+// admin) peut confirmer. Empêche tout utilisateur connecté de confirmer.
+export async function vendorConfirmOrder(orderId: string, requester: OrderRequester) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: { select: { vendorId: true } } },
+  })
+  if (!order) {
+    throw new AppError('ORDER_NOT_FOUND', 404, { message: 'Commande introuvable' })
+  }
+
+  const isAdmin = requester.roles.includes('ADMIN')
+  if (!isAdmin && !(await userOwnsVendorOnOrder(requester.id, order.items))) {
+    throw new AppError('ORDER_FORBIDDEN', 403, {
+      message: 'Seul le vendeur de la commande peut la confirmer',
+    })
+  }
+
+  return transitionOrder(orderId, 'VENDOR_CONFIRMED', requester.id, 'Confirmé par le vendeur')
 }
 
 export async function getUserOrders(userId: string) {
@@ -333,10 +392,16 @@ export async function selectPaymentMethod(
   orderId: string,
   paymentMethod: string,
   actor: string,
+  shareToken: string,
 ) {
   const order = await prisma.order.findUnique({ where: { id: orderId } })
   if (!order) {
     throw new AppError('ORDER_NOT_FOUND', 404, { message: 'Commande introuvable' })
+  }
+
+  // Preuve de possession : le propriétaire agit sans compte via le lien partagé.
+  if (order.shareToken !== shareToken) {
+    throw new AppError('ORDER_FORBIDDEN', 403, { message: 'Lien de partage invalide' })
   }
 
   if (order.status !== 'DRAFT') {
@@ -372,10 +437,20 @@ export async function selectPaymentMethod(
   return updated
 }
 
-export async function cancelOrder(orderId: string, actor: string, reason?: string) {
+export async function cancelOrder(
+  orderId: string,
+  actor: string,
+  reason: string | undefined,
+  shareToken: string,
+) {
   const order = await prisma.order.findUnique({ where: { id: orderId } })
   if (!order) {
     throw new AppError('ORDER_NOT_FOUND', 404, { message: 'Commande introuvable' })
+  }
+
+  // Preuve de possession : annulation par le propriétaire via le lien partagé.
+  if (order.shareToken !== shareToken) {
+    throw new AppError('ORDER_FORBIDDEN', 403, { message: 'Lien de partage invalide' })
   }
 
   const cancellableStatuses = ['DRAFT', 'PENDING_PAYMENT', 'PAID', 'VENDOR_CONFIRMED']

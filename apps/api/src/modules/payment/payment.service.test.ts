@@ -9,6 +9,7 @@ vi.stubEnv('PORT', '3001')
 const mockEscrowCreate = vi.fn()
 const mockEscrowFindUnique = vi.fn()
 const mockEscrowUpdate = vi.fn()
+const mockOrderFindUnique = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -23,10 +24,13 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...args: unknown[]) => mockEscrowFindUnique(...args),
       update: (...args: unknown[]) => mockEscrowUpdate(...args),
     },
+    order: {
+      findUnique: (...args: unknown[]) => mockOrderFindUnique(...args),
+    },
   },
 }))
 
-const { createEscrow, releaseEscrow, refundEscrow } = await import('./payment.service.js')
+const { createEscrow, releaseEscrow, refundEscrow, confirmOrderPayment } = await import('./payment.service.js')
 
 describe('payment.service', () => {
   beforeEach(() => {
@@ -72,6 +76,39 @@ describe('payment.service', () => {
 
       const result = await refundEscrow('order-1')
       expect(result.status).toBe('REFUNDED')
+    })
+  })
+
+  describe('confirmOrderPayment', () => {
+    it('creates escrow when the verified amount covers the order total', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', totalAmount: 5000 })
+      mockEscrowFindUnique.mockResolvedValueOnce(null)
+      mockEscrowCreate.mockResolvedValueOnce({ id: 'esc-1', orderId: 'order-1', amount: 5000, status: 'HELD' })
+
+      const result = await confirmOrderPayment('order-1', 5000)
+      expect(result.status).toBe('HELD')
+    })
+
+    it('is idempotent — does not duplicate an existing escrow', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', totalAmount: 5000 })
+      mockEscrowFindUnique.mockResolvedValueOnce({ id: 'esc-1', orderId: 'order-1', status: 'HELD' })
+
+      const result = await confirmOrderPayment('order-1', 5000)
+      expect(result.id).toBe('esc-1')
+      expect(mockEscrowCreate).not.toHaveBeenCalled()
+    })
+
+    it('rejects when the verified amount is below the order total', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', totalAmount: 5000 })
+      mockEscrowFindUnique.mockResolvedValueOnce(null)
+
+      await expect(confirmOrderPayment('order-1', 1000)).rejects.toThrow()
+      expect(mockEscrowCreate).not.toHaveBeenCalled()
+    })
+
+    it('rejects when the order does not exist', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(null)
+      await expect(confirmOrderPayment('bad', 5000)).rejects.toThrow()
     })
   })
 })

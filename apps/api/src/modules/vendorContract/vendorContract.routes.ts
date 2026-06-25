@@ -31,6 +31,7 @@ export async function vendorContractRoutes(fastify: FastifyInstance) {
       const result = await createVendorContract(
         request.user.id,
         request.body as CreateVendorContractInput,
+        request.user.roles,
       )
       request.log.info({
         event: 'VENDOR_CONTRACT_CREATED',

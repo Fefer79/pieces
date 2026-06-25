@@ -17,6 +17,7 @@ const mockOrderItemDeleteMany = vi.fn()
 const mockOrderEventDeleteMany = vi.fn()
 const mockVehicleFindUnique = vi.fn()
 const mockEnterpriseMemberFindUnique = vi.fn()
+const mockVendorFindFirst = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -49,10 +50,13 @@ vi.mock('../../lib/prisma.js', () => ({
     enterpriseMember: {
       findUnique: (...args: unknown[]) => mockEnterpriseMemberFindUnique(...args),
     },
+    vendor: {
+      findFirst: (...args: unknown[]) => mockVendorFindFirst(...args),
+    },
   },
 }))
 
-const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, getOpenDraft, upsertDraft } = await import('./order.service.js')
+const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft } = await import('./order.service.js')
 
 describe('order.service', () => {
   beforeEach(() => {
@@ -141,45 +145,107 @@ describe('order.service', () => {
   })
 
   describe('getOrderById', () => {
-    it('returns order with items and events', async () => {
+    it('returns order with items and events for the initiator', async () => {
       mockOrderFindUnique.mockResolvedValueOnce({
         id: 'order-1',
+        initiatorId: 'user-1',
+        enterpriseId: null,
         status: 'DRAFT',
         items: [],
         events: [],
       })
 
-      const result = await getOrderById('order-1')
+      const result = await getOrderById('order-1', { id: 'user-1', roles: [] })
       expect(result.id).toBe('order-1')
     })
 
     it('throws ORDER_NOT_FOUND', async () => {
       mockOrderFindUnique.mockResolvedValueOnce(null)
-      await expect(getOrderById('bad')).rejects.toThrow()
+      await expect(getOrderById('bad', { id: 'user-1', roles: [] })).rejects.toThrow()
+    })
+
+    it('denies access (IDOR) to a non-owner, non-vendor, non-admin user', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({
+        id: 'order-1',
+        initiatorId: 'someone-else',
+        enterpriseId: null,
+        status: 'DRAFT',
+        items: [{ vendorId: 'v1' }],
+        events: [],
+      })
+      // pas vendeur de v1
+      mockVendorFindFirst.mockResolvedValueOnce(null)
+
+      await expect(getOrderById('order-1', { id: 'intruder', roles: [] })).rejects.toThrow(
+        /ORDER_FORBIDDEN/,
+      )
+    })
+
+    it('allows an ADMIN to read any order', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({
+        id: 'order-1',
+        initiatorId: 'someone-else',
+        enterpriseId: null,
+        status: 'DRAFT',
+        items: [],
+        events: [],
+      })
+      const result = await getOrderById('order-1', { id: 'admin-1', roles: ['ADMIN'] })
+      expect(result.id).toBe('order-1')
     })
   })
 
   describe('selectPaymentMethod', () => {
+    const TOK = 'a'.repeat(32)
+
     it('sets COD and transitions to PAID for COD orders', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000 })
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'PAID', paymentMethod: 'COD', items: [] })
 
-      const result = await selectPaymentMethod('order-1', 'COD', 'buyer')
+      const result = await selectPaymentMethod('order-1', 'COD', 'buyer', TOK)
       expect(result.status).toBe('PAID')
     })
 
     it('rejects COD over 75000 FCFA', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 100000 })
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 100000, shareToken: TOK })
 
-      await expect(selectPaymentMethod('order-1', 'COD', 'buyer')).rejects.toThrow()
+      await expect(selectPaymentMethod('order-1', 'COD', 'buyer', TOK)).rejects.toThrow()
     })
 
     it('sets PENDING_PAYMENT for mobile money', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000 })
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'PENDING_PAYMENT', paymentMethod: 'ORANGE_MONEY', items: [] })
 
-      const result = await selectPaymentMethod('order-1', 'ORANGE_MONEY', 'buyer')
+      const result = await selectPaymentMethod('order-1', 'ORANGE_MONEY', 'buyer', TOK)
       expect(result.status).toBe('PENDING_PAYMENT')
+    })
+
+    it('rejects a wrong shareToken (possession proof)', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
+
+      await expect(selectPaymentMethod('order-1', 'COD', 'buyer', 'b'.repeat(32))).rejects.toThrow()
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('vendorConfirmOrder', () => {
+    it('lets a vendor on the order confirm it', async () => {
+      mockOrderFindUnique
+        .mockResolvedValueOnce({ id: 'order-1', items: [{ vendorId: 'v1' }] }) // vendorConfirm lookup
+        .mockResolvedValueOnce({ id: 'order-1', status: 'PAID' }) // transitionOrder lookup
+      mockVendorFindFirst.mockResolvedValueOnce({ id: 'v1' })
+      mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'VENDOR_CONFIRMED', items: [] })
+
+      const result = await vendorConfirmOrder('order-1', { id: 'vendor-user', roles: [] })
+      expect(result.status).toBe('VENDOR_CONFIRMED')
+    })
+
+    it('forbids a non-vendor, non-admin user from confirming', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', items: [{ vendorId: 'v1' }] })
+      mockVendorFindFirst.mockResolvedValueOnce(null)
+
+      await expect(vendorConfirmOrder('order-1', { id: 'intruder', roles: [] })).rejects.toThrow()
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
     })
   })
 
@@ -268,20 +334,29 @@ describe('order.service', () => {
   })
 
   describe('cancelOrder', () => {
+    const TOK = 'c'.repeat(32)
+
     it('cancels a DRAFT order', async () => {
       mockOrderFindUnique
-        .mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT' }) // cancelOrder check
+        .mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', shareToken: TOK }) // cancelOrder check
         .mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT' }) // transitionOrder check
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'CANCELLED', items: [] })
 
-      const result = await cancelOrder('order-1', 'user-1')
+      const result = await cancelOrder('order-1', 'user-1', undefined, TOK)
       expect(result.status).toBe('CANCELLED')
     })
 
     it('rejects cancellation of IN_TRANSIT order', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'IN_TRANSIT' })
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'IN_TRANSIT', shareToken: TOK })
 
-      await expect(cancelOrder('order-1', 'user-1')).rejects.toThrow()
+      await expect(cancelOrder('order-1', 'user-1', undefined, TOK)).rejects.toThrow()
+    })
+
+    it('rejects a wrong shareToken (possession proof)', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', shareToken: TOK })
+
+      await expect(cancelOrder('order-1', 'user-1', undefined, 'd'.repeat(32))).rejects.toThrow()
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
     })
   })
 

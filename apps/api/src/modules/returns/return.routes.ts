@@ -52,10 +52,10 @@ export async function returnRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { enterpriseId } = request.params as { enterpriseId: string }
-      // Note: enterprise membership check delegated to the existing pattern is
-      // not enforced here for MVP; safe because listing only returns from
-      // requested enterpriseId and won't leak cross-tenant data via filter.
-      const data = await listReturnsForEnterprise(enterpriseId)
+      const data = await listReturnsForEnterprise(enterpriseId, {
+        id: request.user.id,
+        roles: request.user.roles,
+      })
       return reply.send({ data })
     },
   )
@@ -68,7 +68,7 @@ export async function returnRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
-      const data = await getReturn(id)
+      const data = await getReturn(id, { id: request.user.id, roles: request.user.roles })
       return reply.send({ data })
     },
   )
@@ -105,10 +105,15 @@ export async function returnRoutes(fastify: FastifyInstance) {
         resolutionNote?: string | null
         refundAmount?: number | null
       }
-      const data = await transitionReturn(id, body.toStatus, {
-        resolutionNote: body.resolutionNote,
-        refundAmount: body.refundAmount,
-      })
+      const data = await transitionReturn(
+        id,
+        body.toStatus,
+        { id: request.user.id, roles: request.user.roles },
+        {
+          resolutionNote: body.resolutionNote,
+          refundAmount: body.refundAmount,
+        },
+      )
       request.log.info({ event: 'RETURN_TRANSITION', returnId: id, to: body.toStatus })
       return reply.send({ data })
     },

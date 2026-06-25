@@ -13,6 +13,7 @@ const mockOrderCreate = vi.fn()
 const mockOrderFindUnique = vi.fn()
 const mockOrderFindMany = vi.fn()
 const mockOrderUpdate = vi.fn()
+const mockVendorFindFirst = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -31,7 +32,7 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: vi.fn(),
       update: vi.fn(),
     },
-    vendor: { findUnique: vi.fn() },
+    vendor: { findUnique: vi.fn(), findFirst: (...args: unknown[]) => mockVendorFindFirst(...args) },
     catalogItem: {
       findMany: (...args: unknown[]) => mockCatalogItemFindMany(...args),
       count: vi.fn(),
@@ -160,10 +161,25 @@ describe('Order Routes', () => {
   })
 
   describe('POST /api/v1/orders/:orderId/pay', () => {
-    it('returns 200 when COD selected', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000 })
+    const TOK = 'a'.repeat(32)
+
+    it('returns 200 when COD selected with a valid shareToken', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'PAID', paymentMethod: 'COD', items: [] })
 
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/orders/order-1/pay',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ paymentMethod: 'COD', shareToken: TOK }),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data.status).toBe('PAID')
+    })
+
+    it('rejects a request with no shareToken (possession proof required)', async () => {
       const app = buildApp()
       const response = await app.inject({
         method: 'POST',
@@ -172,15 +188,33 @@ describe('Order Routes', () => {
         payload: JSON.stringify({ paymentMethod: 'COD' }),
       })
 
-      expect(response.statusCode).toBe(200)
-      expect(response.json().data.status).toBe('PAID')
+      // 422 = échec de validation du schéma Zod/Fastify (shareToken requis)
+      expect(response.statusCode).toBe(422)
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+
+    it('returns 403 when shareToken does not match the order', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/orders/order-1/pay',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ paymentMethod: 'COD', shareToken: 'b'.repeat(32) }),
+      })
+
+      expect(response.statusCode).toBe(403)
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
     })
   })
 
   describe('POST /api/v1/orders/:orderId/cancel', () => {
-    it('returns 200 when order cancelled', async () => {
+    const TOK = 'c'.repeat(32)
+
+    it('returns 200 when order cancelled with a valid shareToken', async () => {
       mockOrderFindUnique
-        .mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT' })
+        .mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', shareToken: TOK })
         .mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT' })
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'CANCELLED', items: [] })
 
@@ -189,17 +223,35 @@ describe('Order Routes', () => {
         method: 'POST',
         url: '/api/v1/orders/order-1/cancel',
         headers: { 'content-type': 'application/json' },
-        payload: JSON.stringify({ reason: 'Changed my mind' }),
+        payload: JSON.stringify({ reason: 'Changed my mind', shareToken: TOK }),
       })
 
       expect(response.statusCode).toBe(200)
       expect(response.json().data.status).toBe('CANCELLED')
     })
+
+    it('returns 403 when shareToken does not match', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', shareToken: TOK })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/orders/order-1/cancel',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ shareToken: 'd'.repeat(32) }),
+      })
+
+      expect(response.statusCode).toBe(403)
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
   })
 
   describe('POST /api/v1/orders/:orderId/confirm', () => {
-    it('returns 200 when vendor confirms', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'PAID' })
+    it('returns 200 when the order vendor confirms', async () => {
+      mockOrderFindUnique
+        .mockResolvedValueOnce({ id: 'order-1', status: 'PAID', items: [{ vendorId: 'v1' }] }) // vendorConfirm lookup
+        .mockResolvedValueOnce({ id: 'order-1', status: 'PAID' }) // transitionOrder lookup
+      mockVendorFindFirst.mockResolvedValueOnce({ id: 'v1' }) // requester owns vendor v1
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'VENDOR_CONFIRMED', items: [] })
 
       const app = buildApp()
@@ -211,6 +263,21 @@ describe('Order Routes', () => {
 
       expect(response.statusCode).toBe(200)
       expect(response.json().data.status).toBe('VENDOR_CONFIRMED')
+    })
+
+    it('returns 403 when the requester is not a vendor on the order', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'PAID', items: [{ vendorId: 'v1' }] })
+      mockVendorFindFirst.mockResolvedValueOnce(null)
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/orders/order-1/confirm',
+        headers: mockAuth(),
+      })
+
+      expect(response.statusCode).toBe(403)
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
     })
   })
 })

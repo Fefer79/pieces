@@ -17,10 +17,16 @@ export const upsertDraftSchema = z.object({
   })),
 })
 
+// shareToken = randomBytes(16).toString('hex') côté serveur → 32 hex chars.
+// Sert de preuve de possession pour les actions du propriétaire (non authentifié).
+const shareTokenSchema = z.string().regex(/^[a-f0-9]{32}$/, 'Lien de partage invalide')
+
 export const confirmOrderSchema = z.object({
   paymentMethod: z.enum(['ORANGE_MONEY', 'MTN_MOMO', 'WAVE', 'COD']),
+  shareToken: shareTokenSchema,
 })
 
 export const cancelOrderSchema = z.object({
   reason: z.string().max(500).optional(),
+  shareToken: shareTokenSchema,
 })

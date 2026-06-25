@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { createOrderSchema, confirmOrderSchema, upsertDraftSchema } from 'shared/validators'
+import { createOrderSchema, confirmOrderSchema, cancelOrderSchema, upsertDraftSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth } from '../../plugins/auth.js'
 import {
@@ -9,7 +9,7 @@ import {
   getUserOrders,
   selectPaymentMethod,
   cancelOrder,
-  transitionOrder,
+  vendorConfirmOrder,
   getOpenDraft,
   upsertDraft,
 } from './order.service.js'
@@ -128,7 +128,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { orderId } = request.params as { orderId: string }
-      const order = await getOrderById(orderId)
+      const order = await getOrderById(orderId, { id: request.user.id, roles: request.user.roles })
       return reply.status(200).send({ data: order })
     },
   )
@@ -161,8 +161,8 @@ export async function orderRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { orderId } = request.params as { orderId: string }
-      const { paymentMethod } = request.body as { paymentMethod: string }
-      const order = await selectPaymentMethod(orderId, paymentMethod, 'buyer')
+      const { paymentMethod, shareToken } = request.body as { paymentMethod: string; shareToken: string }
+      const order = await selectPaymentMethod(orderId, paymentMethod, 'buyer', shareToken)
       return reply.status(200).send({ data: order })
     },
   )
@@ -180,7 +180,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { orderId } = request.params as { orderId: string }
-      const order = await transitionOrder(orderId, 'VENDOR_CONFIRMED', request.user.id, 'Confirmé par le vendeur')
+      const order = await vendorConfirmOrder(orderId, { id: request.user.id, roles: request.user.roles })
       return reply.status(200).send({ data: order })
     },
   )
@@ -192,12 +192,13 @@ export async function orderRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Orders'],
         description: 'Annuler une commande',
+        body: zodToFastify(cancelOrderSchema),
       },
     },
     async (request, reply) => {
       const { orderId } = request.params as { orderId: string }
-      const body = (request.body as { reason?: string } | null) ?? {}
-      const order = await cancelOrder(orderId, 'buyer', body.reason)
+      const { reason, shareToken } = request.body as { reason?: string; shareToken: string }
+      const order = await cancelOrder(orderId, 'buyer', reason, shareToken)
       return reply.status(200).send({ data: order })
     },
   )

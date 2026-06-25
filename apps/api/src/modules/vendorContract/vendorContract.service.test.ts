@@ -68,6 +68,34 @@ describe('vendorContract.service', () => {
         }),
       ).rejects.toMatchObject({ code: 'VENDOR_NOT_FOUND', statusCode: 404 })
     })
+
+    it("empêche une LIAISON de créer un contrat pour un vendeur qu'elle ne gère pas", async () => {
+      mockVendorFindUnique.mockResolvedValue({ id: 'v1', managedByLiaisonId: 'other-liaison' })
+      await expect(
+        createVendorContract('liaison-1', { sellerName: 'X', vendorId: 'v1' }, ['LIAISON']),
+      ).rejects.toMatchObject({ code: 'VENDOR_NOT_FOUND' })
+      expect(mockContractCreate).not.toHaveBeenCalled()
+    })
+
+    it('autorise une LIAISON pour un vendeur qu’elle gère', async () => {
+      mockVendorFindUnique.mockResolvedValue({ id: 'v1', managedByLiaisonId: 'liaison-1' })
+      mockContractCreate.mockResolvedValue({
+        id: 'c1', token: 'abcdef0123456789', contractVersion: VENDOR_CONTRACT_VERSION,
+        status: 'PENDING', sellerName: 'X', shopName: null, phone: null, createdAt: new Date(),
+      })
+      const result = await createVendorContract('liaison-1', { sellerName: 'X', vendorId: 'v1' }, ['LIAISON'])
+      expect(result.token).toBe('abcdef0123456789')
+    })
+
+    it('autorise un ADMIN pour n’importe quel vendeur', async () => {
+      mockVendorFindUnique.mockResolvedValue({ id: 'v1', managedByLiaisonId: 'someone-else' })
+      mockContractCreate.mockResolvedValue({
+        id: 'c1', token: 'abcdef0123456789', contractVersion: VENDOR_CONTRACT_VERSION,
+        status: 'PENDING', sellerName: 'X', shopName: null, phone: null, createdAt: new Date(),
+      })
+      const result = await createVendorContract('admin-1', { sellerName: 'X', vendorId: 'v1' }, ['ADMIN'])
+      expect(result.token).toBe('abcdef0123456789')
+    })
   })
 
   describe('getVendorContractByToken', () => {

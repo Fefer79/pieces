@@ -56,3 +56,49 @@ export async function initPayment(params: {
 
   return { transactionId: '', paymentUrl: null, status: 'error' }
 }
+
+export interface CinetPayVerification {
+  status: string
+  amount: number
+}
+
+/**
+ * Vérifie l'authenticité d'une transaction auprès de CinetPay (source de vérité).
+ * On NE FAIT JAMAIS confiance au payload du webhook : on rappelle l'API
+ * `/v2/payment/check` avec nos credentials pour confirmer statut + montant réels.
+ * Renvoie null si la vérification est impossible (credentials absents ou
+ * transaction inconnue) → le webhook doit alors être rejeté (fail-closed).
+ */
+export async function verifyCinetPayTransaction(
+  transactionId: string,
+): Promise<CinetPayVerification | null> {
+  if (!CINETPAY_API_KEY || !CINETPAY_SITE_ID) {
+    // Pas de credentials → on ne peut pas authentifier l'appel. Fail-closed.
+    return null
+  }
+
+  const res = await fetch('https://api-checkout.cinetpay.com/v2/payment/check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      apikey: CINETPAY_API_KEY,
+      site_id: CINETPAY_SITE_ID,
+      transaction_id: transactionId,
+    }),
+  })
+
+  const data = (await res.json()) as {
+    code?: string
+    data?: { status?: string; amount?: number | string }
+  }
+
+  // code '00' = requête de vérification réussie ; data.status porte l'état réel.
+  if (data.code !== '00' || !data.data) {
+    return null
+  }
+
+  return {
+    status: data.data.status ?? '',
+    amount: Number(data.data.amount ?? 0),
+  }
+}

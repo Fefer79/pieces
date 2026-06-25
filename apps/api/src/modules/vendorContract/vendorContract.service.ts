@@ -17,14 +17,25 @@ function contractUrl(token: string): string {
  * Génère un lien de contrat d'adhésion pour un vendeur (existant ou prospect).
  * Émis par un admin ou une liaison ; envoyé au vendeur via WhatsApp.
  */
-export async function createVendorContract(createdById: string, input: CreateVendorContractInput) {
+export async function createVendorContract(
+  createdById: string,
+  input: CreateVendorContractInput,
+  creatorRoles: string[] = [],
+) {
   if (input.vendorId) {
     const vendor = await prisma.vendor.findUnique({
       where: { id: input.vendorId },
-      select: { id: true },
+      select: { id: true, managedByLiaisonId: true },
     })
     if (!vendor) {
       throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Vendeur introuvable' })
+    }
+    // Une LIAISON ne peut émettre un contrat que pour un vendeur qu'elle gère.
+    // Un ADMIN n'est pas restreint.
+    if (!creatorRoles.includes('ADMIN') && vendor.managedByLiaisonId !== createdById) {
+      throw new AppError('VENDOR_NOT_FOUND', 404, {
+        message: 'Vendeur introuvable ou non géré par cette liaison',
+      })
     }
   }
 

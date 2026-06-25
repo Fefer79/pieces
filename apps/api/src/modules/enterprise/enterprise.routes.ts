@@ -834,8 +834,8 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
       schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }], description: 'Télécharger une facture en PDF' },
     },
     async (request, reply) => {
-      const { invoiceId } = request.params as { enterpriseId: string; invoiceId: string }
-      const pdf = await getInvoicePdf(invoiceId, request.user.id)
+      const { enterpriseId, invoiceId } = request.params as { enterpriseId: string; invoiceId: string }
+      const pdf = await getInvoicePdf(invoiceId, request.user.id, enterpriseId)
       reply.header('Content-Type', 'application/pdf')
       reply.header('Content-Disposition', `attachment; filename="facture-${invoiceId}.pdf"`)
       return reply.send(pdf)

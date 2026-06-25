@@ -114,7 +114,7 @@ export default function OwnerChoicePage() {
       const res = await fetch(`/api/v1/orders/${order.id}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentMethod: selectedMethod }),
+        body: JSON.stringify({ paymentMethod: selectedMethod, shareToken }),
       })
       const body = await res.json()
       if (!res.ok) {
@@ -389,7 +389,7 @@ export default function OwnerChoicePage() {
                 const res = await fetch(`/api/v1/orders/${order.id}/cancel`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({}),
+                  body: JSON.stringify({ shareToken }),
                 })
                 if (res.ok) {
                   const body = await res.json()
