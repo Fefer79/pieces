@@ -62,6 +62,78 @@ function categoryUrl(page: number): string {
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
+export type CoinAfriqueAdDetail = {
+  /** Identité stable du vendeur (UUID `data-user-id`), clé de dédup. */
+  sellerId: string | null
+  sellerName: string | null
+  /** Téléphone normalisé `+225XXXXXXXXXX`, ou null si masqué/absent. */
+  phone: string | null
+}
+
+/**
+ * Normalise un téléphone CoinAfrique vers `+225XXXXXXXXXX`. Les annonces exposent
+ * `+2250788151575` (déjà au bon format) ; on tolère espaces, `00225`, ou le numéro
+ * local à 10 chiffres. Renvoie null si on ne reconnaît pas un mobile ivoirien.
+ */
+export function normalizeIvoirianPhone(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  let digits = raw.replace(/[^\d]/g, '')
+  if (digits.startsWith('00225')) digits = digits.slice(5)
+  else if (digits.startsWith('225')) digits = digits.slice(3)
+  // Depuis 2021 les numéros ivoiriens font 10 chiffres.
+  if (digits.length !== 10) return null
+  return `+225${digits}`
+}
+
+/**
+ * Parse une page détail `/annonce/…` pour en extraire le vendeur. Pur (testable
+ * hors réseau). Le nom et l'identité vivent dans le bloc `.username` (lien
+ * `/profil/<uuid>` + `data-user-id`), le téléphone dans `data-phone-number`
+ * (fallback `href="tel:"`). Tout est en HTML statique — aucun AJAX requis.
+ */
+export function parseAdDetail(html: string): CoinAfriqueAdDetail {
+  const $ = cheerio.load(html)
+
+  const sellerId =
+    ($('[data-user-id]').first().attr('data-user-id') ||
+      $('.username a[href*="/profil/"]').first().attr('href')?.match(/\/profil\/([^/?#]+)/)?.[1] ||
+      html.match(/data-user-id="([^"]+)"/)?.[1] ||
+      html.match(/\/profil\/([0-9a-f-]{8,})/i)?.[1] ||
+      ''
+    ).trim() || null
+
+  const sellerName =
+    ($('.username a').first().text() || $('.username').first().text() || '')
+      .replace(/\s+/g, ' ')
+      .trim() || null
+
+  const rawPhone =
+    $('[data-phone-number]').first().attr('data-phone-number') ||
+    $('a[href^="tel:"]').first().attr('href')?.replace(/^tel:/, '') ||
+    html.match(/data-phone-number="([^"]+)"/)?.[1] ||
+    html.match(/href="tel:([^"]+)"/)?.[1] ||
+    null
+
+  return { sellerId, sellerName, phone: normalizeIvoirianPhone(rawPhone) }
+}
+
+/**
+ * Fetch d'une page détail d'annonce avec retry exponentiel (mêmes 502 transitoires
+ * que la grille). `/annonce/*` est autorisé par robots.txt.
+ */
+export async function fetchAdDetail(url: string, attempts = 4): Promise<string> {
+  let lastErr: unknown
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      return await fetchText(url, { headers: { 'user-agent': UA } })
+    } catch (err) {
+      lastErr = err
+      if (i < attempts - 1) await sleep(1000 * 2 ** i)
+    }
+  }
+  throw lastErr
+}
+
 /**
  * Fetch d'une page avec retry exponentiel. L'ELB de CoinAfrique renvoie des 502
  * transitoires ; sans retry, une seule erreur tuerait tout le crawl. Réessaie

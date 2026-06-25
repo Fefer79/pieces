@@ -27,22 +27,13 @@ async function main(): Promise<void> {
   console.log(`[backfill-ca-fitments] mode = ${commit ? 'COMMIT (écriture)' : 'DRY-RUN (lecture seule)'}`)
   console.log(`[backfill-ca-fitments] DATABASE_URL host = ${dbHost()}`)
 
-  const vendor = await prisma.vendor.findUnique({
-    where: { externalSource: EXTERNAL_SOURCE_SLUG },
-    select: { id: true, shopName: true },
-  })
-  if (!vendor) {
-    console.log(`[backfill-ca-fitments] vendor CoinAfrique introuvable (${EXTERNAL_SOURCE_SLUG}) — rien à faire.`)
-    await prisma.$disconnect()
-    return
-  }
-
-  // Idempotent : pièces du vendor CoinAfrique sans aucun fitment.
+  // Idempotent : pièces CoinAfrique sans aucun fitment. On cible par externalSource
+  // (et non par vendorId) car il y a désormais un vendeur par vendeur réel.
   const items = await prisma.catalogItem.findMany({
-    where: { vendorId: vendor.id, fitments: { none: {} } },
+    where: { externalSource: EXTERNAL_SOURCE_SLUG, fitments: { none: {} } },
     select: { id: true, name: true },
   })
-  console.log(`[backfill-ca-fitments] ${items.length} pièces candidates (vendor ${vendor.shopName}, 0 fitment)`)
+  console.log(`[backfill-ca-fitments] ${items.length} pièces candidates CoinAfrique (0 fitment)`)
 
   let withFitment = 0
   let fitmentsWritten = 0

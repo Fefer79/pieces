@@ -45,8 +45,9 @@ describe('loadThreeHItems', () => {
     const result = await loadThreeHItems(items, db)
 
     expect(vendor.upsert).toHaveBeenCalledTimes(1)
-    const vendorArgs = vendor.upsert.mock.calls[0][0] as { where: { externalSource: string }; create: { isExternal: boolean; externalSource: string; shopName: string } }
-    expect(vendorArgs.where.externalSource).toBe('3hautoparts')
+    const vendorArgs = vendor.upsert.mock.calls[0][0] as { where: { uq_vendors_external_seller: { externalSource: string; externalSellerId: string } }; create: { isExternal: boolean; externalSource: string; shopName: string } }
+    expect(vendorArgs.where.uq_vendors_external_seller.externalSource).toBe('3hautoparts')
+    expect(vendorArgs.where.uq_vendors_external_seller.externalSellerId).toBe('__shadow__')
     expect(vendorArgs.create.isExternal).toBe(true)
     expect(vendorArgs.create.shopName).toBe('3H Autoparts')
 

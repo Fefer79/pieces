@@ -19,6 +19,10 @@ export type CoinAfriqueNormalized = {
   imageOriginalUrl: string | null
   /** Fitments déduits du titre (la marque du véhicule y est noyée). */
   fitments: NameFitment[]
+  /** Vendeur réel, récupéré sur la page détail (null tant que non enrichi). */
+  sellerId: string | null
+  sellerName: string | null
+  sellerPhone: string | null
 }
 
 const PART_BRANDS = [
@@ -72,5 +76,8 @@ export function normalizeCoinAfriqueProduct(raw: CoinAfriqueProductRaw): CoinAfr
     partSource: classifyPartSource(brand),
     imageOriginalUrl: raw.imageUrl ?? null,
     fitments: extractFitmentsFromName(name),
+    sellerId: null,
+    sellerName: null,
+    sellerPhone: null,
   }
 }

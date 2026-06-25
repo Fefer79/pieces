@@ -197,7 +197,11 @@ model Vendor {
   deliveryZones String[]         @default([]) @map("delivery_zones")
 
   isExternal     Boolean @default(false) @map("is_external")
-  externalSource String? @unique @map("external_source")
+  externalSource String? @map("external_source")
+  // Identité stable du vendeur côté source externe (ex. UUID `data-user-id` CoinAfrique).
+  // Permet un Vendor par vendeur réel : la dédup se fait sur (source, sellerId), pas sur
+  // le téléphone (qui peut manquer). Le vendeur fantôme/fallback utilise '__shadow__'.
+  externalSellerId String? @map("external_seller_id")
 
   ordersDelivered  Int       @default(0) @map("orders_delivered")
   disputesOpened   Int       @default(0) @map("disputes_opened")
@@ -211,6 +215,7 @@ model Vendor {
   contracts           VendorContract[]
 
   @@map("vendors")
+  @@unique([externalSource, externalSellerId], name: "uq_vendors_external_seller")
   @@index([phone], name: "idx_vendors_phone")
   @@index([managedByLiaisonId], name: "idx_vendors_managed_by_liaison")
 }

@@ -30,9 +30,11 @@ export const updateDeliveryZonesSchema = z.object({
   zones: z.array(z.enum(ABIDJAN_COMMUNES)).min(1, 'Au moins une commune est requise'),
 })
 
-// Admin edit of a vendor's contact (nom du contact + téléphone).
+// Admin edit of a vendor's info (nom de boutique + nom du contact + téléphone).
+// shopName est notamment utile pour corriger un vendeur CoinAfrique importé.
 export const adminUpdateVendorSchema = z
   .object({
+    shopName: z.string().min(2).max(120).optional(),
     contactName: z.string().min(2).max(100).optional(),
     phone: phoneSchema.optional(),
   })

@@ -217,11 +217,12 @@ export async function replaceAdminFitments(itemId: string, fitments: AdminFitmen
 }
 
 interface AdminVendorPatch {
+  shopName?: string
   contactName?: string
   phone?: string
 }
 
-/** Admin edit of a vendor's contact (nom du contact + téléphone). */
+/** Admin edit of a vendor's info (nom de boutique + nom du contact + téléphone). */
 export async function updateAdminVendor(vendorId: string, patch: AdminVendorPatch) {
   const exists = await prisma.vendor.findUnique({ where: { id: vendorId }, select: { id: true } })
   if (!exists) {
@@ -229,6 +230,7 @@ export async function updateAdminVendor(vendorId: string, patch: AdminVendorPatc
   }
 
   const data: Prisma.VendorUpdateInput = {}
+  if (patch.shopName !== undefined) data.shopName = patch.shopName
   if (patch.contactName !== undefined) data.contactName = patch.contactName
   if (patch.phone !== undefined) data.phone = patch.phone
 

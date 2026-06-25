@@ -9,6 +9,7 @@ import {
   type BcgNormalized,
 } from '../normalizers/bcg.ts'
 import { prisma } from '../lib/prisma.ts'
+import { SHADOW_SELLER_ID } from '../lib/external.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const RAW_DIR = resolve(HERE, '../../data/raw')
@@ -35,7 +36,7 @@ export async function loadBcgItems(
   db: BcgPrisma = prisma,
 ): Promise<{ vendorId: string; itemsUpserted: number; fitmentsCreated: number }> {
   const vendor = await db.vendor.upsert({
-    where: { externalSource: EXTERNAL_SOURCE_SLUG },
+    where: { uq_vendors_external_seller: { externalSource: EXTERNAL_SOURCE_SLUG, externalSellerId: SHADOW_SELLER_ID } },
     create: {
       shopName: SHADOW_VENDOR_SHOP_NAME,
       contactName: SHADOW_VENDOR_SHOP_NAME,
@@ -44,6 +45,7 @@ export async function loadBcgItems(
       status: 'ACTIVE',
       isExternal: true,
       externalSource: EXTERNAL_SOURCE_SLUG,
+      externalSellerId: SHADOW_SELLER_ID,
     },
     update: { isExternal: true },
   })

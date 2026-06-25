@@ -5,6 +5,7 @@ import type { PrismaClient } from '@prisma/client'
 import { fetchProductUrls, fetchProduct } from '../sources/three-h.ts'
 import { normalizeThreeHProduct, EXTERNAL_SOURCE_SLUG, type ThreeHNormalized } from '../normalizers/three-h.ts'
 import { prisma } from '../lib/prisma.ts'
+import { SHADOW_SELLER_ID } from '../lib/external.ts'
 
 const SHADOW_VENDOR_PHONE = '+22500000003H'
 const SHADOW_VENDOR_SHOP_NAME = '3H Autoparts'
@@ -28,7 +29,7 @@ export async function loadThreeHItems(
   db: IngestPrisma = prisma,
 ): Promise<{ vendorId: string; upserted: number }> {
   const vendor = await db.vendor.upsert({
-    where: { externalSource: EXTERNAL_SOURCE_SLUG },
+    where: { uq_vendors_external_seller: { externalSource: EXTERNAL_SOURCE_SLUG, externalSellerId: SHADOW_SELLER_ID } },
     create: {
       shopName: SHADOW_VENDOR_SHOP_NAME,
       contactName: SHADOW_VENDOR_SHOP_NAME,
@@ -37,6 +38,7 @@ export async function loadThreeHItems(
       status: 'ACTIVE',
       isExternal: true,
       externalSource: EXTERNAL_SOURCE_SLUG,
+      externalSellerId: SHADOW_SELLER_ID,
     },
     update: {
       isExternal: true,

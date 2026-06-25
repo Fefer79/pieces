@@ -44,8 +44,8 @@ describe('loadGlobalAutoItems', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       db as any)
     expect(vendorUpsert).toHaveBeenCalledTimes(1)
-    const call = vendorUpsert.mock.calls[0][0] as { where: { externalSource: string }; create: { isExternal: boolean; externalSource: string } }
-    expect(call.where).toEqual({ externalSource: EXTERNAL_SOURCE_SLUG })
+    const call = vendorUpsert.mock.calls[0][0] as { where: { uq_vendors_external_seller: { externalSource: string; externalSellerId: string } }; create: { isExternal: boolean; externalSource: string } }
+    expect(call.where).toEqual({ uq_vendors_external_seller: { externalSource: EXTERNAL_SOURCE_SLUG, externalSellerId: '__shadow__' } })
     expect(call.create.isExternal).toBe(true)
     expect(call.create.externalSource).toBe(EXTERNAL_SOURCE_SLUG)
   })

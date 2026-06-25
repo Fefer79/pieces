@@ -31,9 +31,9 @@ export default function AdminVendorDetailPage() {
   const [data, setData] = useState<Detail | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Édition du contact vendeur (contactName + phone)
+  // Édition des infos vendeur (nom de boutique + contact + téléphone)
   const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState({ contactName: '', phone: '' })
+  const [form, setForm] = useState({ shopName: '', contactName: '', phone: '' })
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
@@ -43,7 +43,11 @@ export default function AdminVendorDetailPage() {
 
   function startEdit() {
     if (!data) return
-    setForm({ contactName: data.vendor.contactName ?? '', phone: data.vendor.phone ?? '' })
+    setForm({
+      shopName: data.vendor.shopName ?? '',
+      contactName: data.vendor.contactName ?? '',
+      phone: data.vendor.phone ?? '',
+    })
     setSaveError(null)
     setEditing(true)
   }
@@ -55,7 +59,11 @@ export default function AdminVendorDetailPage() {
       const updated = await adminFetch<Detail>(`/admin/vendors/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contactName: form.contactName.trim(), phone: form.phone.trim() }),
+        body: JSON.stringify({
+          shopName: form.shopName.trim(),
+          contactName: form.contactName.trim(),
+          phone: form.phone.trim(),
+        }),
       })
       setData(updated)
       setEditing(false)
@@ -89,6 +97,15 @@ export default function AdminVendorDetailPage() {
 
           {editing ? (
             <div className="mt-2 space-y-2 text-sm">
+              <div>
+                <label className="text-[11px] text-muted">Nom de la boutique</label>
+                <input
+                  value={form.shopName}
+                  onChange={(e) => setForm((f) => ({ ...f, shopName: e.target.value }))}
+                  className="mt-1 w-full rounded-sm border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                  placeholder="Nom de la boutique / du vendeur"
+                />
+              </div>
               <div>
                 <label className="text-[11px] text-muted">Nom du contact</label>
                 <input
