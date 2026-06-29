@@ -391,6 +391,18 @@ export async function getAdminCatalogList(query: AdminListQuery) {
       { name: { contains: query.q, mode: 'insensitive' } },
       { category: { contains: query.q, mode: 'insensitive' } },
       { oemReference: { contains: query.q, mode: 'insensitive' } },
+      { vehicleCompatibility: { contains: query.q, mode: 'insensitive' } },
+      { vendor: { shopName: { contains: query.q, mode: 'insensitive' } } },
+      {
+        fitments: {
+          some: {
+            OR: [
+              { brand: { contains: query.q, mode: 'insensitive' } },
+              { model: { contains: query.q, mode: 'insensitive' } },
+            ],
+          },
+        },
+      },
     ]
   }
 
@@ -409,6 +421,55 @@ export async function getAdminCatalogList(query: AdminListQuery) {
   ])
 
   return { items, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+}
+
+export type AdminSuggestion =
+  | { type: 'part'; label: string }
+  | { type: 'brand'; label: string }
+  | { type: 'vendor'; label: string }
+
+/**
+ * Autocomplétion admin sur les pièces : renvoie des suggestions groupées par
+ * type (nom de pièce, marque de véhicule via fitments, vendeur). Le label
+ * choisi est réinjecté tel quel dans `q` — la recherche liste matche déjà
+ * name / vehicleCompatibility / fitments.brand / vendor.shopName.
+ */
+export async function getAdminCatalogSuggest(q: string): Promise<{ suggestions: AdminSuggestion[] }> {
+  const term = q.trim()
+  if (term.length < 2) return { suggestions: [] }
+  const take = 6
+
+  const [parts, brands, vendors] = await Promise.all([
+    prisma.catalogItem.findMany({
+      where: { name: { contains: term, mode: 'insensitive' } },
+      select: { name: true },
+      distinct: ['name'],
+      orderBy: { name: 'asc' },
+      take,
+    }),
+    prisma.catalogItemFitment.findMany({
+      where: { brand: { contains: term, mode: 'insensitive' } },
+      select: { brand: true },
+      distinct: ['brand'],
+      orderBy: { brand: 'asc' },
+      take,
+    }),
+    prisma.vendor.findMany({
+      where: { shopName: { contains: term, mode: 'insensitive' } },
+      select: { shopName: true },
+      distinct: ['shopName'],
+      orderBy: { shopName: 'asc' },
+      take,
+    }),
+  ])
+
+  const suggestions: AdminSuggestion[] = [
+    ...parts.flatMap((p) => (p.name ? [{ type: 'part' as const, label: p.name }] : [])),
+    ...brands.map((b) => ({ type: 'brand' as const, label: b.brand })),
+    ...vendors.map((v) => ({ type: 'vendor' as const, label: v.shopName })),
+  ]
+
+  return { suggestions }
 }
 
 export async function getAdminVendorsList(query: AdminListQuery) {

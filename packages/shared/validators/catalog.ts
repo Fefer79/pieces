@@ -114,6 +114,10 @@ export const adminListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).optional(),
 })
 
+export const adminSuggestQuerySchema = z.object({
+  q: z.string().max(200).optional(),
+})
+
 export const adminExportQuerySchema = z.object({
   entity: z.enum(['vendors', 'clients', 'orders', 'catalog']),
 })

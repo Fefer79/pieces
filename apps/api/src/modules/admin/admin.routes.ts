@@ -14,6 +14,7 @@ import {
   getEnterpriseMembers,
   getAdminOverview,
   getAdminCatalogList,
+  getAdminCatalogSuggest,
   getAdminVendorsList,
   getAdminVendorDetail,
   updateAdminVendor,
@@ -46,6 +47,7 @@ import {
 import { zodToFastify } from '../../lib/zodSchema.js'
 import {
   adminListQuerySchema,
+  adminSuggestQuerySchema,
   adminExportQuerySchema,
   adminUpdateCatalogItemSchema,
   adminUpdateVendorSchema,
@@ -267,6 +269,23 @@ export async function adminRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const data = await getAdminCatalogList(request.query as Record<string, never>)
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/catalog/suggest',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Autocomplétion catalogue : suggestions pièces / marques / vendeurs',
+        querystring: zodToFastify(adminSuggestQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const { q } = request.query as { q?: string }
+      const data = await getAdminCatalogSuggest(q ?? '')
       return reply.status(200).send({ data })
     },
   )

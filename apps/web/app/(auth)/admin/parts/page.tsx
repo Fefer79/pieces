@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { adminFetch, downloadCsv, fmtFcfa } from '@/lib/admin-api'
 import { Chip } from '@/components/ui/chip'
@@ -24,12 +24,37 @@ interface ListResponse {
   pagination: { page: number; limit: number; total: number; totalPages: number }
 }
 
+type Suggestion =
+  | { type: 'part'; label: string }
+  | { type: 'brand'; label: string }
+  | { type: 'vendor'; label: string }
+
+const SUGGEST_LABEL: Record<Suggestion['type'], string> = {
+  part: 'Pièce',
+  brand: 'Marque',
+  vendor: 'Vendeur',
+}
+
+const SUGGEST_COLOR: Record<Suggestion['type'], string> = {
+  part: 'text-ink-2 bg-surface',
+  brand: 'text-accent bg-accent/10',
+  vendor: 'text-ink bg-card',
+}
+
 export default function AdminPartsPage() {
   const [data, setData] = useState<ListResponse | null>(null)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
+
+  // Autocomplétion prédictive (pièces / marques / vendeurs)
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [showSuggest, setShowSuggest] = useState(false)
+  const [activeIdx, setActiveIdx] = useState(-1)
+  // Quand on choisit une suggestion, on ne veut pas relancer une requête suggest
+  // sur le terme qu'on vient d'injecter.
+  const justPicked = useRef(false)
 
   const load = useCallback(() => {
     const params = new URLSearchParams()
@@ -42,6 +67,48 @@ export default function AdminPartsPage() {
   }, [q, status, page])
 
   useEffect(() => { load() }, [load])
+
+  // Suggestions débouncées : déclenchées à partir de 2 caractères.
+  useEffect(() => {
+    if (justPicked.current) { justPicked.current = false; return }
+    const term = q.trim()
+    const ctrl = new AbortController()
+    const t = setTimeout(() => {
+      if (term.length < 2) { setSuggestions([]); setShowSuggest(false); return }
+      adminFetch<{ suggestions: Suggestion[] }>(
+        `/admin/catalog/suggest?q=${encodeURIComponent(term)}`,
+        { signal: ctrl.signal },
+      )
+        .then((r) => { setSuggestions(r.suggestions); setActiveIdx(-1); setShowSuggest(true) })
+        .catch(() => {})
+    }, 200)
+    return () => { clearTimeout(t); ctrl.abort() }
+  }, [q])
+
+  function pick(s: Suggestion) {
+    justPicked.current = true
+    setPage(1)
+    setQ(s.label)
+    setSuggestions([])
+    setShowSuggest(false)
+    setActiveIdx(-1)
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!showSuggest || suggestions.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIdx((i) => Math.min(i + 1, suggestions.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIdx((i) => Math.max(i - 1, -1))
+    } else if (e.key === 'Enter') {
+      const sel = suggestions[activeIdx]
+      if (sel) { e.preventDefault(); pick(sel) }
+    } else if (e.key === 'Escape') {
+      setShowSuggest(false)
+    }
+  }
 
   return (
     <div className="p-4 lg:p-6">
@@ -56,12 +123,39 @@ export default function AdminPartsPage() {
       </div>
 
       <div className="mb-3 flex flex-wrap gap-2">
-        <input
-          value={q}
-          onChange={(e) => { setPage(1); setQ(e.target.value) }}
-          placeholder="Rechercher (nom, catégorie, OEM…)"
-          className="flex-1 min-w-[200px] rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
-        />
+        <div className="relative min-w-[200px] flex-1">
+          <input
+            value={q}
+            onChange={(e) => { setPage(1); setQ(e.target.value) }}
+            onKeyDown={onKeyDown}
+            onFocus={() => { if (suggestions.length > 0) setShowSuggest(true) }}
+            onBlur={() => { setTimeout(() => setShowSuggest(false), 120) }}
+            placeholder="Rechercher (nom, catégorie, OEM, marque, vendeur…)"
+            className="w-full rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
+            autoComplete="off"
+          />
+          {showSuggest && suggestions.length > 0 && (
+            <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-80 overflow-y-auto rounded-md border border-border-strong bg-card py-1 shadow-lg">
+              {suggestions.map((s, i) => (
+                <li key={`${s.type}-${s.label}`}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); pick(s) }}
+                    onMouseEnter={() => setActiveIdx(i)}
+                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${
+                      activeIdx === i ? 'bg-surface' : ''
+                    }`}
+                  >
+                    <span className={`shrink-0 rounded-sm px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] ${SUGGEST_COLOR[s.type]}`}>
+                      {SUGGEST_LABEL[s.type]}
+                    </span>
+                    <span className="truncate text-ink">{s.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <select
           value={status}
           onChange={(e) => { setPage(1); setStatus(e.target.value) }}

@@ -17,6 +17,7 @@ export {
   fitmentParamsSchema,
   replaceFitmentsSchema,
   adminListQuerySchema,
+  adminSuggestQuerySchema,
   adminExportQuerySchema,
   minCommissionFor,
   MIN_COMMISSION_FCFA,

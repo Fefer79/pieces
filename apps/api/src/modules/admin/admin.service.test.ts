@@ -81,6 +81,8 @@ const {
   updateAdminCatalogItem,
   replaceAdminFitments,
   updateAdminVendor,
+  getAdminCatalogList,
+  getAdminCatalogSuggest,
 } = await import('./admin.service.js')
 
 describe('admin.service', () => {
@@ -140,6 +142,56 @@ describe('admin.service', () => {
 
       const result = await getEnterpriseMembers('user-1')
       expect(result.members).toHaveLength(0)
+    })
+  })
+
+  describe('getAdminCatalogList', () => {
+    it('searches across name, vendor and fitments when q is provided', async () => {
+      mockCatalogFindMany.mockResolvedValueOnce([])
+      mockCatalogCount.mockResolvedValueOnce(0)
+
+      await getAdminCatalogList({ q: 'toyota' })
+
+      const where = mockCatalogFindMany.mock.calls[0][0].where
+      expect(where.OR).toEqual(
+        expect.arrayContaining([
+          { name: { contains: 'toyota', mode: 'insensitive' } },
+          { vendor: { shopName: { contains: 'toyota', mode: 'insensitive' } } },
+          {
+            fitments: {
+              some: {
+                OR: [
+                  { brand: { contains: 'toyota', mode: 'insensitive' } },
+                  { model: { contains: 'toyota', mode: 'insensitive' } },
+                ],
+              },
+            },
+          },
+        ]),
+      )
+    })
+  })
+
+  describe('getAdminCatalogSuggest', () => {
+    it('returns [] for terms shorter than 2 chars without querying', async () => {
+      const result = await getAdminCatalogSuggest('a')
+      expect(result.suggestions).toEqual([])
+      expect(mockCatalogFindMany).not.toHaveBeenCalled()
+      expect(mockVendorFindMany).not.toHaveBeenCalled()
+    })
+
+    it('groups suggestions by part, brand and vendor', async () => {
+      mockCatalogFindMany.mockResolvedValueOnce([{ name: 'Plaquettes de frein' }])
+      mockFitmentFindMany.mockResolvedValueOnce([{ brand: 'Toyota' }])
+      mockVendorFindMany.mockResolvedValueOnce([{ shopName: 'Casse Yopougon' }])
+
+      const result = await getAdminCatalogSuggest('to')
+
+      expect(result.suggestions).toEqual([
+        { type: 'part', label: 'Plaquettes de frein' },
+        { type: 'brand', label: 'Toyota' },
+        { type: 'vendor', label: 'Casse Yopougon' },
+      ])
     })
   })
 
