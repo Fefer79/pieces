@@ -5,6 +5,7 @@ import { VEHICLE_BRANDS, getEngines } from 'shared/constants/vehicles'
 import { formatWarranty, type WarrantyUnit } from 'shared/constants'
 import { Price } from '@/components/ui/price'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 
 interface SearchResult {
   id: string
@@ -132,6 +133,18 @@ export default function EnterpriseSearchPage() {
     return () => clearTimeout(timer)
   }, [searchQuery, selectedBrand, selectedModel, selectedYear, grouped, handleSearch])
 
+  // Suggestions de noms de pièces, scopées au véhicule sélectionné (sans vendeur).
+  const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
+    const params = new URLSearchParams({ q: term })
+    if (selectedBrand) params.set('brand', selectedBrand)
+    if (selectedModel) params.set('model', selectedModel)
+    if (selectedYear) params.set('year', selectedYear)
+    const res = await fetch(`/api/v1/browse/suggest?${params.toString()}`)
+    const body = await res.json()
+    const labels: string[] = body.data?.suggestions ?? []
+    return labels.map((label) => ({ label }))
+  }, [selectedBrand, selectedModel, selectedYear])
+
   const resetFilters = () => {
     setSelectedBrand('')
     setSelectedModel('')
@@ -159,12 +172,12 @@ export default function EnterpriseSearchPage() {
         <div className="space-y-4">
           <div>
             <label className={filterLabel}>Recherche</label>
-            <input
-              type="text"
+            <PredictiveSearch
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
+              fetchSuggestions={fetchSuggestions}
               placeholder="Nom, référence…"
-              className={filterInput}
+              inputClassName={filterInput}
             />
           </div>
 

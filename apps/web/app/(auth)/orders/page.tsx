@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { Price } from '@/components/ui/price'
 import { StatusChip, ConditionChip, type Condition } from '@/components/ui/chip'
+import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -101,6 +102,18 @@ export default function OrderHistoryPage() {
     return c
   }, [orders])
 
+  // Suggestions locales : noms de pièces présents dans les commandes chargées.
+  const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
+    const t = term.toLowerCase()
+    const names = new Set<string>()
+    for (const o of data?.orders ?? []) {
+      for (const i of o.items) {
+        if (i.name.toLowerCase().includes(t)) names.add(i.name)
+      }
+    }
+    return [...names].slice(0, 8).map((label) => ({ label }))
+  }, [data])
+
   const visible = useMemo(() => {
     const f = FILTERS.find((x) => x.key === filter) ?? FILTERS[0]
     const q = query.trim().toLowerCase()
@@ -143,11 +156,12 @@ export default function OrderHistoryPage() {
         </div>
         <div className="relative ml-auto w-full max-w-[280px]">
           <svg className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input
+          <PredictiveSearch
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={setQuery}
+            fetchSuggestions={fetchSuggestions}
             placeholder="Filtrer mes commandes…"
-            className="w-full rounded-md border border-border-strong bg-card py-2 pl-9 pr-3 text-[13px] outline-none focus:border-ink-2"
+            inputClassName="w-full rounded-md border border-border-strong bg-card py-2 pl-9 pr-3 text-[13px] outline-none focus:border-ink-2"
           />
         </div>
       </div>

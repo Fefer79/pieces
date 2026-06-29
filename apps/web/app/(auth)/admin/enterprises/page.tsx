@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { adminFetch } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 
 interface Enterprise {
   id: string
@@ -34,14 +35,22 @@ export default function AdminEnterprisesPage() {
 
   useEffect(() => { load() }, [load])
 
+  const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
+    const res = await adminFetch<{ suggestions: PredictiveItem[] }>(
+      `/admin/suggest?entity=enterprises&q=${encodeURIComponent(term)}`,
+    )
+    return res.suggestions
+  }, [])
+
   return (
     <div className="p-4 lg:p-6">
       <h1 className="mb-4 font-display text-2xl text-ink">Entreprises</h1>
-      <input
+      <PredictiveSearch
         value={q}
-        onChange={(e) => { setPage(1); setQ(e.target.value) }}
+        onChange={(v) => { setPage(1); setQ(v) }}
+        fetchSuggestions={fetchSuggestions}
         placeholder="Rechercher (nom, commune, RCCM)"
-        className="mb-3 w-full rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
+        className="mb-3 w-full"
       />
       {error && <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">{error}</div>}
       {!data ? <div className="text-sm text-muted">Chargement…</div> : (

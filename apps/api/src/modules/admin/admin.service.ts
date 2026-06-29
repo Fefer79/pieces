@@ -472,6 +472,65 @@ export async function getAdminCatalogSuggest(q: string): Promise<{ suggestions: 
   return { suggestions }
 }
 
+type AdminSuggestEntity = 'clients' | 'enterprises' | 'vendors' | 'external-imports'
+
+/**
+ * Autocomplétion admin pour les listes d'entités (clients, entreprises,
+ * vendeurs, imports externes). Renvoie le champ principal lisible de chaque
+ * entité ; le label est réinjecté dans `q` de la liste correspondante.
+ */
+export async function getAdminEntitySuggest(
+  entity: AdminSuggestEntity,
+  q: string,
+): Promise<{ suggestions: { label: string }[] }> {
+  const term = q.trim()
+  if (term.length < 2) return { suggestions: [] }
+  const take = 8
+  const insensitive = { contains: term, mode: 'insensitive' as const }
+
+  let labels: string[] = []
+  if (entity === 'vendors') {
+    const rows = await prisma.vendor.findMany({
+      where: { shopName: insensitive },
+      select: { shopName: true },
+      distinct: ['shopName'],
+      orderBy: { shopName: 'asc' },
+      take,
+    })
+    labels = rows.map((r) => r.shopName)
+  } else if (entity === 'clients') {
+    const rows = await prisma.user.findMany({
+      where: { name: insensitive },
+      select: { name: true },
+      distinct: ['name'],
+      orderBy: { name: 'asc' },
+      take,
+    })
+    labels = rows.flatMap((r) => (r.name ? [r.name] : []))
+  } else if (entity === 'enterprises') {
+    const rows = await prisma.enterprise.findMany({
+      where: { name: insensitive },
+      select: { name: true },
+      distinct: ['name'],
+      orderBy: { name: 'asc' },
+      take,
+    })
+    labels = rows.map((r) => r.name)
+  } else {
+    // external-imports : pièces issues des scrapers (source externe renseignée)
+    const rows = await prisma.catalogItem.findMany({
+      where: { name: insensitive, externalSource: { not: null } },
+      select: { name: true },
+      distinct: ['name'],
+      orderBy: { name: 'asc' },
+      take,
+    })
+    labels = rows.flatMap((r) => (r.name ? [r.name] : []))
+  }
+
+  return { suggestions: labels.map((label) => ({ label })) }
+}
+
 export async function getAdminVendorsList(query: AdminListQuery) {
   const page = query.page ?? 1
   const limit = Math.min(query.limit ?? 50, 200)

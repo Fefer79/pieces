@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { adminFetch, downloadCsv } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 
 interface Client {
   id: string
@@ -36,6 +37,13 @@ export default function AdminClientsPage() {
 
   useEffect(() => { load() }, [load])
 
+  const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
+    const res = await adminFetch<{ suggestions: PredictiveItem[] }>(
+      `/admin/suggest?entity=clients&q=${encodeURIComponent(term)}`,
+    )
+    return res.suggestions
+  }, [])
+
   return (
     <div className="p-4 lg:p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -43,11 +51,12 @@ export default function AdminClientsPage() {
         <button onClick={() => downloadCsv('clients')} className="rounded-sm border border-border-strong px-3 py-1.5 text-sm hover:bg-card">Export CSV</button>
       </div>
       <div className="mb-3 flex flex-wrap gap-2">
-        <input
+        <PredictiveSearch
           value={q}
-          onChange={(e) => { setPage(1); setQ(e.target.value) }}
+          onChange={(v) => { setPage(1); setQ(v) }}
+          fetchSuggestions={fetchSuggestions}
           placeholder="Rechercher (nom, téléphone, email)"
-          className="flex-1 min-w-[200px] rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
+          className="flex-1 min-w-[200px]"
         />
         <select value={role} onChange={(e) => { setPage(1); setRole(e.target.value) }} className="rounded-sm border border-border-strong bg-card px-3 py-2 text-sm">
           <option value="">Tous les rôles</option>

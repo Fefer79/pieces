@@ -83,6 +83,7 @@ const {
   updateAdminVendor,
   getAdminCatalogList,
   getAdminCatalogSuggest,
+  getAdminEntitySuggest,
 } = await import('./admin.service.js')
 
 describe('admin.service', () => {
@@ -192,6 +193,27 @@ describe('admin.service', () => {
         { type: 'brand', label: 'Toyota' },
         { type: 'vendor', label: 'Casse Yopougon' },
       ])
+    })
+  })
+
+  describe('getAdminEntitySuggest', () => {
+    it('returns [] for terms shorter than 2 chars without querying', async () => {
+      const result = await getAdminEntitySuggest('vendors', 'a')
+      expect(result.suggestions).toEqual([])
+      expect(mockVendorFindMany).not.toHaveBeenCalled()
+    })
+
+    it('suggests vendor shop names', async () => {
+      mockVendorFindMany.mockResolvedValueOnce([{ shopName: 'Casse Yopougon' }])
+      const result = await getAdminEntitySuggest('vendors', 'yop')
+      expect(result.suggestions).toEqual([{ label: 'Casse Yopougon' }])
+    })
+
+    it('suggests external-import names scoped to externalSource not null', async () => {
+      mockCatalogFindMany.mockResolvedValueOnce([{ name: 'Filtre à huile' }])
+      const result = await getAdminEntitySuggest('external-imports', 'fil')
+      expect(result.suggestions).toEqual([{ label: 'Filtre à huile' }])
+      expect(mockCatalogFindMany.mock.calls[0][0].where.externalSource).toEqual({ not: null })
     })
   })
 

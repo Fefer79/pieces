@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { adminFetch } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 
 type IngestSource =
   | 'HAUTOPARTS_3H'
@@ -109,6 +110,13 @@ export default function AdminExternalImportsPage() {
       .catch((e) => setError(e.message))
   }, [])
 
+  const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
+    const res = await adminFetch<{ suggestions: PredictiveItem[] }>(
+      `/admin/suggest?entity=external-imports&q=${encodeURIComponent(term)}`,
+    )
+    return res.suggestions
+  }, [])
+
   return (
     <div className="p-4 lg:p-6">
       <div className="mb-4">
@@ -143,11 +151,11 @@ export default function AdminExternalImportsPage() {
 
       {/* Filtres */}
       <div className="mb-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        <input
+        <PredictiveSearch
           value={q}
-          onChange={(e) => { setPage(1); setQ(e.target.value) }}
+          onChange={(v) => { setPage(1); setQ(v) }}
+          fetchSuggestions={fetchSuggestions}
           placeholder="Rechercher (nom, catégorie, OEM, ID source)"
-          className="rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
         />
         <select
           value={source}

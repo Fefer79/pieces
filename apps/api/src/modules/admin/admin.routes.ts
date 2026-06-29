@@ -15,6 +15,7 @@ import {
   getAdminOverview,
   getAdminCatalogList,
   getAdminCatalogSuggest,
+  getAdminEntitySuggest,
   getAdminVendorsList,
   getAdminVendorDetail,
   updateAdminVendor,
@@ -48,6 +49,7 @@ import { zodToFastify } from '../../lib/zodSchema.js'
 import {
   adminListQuerySchema,
   adminSuggestQuerySchema,
+  adminEntitySuggestQuerySchema,
   adminExportQuerySchema,
   adminUpdateCatalogItemSchema,
   adminUpdateVendorSchema,
@@ -286,6 +288,26 @@ export async function adminRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { q } = request.query as { q?: string }
       const data = await getAdminCatalogSuggest(q ?? '')
+      return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/suggest',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Autocomplétion des listes admin (clients, entreprises, vendeurs, imports externes)',
+        querystring: zodToFastify(adminEntitySuggestQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const { entity, q } = request.query as {
+        entity: 'clients' | 'enterprises' | 'vendors' | 'external-imports'
+        q?: string
+      }
+      const data = await getAdminEntitySuggest(entity, q ?? '')
       return reply.status(200).send({ data })
     },
   )

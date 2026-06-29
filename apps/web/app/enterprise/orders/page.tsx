@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { statusLabels, getStatusColor } from '@/lib/order-status'
 import { Price } from '@/components/ui/price'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -68,6 +69,18 @@ export default function EnterpriseOrdersPage() {
   }, [fetchOrders])
 
   // Client-side filtering
+  // Suggestions locales : noms d'articles présents dans les commandes chargées.
+  const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
+    const t = term.toLowerCase()
+    const names = new Set<string>()
+    for (const o of data?.orders ?? []) {
+      for (const i of o.items) {
+        if (i.name.toLowerCase().includes(t)) names.add(i.name)
+      }
+    }
+    return [...names].slice(0, 8).map((label) => ({ label }))
+  }, [data])
+
   const filteredOrders = data?.orders.filter((order) => {
     if (statusFilter && order.status !== statusFilter) return false
     if (searchQuery) {
@@ -156,12 +169,13 @@ export default function EnterpriseOrdersPage() {
           ))}
         </select>
 
-        <input
-          type="text"
+        <PredictiveSearch
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={setSearchQuery}
+          fetchSuggestions={fetchSuggestions}
           placeholder="Rechercher par n° ou article…"
-          className="w-64 rounded-sm border border-border-strong bg-card px-4 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
+          className="w-64"
+          inputClassName="w-full rounded-sm border border-border-strong bg-card px-4 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
         />
       </div>
 
