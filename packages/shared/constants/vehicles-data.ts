@@ -1274,7 +1274,7 @@ export default {
       },
       "DZIRE": {
         "years": [2018,2019,2020,2021,2022,2023,2024,2025,2026],
-        "engines": []
+        "engines": ["1.2 K12M VVT 16V 83 CV","1.2 K12N Dualjet 16V 90 CV","1.2 K12N Dualjet CNG (gaz)","1.2 Z12E 12V 80 CV","1.3 D13A DDiS 16V 75 CV (diesel)"]
       },
       "Ertiga": {
         "years": [2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
