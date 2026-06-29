@@ -488,7 +488,7 @@ export async function getAdminEntitySuggest(
   const take = 8
   const insensitive = { contains: term, mode: 'insensitive' as const }
 
-  let labels: string[] = []
+  let labels: string[]
   if (entity === 'vendors') {
     const rows = await prisma.vendor.findMany({
       where: { shopName: insensitive },
