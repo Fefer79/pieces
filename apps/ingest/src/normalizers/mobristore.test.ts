@@ -74,7 +74,8 @@ describe('parseCatalogHtml', () => {
   it('merges the desktop and mobile variants of a product into one row', () => {
     const rows = parseCatalogHtml(html)
     expect(rows).toHaveLength(1)
-    const r = rows[0]!
+    const r = rows[0]
+    if (!r) throw new Error('expected exactly one parsed row')
     expect(r.postId).toBe('303')
     expect(r.name).toBe('Phare alto')
     expect(r.brand).toBe('SUZUKI')
