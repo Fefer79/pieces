@@ -16,7 +16,6 @@ const NAV = [
   { href: '/admin/enterprises', label: 'Entreprises' },
   { href: '/admin/liaisons', label: 'Liaisons' },
   { href: '/admin/external-imports', label: 'Imports externes' },
-  { href: '/admin/catalog', label: 'Catalogue (legacy)' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -317,8 +317,8 @@ export default function AdminCatalogItemPage() {
     <main className="mx-auto max-w-5xl px-4 py-6 lg:py-8">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <Link href="/admin/catalog" className="text-sm text-ink-2 hover:underline">
-            ← Annonces
+          <Link href="/admin/parts" className="text-sm text-ink-2 hover:underline">
+            ← Pièces
           </Link>
           <h1 className="mt-1 font-display text-2xl text-ink">{item.name ?? 'Sans nom'}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
