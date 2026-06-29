@@ -16,6 +16,17 @@ export async function createDelivery(orderId: string, options: {
     throw new AppError('DELIVERY_ALREADY_EXISTS', 400, { message: 'Livraison déjà créée pour cette commande' })
   }
 
+  // À défaut d'adresse explicite, on reprend la commune choisie par l'acheteur
+  // au panier (Order.deliveryCommune) pour que le rider ait au moins la zone.
+  let deliveryAddress = options.deliveryAddress
+  if (!deliveryAddress) {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { deliveryCommune: true },
+    })
+    deliveryAddress = order?.deliveryCommune ?? undefined
+  }
+
   return prisma.delivery.create({
     data: {
       orderId,
@@ -23,7 +34,7 @@ export async function createDelivery(orderId: string, options: {
       pickupAddress: options.pickupAddress,
       pickupLat: options.pickupLat,
       pickupLng: options.pickupLng,
-      deliveryAddress: options.deliveryAddress,
+      deliveryAddress,
       deliveryLat: options.deliveryLat,
       deliveryLng: options.deliveryLng,
       codAmount: options.codAmount,

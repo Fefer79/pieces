@@ -807,6 +807,7 @@ model Order {
   shareToken      String        @unique @map("share_token")
   totalAmount     Int           @default(0) @map("total_amount")
   deliveryFee     Int           @default(0) @map("delivery_fee")
+  deliveryCommune String?       @map("delivery_commune")
   laborCost       Int?          @map("labor_cost")
   vendorConfirmedAt DateTime?   @map("vendor_confirmed_at")
   paidAt          DateTime?     @map("paid_at")

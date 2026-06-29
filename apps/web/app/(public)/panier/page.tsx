@@ -11,6 +11,7 @@ import { QuantityStepper } from '@/components/ui/quantity-stepper'
 import { useCart, type CartItem } from '@/lib/cart'
 import { apiFetch } from '@/lib/enterprise-api'
 import { useAuth } from '@/lib/auth-context'
+import { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES } from 'shared/constants'
 
 type CreatedOrder = { id: string; shareToken: string }
 
@@ -27,7 +28,7 @@ type DraftItem = {
 type Draft = { items: DraftItem[] } | null
 
 export default function PanierPage() {
-  const { items, itemsByVendor, count, subtotal, vehicle, setQuantity, removeItem, clear, mergeItems, setVehicle } =
+  const { items, itemsByVendor, count, subtotal, vehicle, commune, setQuantity, removeItem, clear, mergeItems, setVehicle, setCommune } =
     useCart()
   const { isAuthenticated, user } = useAuth()
   const router = useRouter()
@@ -89,6 +90,7 @@ export default function PanierPage() {
       body: JSON.stringify({
         items: items.map((i) => ({ catalogItemId: i.catalogItemId, quantity: i.quantity })),
         ...(vehicle ? { vehicleId: vehicle.vehicleId } : {}),
+        ...(commune ? { deliveryCommune: commune } : {}),
       }),
     })
     if (res.ok) {
@@ -109,7 +111,29 @@ export default function PanierPage() {
     setSubmitting(false)
   }
 
-  const priceLines: PriceLine[] = [{ label: 'Sous-total pièces', amount: subtotal }]
+  // Frais de livraison = forfait commune × nombre de vendeurs (chacun expédie
+  // séparément). Aligné sur le calcul serveur dans order.service.createOrder.
+  const vendorCount = itemsByVendor.length
+  const perVendorFee: number | null =
+    commune && commune in ABIDJAN_DELIVERY_FEES
+      ? ABIDJAN_DELIVERY_FEES[commune as keyof typeof ABIDJAN_DELIVERY_FEES]
+      : null
+  const deliveryFee = perVendorFee != null ? perVendorFee * vendorCount : null
+  const priceLines: PriceLine[] = [
+    { label: 'Sous-total pièces', amount: subtotal },
+    ...(deliveryFee != null
+      ? [
+          {
+            label:
+              vendorCount > 1
+                ? `Livraison · ${commune} (${vendorCount} vendeurs)`
+                : `Livraison · ${commune}`,
+            amount: deliveryFee,
+          },
+        ]
+      : []),
+  ]
+  const grandTotal = subtotal + (deliveryFee ?? 0)
 
   return (
     <div className="min-h-dvh bg-surface pb-24 lg:pb-8">
@@ -266,10 +290,33 @@ export default function PanierPage() {
 
             {/* Récapitulatif */}
             <aside className="lg:sticky lg:top-6 lg:self-start">
+              {/* Lieu de livraison : persisté depuis la fiche produit, modifiable ici. */}
+              <div className="mb-4 rounded-md border border-border bg-card px-4 py-3">
+                <label
+                  htmlFor="cart-delivery-commune"
+                  className="block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted"
+                >
+                  Lieu de livraison
+                </label>
+                <select
+                  id="cart-delivery-commune"
+                  value={commune}
+                  onChange={(e) => setCommune(e.target.value)}
+                  className="mt-1.5 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-accent focus:outline-none"
+                >
+                  <option value="">Choisir votre commune…</option>
+                  {ABIDJAN_COMMUNES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <PriceBreakdown
                 lines={priceLines}
-                total={subtotal}
-                note="Main-d'œuvre, livraison et frais plateforme calculés à la commande — aucun frais caché."
+                total={grandTotal}
+                note="Main-d'œuvre et frais plateforme calculés à la commande — aucun frais caché."
               />
 
               {error && (

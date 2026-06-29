@@ -120,7 +120,7 @@ export default function ProductPage() {
   const id = params.id
   const router = useRouter()
   const { vehicle } = useSelectedVehicle()
-  const { addItem } = useCart()
+  const { addItem, commune: deliveryCommune, setCommune: setDeliveryCommune } = useCart()
 
   const [item, setItem] = useState<ProductDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -131,7 +131,6 @@ export default function ProductPage() {
   const [buying, setBuying] = useState(false)
   const [offers, setOffers] = useState<CompareOffer[]>([])
   const [offerSort, setOfferSort] = useState<'price' | 'value'>('value')
-  const [deliveryCommune, setDeliveryCommune] = useState<string>('')
   const [phoneRevealed, setPhoneRevealed] = useState(false)
 
   useEffect(() => {
@@ -395,6 +394,8 @@ export default function ProductPage() {
                       id="delivery-commune"
                       value={deliveryCommune}
                       onChange={(e) => setDeliveryCommune(e.target.value)}
+                      // La commune est persistée dans le panier (cart store) →
+                      // elle survit à la navigation vers /panier et au paiement.
                       className="mt-1.5 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-accent focus:outline-none"
                     >
                       <option value="">Choisir votre commune…</option>

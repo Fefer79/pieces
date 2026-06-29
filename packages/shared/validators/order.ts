@@ -8,6 +8,7 @@ export const createOrderSchema = z.object({
   ownerPhone: z.string().regex(/^\+225\d{10}$/, 'Numéro ivoirien requis (+225...)').optional(),
   laborCost: z.number().int().min(0).optional(),
   vehicleId: z.string().uuid().optional(),
+  deliveryCommune: z.string().max(50).optional(),
 })
 
 export const upsertDraftSchema = z.object({

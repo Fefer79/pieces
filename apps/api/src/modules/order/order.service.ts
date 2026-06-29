@@ -4,6 +4,7 @@ import { AppError } from '../../lib/appError.js'
 import { canTransition } from './order.stateMachine.js'
 import { recomputeVendorScore } from '../vendor/vendorScore.service.js'
 import { getOrCreateInvoiceForOrder } from '../enterprise/invoice.service.js'
+import { ABIDJAN_DELIVERY_FEES } from 'shared/constants'
 
 const DELIVERED_STATUSES = new Set(['DELIVERED', 'CONFIRMED', 'COMPLETED'])
 
@@ -128,7 +129,7 @@ async function buildOrderItems(qtyById: Map<string, number>) {
 export async function createOrder(
   initiatorId: string,
   items: { catalogItemId: string; quantity?: number }[],
-  options: { ownerPhone?: string; laborCost?: number; vehicleId?: string } = {},
+  options: { ownerPhone?: string; laborCost?: number; vehicleId?: string; deliveryCommune?: string } = {},
 ) {
   const qtyById = qtyMapFromItems(items)
 
@@ -166,12 +167,24 @@ export async function createOrder(
   const { create, totalAmount } = await buildOrderItems(qtyById)
   const shareToken = generateShareToken()
 
+  // Frais de livraison = forfait commune × nombre de vendeurs distincts
+  // (chaque vendeur expédie séparément). Calculé serveur-side, jamais confié au client.
+  const deliveryCommune = options.deliveryCommune?.trim() || undefined
+  const perVendorFee =
+    deliveryCommune && deliveryCommune in ABIDJAN_DELIVERY_FEES
+      ? ABIDJAN_DELIVERY_FEES[deliveryCommune as keyof typeof ABIDJAN_DELIVERY_FEES]
+      : 0
+  const vendorCount = new Set(create.map((c) => c.vendorId)).size
+  const deliveryFee = perVendorFee * vendorCount
+
   const order = await prisma.order.create({
     data: {
       initiatorId,
       ownerPhone: options.ownerPhone,
       shareToken,
       totalAmount,
+      deliveryFee,
+      deliveryCommune,
       laborCost: options.laborCost,
       vehicleId,
       enterpriseId,

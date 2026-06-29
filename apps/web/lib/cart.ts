@@ -6,6 +6,8 @@ const STORAGE_KEY = 'pieces_cart'
 const EVENT = 'pieces:cart-changed'
 const VEHICLE_KEY = 'pieces_cart_vehicle'
 const VEHICLE_EVENT = 'pieces:cart-vehicle-changed'
+const COMMUNE_KEY = 'pieces_cart_commune'
+const COMMUNE_EVENT = 'pieces:cart-commune-changed'
 
 export interface CartItem {
   catalogItemId: string
@@ -137,6 +139,44 @@ export function setCartVehicle(vehicle: CartVehicle | null) {
   }
 }
 
+/**
+ * Commune de livraison rattachée au panier : choisie sur la fiche produit,
+ * elle doit persister jusqu'au panier (et au paiement) pour calculer les frais.
+ */
+function readCommuneRaw(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return window.localStorage.getItem(COMMUNE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function subscribeCommune(callback: () => void) {
+  if (typeof window === 'undefined') return () => {}
+  window.addEventListener(COMMUNE_EVENT, callback)
+  window.addEventListener('storage', callback)
+  return () => {
+    window.removeEventListener(COMMUNE_EVENT, callback)
+    window.removeEventListener('storage', callback)
+  }
+}
+
+/** Définit (ou efface avec '') la commune de livraison du panier. */
+export function setCartCommune(commune: string) {
+  if (typeof window === 'undefined') return
+  try {
+    if (commune) {
+      window.localStorage.setItem(COMMUNE_KEY, commune)
+    } else {
+      window.localStorage.removeItem(COMMUNE_KEY)
+    }
+    window.dispatchEvent(new CustomEvent(COMMUNE_EVENT))
+  } catch {
+    // ignore
+  }
+}
+
 export interface VendorGroup {
   vendorId: string
   vendorShopName: string
@@ -150,6 +190,8 @@ export function useCart() {
 
   const rawVehicle = useSyncExternalStore(subscribeVehicle, readVehicleRaw, getServerSnapshot)
   const vehicle = useMemo(() => parseVehicle(rawVehicle), [rawVehicle])
+
+  const commune = useSyncExternalStore(subscribeCommune, readCommuneRaw, getServerSnapshot) ?? ''
 
   const addItem = useCallback((item: Omit<CartItem, 'quantity'>, quantity = 1) => {
     const current = parse(readFromStorage())
@@ -177,6 +219,7 @@ export function useCart() {
   const clear = useCallback(() => {
     write([])
     setCartVehicle(null)
+    setCartCommune('')
   }, [])
 
   // Fusionne des items (ex. brouillon serveur) : le local gagne si déjà présent.
@@ -213,5 +256,5 @@ export function useCart() {
     return [...groups.values()]
   }, [items])
 
-  return { items, itemsByVendor, count, subtotal, vehicle, addItem, setQuantity, removeItem, clear, mergeItems, setVehicle: setCartVehicle }
+  return { items, itemsByVendor, count, subtotal, vehicle, commune, addItem, setQuantity, removeItem, clear, mergeItems, setVehicle: setCartVehicle, setCommune: setCartCommune }
 }

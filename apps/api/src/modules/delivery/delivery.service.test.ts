@@ -10,6 +10,7 @@ const mockDeliveryCreate = vi.fn()
 const mockDeliveryFindUnique = vi.fn()
 const mockDeliveryFindMany = vi.fn()
 const mockDeliveryUpdate = vi.fn()
+const mockOrderFindUnique = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: { auth: { getUser: vi.fn(), signInWithOtp: vi.fn(), verifyOtp: vi.fn() } },
@@ -23,6 +24,9 @@ vi.mock('../../lib/prisma.js', () => ({
       findMany: (...args: unknown[]) => mockDeliveryFindMany(...args),
       update: (...args: unknown[]) => mockDeliveryUpdate(...args),
     },
+    order: {
+      findUnique: (...args: unknown[]) => mockOrderFindUnique(...args),
+    },
   },
 }))
 
@@ -34,10 +38,22 @@ describe('delivery.service', () => {
   describe('createDelivery', () => {
     it('creates a delivery', async () => {
       mockDeliveryFindUnique.mockResolvedValueOnce(null)
+      mockOrderFindUnique.mockResolvedValueOnce({ deliveryCommune: null })
       mockDeliveryCreate.mockResolvedValueOnce({ id: 'd1', orderId: 'o1', status: 'PENDING_ASSIGNMENT' })
 
       const result = await createDelivery('o1', {})
       expect(result.status).toBe('PENDING_ASSIGNMENT')
+    })
+
+    it('defaults deliveryAddress to the order commune when none provided', async () => {
+      mockDeliveryFindUnique.mockResolvedValueOnce(null)
+      mockOrderFindUnique.mockResolvedValueOnce({ deliveryCommune: 'Cocody' })
+      mockDeliveryCreate.mockResolvedValueOnce({ id: 'd1', orderId: 'o1', status: 'PENDING_ASSIGNMENT' })
+
+      await createDelivery('o1', {})
+      expect(mockDeliveryCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ deliveryAddress: 'Cocody' }) }),
+      )
     })
 
     it('throws if delivery already exists', async () => {
