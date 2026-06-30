@@ -140,6 +140,57 @@ export default function VendorCatalogDetailPage() {
     fetchItem()
   }, [fetchItem])
 
+  const buildDirtyBody = (): Record<string, unknown> => {
+    const body: Record<string, unknown> = {}
+    if (name !== (item?.name ?? '')) body.name = name
+    if (category !== (item?.category ?? '')) body.category = category
+    if (oemReference !== (item?.oemReference ?? '')) body.oemReference = oemReference || null
+    if (vehicleCompatibility !== (item?.vehicleCompatibility ?? '')) body.vehicleCompatibility = vehicleCompatibility || null
+    if (price !== (item?.price !== null ? String(item?.price) : '')) {
+      body.price = price ? parseInt(price, 10) : undefined
+    }
+    if (condition !== (item?.condition ?? '')) {
+      if (condition) body.condition = condition
+    }
+    if (partSource !== (item?.partSource ?? '')) {
+      body.partSource = partSource || null
+    }
+    const currentWarrantyValue = item?.warrantyValue !== null && item?.warrantyValue !== undefined ? String(item.warrantyValue) : ''
+    const currentWarrantyUnit = item?.warrantyUnit ?? 'MONTH'
+    if (warrantyValue !== '' && (warrantyValue !== currentWarrantyValue || warrantyUnit !== currentWarrantyUnit)) {
+      body.warrantyValue = parseInt(warrantyValue, 10)
+      body.warrantyUnit = warrantyUnit
+    }
+    const currentCommission = item?.commissionAmount !== null && item?.commissionAmount !== undefined ? String(item.commissionAmount) : ''
+    if (commissionAmount !== currentCommission && commissionAmount !== '') {
+      body.commissionAmount = parseInt(commissionAmount, 10)
+    }
+    // If user has just toggled acceptance ON and it wasn't accepted before, send it.
+    if (commissionAccepted && !item?.commissionAcceptedAt) {
+      body.commissionAccepted = true
+    }
+    return body
+  }
+
+  // Persist any pending form edits. Returns true on success (or no-op), false on failure.
+  const persistDirty = async (token: string): Promise<boolean> => {
+    const body = buildDirtyBody()
+    if (Object.keys(body).length === 0) return true
+
+    const res = await fetch(`/api/v1/catalog/items/${itemId}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const result = await res.json()
+    if (!res.ok) {
+      setError(result.error?.message ?? 'Erreur lors de la sauvegarde')
+      return false
+    }
+    setItem(result.data)
+    return true
+  }
+
   const handleSave = async () => {
     setSaving(true)
     setError(null)
@@ -149,52 +200,13 @@ export default function VendorCatalogDetailPage() {
       const token = await getAccessToken()
       if (!token) { setError('Session expirée.'); setSaving(false); return }
 
-      const body: Record<string, unknown> = {}
-      if (name !== (item?.name ?? '')) body.name = name
-      if (category !== (item?.category ?? '')) body.category = category
-      if (oemReference !== (item?.oemReference ?? '')) body.oemReference = oemReference || null
-      if (vehicleCompatibility !== (item?.vehicleCompatibility ?? '')) body.vehicleCompatibility = vehicleCompatibility || null
-      if (price !== (item?.price !== null ? String(item?.price) : '')) {
-        body.price = price ? parseInt(price, 10) : undefined
-      }
-      if (condition !== (item?.condition ?? '')) {
-        if (condition) body.condition = condition
-      }
-      if (partSource !== (item?.partSource ?? '')) {
-        body.partSource = partSource || null
-      }
-      const currentWarrantyValue = item?.warrantyValue !== null && item?.warrantyValue !== undefined ? String(item.warrantyValue) : ''
-      const currentWarrantyUnit = item?.warrantyUnit ?? 'MONTH'
-      if (warrantyValue !== '' && (warrantyValue !== currentWarrantyValue || warrantyUnit !== currentWarrantyUnit)) {
-        body.warrantyValue = parseInt(warrantyValue, 10)
-        body.warrantyUnit = warrantyUnit
-      }
-      const currentCommission = item?.commissionAmount !== null && item?.commissionAmount !== undefined ? String(item.commissionAmount) : ''
-      if (commissionAmount !== currentCommission && commissionAmount !== '') {
-        body.commissionAmount = parseInt(commissionAmount, 10)
-      }
-      // If user has just toggled acceptance ON and it wasn't accepted before, send it.
-      if (commissionAccepted && !item?.commissionAcceptedAt) {
-        body.commissionAccepted = true
-      }
-
-      if (Object.keys(body).length === 0) {
+      if (Object.keys(buildDirtyBody()).length === 0) {
         setSuccess('Aucune modification.')
         setSaving(false)
         return
       }
 
-      const res = await fetch(`/api/v1/catalog/items/${itemId}`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const result = await res.json()
-
-      if (!res.ok) {
-        setError(result.error?.message ?? 'Erreur lors de la sauvegarde')
-      } else {
-        setItem(result.data)
+      if (await persistDirty(token)) {
         setSuccess('Modifications enregistrées.')
       }
     } catch {
@@ -212,6 +224,9 @@ export default function VendorCatalogDetailPage() {
     try {
       const token = await getAccessToken()
       if (!token) { setError('Session expirée.'); setSaving(false); return }
+
+      // Publish validates the persisted row, so flush any unsaved form edits first.
+      if (!(await persistDirty(token))) { setSaving(false); return }
 
       const res = await fetch(`/api/v1/catalog/items/${itemId}/publish`, {
         method: 'POST',
