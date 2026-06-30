@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { liaisonFetch } from '@/lib/liaison-api'
 import { minCommissionFor } from 'shared/validators'
-import { WARRANTY_UNITS, type WarrantyUnit } from 'shared/constants'
+import { WARRANTY_UNITS, type WarrantyUnit, ABIDJAN_COMMUNES } from 'shared/constants'
 
 const CONDITIONS = [
   { value: 'NEW', label: 'Neuf' },
@@ -51,13 +51,22 @@ export interface PartFormInitial {
 
 interface Props {
   mode: 'create' | 'edit'
-  vendorId: string
+  /** Vendeur cible (modes 'edit' et 'create' classique). Omis en saisie rapide. */
+  vendorId?: string
   partId?: string
   initial?: PartFormInitial
+  /** Saisie rapide : capture le vendeur tiers (nom, contact, location) + publie l'annonce en une étape. */
+  quickVendor?: boolean
 }
 
-export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
+export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }: Props) {
   const router = useRouter()
+  // Champs vendeur (saisie rapide uniquement)
+  const [vShopName, setVShopName] = useState('')
+  const [vContactName, setVContactName] = useState('')
+  const [vPhone, setVPhone] = useState('+225')
+  const [vCommune, setVCommune] = useState('')
+  const [vAddress, setVAddress] = useState('')
   const [name, setName] = useState(initial?.name ?? '')
   const [category, setCategory] = useState(initial?.category ?? '')
   const [oemReference, setOemReference] = useState(initial?.oemReference ?? '')
@@ -117,7 +126,14 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
 
   const commissionNum = commission ? Number(commission) : 0
   const commissionBelowMin = commission !== '' && commissionNum < minCommission
-  const valid = name.length >= 2
+  const phoneValid = /^\+225\d{10}$/.test(vPhone)
+  const vendorValid =
+    !quickVendor ||
+    (vShopName.trim().length >= 2 &&
+      vContactName.trim().length >= 2 &&
+      phoneValid &&
+      vCommune.length > 0)
+  const valid = name.length >= 2 && vendorValid
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -137,15 +153,25 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
       commissionAmount: commission ? Number(commission) : undefined,
       inStock,
       fitments,
+      ...(quickVendor && {
+        vendor: {
+          shopName: vShopName.trim(),
+          contactName: vContactName.trim(),
+          phone: vPhone.trim(),
+          commune: vCommune,
+          address: vAddress.trim() || undefined,
+        },
+      }),
     }
 
-    const path =
-      mode === 'create'
+    const path = quickVendor
+      ? '/parts/quick'
+      : mode === 'create'
         ? `/vendors/${vendorId}/parts`
         : `/vendors/${vendorId}/parts/${partId}`
-    const method = mode === 'create' ? 'POST' : 'PATCH'
+    const method = mode === 'create' || quickVendor ? 'POST' : 'PATCH'
 
-    const r = await liaisonFetch<{ id: string }>(path, {
+    const r = await liaisonFetch<{ id: string; vendorId: string }>(path, {
       method,
       body: JSON.stringify(payload),
     })
@@ -155,7 +181,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
       setError(r.message)
       return
     }
-    router.push(`/liaison/vendors/${vendorId}`)
+    router.push(`/liaison/vendors/${quickVendor ? r.data.vendorId : vendorId}`)
   }
 
   return (
@@ -164,6 +190,72 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
         <p className="rounded-md border border-[#D32F2F]/40 bg-[#D32F2F]/5 p-3 text-sm text-[#D32F2F]">
           {error}
         </p>
+      )}
+
+      {quickVendor && (
+        <fieldset className="space-y-4 rounded-md border border-border bg-card p-4">
+          <legend className="px-1 text-sm font-semibold text-ink">Vendeur tiers</legend>
+          <p className="text-xs text-muted">
+            Obligatoire pour publier au nom d&apos;un vendeur. Ces informations restent
+            réservées à vous et à l&apos;administration.
+          </p>
+
+          <Field label="Nom du vendeur / boutique" required>
+            <input
+              value={vShopName}
+              onChange={(e) => setVShopName(e.target.value)}
+              className="liaison-input"
+              placeholder="Ex : Casse Auto Adjamé"
+            />
+          </Field>
+
+          <Field label="Personne à contacter" required>
+            <input
+              value={vContactName}
+              onChange={(e) => setVContactName(e.target.value)}
+              className="liaison-input"
+              placeholder="Ex : Konan Yao"
+            />
+          </Field>
+
+          <Field label="Téléphone" required>
+            <input
+              type="tel"
+              value={vPhone}
+              onChange={(e) => setVPhone(e.target.value)}
+              className="liaison-input"
+              placeholder="+225XXXXXXXXXX"
+            />
+            {vPhone.length > 4 && !phoneValid && (
+              <p className="mt-1 text-xs text-[#B45309]">
+                Format attendu : +225 suivi de 10 chiffres
+              </p>
+            )}
+          </Field>
+
+          <Field label="Commune" required>
+            <select
+              aria-label="Commune du vendeur"
+              value={vCommune}
+              onChange={(e) => setVCommune(e.target.value)}
+              className="liaison-input"
+            >
+              <option value="">Choisir…</option>
+              {ABIDJAN_COMMUNES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Adresse / repère" hint="Optionnel">
+            <input
+              value={vAddress}
+              onChange={(e) => setVAddress(e.target.value)}
+              className="liaison-input"
+              placeholder="Ex : Rue des Jardins, près du marché"
+            />
+          </Field>
+        </fieldset>
       )}
 
       <Field label="Nom de la pièce" required>
@@ -374,7 +466,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial }: Props) {
 
       <div className="flex justify-end gap-2 pt-2">
         <Link
-          href={`/liaison/vendors/${vendorId}`}
+          href={quickVendor ? '/liaison/parts' : `/liaison/vendors/${vendorId}`}
           className="rounded-md bg-card px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-border"
           style={{ minHeight: 44 }}
         >

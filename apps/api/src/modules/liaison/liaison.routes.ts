@@ -4,6 +4,7 @@ import {
   liaisonUpdateVendorSchema,
   liaisonCreatePartSchema,
   liaisonUpdatePartSchema,
+  liaisonQuickPartSchema,
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { recordActivity } from '../../lib/activityLog.js'
@@ -14,6 +15,7 @@ import {
   getLiaisonVendor,
   updateLiaisonVendor,
   createPartForVendor,
+  createPartWithQuickVendor,
   getLiaisonPart,
   updatePartForVendor,
   acceptCommissionByLiaison,
@@ -175,6 +177,45 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
         targetId: result.id,
         payload: {
           vendorId: id,
+          name: result.name,
+          price: result.price,
+          commissionAmount: result.commissionAmount,
+        },
+      })
+      return reply.status(201).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/parts/quick',
+    {
+      schema: {
+        tags: ['Liaison'],
+        description:
+          'Saisie rapide : enregistre le vendeur tiers (nom, contact, location) et publie l\'annonce en une étape',
+        body: zodToFastify(liaisonQuickPartSchema),
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const result = await createPartWithQuickVendor(request.user.id, request.body)
+      request.log.info({
+        event: 'LIAISON_QUICK_PART_CREATED',
+        liaisonId: request.user.id,
+        vendorId: result.vendorId,
+        partId: result.id,
+        vendorReused: result.vendorReused,
+      })
+      await recordActivity({
+        actorId: request.user.id,
+        actorRole: request.user.activeContext ?? 'LIAISON',
+        action: 'LIAISON_QUICK_PART_CREATED',
+        targetType: 'CatalogItem',
+        targetId: result.id,
+        payload: {
+          vendorId: result.vendorId,
+          vendorReused: result.vendorReused,
           name: result.name,
           price: result.price,
           commissionAmount: result.commissionAmount,

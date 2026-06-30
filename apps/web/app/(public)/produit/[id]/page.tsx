@@ -41,6 +41,7 @@ type Vendor = {
   aggregateRating: number | null
   avgReviewRating: number | null
   ordersDelivered: number
+  reviewsCount: number
 }
 
 type ProductDetail = {
@@ -113,6 +114,42 @@ function matchesVehicle(fitments: Fitment[], vehicle: SelectedVehicle): boolean 
     }
     return true
   })
+}
+
+/** Note vendeur « façon Amazon » : étoiles pleines selon la note, + nombre d'avis vérifiés. */
+function VendorRating({
+  rating,
+  reviewsCount,
+}: {
+  rating: number | null
+  reviewsCount: number
+}) {
+  const value = rating ?? 0
+  const rounded = Math.round(value * 2) / 2
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="inline-flex" aria-hidden>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <span
+            key={i}
+            className={`text-sm leading-none ${
+              i <= rounded ? 'text-[#F5A623]' : 'text-border-strong'
+            }`}
+          >
+            ★
+          </span>
+        ))}
+      </span>
+      {reviewsCount > 0 ? (
+        <span className="text-xs text-muted">
+          {value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} ·{' '}
+          {reviewsCount} avis vérifié{reviewsCount > 1 ? 's' : ''}
+        </span>
+      ) : (
+        <span className="text-xs text-muted-2">Pas encore d&apos;avis</span>
+      )}
+    </div>
+  )
 }
 
 export default function ProductPage() {
@@ -349,16 +386,16 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* 3. Bloc vendeur */}
+              {/* 3. Bloc vendeur — note d'abord (façon Amazon), nom discret */}
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card px-4 py-3">
                 <div>
-                  <p className="text-sm font-semibold text-ink">{item.vendor.shopName}</p>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <span className="text-sm leading-none tracking-tight text-border-strong" aria-hidden>
-                      ★★★★★
-                    </span>
-                    <span className="text-xs text-muted">0 avis</span>
-                  </div>
+                  <VendorRating
+                    rating={item.vendor.avgReviewRating ?? item.vendor.aggregateRating}
+                    reviewsCount={item.vendor.reviewsCount}
+                  />
+                  <p className="mt-1 text-xs text-muted-2">
+                    Vendu par <span className="text-muted">{item.vendor.shopName}</span>
+                  </p>
                 </div>
                 {item.vendor.phone &&
                   (phoneRevealed ? (

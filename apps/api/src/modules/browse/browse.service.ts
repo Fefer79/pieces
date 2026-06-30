@@ -563,5 +563,11 @@ export async function getPublicItemDetail(id: string) {
   const { isExternal, phone, ...vendorPublic } = item.vendor
   const sellerPhone = isExternal && /^\+225\d{10}$/.test(phone) ? phone : null
 
-  return { ...item, vendor: { ...vendorPublic, phone: sellerPhone } }
+  // Avis d'acheteurs vérifiés : chaque SellerReview est liée à une commande, donc
+  // émise par un acheteur réel. Sert à afficher les étoiles « façon Amazon ».
+  const reviewsCount = await prisma.sellerReview.count({
+    where: { vendorId: item.vendor.id },
+  })
+
+  return { ...item, vendor: { ...vendorPublic, phone: sellerPhone, reviewsCount } }
 }

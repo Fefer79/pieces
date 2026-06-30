@@ -13,6 +13,7 @@ const mockVendorUpdate = vi.fn()
 const mockVendorFindUniqueOrThrow = vi.fn()
 const mockVendorCount = vi.fn()
 const mockKycCreate = vi.fn()
+const mockKycUpsert = vi.fn()
 const mockCatalogItemCreate = vi.fn()
 const mockCatalogItemFindMany = vi.fn()
 const mockCatalogItemCount = vi.fn()
@@ -49,7 +50,9 @@ const {
   listLiaisonVendors,
   getLiaisonVendor,
   createPartForVendor,
+  createPartWithQuickVendor,
   getLiaisonDashboard,
+  updateLiaisonVendor,
 } = await import('./liaison.service.js')
 
 const validVendorBody = {
@@ -73,10 +76,15 @@ describe('liaison.service', () => {
       const tx = {
         vendor: {
           create: (...args: unknown[]) => mockVendorCreate(...args),
+          update: (...args: unknown[]) => mockVendorUpdate(...args),
           findUniqueOrThrow: (...args: unknown[]) => mockVendorFindUniqueOrThrow(...args),
         },
         vendorKyc: {
           create: (...args: unknown[]) => mockKycCreate(...args),
+          upsert: (...args: unknown[]) => mockKycUpsert(...args),
+        },
+        catalogItem: {
+          create: (...args: unknown[]) => mockCatalogItemCreate(...args),
         },
       }
       return fn(tx)
@@ -160,6 +168,53 @@ describe('liaison.service', () => {
     })
   })
 
+  describe('updateLiaisonVendor', () => {
+    it('upserts KYC when completing an informal vendor', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v1', vendorType: 'INFORMAL' })
+      mockVendorFindUniqueOrThrow.mockResolvedValue({ id: 'v1' })
+
+      await updateLiaisonVendor('liaison-1', 'v1', {
+        commune: 'Adjamé',
+        documentNumber: 'CNI987654321',
+        kycType: 'CNI',
+      })
+
+      expect(mockVendorUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'v1' }, data: { commune: 'Adjamé' } }),
+      )
+      expect(mockKycUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { vendorId: 'v1' },
+          create: expect.objectContaining({ documentNumber: 'CNI987654321', kycType: 'CNI' }),
+        }),
+      )
+    })
+
+    it('rejects KYC type mismatched with vendor type', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v1', vendorType: 'INFORMAL' })
+      await expect(
+        updateLiaisonVendor('liaison-1', 'v1', {
+          documentNumber: 'RC123456',
+          kycType: 'RCCM',
+        }),
+      ).rejects.toMatchObject({ code: 'LIAISON_VENDOR_INVALID' })
+      expect(mockKycUpsert).not.toHaveBeenCalled()
+    })
+
+    it('does not touch vendor when only KYC is provided', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v1', vendorType: 'INFORMAL' })
+      mockVendorFindUniqueOrThrow.mockResolvedValue({ id: 'v1' })
+
+      await updateLiaisonVendor('liaison-1', 'v1', {
+        documentNumber: 'CNI987654321',
+        kycType: 'CNI',
+      })
+
+      expect(mockVendorUpdate).not.toHaveBeenCalled()
+      expect(mockKycUpsert).toHaveBeenCalledOnce()
+    })
+  })
+
   describe('createPartForVendor', () => {
     it('rejects if vendor is not managed by this liaison', async () => {
       mockVendorFindFirst.mockResolvedValue(null)
@@ -192,6 +247,79 @@ describe('liaison.service', () => {
         }),
         select: expect.any(Object),
       })
+    })
+  })
+
+  describe('createPartWithQuickVendor', () => {
+    const quickBody = {
+      name: 'Alternateur 90A',
+      condition: 'USED' as const,
+      price: 45000,
+      vendor: {
+        shopName: 'Casse Adjamé',
+        contactName: 'Konan Yao',
+        phone: '+2250700000000',
+        commune: 'Adjamé' as const,
+      },
+    }
+
+    it('creates a light vendor (no KYC) + part, clamps commission to floor', async () => {
+      mockVendorFindFirst.mockResolvedValue(null) // phone free
+      mockVendorCreate.mockResolvedValue({ id: 'v-new' })
+      mockCatalogItemCreate.mockResolvedValue({ id: 'p1', vendorId: 'v-new' })
+
+      const out = await createPartWithQuickVendor('liaison-1', quickBody)
+
+      expect(mockVendorCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          shopName: 'Casse Adjamé',
+          contactName: 'Konan Yao',
+          phone: '+2250700000000',
+          commune: 'Adjamé',
+          status: 'PENDING_ACTIVATION',
+          managedByLiaisonId: 'liaison-1',
+        }),
+        select: { id: true },
+      })
+      expect(mockKycCreate).not.toHaveBeenCalled()
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          vendorId: 'v-new',
+          createdByLiaisonId: 'liaison-1',
+          status: 'PUBLISHED',
+          commissionAmount: 2250, // 5% of 45000, above 1000 floor
+        }),
+        select: expect.any(Object),
+      })
+      expect(out).toMatchObject({ id: 'p1', vendorReused: false })
+    })
+
+    it('reuses an existing vendor managed by the same liaison', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v-exist', managedByLiaisonId: 'liaison-1' })
+      mockVendorUpdate.mockResolvedValue({ id: 'v-exist' })
+      mockCatalogItemCreate.mockResolvedValue({ id: 'p2', vendorId: 'v-exist' })
+
+      const out = await createPartWithQuickVendor('liaison-1', quickBody)
+
+      expect(mockVendorCreate).not.toHaveBeenCalled()
+      expect(mockVendorUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'v-exist' } }),
+      )
+      expect(out).toMatchObject({ vendorReused: true })
+    })
+
+    it('rejects when phone belongs to a vendor managed by someone else', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v-other', managedByLiaisonId: 'liaison-2' })
+      await expect(
+        createPartWithQuickVendor('liaison-1', quickBody),
+      ).rejects.toMatchObject({ code: 'LIAISON_VENDOR_PHONE_TAKEN' })
+    })
+
+    it('rejects missing vendor location (commune required)', async () => {
+      const { commune: _omit, ...vendorNoCommune } = quickBody.vendor
+      await expect(
+        createPartWithQuickVendor('liaison-1', { ...quickBody, vendor: vendorNoCommune }),
+      ).rejects.toMatchObject({ code: 'LIAISON_PART_INVALID' })
     })
   })
 

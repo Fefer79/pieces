@@ -57,13 +57,22 @@ export default function LiaisonPartsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 lg:px-6">
-      <header className="mb-6">
-        <h1 className="font-display text-2xl text-ink">Mes pièces saisies</h1>
-        <p className="mt-1 text-sm text-muted">
-          {parts.length} pièce{parts.length > 1 ? 's' : ''} ajoutée
-          {parts.length > 1 ? 's' : ''} pour {vendors.length} vendeur
-          {vendors.length > 1 ? 's' : ''}
-        </p>
+      <header className="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl text-ink">Mes pièces saisies</h1>
+          <p className="mt-1 text-sm text-muted">
+            {parts.length} pièce{parts.length > 1 ? 's' : ''} ajoutée
+            {parts.length > 1 ? 's' : ''} pour {vendors.length} vendeur
+            {vendors.length > 1 ? 's' : ''}
+          </p>
+        </div>
+        <Link
+          href="/liaison/parts/new"
+          className="flex-shrink-0 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:opacity-90"
+          style={{ minHeight: 44 }}
+        >
+          Publier une annonce
+        </Link>
       </header>
 
       {vendors.length > 1 && (
