@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js'
 import { handleImageProcess, handleAiIdentify } from './handlers/imageProcess.js'
 import { handleMaintenanceReminderScan } from './handlers/maintenanceReminder.js'
 import { handleBufferStockReplenishScan } from './handlers/bufferStockReplenish.js'
+import { handleVendorRelanceScan } from './handlers/vendorRelance.js'
 import type { Job } from '@prisma/client'
 
 type Logger = {
@@ -12,13 +13,14 @@ type Logger = {
 }
 
 const POLL_INTERVAL = 30_000 // 30 seconds
-const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN'] as const
+const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN'] as const
 
 const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   IMAGE_PROCESS_VARIANTS: handleImageProcess,
   CATALOG_AI_IDENTIFY: handleAiIdentify,
   MAINTENANCE_REMINDER_SCAN: handleMaintenanceReminderScan,
   BUFFER_STOCK_REPLENISH_SCAN: handleBufferStockReplenishScan,
+  RELANCE_INCOMPLETE_VENDORS_SCAN: handleVendorRelanceScan,
 }
 
 /**
@@ -58,6 +60,26 @@ export async function ensureBufferReplenishScheduled(logger: Logger) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     logger.error({ event: 'BUFFER_STOCK_REPLENISH_SCHEDULE_ERROR', error: message }, 'Failed to schedule buffer stock replenish')
+  }
+}
+
+/**
+ * Idem pour le scan de relance des fiches vendeurs incomplètes. Idempotent : un
+ * seul job PENDING/PROCESSING à la fois. Premier scan dans ~3 min, puis le
+ * handler se replanifie à +24h.
+ */
+export async function ensureVendorRelanceScheduled(logger: Logger) {
+  try {
+    const existing = await prisma.job.findFirst({
+      where: { type: 'RELANCE_INCOMPLETE_VENDORS_SCAN', status: { in: ['PENDING', 'PROCESSING'] } },
+      select: { id: true },
+    })
+    if (existing) return
+    await enqueue('RELANCE_INCOMPLETE_VENDORS_SCAN', {}, { scheduledAt: new Date(Date.now() + 180_000) })
+    logger.info({ event: 'VENDOR_RELANCE_SCHEDULED' }, 'Vendor relance scan scheduled')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    logger.error({ event: 'VENDOR_RELANCE_SCHEDULE_ERROR', error: message }, 'Failed to schedule vendor relance')
   }
 }
 

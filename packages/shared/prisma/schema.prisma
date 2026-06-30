@@ -167,6 +167,7 @@ enum JobType {
   CATALOG_AI_IDENTIFY
   MAINTENANCE_REMINDER_SCAN
   BUFFER_STOCK_REPLENISH_SCAN
+  RELANCE_INCOMPLETE_VENDORS_SCAN
 }
 
 enum JobStatus {
@@ -208,6 +209,11 @@ model Vendor {
   avgReviewRating  Float?    @map("avg_review_rating")
   aggregateRating  Float?    @map("aggregate_rating")
   scoreUpdatedAt   DateTime? @map("score_updated_at")
+
+  // Relance des fiches incomplètes (KYC / localisation manquants). Dédoublonnage :
+  // on ne renotifie qu'après un délai, et au plus relanceCount fois.
+  relanceLastSentAt DateTime? @map("relance_last_sent_at")
+  relanceCount      Int       @default(0) @map("relance_count")
 
   kyc                 VendorKyc?
   guaranteeSignatures VendorGuaranteeSignature[]

@@ -27,7 +27,7 @@ import { driverRoutes } from './modules/driver/driver.routes.js'
 import { returnRoutes } from './modules/returns/return.routes.js'
 import { vendorContractRoutes } from './modules/vendorContract/vendorContract.routes.js'
 import multipart from '@fastify/multipart'
-import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled } from './modules/queue/worker.js'
+import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled } from './modules/queue/worker.js'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -89,6 +89,7 @@ const start = async () => {
     startWorker(fastify.log)
     void ensureMaintenanceReminderScheduled(fastify.log)
     void ensureBufferReplenishScheduled(fastify.log)
+    void ensureVendorRelanceScheduled(fastify.log)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)

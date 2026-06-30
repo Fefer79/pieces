@@ -94,6 +94,23 @@ export async function notifyBufferReplenish(
   return sendNotification({ to: phone, channel: 'whatsapp', message })
 }
 
+export async function notifyVendorsIncomplete(
+  phone: string,
+  args: { vendors: { shopName: string; missing: string[] }[] },
+) {
+  const { vendors } = args
+  const n = vendors.length
+  const lines = vendors
+    .slice(0, 8)
+    .map((v) => `• ${v.shopName} (manque : ${v.missing.join(', ')})`)
+    .join('\n')
+  const extra = n > 8 ? `\n…et ${n - 8} autre(s).` : ''
+  const message =
+    `📋 ${n} fiche(s) vendeur à compléter sur Pièces :\n${lines}${extra}\n` +
+    `Complétez le KYC et la localisation depuis l'app pour les activer.`
+  return sendNotification({ to: phone, channel: 'whatsapp', message })
+}
+
 export async function notifyMaintenanceDue(
   phone: string,
   args: { vehicle: string; part: string; status: 'OVERDUE' | 'DUE_SOON'; kmRemaining: number | null },
