@@ -3,22 +3,28 @@ import { phoneSchema } from './auth'
 import { vendorTypeSchema, kycTypeSchema } from './vendor'
 import { ABIDJAN_COMMUNES } from '../constants/communes'
 
+// Onboarding minimal : seuls le nom de la boutique et le téléphone sont requis.
+// Le vendeur est créé en PENDING_ACTIVATION ; KYC, localisation et zones de
+// livraison peuvent être complétés plus tard (fiche vendeur / relance).
 export const liaisonCreateVendorSchema = z
   .object({
     shopName: z.string().min(2).max(100),
-    contactName: z.string().min(2).max(100),
+    contactName: z.string().min(2).max(100).optional(),
     phone: phoneSchema,
-    vendorType: vendorTypeSchema,
-    documentNumber: z.string().min(5).max(50),
-    kycType: kycTypeSchema,
-    commune: z.enum(ABIDJAN_COMMUNES),
-    address: z.string().min(2).max(255),
-    lat: z.number().min(-90).max(90),
-    lng: z.number().min(-180).max(180),
+    vendorType: vendorTypeSchema.default('INFORMAL'),
+    documentNumber: z.string().min(5).max(50).optional(),
+    kycType: kycTypeSchema.optional(),
+    commune: z.enum(ABIDJAN_COMMUNES).optional(),
+    address: z.string().min(2).max(255).optional(),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
     deliveryZones: z.array(z.enum(ABIDJAN_COMMUNES)).default([]),
   })
+  // Le KYC est facultatif, mais s'il est fourni le type doit correspondre au
+  // type vendeur : FORMAL → RCCM, INFORMAL → CNI.
   .refine(
     (data) =>
+      !data.documentNumber ||
       (data.vendorType === 'FORMAL' && data.kycType === 'RCCM') ||
       (data.vendorType === 'INFORMAL' && data.kycType === 'CNI'),
     {
@@ -27,6 +33,11 @@ export const liaisonCreateVendorSchema = z
       path: ['kycType'],
     },
   )
+  // GPS : latitude et longitude vont de pair.
+  .refine((data) => (data.lat == null) === (data.lng == null), {
+    message: 'La latitude et la longitude doivent être fournies ensemble',
+    path: ['lat'],
+  })
 
 export const liaisonUpdateVendorSchema = z.object({
   shopName: z.string().min(2).max(100).optional(),
@@ -63,6 +74,21 @@ export const liaisonCreatePartSchema = z.object({
   commissionAmount: z.number().int().min(0).optional(),
   inStock: z.boolean().default(true),
   imageOriginalUrl: z.string().url().optional(),
+})
+
+// Saisie rapide : le liaison enregistre le vendeur tiers (nom, contact, location)
+// au moment de poster l'annonce, sans fiche KYC complète. Le vendeur est créé en
+// PENDING_ACTIVATION et pourra être complété (KYC) plus tard par l'admin.
+export const liaisonQuickVendorSchema = z.object({
+  shopName: z.string().min(2).max(100),
+  contactName: z.string().min(2).max(100),
+  phone: phoneSchema,
+  commune: z.enum(ABIDJAN_COMMUNES),
+  address: z.string().min(2).max(255).optional(),
+})
+
+export const liaisonQuickPartSchema = liaisonCreatePartSchema.extend({
+  vendor: liaisonQuickVendorSchema,
 })
 
 export const liaisonUpdatePartSchema = z.object({

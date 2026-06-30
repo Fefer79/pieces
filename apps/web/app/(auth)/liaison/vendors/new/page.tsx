@@ -34,14 +34,9 @@ export default function NewVendorPage() {
   const kycType = vendorType === 'FORMAL' ? 'RCCM' : 'CNI'
   const kycLabel = VENDOR_TYPES.find((t) => t.value === vendorType)?.kycLabel ?? ''
 
-  const valid =
-    shopName.length >= 2 &&
-    contactName.length >= 2 &&
-    PHONE_REGEX.test(phone) &&
-    documentNumber.length >= 5 &&
-    commune.length > 0 &&
-    address.length >= 2 &&
-    coords != null
+  // Onboarding minimal : nom de la boutique + téléphone suffisent. Le reste
+  // (contact, KYC, localisation, zones) se complète plus tard depuis la fiche.
+  const valid = shopName.length >= 2 && PHONE_REGEX.test(phone)
 
   const toggleZone = (z: string) => {
     setDeliveryZones((prev) =>
@@ -51,25 +46,32 @@ export default function NewVendorPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!valid || !coords) return
+    if (!valid) return
     setSubmitting(true)
     setError(null)
 
+    // On n'envoie que les champs renseignés ; le backend tolère un onboarding minimal.
+    const payload: Record<string, unknown> = {
+      shopName,
+      phone,
+      vendorType,
+      deliveryZones,
+    }
+    if (contactName.length >= 2) payload.contactName = contactName
+    if (documentNumber.length >= 5) {
+      payload.documentNumber = documentNumber
+      payload.kycType = kycType
+    }
+    if (commune.length > 0) payload.commune = commune
+    if (address.length >= 2) payload.address = address
+    if (coords) {
+      payload.lat = coords.lat
+      payload.lng = coords.lng
+    }
+
     const r = await liaisonFetch<{ id: string }>('/vendors', {
       method: 'POST',
-      body: JSON.stringify({
-        shopName,
-        contactName,
-        phone,
-        vendorType,
-        documentNumber,
-        kycType,
-        commune,
-        address,
-        lat: coords.lat,
-        lng: coords.lng,
-        deliveryZones,
-      }),
+      body: JSON.stringify(payload),
     })
 
     setSubmitting(false)
@@ -89,8 +91,14 @@ export default function NewVendorPage() {
         ← Retour
       </Link>
       <h1 className="mb-1 font-display text-2xl text-ink">Onboarder un vendeur</h1>
-      <p className="mb-6 text-sm text-muted">
-        Saisissez les informations du vendeur, sa localisation et ses pièces.
+      <p className="mb-4 text-sm text-muted">
+        Le nom de la boutique et le téléphone suffisent pour démarrer. Le reste
+        (KYC, localisation, zones de livraison) se complète plus tard.
+      </p>
+
+      <p className="mb-6 rounded-md border border-border bg-card p-3 text-xs text-muted">
+        Le vendeur sera créé en <strong>activation en attente</strong>. Vous pourrez
+        compléter ses informations depuis sa fiche à tout moment.
       </p>
 
       {error && (
@@ -109,7 +117,7 @@ export default function NewVendorPage() {
           />
         </Field>
 
-        <Field label="Nom du contact" required>
+        <Field label="Nom du contact" hint="Optionnel — par défaut, le nom de la boutique">
           <input
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
@@ -127,7 +135,7 @@ export default function NewVendorPage() {
           />
         </Field>
 
-        <Field label="Type de vendeur" required>
+        <Field label="Type de vendeur">
           <div className="grid grid-cols-2 gap-2">
             {VENDOR_TYPES.map((t) => (
               <button
@@ -146,7 +154,7 @@ export default function NewVendorPage() {
           </div>
         </Field>
 
-        <Field label={kycLabel} required>
+        <Field label={kycLabel} hint="Optionnel — à compléter lors de l'activation">
           <input
             value={documentNumber}
             onChange={(e) => setDocumentNumber(e.target.value)}
@@ -154,7 +162,7 @@ export default function NewVendorPage() {
           />
         </Field>
 
-        <Field label="Commune" required>
+        <Field label="Commune" hint="Optionnel">
           <select
             value={commune}
             onChange={(e) => setCommune(e.target.value)}
@@ -169,7 +177,7 @@ export default function NewVendorPage() {
           </select>
         </Field>
 
-        <Field label="Adresse" required hint="Quartier, rue, repère">
+        <Field label="Adresse" hint="Optionnel — quartier, rue, repère">
           <input
             value={address}
             onChange={(e) => setAddress(e.target.value)}
@@ -178,7 +186,7 @@ export default function NewVendorPage() {
           />
         </Field>
 
-        <Field label="Position GPS" required hint="Cliquez sur la carte ou utilisez votre position">
+        <Field label="Position GPS" hint="Optionnel — cliquez sur la carte ou utilisez votre position">
           <VendorMapPicker
             lat={coords?.lat ?? null}
             lng={coords?.lng ?? null}

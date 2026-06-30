@@ -5,6 +5,7 @@ import {
   liaisonUpdateVendorSchema,
   liaisonCreatePartSchema,
   liaisonUpdatePartSchema,
+  liaisonQuickPartSchema,
   minCommissionFor,
 } from 'shared/validators'
 import type { CatalogItemStatus, Prisma } from '@prisma/client'
@@ -58,27 +59,30 @@ export async function createVendorByLiaison(liaisonId: string, body: unknown) {
     const vendor = await tx.vendor.create({
       data: {
         shopName: data.shopName,
-        contactName: data.contactName,
+        contactName: data.contactName ?? data.shopName,
         phone: data.phone,
         vendorType: data.vendorType,
         status: 'PENDING_ACTIVATION',
-        commune: data.commune,
-        address: data.address,
-        lat: data.lat,
-        lng: data.lng,
+        commune: data.commune ?? null,
+        address: data.address ?? null,
+        lat: data.lat ?? null,
+        lng: data.lng ?? null,
         deliveryZones: data.deliveryZones,
         managedByLiaisonId: liaisonId,
       },
     })
 
-    await tx.vendorKyc.create({
-      data: {
-        vendorId: vendor.id,
-        kycType: data.kycType,
-        documentNumber: data.documentNumber,
-        isPublic: data.kycType === 'RCCM',
-      },
-    })
+    // KYC facultatif à l'onboarding : créé seulement si un document est fourni.
+    if (data.documentNumber && data.kycType) {
+      await tx.vendorKyc.create({
+        data: {
+          vendorId: vendor.id,
+          kycType: data.kycType,
+          documentNumber: data.documentNumber,
+          isPublic: data.kycType === 'RCCM',
+        },
+      })
+    }
 
     return tx.vendor.findUniqueOrThrow({
       where: { id: vendor.id },
@@ -223,6 +227,117 @@ export async function createPartForVendor(
       inStock: true,
       createdAt: true,
     },
+  })
+}
+
+/**
+ * Saisie rapide : enregistre le vendeur tiers (nom, contact, location) ET publie
+ * l'annonce en une seule étape. Le vendeur est dédupliqué sur (liaison, téléphone)
+ * pour éviter de recréer une fiche à chaque annonce du même vendeur.
+ */
+export async function createPartWithQuickVendor(liaisonId: string, body: unknown) {
+  const parsed = liaisonQuickPartSchema.safeParse(body)
+  if (!parsed.success) {
+    throw new AppError('LIAISON_PART_INVALID', 422, {
+      message: parsed.error.issues[0]?.message ?? 'Données invalides',
+    })
+  }
+
+  const { vendor: vendorInput, ...partInput } = parsed.data
+
+  // Un vendeur déjà enregistré sous ce téléphone : réutilisé s'il est géré par cette
+  // liaison, sinon conflit (le numéro appartient à un autre vendeur/compte).
+  const existing = await prisma.vendor.findFirst({
+    where: { phone: vendorInput.phone },
+    select: { id: true, managedByLiaisonId: true },
+  })
+  if (existing && existing.managedByLiaisonId !== liaisonId) {
+    throw new AppError('LIAISON_VENDOR_PHONE_TAKEN', 409, {
+      message: 'Un vendeur avec ce numéro existe déjà',
+    })
+  }
+
+  const price = partInput.price ?? 0
+  const minRequired = minCommissionFor(price)
+  const commissionAmount = Math.max(partInput.commissionAmount ?? minRequired, minRequired)
+  const fitments = partInput.fitments ?? []
+
+  return prisma.$transaction(async (tx) => {
+    let vendorId: string
+    if (existing) {
+      // Réutilise et rafraîchit nom/location au cas où ils auraient changé.
+      const updated = await tx.vendor.update({
+        where: { id: existing.id },
+        data: {
+          shopName: vendorInput.shopName,
+          contactName: vendorInput.contactName,
+          commune: vendorInput.commune,
+          address: vendorInput.address ?? undefined,
+        },
+        select: { id: true },
+      })
+      vendorId = updated.id
+    } else {
+      const created = await tx.vendor.create({
+        data: {
+          shopName: vendorInput.shopName,
+          contactName: vendorInput.contactName,
+          phone: vendorInput.phone,
+          vendorType: 'INFORMAL',
+          status: 'PENDING_ACTIVATION',
+          commune: vendorInput.commune,
+          address: vendorInput.address,
+          managedByLiaisonId: liaisonId,
+        },
+        select: { id: true },
+      })
+      vendorId = created.id
+    }
+
+    const part = await tx.catalogItem.create({
+      data: {
+        vendorId,
+        createdByLiaisonId: liaisonId,
+        name: partInput.name,
+        category: partInput.category,
+        oemReference: partInput.oemReference,
+        vehicleCompatibility: partInput.vehicleCompatibility,
+        price: partInput.price,
+        condition: partInput.condition,
+        warrantyValue: partInput.warrantyValue,
+        warrantyUnit: partInput.warrantyUnit,
+        commissionAmount,
+        inStock: partInput.inStock,
+        imageOriginalUrl: partInput.imageOriginalUrl,
+        status: 'PUBLISHED',
+        aiGenerated: false,
+        ...(fitments.length > 0 && {
+          fitments: {
+            create: fitments.map((f) => ({
+              brand: f.brand,
+              model: f.model ?? null,
+              yearFrom: f.yearFrom ?? null,
+              yearTo: f.yearTo ?? null,
+              engine: f.engine ?? null,
+            })),
+          },
+        }),
+      },
+      select: {
+        id: true,
+        vendorId: true,
+        name: true,
+        category: true,
+        condition: true,
+        price: true,
+        commissionAmount: true,
+        status: true,
+        inStock: true,
+        createdAt: true,
+      },
+    })
+
+    return { ...part, vendorReused: Boolean(existing) }
   })
 }
 
