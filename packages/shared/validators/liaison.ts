@@ -39,16 +39,25 @@ export const liaisonCreateVendorSchema = z
     path: ['lat'],
   })
 
-export const liaisonUpdateVendorSchema = z.object({
-  shopName: z.string().min(2).max(100).optional(),
-  contactName: z.string().min(2).max(100).optional(),
-  phone: phoneSchema.optional(),
-  commune: z.enum(ABIDJAN_COMMUNES).optional(),
-  address: z.string().min(2).max(255).optional(),
-  lat: z.number().min(-90).max(90).optional(),
-  lng: z.number().min(-180).max(180).optional(),
-  deliveryZones: z.array(z.enum(ABIDJAN_COMMUNES)).optional(),
-})
+export const liaisonUpdateVendorSchema = z
+  .object({
+    shopName: z.string().min(2).max(100).optional(),
+    contactName: z.string().min(2).max(100).optional(),
+    phone: phoneSchema.optional(),
+    vendorType: vendorTypeSchema.optional(),
+    // Complétion KYC a posteriori : document + type vont de pair.
+    documentNumber: z.string().min(5).max(50).optional(),
+    kycType: kycTypeSchema.optional(),
+    commune: z.enum(ABIDJAN_COMMUNES).optional(),
+    address: z.string().min(2).max(255).optional(),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
+    deliveryZones: z.array(z.enum(ABIDJAN_COMMUNES)).optional(),
+  })
+  .refine((d) => !d.documentNumber || !!d.kycType, {
+    message: 'Le type KYC est requis avec le numéro de document',
+    path: ['kycType'],
+  })
 
 const liaisonFitmentSchema = z.object({
   brand: z.string().min(1).max(60),

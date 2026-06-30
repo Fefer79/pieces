@@ -138,9 +138,11 @@ export async function updateLiaisonVendor(
     })
   }
 
+  const { documentNumber, kycType, ...vendorFields } = parsed.data
+
   const owned = await prisma.vendor.findFirst({
     where: { id: vendorId, managedByLiaisonId: liaisonId },
-    select: { id: true },
+    select: { id: true, vendorType: true },
   })
   if (!owned) {
     throw new AppError('LIAISON_VENDOR_NOT_FOUND', 404, {
@@ -148,9 +150,28 @@ export async function updateLiaisonVendor(
     })
   }
 
-  await prisma.vendor.update({
-    where: { id: vendorId },
-    data: parsed.data,
+  // Le type KYC doit correspondre au type vendeur effectif (FORMAL → RCCM, INFORMAL → CNI).
+  if (documentNumber) {
+    const effectiveType = vendorFields.vendorType ?? owned.vendorType
+    const expected = effectiveType === 'FORMAL' ? 'RCCM' : 'CNI'
+    if (kycType !== expected) {
+      throw new AppError('LIAISON_VENDOR_INVALID', 422, {
+        message: `Le type KYC doit être ${expected} pour un vendeur ${effectiveType === 'FORMAL' ? 'formel' : 'informel'}`,
+      })
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    if (Object.keys(vendorFields).length > 0) {
+      await tx.vendor.update({ where: { id: vendorId }, data: vendorFields })
+    }
+    if (documentNumber && kycType) {
+      await tx.vendorKyc.upsert({
+        where: { vendorId },
+        create: { vendorId, kycType, documentNumber, isPublic: kycType === 'RCCM' },
+        update: { kycType, documentNumber, isPublic: kycType === 'RCCM' },
+      })
+    }
   })
 
   return prisma.vendor.findUniqueOrThrow({
