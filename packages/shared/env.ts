@@ -12,6 +12,9 @@ export const apiEnvSchema = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   SENTRY_DSN: z.string().optional(),
+  // WhatsApp reverse-OTP login (optional; falls back to service-role key for signing)
+  AUTH_SESSION_SECRET: z.string().optional(),
+  WHATSAPP_BUSINESS_NUMBER: z.string().optional(),
   PINO_LOG_LEVEL: z
     .enum(['info', 'warn', 'error', 'fatal'])
     .default('info'),

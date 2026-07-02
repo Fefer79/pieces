@@ -23,6 +23,16 @@ export const sendOtpSchema = z
     message: 'Veuillez fournir un numéro de téléphone ou une adresse email',
   })
 
+/** Body for POST /auth/whatsapp/start — begin WhatsApp reverse-OTP login */
+export const whatsappLoginStartSchema = z.object({
+  phone: phoneSchema,
+})
+
+/** Query for GET /auth/whatsapp/status — poll a reverse-OTP login code */
+export const whatsappLoginStatusSchema = z.object({
+  code: z.string().regex(/^P-?\d{4}$/i, 'Code de connexion invalide'),
+})
+
 /** Body for POST /auth/verify — verify OTP from phone OR email */
 export const verifyOtpSchema = z
   .object({

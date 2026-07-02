@@ -3,7 +3,37 @@ import fp from 'fastify-plugin'
 import { supabaseAdmin } from '../lib/supabase.js'
 import { prisma } from '../lib/prisma.js'
 import { AppError } from '../lib/appError.js'
+import { isPiecesToken, verifyPiecesToken } from '../lib/piecesToken.js'
 import type { Role } from 'shared/types'
+
+interface UserRow {
+  id: string
+  phone: string | null
+  email: string | null
+  roles: Role[]
+  activeContext: Role | null
+  consentedAt: Date | null
+}
+
+const USER_SELECT = {
+  id: true,
+  phone: true,
+  email: true,
+  roles: true,
+  activeContext: true,
+  consentedAt: true,
+} as const
+
+function shapeUser(user: UserRow): FastifyRequest['user'] {
+  return {
+    id: user.id,
+    phone: user.phone,
+    email: user.email,
+    roles: user.roles,
+    activeContext: user.activeContext ?? null,
+    consentedAt: user.consentedAt?.toISOString() ?? null,
+  }
+}
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -31,6 +61,23 @@ export async function requireAuth(request: FastifyRequest) {
   }
 
   const token = authHeader.slice(7)
+
+  // Pièces-native session (WhatsApp reverse-OTP login) — resolve without Supabase.
+  if (isPiecesToken(token)) {
+    const payload = verifyPiecesToken(token)
+    if (!payload) {
+      throw new AppError('AUTH_INVALID_TOKEN', 401)
+    }
+    const waUser = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: USER_SELECT,
+    })
+    if (!waUser) {
+      throw new AppError('AUTH_INVALID_TOKEN', 401)
+    }
+    request.user = shapeUser(waUser as UserRow)
+    return
+  }
 
   const { data, error } = await supabaseAdmin.auth.getUser(token)
   if (error || !data.user) {
@@ -88,14 +135,7 @@ export async function requireAuth(request: FastifyRequest) {
     user.activeContext = user.roles[0] ?? null
   }
 
-  request.user = {
-    id: user.id,
-    phone: user.phone,
-    email: user.email,
-    roles: user.roles as Role[],
-    activeContext: (user.activeContext as Role) ?? null,
-    consentedAt: user.consentedAt?.toISOString() ?? null,
-  }
+  request.user = shapeUser(user as UserRow)
 }
 
 export async function requireConsent(request: FastifyRequest) {

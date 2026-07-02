@@ -94,6 +94,7 @@ vi.mock('../order/order.service.js', () => ({
 }))
 
 const { buildApp } = await import('../../server.js')
+const { createLoginCode, _getCodeStore } = await import('../auth/whatsappLogin.service.js')
 
 function makePayload(from: string, type: 'text' | 'image', content: string) {
   if (type === 'text') {
@@ -155,6 +156,23 @@ describe('WhatsApp Routes', () => {
       expect(response.statusCode).toBe(200)
       expect(mockSendMessage).toHaveBeenCalledOnce()
       expect(mockSendMessage.mock.calls[0][1]).toContain('Bienvenue')
+    })
+
+    it('verifies a reverse-OTP login code from the matching sender', async () => {
+      _getCodeStore().clear()
+      const { code } = createLoginCode('+2250700000000')
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/whatsapp/webhook',
+        payload: makePayload('2250700000000', 'text', code),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(mockSendMessage).toHaveBeenCalledOnce()
+      expect(mockSendMessage.mock.calls[0][1]).toContain('Connecté')
+      expect(_getCodeStore().get(code.replace('-', ''))?.status).toBe('verified')
     })
 
     it('rejects invalid HMAC signature', async () => {

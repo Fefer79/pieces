@@ -17,6 +17,7 @@ import { searchParts } from '../browse/browse.service.js'
 import { identifyFromPhoto } from '../vision/vision.service.js'
 import { searchByCategory } from '../vision/vision.service.js'
 import { createOrder } from '../order/order.service.js'
+import { looksLikeLoginCode, verifyLoginCode } from '../auth/whatsappLogin.service.js'
 import { AppError } from '../../lib/appError.js'
 
 // Augment FastifyRequest to carry the raw body for HMAC verification
@@ -87,6 +88,18 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
       const vehicleFilter = user?.vehicles?.[0]
         ? { brand: user.vehicles[0].brand ?? undefined, model: user.vehicles[0].model ?? undefined }
         : undefined
+
+      // Reverse-OTP login: an incoming code from the certified sender proves
+      // possession of the phone. Handle before any bot command parsing.
+      if (text && looksLikeLoginCode(text)) {
+        const result = await verifyLoginCode(text, from)
+        if (result.ok) {
+          await sendWhatsAppMessage(from, '✅ Connecté ! Retournez sur Pièces, votre session est active.')
+        } else {
+          await sendWhatsAppMessage(from, '❌ Code de connexion invalide ou expiré. Recommencez depuis la page de connexion.')
+        }
+        return reply.status(200).send({ status: 'ok' })
+      }
 
       // Check for active session (AC4, AC6: disambiguation or selection context)
       if (text) {

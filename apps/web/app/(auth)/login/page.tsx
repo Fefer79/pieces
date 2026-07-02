@@ -21,6 +21,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
 
   const fullPhone = `+225${phone}`
+  const returnTo = searchParams.get('returnTo') ?? ''
 
   function handlePhoneChange(value: string) {
     const digits = value.replace(/\D/g, '').slice(0, 10)
@@ -276,6 +277,23 @@ function LoginForm() {
               : (authMode === 'password' ? 'Se connecter' : 'Recevoir le code')}
           </button>
         </form>
+
+        <div className="my-5 flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">ou</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <Link
+          href={`/login/whatsapp${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-[#25D366] px-4 py-3 text-base font-semibold text-[#128C7E] transition-colors hover:bg-[#25D366]/10"
+          style={{ minHeight: '48px' }}
+        >
+          Se connecter avec WhatsApp
+          <span className="rounded-full bg-[#25D366]/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-[#128C7E]">
+            Gratuit
+          </span>
+        </Link>
       </div>
     </main>
   )

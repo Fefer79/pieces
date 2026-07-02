@@ -21,13 +21,18 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // WhatsApp reverse-OTP session: presence of the cookie is enough to gate the
+  // UX here; the token itself is validated API-side by requireAuth.
+  const hasPiecesSession = !!request.cookies.get('pieces_session')?.value
+  const isAuthed = !!user || hasPiecesSession
+
   const isProtectedPath = PROTECTED_PATHS.some(
     (path) =>
       request.nextUrl.pathname === path ||
       request.nextUrl.pathname.startsWith(`${path}/`),
   )
 
-  if (!user && isProtectedPath) {
+  if (!isAuthed && isProtectedPath) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('returnTo', request.nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
@@ -38,14 +43,14 @@ export async function middleware(request: NextRequest) {
 
   // Connecté : la racine renvoie au tableau de bord, pas à la landing marketing.
   // Sur flotte.*, c'est le tableau de bord entreprise.
-  if (user && request.nextUrl.pathname === '/') {
+  if (isAuthed && request.nextUrl.pathname === '/') {
     return NextResponse.redirect(
       new URL(isFlotte ? '/enterprise/dashboard' : '/dashboard', request.url),
     )
   }
 
   // Non connecté sur flotte.* à la racine : page marketing entreprises.
-  if (!user && isFlotte && request.nextUrl.pathname === '/') {
+  if (!isAuthed && isFlotte && request.nextUrl.pathname === '/') {
     return NextResponse.rewrite(new URL('/entreprises', request.url))
   }
 

@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { getPiecesSession, clearPiecesSession } from '@/lib/pieces-session'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -40,7 +41,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const getAccessToken = useCallback(async () => {
     const { data: { session } } = await getSupabase().auth.getSession()
-    return session?.access_token ?? null
+    // Fall back to the WhatsApp reverse-OTP session token when there is no
+    // Supabase session.
+    return session?.access_token ?? getPiecesSession()
   }, [])
 
   const refreshProfile = useCallback(async (accessToken?: string) => {
@@ -119,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     await getSupabase().auth.signOut()
+    clearPiecesSession()
     setUser(null)
     router.push('/login')
   }, [router])
