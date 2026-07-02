@@ -316,7 +316,7 @@ describe('liaison.service', () => {
     })
 
     it('rejects missing vendor location (commune required)', async () => {
-      const { commune: _omit, ...vendorNoCommune } = quickBody.vendor
+      const vendorNoCommune = { ...quickBody.vendor, commune: undefined }
       await expect(
         createPartWithQuickVendor('liaison-1', { ...quickBody, vendor: vendorNoCommune }),
       ).rejects.toMatchObject({ code: 'LIAISON_PART_INVALID' })
