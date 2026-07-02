@@ -126,7 +126,8 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
 
   const commissionNum = commission ? Number(commission) : 0
   const commissionBelowMin = commission !== '' && commissionNum < minCommission
-  const phoneValid = /^\+225\d{10}$/.test(vPhone)
+  // Aligné sur phoneSchema côté serveur : préfixe mobile ivoirien (01|05|07) obligatoire.
+  const phoneValid = /^\+225(01|05|07)\d{8}$/.test(vPhone)
   const vendorValid =
     !quickVendor ||
     (vShopName.trim().length >= 2 &&
@@ -228,7 +229,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             />
             {vPhone.length > 4 && !phoneValid && (
               <p className="mt-1 text-xs text-[#B45309]">
-                Format attendu : +225 suivi de 10 chiffres
+                Format attendu : +225 puis 01, 05 ou 07 et 8 chiffres (mobile)
               </p>
             )}
           </Field>
