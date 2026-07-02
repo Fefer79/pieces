@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { liaisonFetch } from '@/lib/liaison-api'
-import { minCommissionFor } from 'shared/validators'
 import {
   WARRANTY_UNITS,
   type WarrantyUnit,
@@ -166,9 +165,6 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const priceNum = useMemo(() => (price ? Number(price) : 0), [price])
-  const minCommission = useMemo(() => minCommissionFor(priceNum), [priceNum])
-
   // Cascade catégorie → sous-catégorie. On conserve une éventuelle valeur héritée
   // hors catalogue (édition d'anciennes annonces) pour ne pas la perdre.
   const categoryOptions = useMemo(
@@ -195,8 +191,6 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
     setPartSubcategory('')
   }
 
-  const commissionNum = commission ? Number(commission) : 0
-  const commissionBelowMin = commission !== '' && commissionNum < minCommission
   // Aligné sur phoneSchema côté serveur : préfixe mobile ivoirien (01|05|07) obligatoire.
   const phoneValid = /^\+225(01|05|07)\d{8}$/.test(vPhone)
   const vendorValid =
@@ -402,7 +396,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
 
       <Field
         label="Commission Pièces (FCFA)"
-        hint="Montant agréé avec le vendeur"
+        hint="Facultatif — laisser vide si le vendeur ne donne pas de commission"
       >
         <input
           type="number"
@@ -413,11 +407,6 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
           placeholder="Ex : 3000"
           min={0}
         />
-        {commissionBelowMin && (
-          <p className="mt-1 text-xs text-[#B45309]">
-            Plancher de sécurité : sera enregistrée à {minCommission.toLocaleString('fr-FR')} FCFA minimum
-          </p>
-        )}
       </Field>
 
       <Field label="Référence OEM">

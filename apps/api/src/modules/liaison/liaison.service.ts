@@ -6,7 +6,6 @@ import {
   liaisonCreatePartSchema,
   liaisonUpdatePartSchema,
   liaisonQuickPartSchema,
-  minCommissionFor,
 } from 'shared/validators'
 import type { CatalogItemStatus, Prisma } from '@prisma/client'
 
@@ -202,9 +201,9 @@ export async function createPartForVendor(
     })
   }
 
-  const price = parsed.data.price ?? 0
-  const minRequired = minCommissionFor(price)
-  const commissionAmount = Math.max(parsed.data.commissionAmount ?? minRequired, minRequired)
+  // Pas de plancher : un vendeur peut publier sans commission (0). On gagne peu
+  // sur la livraison mais la donnée annonce a de la valeur.
+  const commissionAmount = parsed.data.commissionAmount ?? 0
   const fitments = parsed.data.fitments ?? []
 
   return prisma.catalogItem.create({
@@ -278,9 +277,8 @@ export async function createPartWithQuickVendor(liaisonId: string, body: unknown
     })
   }
 
-  const price = partInput.price ?? 0
-  const minRequired = minCommissionFor(price)
-  const commissionAmount = Math.max(partInput.commissionAmount ?? minRequired, minRequired)
+  // Pas de plancher : commission facultative, 0 accepté (cf. createPartForVendor).
+  const commissionAmount = partInput.commissionAmount ?? 0
   const fitments = partInput.fitments ?? []
 
   return prisma.$transaction(async (tx) => {
@@ -453,13 +451,10 @@ export async function updatePartForVendor(
     updateData.priceUpdatedAt = new Date()
   }
 
-  if (d.commissionAmount !== undefined || d.price !== undefined) {
-    const effectivePrice = d.price ?? part.price ?? 0
-    const minRequired = minCommissionFor(effectivePrice)
-    const proposed = d.commissionAmount ?? part.commissionAmount ?? minRequired
-    const finalCommission = Math.max(proposed, minRequired)
-    updateData.commissionAmount = finalCommission
-    if (finalCommission !== part.commissionAmount) {
+  // Commission facultative, sans plancher : on enregistre la valeur telle quelle.
+  if (d.commissionAmount !== undefined) {
+    updateData.commissionAmount = d.commissionAmount
+    if (d.commissionAmount !== part.commissionAmount) {
       updateData.commissionAcceptedAt = null
     }
   }

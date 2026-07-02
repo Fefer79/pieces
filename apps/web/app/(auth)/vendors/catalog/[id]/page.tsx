@@ -49,14 +49,7 @@ interface CatalogItem {
   imageJobError: string | null
 }
 
-const MIN_COMMISSION_FCFA = 1000
-const MIN_COMMISSION_RATE = 0.05
 const MAX_PHOTOS = 3
-
-function minCommissionFor(price: number): number {
-  if (!price || price <= 0) return MIN_COMMISSION_FCFA
-  return Math.max(MIN_COMMISSION_FCFA, Math.round(price * MIN_COMMISSION_RATE))
-}
 
 export default function VendorCatalogDetailPage() {
   const router = useRouter()
@@ -648,46 +641,28 @@ export default function VendorCatalogDetailPage() {
             Commission pieces.ci <span className="text-accent">*</span>
           </label>
           <p className="mb-2 text-xs text-muted">
-            Vous gardez la totalité du prix de vente moins cette commission, versée à pieces.ci sur chaque vente.
+            Vous gardez la totalité du prix de vente moins cette commission, versée à pieces.ci sur chaque vente. Laissez 0 si vous ne donnez pas de commission.
           </p>
-          {(() => {
-            const effectivePrice = price ? parseInt(price, 10) : (item.price ?? 0)
-            const minRequired = minCommissionFor(effectivePrice)
-            const currentValue = commissionAmount ? parseInt(commissionAmount, 10) : 0
-            const tooLow = commissionAmount !== '' && currentValue < minRequired
-            return (
-              <>
-                <div className="mb-1.5 font-mono text-[11px] text-muted">
-                  Minimum pour ce prix : <span className="font-semibold text-ink">{minRequired.toLocaleString('fr-FR')} FCFA</span>
-                </div>
-                <input
-                  id="commission"
-                  type="number"
-                  value={commissionAmount}
-                  onChange={(e) => setCommissionAmount(e.target.value)}
-                  placeholder={`${minRequired}`}
-                  min={minRequired}
-                  className={`${INPUT} font-mono ${tooLow ? 'border-status-err' : ''}`}
-                />
-                {tooLow && (
-                  <p className="mt-1 text-xs text-status-err">
-                    Doit être ≥ {minRequired.toLocaleString('fr-FR')} FCFA
-                  </p>
-                )}
-                <label className="mt-3 flex cursor-pointer items-start gap-2 text-sm text-ink">
-                  <input
-                    type="checkbox"
-                    checked={commissionAccepted}
-                    onChange={(e) => setCommissionAccepted(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 accent-accent"
-                  />
-                  <span>
-                    J&apos;accepte de payer cette commission à pieces.ci sur chaque vente de cette pièce.
-                  </span>
-                </label>
-              </>
-            )
-          })()}
+          <input
+            id="commission"
+            type="number"
+            value={commissionAmount}
+            onChange={(e) => setCommissionAmount(e.target.value)}
+            placeholder="0"
+            min={0}
+            className={`${INPUT} font-mono`}
+          />
+          <label className="mt-3 flex cursor-pointer items-start gap-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              checked={commissionAccepted}
+              onChange={(e) => setCommissionAccepted(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-accent"
+            />
+            <span>
+              J&apos;accepte de payer cette commission à pieces.ci sur chaque vente de cette pièce.
+            </span>
+          </label>
         </div>
       </div>
 
@@ -698,12 +673,10 @@ export default function VendorCatalogDetailPage() {
         </Button>
 
         {item.status === 'DRAFT' && (() => {
-          const effectivePrice = price ? parseInt(price, 10) : (item.price ?? 0)
-          const minRequired = minCommissionFor(effectivePrice)
-          const currentCommission = commissionAmount ? parseInt(commissionAmount, 10) : (item.commissionAmount ?? 0)
-          const commissionOk = currentCommission >= minRequired
+          // Plus de plancher : une commission doit être décidée (0 permis) et acceptée.
+          const commissionSet = commissionAmount !== '' || item.commissionAmount != null
           const acceptedOrAlready = commissionAccepted || !!item.commissionAcceptedAt
-          const canPublish = !!price && commissionOk && acceptedOrAlready
+          const canPublish = !!price && commissionSet && acceptedOrAlready
           return (
             <>
               <Button
@@ -718,8 +691,8 @@ export default function VendorCatalogDetailPage() {
               {!canPublish && (
                 <p className="text-center text-xs text-muted">
                   {!price && 'Renseignez un prix. '}
-                  {price && !commissionOk && `Commission insuffisante (min ${minRequired.toLocaleString('fr-FR')} FCFA). `}
-                  {price && commissionOk && !acceptedOrAlready && 'Cochez l\'acceptation de la commission. '}
+                  {price && !commissionSet && 'Indiquez une commission (0 si aucune). '}
+                  {price && commissionSet && !acceptedOrAlready && 'Cochez l\'acceptation de la commission. '}
                 </p>
               )}
             </>

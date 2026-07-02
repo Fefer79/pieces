@@ -16,14 +16,6 @@ export const partConditionSchema = z.enum(['NEW', 'USED', 'REFURBISHED'])
 export const partSourceSchema = z.enum(['OEM', 'AFTERMARKET', 'COMPATIBLE'])
 export const warrantyUnitSchema = z.enum(['DAY', 'WEEK', 'MONTH'])
 
-export const MIN_COMMISSION_FCFA = 1000
-export const MIN_COMMISSION_RATE = 0.05
-
-export function minCommissionFor(price: number): number {
-  if (!price || price <= 0) return MIN_COMMISSION_FCFA
-  return Math.max(MIN_COMMISSION_FCFA, Math.round(price * MIN_COMMISSION_RATE))
-}
-
 export const MAX_PHOTOS_PER_ITEM = 3
 
 export const updateCatalogItemSchema = z.object({

@@ -4,7 +4,7 @@ import { MAX_FILE_SIZE, processVariants } from '../../lib/imageProcessor.js'
 import { enqueue } from '../queue/queueService.js'
 import { AppError } from '../../lib/appError.js'
 import type { CatalogItemStatus } from '@prisma/client'
-import { minCommissionFor, MAX_PHOTOS_PER_ITEM } from 'shared/validators'
+import { MAX_PHOTOS_PER_ITEM } from 'shared/validators'
 
 const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
@@ -303,10 +303,9 @@ export async function updateItem(
     }
   }
 
+  // Pas de plancher : la commission est enregistrée telle que fixée (0 accepté).
   if (data.commissionAmount !== undefined) {
-    const effectivePrice = data.price ?? item.price ?? 0
-    const minRequired = minCommissionFor(effectivePrice)
-    updateData.commissionAmount = Math.max(data.commissionAmount, minRequired)
+    updateData.commissionAmount = data.commissionAmount
   }
 
   if (data.commissionAccepted === true) {
@@ -364,15 +363,9 @@ export async function publishItem(userId: string, itemId: string) {
     })
   }
 
-  const minRequired = minCommissionFor(item.price)
-  const finalCommission = Math.max(item.commissionAmount, minRequired)
-
   return prisma.catalogItem.update({
     where: { id: itemId },
-    data: {
-      status: 'PUBLISHED',
-      ...(finalCommission !== item.commissionAmount && { commissionAmount: finalCommission }),
-    },
+    data: { status: 'PUBLISHED' },
   })
 }
 

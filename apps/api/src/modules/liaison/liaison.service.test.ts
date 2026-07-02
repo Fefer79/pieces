@@ -263,7 +263,7 @@ describe('liaison.service', () => {
       },
     }
 
-    it('creates a light vendor (no KYC) + part, clamps commission to floor', async () => {
+    it('creates a light vendor (no KYC) + part, commission defaults to 0 (no floor)', async () => {
       mockVendorFindFirst.mockResolvedValue(null) // phone free
       mockVendorCreate.mockResolvedValue({ id: 'v-new' })
       mockCatalogItemCreate.mockResolvedValue({ id: 'p1', vendorId: 'v-new' })
@@ -287,7 +287,7 @@ describe('liaison.service', () => {
           vendorId: 'v-new',
           createdByLiaisonId: 'liaison-1',
           status: 'PUBLISHED',
-          commissionAmount: 2250, // 5% of 45000, above 1000 floor
+          commissionAmount: 0, // aucune commission fournie → 0, plus de plancher
         }),
         select: expect.any(Object),
       })

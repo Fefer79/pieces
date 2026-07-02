@@ -20,9 +20,6 @@ export {
   adminSuggestQuerySchema,
   adminEntitySuggestQuerySchema,
   adminExportQuerySchema,
-  minCommissionFor,
-  MIN_COMMISSION_FCFA,
-  MIN_COMMISSION_RATE,
   MAX_PHOTOS_PER_ITEM,
 } from './catalog'
 export { vinDecodeSchema, createVehicleSchema } from './browse'

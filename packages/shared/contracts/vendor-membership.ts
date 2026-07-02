@@ -1,5 +1,3 @@
-import { MIN_COMMISSION_FCFA, MIN_COMMISSION_RATE } from '../validators/catalog.js'
-
 /**
  * Source de vérité unique du contrat d'adhésion vendeur (CGU).
  * Consommé par la page d'acceptation web ET le générateur de PDF API,
@@ -8,13 +6,10 @@ import { MIN_COMMISSION_FCFA, MIN_COMMISSION_RATE } from '../validators/catalog.
  * Toute modification de fond DOIT incrémenter VENDOR_CONTRACT_VERSION :
  * la version est figée sur chaque acceptation (preuve de consentement).
  */
-export const VENDOR_CONTRACT_VERSION = '1.0'
+export const VENDOR_CONTRACT_VERSION = '1.1'
 
 /** Date d'entrée en vigueur de la présente version (affichée et figée). */
-export const VENDOR_CONTRACT_EFFECTIVE_DATE = '2026-06-08'
-
-const commissionPct = `${(MIN_COMMISSION_RATE * 100).toLocaleString('fr-FR')} %`
-const commissionFloor = `${MIN_COMMISSION_FCFA.toLocaleString('fr-FR').replace(/[\u202F\u00A0]/g, ' ')} FCFA`
+export const VENDOR_CONTRACT_EFFECTIVE_DATE = '2026-07-02'
 
 export interface ContractArticle {
   /** Numéro d'article (1-indexé). */
@@ -93,7 +88,7 @@ export const VENDOR_CONTRACT: VendorContract = {
       title: 'Prix et commission de la Plateforme',
       paragraphs: [
         'Le Vendeur fixe librement le prix de vente de ses pièces, exprimé en FCFA.',
-        `En contrepartie du service de mise en relation, d’encaissement sécurisé et de visibilité, Pièces perçoit une commission sur chaque pièce vendue via la Plateforme. Le montant de la commission est fixé par le Vendeur lors de la publication, sans pouvoir être inférieur au plancher de ${commissionPct} du prix de la pièce, avec un minimum de ${commissionFloor} par pièce.`,
+        'En contrepartie du service de mise en relation, d’encaissement sécurisé et de visibilité, Pièces peut percevoir une commission sur chaque pièce vendue via la Plateforme. Le montant de la commission est fixé librement par le Vendeur lors de la publication, sans montant minimum : il peut être nul.',
         'La commission applicable est figée (« snapshot ») au moment de la création de la commande : une modification ultérieure du barème ou du prix n’affecte pas les commandes déjà passées.',
       ],
     },
