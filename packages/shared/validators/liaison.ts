@@ -72,7 +72,7 @@ const liaisonFitmentSchema = z.object({
 
 export const liaisonCreatePartSchema = z.object({
   name: z.string().min(2).max(120),
-  category: z.string().min(2).max(80).optional(),
+  category: z.string().min(2).max(120).optional(),
   oemReference: z.string().max(80).optional(),
   vehicleCompatibility: z.string().max(255).optional(),
   fitments: z.array(liaisonFitmentSchema).max(50).optional(),
@@ -102,7 +102,7 @@ export const liaisonQuickPartSchema = liaisonCreatePartSchema.extend({
 
 export const liaisonUpdatePartSchema = z.object({
   name: z.string().min(2).max(120).optional(),
-  category: z.string().min(2).max(80).nullable().optional(),
+  category: z.string().min(2).max(120).nullable().optional(),
   oemReference: z.string().max(80).nullable().optional(),
   vehicleCompatibility: z.string().max(255).nullable().optional(),
   fitments: z.array(liaisonFitmentSchema).max(50).optional(),

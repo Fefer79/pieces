@@ -5,7 +5,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { liaisonFetch } from '@/lib/liaison-api'
 import { minCommissionFor } from 'shared/validators'
-import { WARRANTY_UNITS, type WarrantyUnit, ABIDJAN_COMMUNES } from 'shared/constants'
+import {
+  WARRANTY_UNITS,
+  type WarrantyUnit,
+  ABIDJAN_COMMUNES,
+  PART_CATALOG,
+  VEHICLE_BRANDS,
+  getEngines,
+} from 'shared/constants'
 
 const CONDITIONS = [
   { value: 'NEW', label: 'Neuf' },
@@ -14,18 +21,20 @@ const CONDITIONS = [
 ] as const
 type Condition = (typeof CONDITIONS)[number]['value']
 
-const COMMON_CATEGORIES = [
-  'Moteur',
-  'Freinage',
-  'Suspension',
-  'Transmission',
-  'Carrosserie',
-  'Électronique',
-  'Filtration',
-  'Échappement',
-  'Climatisation',
-  'Allumage',
-]
+const CATEGORY_NAMES = Object.keys(PART_CATALOG)
+
+/**
+ * La catégorie est stockée dans un seul champ texte sous la forme
+ * « Catégorie / Sous-catégorie » (même convention que le formulaire catalogue
+ * vendeur, cf. vendors/catalog/upload). On décompose ici pour piloter la
+ * cascade des deux sélecteurs, et on recompose au submit.
+ */
+function splitCategory(raw?: string | null): { cat: string; sub: string } {
+  if (!raw) return { cat: '', sub: '' }
+  const idx = raw.indexOf(' / ')
+  if (idx === -1) return { cat: raw, sub: '' }
+  return { cat: raw.slice(0, idx), sub: raw.slice(idx + 3) }
+}
 
 export interface FitmentEntry {
   brand: string
@@ -68,7 +77,9 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
   const [vCommune, setVCommune] = useState('')
   const [vAddress, setVAddress] = useState('')
   const [name, setName] = useState(initial?.name ?? '')
-  const [category, setCategory] = useState(initial?.category ?? '')
+  const initialCategory = useMemo(() => splitCategory(initial?.category), [initial?.category])
+  const [partCategory, setPartCategory] = useState(initialCategory.cat)
+  const [partSubcategory, setPartSubcategory] = useState(initialCategory.sub)
   const [oemReference, setOemReference] = useState(initial?.oemReference ?? '')
   const [vehicleCompatibility, setVehicleCompatibility] = useState(
     initial?.vehicleCompatibility ?? '',
@@ -118,11 +129,71 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
   const removeFitment = (idx: number) =>
     setFitments((prev) => prev.filter((_, i) => i !== idx))
 
+  // Cascade véhicule pour la saisie d'une compatibilité (marque → modèle →
+  // années → moteur), alignée sur le formulaire catalogue vendeur.
+  const fitBrandNames = useMemo(() => Object.keys(VEHICLE_BRANDS).sort(), [])
+  const fitModels = useMemo(
+    () => (fitBrand ? Object.keys(VEHICLE_BRANDS[fitBrand]?.models ?? {}).sort() : []),
+    [fitBrand],
+  )
+  const fitYears = useMemo(() => {
+    if (!fitBrand) return [] as number[]
+    if (fitModel) return [...(VEHICLE_BRANDS[fitBrand]?.models[fitModel] ?? [])].sort((a, b) => b - a)
+    // Marque seule : union des années de tous ses modèles.
+    const set = new Set<number>()
+    Object.values(VEHICLE_BRANDS[fitBrand]?.models ?? {}).forEach((ys) => ys.forEach((y) => set.add(y)))
+    return [...set].sort((a, b) => b - a)
+  }, [fitBrand, fitModel])
+  const fitEngines = useMemo(
+    () => (fitBrand && fitModel ? getEngines(fitBrand, fitModel) : []),
+    [fitBrand, fitModel],
+  )
+
+  const handleFitBrandChange = (v: string) => {
+    setFitBrand(v)
+    setFitModel('')
+    setFitYearFrom('')
+    setFitYearTo('')
+    setFitEngine('')
+  }
+  const handleFitModelChange = (v: string) => {
+    setFitModel(v)
+    setFitYearFrom('')
+    setFitYearTo('')
+    setFitEngine('')
+  }
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const priceNum = useMemo(() => (price ? Number(price) : 0), [price])
   const minCommission = useMemo(() => minCommissionFor(priceNum), [priceNum])
+
+  // Cascade catégorie → sous-catégorie. On conserve une éventuelle valeur héritée
+  // hors catalogue (édition d'anciennes annonces) pour ne pas la perdre.
+  const categoryOptions = useMemo(
+    () =>
+      partCategory && !CATEGORY_NAMES.includes(partCategory)
+        ? [partCategory, ...CATEGORY_NAMES]
+        : CATEGORY_NAMES,
+    [partCategory],
+  )
+  const subcategoryOptions = useMemo(() => {
+    const subs = PART_CATALOG[partCategory as keyof typeof PART_CATALOG] ?? []
+    return partSubcategory && !subs.includes(partSubcategory)
+      ? [partSubcategory, ...subs]
+      : subs
+  }, [partCategory, partSubcategory])
+  const categoryValue = partCategory
+    ? partSubcategory
+      ? `${partCategory} / ${partSubcategory}`
+      : partCategory
+    : undefined
+
+  const handleCategoryChange = (v: string) => {
+    setPartCategory(v)
+    setPartSubcategory('')
+  }
 
   const commissionNum = commission ? Number(commission) : 0
   const commissionBelowMin = commission !== '' && commissionNum < minCommission
@@ -144,7 +215,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
 
     const payload = {
       name,
-      category: category || undefined,
+      category: categoryValue,
       oemReference: oemReference || undefined,
       vehicleCompatibility: vehicleCompatibility || undefined,
       price: price ? Number(price) : undefined,
@@ -269,19 +340,34 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       </Field>
 
       <Field label="Catégorie">
-        <input
-          list="categories"
-          value={category ?? ''}
-          onChange={(e) => setCategory(e.target.value)}
+        <select
+          aria-label="Catégorie de la pièce"
+          value={partCategory}
+          onChange={(e) => handleCategoryChange(e.target.value)}
           className="liaison-input"
-          placeholder="Ex : Électronique"
-        />
-        <datalist id="categories">
-          {COMMON_CATEGORIES.map((c) => (
-            <option key={c} value={c} />
+        >
+          <option value="">Choisir…</option>
+          {categoryOptions.map((c) => (
+            <option key={c} value={c}>{c}</option>
           ))}
-        </datalist>
+        </select>
       </Field>
+
+      {partCategory && subcategoryOptions.length > 0 && (
+        <Field label="Sous-catégorie" hint="Optionnel — précise la pièce">
+          <select
+            aria-label="Sous-catégorie de la pièce"
+            value={partSubcategory}
+            onChange={(e) => setPartSubcategory(e.target.value)}
+            className="liaison-input"
+          >
+            <option value="">Toutes / non précisé</option>
+            {subcategoryOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </Field>
+      )}
 
       <Field label="État" required>
         <div className="grid grid-cols-3 gap-2">
@@ -383,42 +469,65 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
           </ul>
         )}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          <input
+          <select
+            aria-label="Marque du véhicule compatible"
             value={fitBrand}
-            onChange={(e) => setFitBrand(e.target.value)}
+            onChange={(e) => handleFitBrandChange(e.target.value)}
             className="liaison-input"
-            placeholder="Marque*"
-          />
-          <input
+          >
+            <option value="">Marque *</option>
+            {fitBrandNames.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+          <select
+            aria-label="Modèle du véhicule compatible"
             value={fitModel}
-            onChange={(e) => setFitModel(e.target.value)}
+            onChange={(e) => handleFitModelChange(e.target.value)}
             className="liaison-input"
-            placeholder="Modèle"
-          />
-          <input
-            type="number"
+            disabled={!fitBrand}
+          >
+            <option value="">Modèle</option>
+            {fitModels.map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+          <select
+            aria-label="Année min"
             value={fitYearFrom}
             onChange={(e) => setFitYearFrom(e.target.value)}
             className="liaison-input"
-            placeholder="Année min"
-            min={1950}
-            max={2100}
-          />
-          <input
-            type="number"
+            disabled={fitYears.length === 0}
+          >
+            <option value="">Année min</option>
+            {fitYears.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          <select
+            aria-label="Année max"
             value={fitYearTo}
             onChange={(e) => setFitYearTo(e.target.value)}
             className="liaison-input"
-            placeholder="Année max"
-            min={1950}
-            max={2100}
-          />
-          <input
+            disabled={fitYears.length === 0}
+          >
+            <option value="">Année max</option>
+            {fitYears.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          <select
+            aria-label="Moteur"
             value={fitEngine}
             onChange={(e) => setFitEngine(e.target.value)}
             className="liaison-input"
-            placeholder="Moteur"
-          />
+            disabled={fitEngines.length === 0}
+          >
+            <option value="">{fitEngines.length === 0 ? 'Moteur (choisir modèle)' : 'Moteur'}</option>
+            {fitEngines.map((eng) => (
+              <option key={eng} value={eng}>{eng}</option>
+            ))}
+          </select>
         </div>
         <button
           type="button"
