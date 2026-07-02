@@ -1,5 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
+import { uploadToR2 } from '../../lib/r2.js'
+import { processVariants } from '../../lib/imageProcessor.js'
 import {
   liaisonCreateVendorSchema,
   liaisonUpdateVendorSchema,
@@ -8,6 +10,46 @@ import {
   liaisonQuickPartSchema,
 } from 'shared/validators'
 import type { CatalogItemStatus, Prisma } from '@prisma/client'
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
+const ALLOWED_IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp']
+
+/**
+ * Upload d'une photo de pièce par une liaison. Contrairement au flux vendeur
+ * (catalog.service), la liaison n'a pas de fiche Vendor propre : on scope la clé
+ * R2 sur son id d'utilisateur. L'original + les 4 variantes WebP sont générés en
+ * ligne (~200 ms) puis renvoyés pour être joints au payload de création.
+ */
+export async function uploadLiaisonPartImage(
+  liaisonId: string,
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+) {
+  if (fileBuffer.length > MAX_IMAGE_BYTES) {
+    throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
+  }
+  if (!ALLOWED_IMAGE_MIME.includes(mimeType)) {
+    throw new AppError('INVALID_FILE_TYPE', 422, { message: 'Format accepté : JPEG, PNG ou WebP' })
+  }
+
+  const ext = mimeType.split('/')[1] ?? 'jpg'
+  const timestamp = Date.now()
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '')
+  const baseKey = `catalog/liaison/${liaisonId}/${timestamp}_${safeName}`
+
+  const variants = await processVariants(fileBuffer)
+  const [imageOriginalUrl, imageThumbUrl, imageSmallUrl, imageMediumUrl, imageLargeUrl] =
+    await Promise.all([
+      uploadToR2(`${baseKey}.${ext}`, fileBuffer, mimeType),
+      uploadToR2(`${baseKey}_thumb.webp`, variants.thumb, 'image/webp'),
+      uploadToR2(`${baseKey}_small.webp`, variants.small, 'image/webp'),
+      uploadToR2(`${baseKey}_medium.webp`, variants.medium, 'image/webp'),
+      uploadToR2(`${baseKey}_large.webp`, variants.large, 'image/webp'),
+    ])
+
+  return { imageOriginalUrl, imageThumbUrl, imageSmallUrl, imageMediumUrl, imageLargeUrl }
+}
 
 const VENDOR_DETAIL_SELECT = {
   id: true,
@@ -221,6 +263,10 @@ export async function createPartForVendor(
       commissionAmount,
       inStock: parsed.data.inStock,
       imageOriginalUrl: parsed.data.imageOriginalUrl,
+      imageThumbUrl: parsed.data.imageThumbUrl,
+      imageSmallUrl: parsed.data.imageSmallUrl,
+      imageMediumUrl: parsed.data.imageMediumUrl,
+      imageLargeUrl: parsed.data.imageLargeUrl,
       status: 'PUBLISHED',
       aiGenerated: false,
       ...(fitments.length > 0 && {
@@ -328,6 +374,10 @@ export async function createPartWithQuickVendor(liaisonId: string, body: unknown
         commissionAmount,
         inStock: partInput.inStock,
         imageOriginalUrl: partInput.imageOriginalUrl,
+        imageThumbUrl: partInput.imageThumbUrl,
+        imageSmallUrl: partInput.imageSmallUrl,
+        imageMediumUrl: partInput.imageMediumUrl,
+        imageLargeUrl: partInput.imageLargeUrl,
         status: 'PUBLISHED',
         aiGenerated: false,
         ...(fitments.length > 0 && {
@@ -446,6 +496,11 @@ export async function updatePartForVendor(
   if (d.warrantyValue !== undefined) updateData.warrantyValue = d.warrantyValue
   if (d.warrantyUnit !== undefined) updateData.warrantyUnit = d.warrantyUnit
   if (d.inStock !== undefined) updateData.inStock = d.inStock
+  if (d.imageOriginalUrl !== undefined) updateData.imageOriginalUrl = d.imageOriginalUrl
+  if (d.imageThumbUrl !== undefined) updateData.imageThumbUrl = d.imageThumbUrl
+  if (d.imageSmallUrl !== undefined) updateData.imageSmallUrl = d.imageSmallUrl
+  if (d.imageMediumUrl !== undefined) updateData.imageMediumUrl = d.imageMediumUrl
+  if (d.imageLargeUrl !== undefined) updateData.imageLargeUrl = d.imageLargeUrl
   if (d.price !== undefined) {
     updateData.price = d.price
     updateData.priceUpdatedAt = new Date()

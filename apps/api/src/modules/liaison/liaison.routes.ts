@@ -8,6 +8,7 @@ import {
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { recordActivity } from '../../lib/activityLog.js'
+import { AppError } from '../../lib/appError.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
 import {
   createVendorByLiaison,
@@ -16,6 +17,7 @@ import {
   updateLiaisonVendor,
   createPartForVendor,
   createPartWithQuickVendor,
+  uploadLiaisonPartImage,
   getLiaisonPart,
   updatePartForVendor,
   acceptCommissionByLiaison,
@@ -220,6 +222,37 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
           price: result.price,
           commissionAmount: result.commissionAmount,
         },
+      })
+      return reply.status(201).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/parts/image',
+    {
+      schema: {
+        tags: ['Liaison'],
+        description: 'Upload une photo de pièce (original + variantes) et renvoie les URLs',
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const result = await uploadLiaisonPartImage(
+        request.user.id,
+        buffer,
+        file.filename,
+        file.mimetype,
+      )
+      request.log.info({
+        event: 'LIAISON_PART_IMAGE_UPLOADED',
+        liaisonId: request.user.id,
       })
       return reply.status(201).send({ data: result })
     },

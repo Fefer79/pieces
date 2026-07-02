@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { liaisonFetch } from '@/lib/liaison-api'
+import { liaisonFetch, liaisonUpload } from '@/lib/liaison-api'
 import {
   WARRANTY_UNITS,
   type WarrantyUnit,
@@ -55,6 +55,16 @@ export interface PartFormInitial {
   warrantyUnit?: WarrantyUnit | null
   commissionAmount?: number | null
   inStock?: boolean
+  imageOriginalUrl?: string | null
+  imageThumbUrl?: string | null
+}
+
+interface ImageUrls {
+  imageOriginalUrl?: string
+  imageThumbUrl?: string
+  imageSmallUrl?: string
+  imageMediumUrl?: string
+  imageLargeUrl?: string
 }
 
 interface Props {
@@ -96,6 +106,44 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
     initial?.commissionAmount != null ? String(initial.commissionAmount) : '',
   )
   const [inStock, setInStock] = useState(initial?.inStock ?? true)
+  const [imageUrls, setImageUrls] = useState<ImageUrls>({
+    imageOriginalUrl: initial?.imageOriginalUrl ?? undefined,
+    imageThumbUrl: initial?.imageThumbUrl ?? undefined,
+  })
+  const [imgUploading, setImgUploading] = useState(false)
+  const [imgError, setImgError] = useState<string | null>(null)
+  const previewUrl =
+    imageUrls.imageSmallUrl ?? imageUrls.imageThumbUrl ?? imageUrls.imageOriginalUrl ?? null
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // autorise re-sélection du même fichier après retrait
+    if (!file) return
+    setImgError(null)
+    if (file.size > 5 * 1024 * 1024) {
+      setImgError('Image trop volumineuse (max 5 MB)')
+      return
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setImgError('Format accepté : JPEG, PNG ou WebP')
+      return
+    }
+    setImgUploading(true)
+    const fd = new FormData()
+    fd.append('file', file)
+    const r = await liaisonUpload<ImageUrls>('/parts/image', fd)
+    setImgUploading(false)
+    if (!r.ok) {
+      setImgError(r.message)
+      return
+    }
+    setImageUrls(r.data)
+  }
+  const clearImage = () => {
+    setImageUrls({})
+    setImgError(null)
+  }
+
   const [fitments, setFitments] = useState<FitmentEntry[]>(initial?.fitments ?? [])
   const [fitBrand, setFitBrand] = useState('')
   const [fitModel, setFitModel] = useState('')
@@ -199,13 +247,27 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       vContactName.trim().length >= 2 &&
       phoneValid &&
       vCommune.length > 0)
-  const valid = name.length >= 2 && vendorValid
+  const valid = name.length >= 2 && vendorValid && !imgUploading
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!valid) return
     setSubmitting(true)
     setError(null)
+
+    // Photo : on envoie les URLs si présentes ; en édition, des null pour
+    // effacer une photo retirée (le schéma update accepte null).
+    const imagePayload = imageUrls.imageOriginalUrl
+      ? imageUrls
+      : mode === 'edit'
+        ? {
+            imageOriginalUrl: null,
+            imageThumbUrl: null,
+            imageSmallUrl: null,
+            imageMediumUrl: null,
+            imageLargeUrl: null,
+          }
+        : {}
 
     const payload = {
       name,
@@ -219,6 +281,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       commissionAmount: commission ? Number(commission) : undefined,
       inStock,
       fitments,
+      ...imagePayload,
       ...(quickVendor && {
         vendor: {
           shopName: vShopName.trim(),
@@ -331,6 +394,43 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
           className="liaison-input"
           placeholder="Ex : Alternateur 90A"
         />
+      </Field>
+
+      <Field label="Photo" hint="JPEG, PNG ou WebP — 5 MB max">
+        {previewUrl ? (
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewUrl}
+              alt="Aperçu de la pièce"
+              className="h-20 w-20 rounded-md object-cover ring-1 ring-border"
+            />
+            <button
+              type="button"
+              onClick={clearImage}
+              className="rounded-md bg-card px-3 py-2 text-sm text-[#D32F2F] ring-1 ring-border"
+            >
+              Retirer la photo
+            </button>
+          </div>
+        ) : (
+          <label
+            className={`flex cursor-pointer items-center justify-center rounded-md border border-dashed border-border bg-card px-3 py-4 text-sm ${
+              imgUploading ? 'text-muted' : 'text-ink'
+            }`}
+            style={{ minHeight: 44 }}
+          >
+            {imgUploading ? 'Envoi en cours…' : '+ Ajouter une photo'}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleImageSelect}
+              disabled={imgUploading}
+              className="sr-only"
+            />
+          </label>
+        )}
+        {imgError && <p className="mt-1 text-xs text-[#D32F2F]">{imgError}</p>}
       </Field>
 
       <Field label="Catégorie">

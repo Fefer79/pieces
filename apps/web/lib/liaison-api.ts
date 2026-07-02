@@ -35,3 +35,27 @@ export async function liaisonFetch<T = unknown>(
   }
   return { ok: true, data: body.data as T }
 }
+
+/**
+ * Upload multipart (photo) vers l'API liaison. On ne fixe PAS Content-Type :
+ * le navigateur pose lui-même le boundary multipart/form-data.
+ */
+export async function liaisonUpload<T = unknown>(
+  path: string,
+  formData: FormData,
+): Promise<{ ok: true; data: T } | { ok: false; message: string }> {
+  const token = await getToken()
+  if (!token) return { ok: false, message: 'Session expirée. Reconnectez-vous.' }
+
+  const res = await fetch(`/api/v1/liaison${path}`, {
+    method: 'POST',
+    body: formData,
+    headers: { Authorization: `Bearer ${token}` },
+  })
+
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    return { ok: false, message: body?.error?.message ?? 'Erreur serveur' }
+  }
+  return { ok: true, data: body.data as T }
+}

@@ -83,6 +83,10 @@ export const liaisonCreatePartSchema = z.object({
   commissionAmount: z.number().int().min(0).optional(),
   inStock: z.boolean().default(true),
   imageOriginalUrl: z.string().url().optional(),
+  imageThumbUrl: z.string().url().optional(),
+  imageSmallUrl: z.string().url().optional(),
+  imageMediumUrl: z.string().url().optional(),
+  imageLargeUrl: z.string().url().optional(),
 })
 
 // Saisie rapide : le liaison enregistre le vendeur tiers (nom, contact, location)
@@ -112,4 +116,9 @@ export const liaisonUpdatePartSchema = z.object({
   warrantyUnit: z.enum(['DAY', 'WEEK', 'MONTH']).nullable().optional(),
   commissionAmount: z.number().int().min(0).optional(),
   inStock: z.boolean().optional(),
+  imageOriginalUrl: z.string().url().nullable().optional(),
+  imageThumbUrl: z.string().url().nullable().optional(),
+  imageSmallUrl: z.string().url().nullable().optional(),
+  imageMediumUrl: z.string().url().nullable().optional(),
+  imageLargeUrl: z.string().url().nullable().optional(),
 })
