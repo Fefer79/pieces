@@ -103,12 +103,12 @@ export default function BrowsePage() {
           </a>
           <span className="text-muted-2" aria-hidden>·</span>
           <a
-            href="https://wa.me/2250709021708"
+            href="https://wa.me/2250706846268"
             target="_blank"
             rel="noopener noreferrer"
             className="text-ink transition-colors hover:text-accent"
           >
-            (225) 07 09 02 17 08
+            (225) 07 06 84 62 68
           </a>
         </div>
 

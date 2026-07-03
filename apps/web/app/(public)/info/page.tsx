@@ -69,8 +69,8 @@ export default function InfoPage() {
               <ul className="mt-4 space-y-2.5 text-sm">
                 <li className="text-muted">Abidjan, Côte d&apos;Ivoire</li>
                 <li>
-                  <a href="https://wa.me/2250709021708" target="_blank" rel="noopener noreferrer" className="text-ink transition-colors hover:text-accent">
-                    WhatsApp · +225 07 09 02 17 08
+                  <a href="https://wa.me/2250706846268" target="_blank" rel="noopener noreferrer" className="text-ink transition-colors hover:text-accent">
+                    WhatsApp · +225 07 06 84 62 68
                   </a>
                 </li>
                 <li>

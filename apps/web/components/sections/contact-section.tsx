@@ -1,4 +1,4 @@
-const WA_NUMBER = '2250709021708'
+const WA_NUMBER = '2250706846268'
 
 export function ContactSection() {
   return (
@@ -31,7 +31,7 @@ export function ContactSection() {
           </a>
 
           <a
-            href="tel:+2250709021708"
+            href="tel:+2250706846268"
             className="flex items-center gap-4 rounded-xl border border-blue-100 bg-blue-50 p-4 transition-colors hover:bg-blue-100"
           >
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#002366] text-white">
@@ -41,7 +41,7 @@ export function ContactSection() {
             </div>
             <div>
               <p className="font-semibold text-[#1A1A1A]">Téléphone</p>
-              <p className="text-sm text-gray-600">+225 07 09 02 17 08</p>
+              <p className="text-sm text-gray-600">+225 07 06 84 62 68</p>
             </div>
           </a>
         </div>

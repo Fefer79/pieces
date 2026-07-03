@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { BottomNav } from '@/components/bottom-nav'
 
-const WA_NUMBER = '2250709021708'
-const PHONE_DISPLAY = '+225 07 09 02 17 08'
+const WA_NUMBER = '2250706846268'
+const PHONE_DISPLAY = '+225 07 06 84 62 68'
 const EMAIL = 'contact@pieces.ci'
 
 export default function ContactPage() {

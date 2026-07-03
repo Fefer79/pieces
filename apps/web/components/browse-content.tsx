@@ -16,7 +16,7 @@ import type { VehicleTypeId } from 'shared/constants'
 // « Sélectionnez votre {type} » est actif par défaut (cf. demande produit).
 type IdentifyMethod = 'vehicle' | 'vin' | 'whatsapp'
 
-const WA_NUMBER = '2250709021708'
+const WA_NUMBER = '2250706846268'
 
 // Catégories pour « Parcourir par catégorie » (affiché sous la sélection véhicule).
 const CATEGORY_TILES_BASE: Array<{ id: string; title: string; image: string }> = [

@@ -14,7 +14,7 @@ import { useSelectedVehicle, type SelectedVehicle } from '@/lib/selected-vehicle
 import { apiFetch } from '@/lib/enterprise-api'
 import { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES, formatWarranty, type WarrantyUnit } from 'shared/constants'
 
-const WA_NUMBER = '2250709021708'
+const WA_NUMBER = '2250706846268'
 
 type Photo = {
   id: string
