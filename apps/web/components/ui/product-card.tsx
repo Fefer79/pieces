@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Price } from './price'
 import { ConditionChip, type Condition } from './chip'
-import { PartThumb } from './part-thumb'
+import { PartThumb, bestPartImage } from './part-thumb'
 import { useCart } from '@/lib/cart'
 
 export interface ProductCardItem {
@@ -15,12 +15,15 @@ export interface ProductCardItem {
   partSource?: string | null
   price: number | null
   imageThumbUrl: string | null
+  imageMediumUrl?: string | null
+  imageOriginalUrl?: string | null
   vendor: { id?: string; shopName: string }
 }
 
 export function ProductCard({ item }: { item: ProductCardItem }) {
   const { addItem } = useCart()
   const [added, setAdded] = useState(false)
+  const imageUrl = bestPartImage(item)
 
   function handleAdd() {
     if (!item.vendor.id) return
@@ -34,7 +37,7 @@ export function ProductCard({ item }: { item: ProductCardItem }) {
         price: item.price,
         condition: item.condition,
         partSource: item.partSource ?? null,
-        imageThumbUrl: item.imageThumbUrl,
+        imageThumbUrl: imageUrl,
       },
       1,
     )
@@ -48,7 +51,7 @@ export function ProductCard({ item }: { item: ProductCardItem }) {
         href={`/produit/${item.id}`}
         className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-surface"
       >
-        <PartThumb src={item.imageThumbUrl} alt={item.name} />
+        <PartThumb src={imageUrl} alt={item.name} />
       </Link>
       <div className="min-w-0 flex-1">
         <Link

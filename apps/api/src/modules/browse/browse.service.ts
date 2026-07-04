@@ -187,6 +187,7 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
         price: true,
         imageThumbUrl: true,
         imageMediumUrl: true,
+        imageOriginalUrl: true,
         vendor: { select: { id: true, shopName: true } },
       },
     }),
@@ -212,6 +213,8 @@ export interface CompareOffer {
   warrantyUnit: WarrantyUnit | null
   inStock: boolean
   imageThumbUrl: string | null
+  imageMediumUrl: string | null
+  imageOriginalUrl: string | null
   // Score « rapport qualité-prix » sur 100 (rempli au moment du regroupement,
   // relatif aux autres offres du même groupe). Null si pas de prix.
   valueScore: number | null
@@ -326,6 +329,8 @@ export async function compareParts(
       warrantyUnit: true,
       inStock: true,
       imageThumbUrl: true,
+      imageMediumUrl: true,
+      imageOriginalUrl: true,
       vendor: {
         select: {
           id: true,
@@ -358,6 +363,8 @@ export async function compareParts(
       warrantyUnit: item.warrantyUnit,
       inStock: item.inStock,
       imageThumbUrl: item.imageThumbUrl,
+      imageMediumUrl: item.imageMediumUrl,
+      imageOriginalUrl: item.imageOriginalUrl,
       valueScore: null,
     }
 
@@ -458,6 +465,7 @@ export async function searchParts(query: string, filters: { category?: string; p
         price: true,
         imageThumbUrl: true,
         imageMediumUrl: true,
+        imageOriginalUrl: true,
         vendor: { select: { id: true, shopName: true } },
       },
     }),

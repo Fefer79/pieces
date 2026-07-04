@@ -3,6 +3,21 @@
 import { useState } from 'react'
 
 /**
+ * Meilleure URL d'image disponible pour une pièce, dans l'ordre de préférence
+ * vignette → moyenne → originale. Les annonces importées (scrapers) n'ont
+ * souvent QUE `imageOriginalUrl` — les variantes thumb/medium ne sont générées
+ * que pour les uploads passés par Sharp/R2. Sans ce fallback, ~99% du catalogue
+ * s'affiche sans photo.
+ */
+export function bestPartImage(item: {
+  imageThumbUrl?: string | null
+  imageMediumUrl?: string | null
+  imageOriginalUrl?: string | null
+}): string | null {
+  return item.imageThumbUrl ?? item.imageMediumUrl ?? item.imageOriginalUrl ?? null
+}
+
+/**
  * Vignette de pièce — affiche TOUJOURS quelque chose.
  * Si l'image existe et charge : photo (object-cover).
  * Sinon (pas d'URL ou URL cassée) : placeholder SVG « pas de photo » cohérent

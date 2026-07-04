@@ -6,6 +6,7 @@ import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
 import { ConditionChip, PartSourceChip, type Condition, type PartSource } from '@/components/ui/chip'
+import { bestPartImage } from '@/components/ui/part-thumb'
 import { MiniCartButton } from '@/components/cart/mini-cart'
 
 interface CatalogItem {
@@ -16,6 +17,8 @@ interface CatalogItem {
   partSource: string | null
   price: number | null
   imageThumbUrl: string | null
+  imageMediumUrl: string | null
+  imageOriginalUrl: string | null
   vendor: { shopName: string }
 }
 
@@ -277,6 +280,7 @@ export default function CataloguePage() {
 }
 
 function ProductCard({ item }: { item: CatalogItem }) {
+  const imageUrl = bestPartImage(item)
   return (
     <Link
       href={`/produit/${item.id}`}
@@ -284,10 +288,10 @@ function ProductCard({ item }: { item: CatalogItem }) {
     >
       {/* Média 4:3 + chips condition en absolu top-left (first-class) */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-[rgba(0,35,102,0.06)] to-surface">
-        {item.imageThumbUrl ? (
+        {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={item.imageThumbUrl}
+            src={imageUrl}
             alt={item.name ?? ''}
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"

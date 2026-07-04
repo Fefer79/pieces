@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { Price } from '@/components/ui/price'
 import { ConditionChip } from '@/components/ui/chip'
-import { PartThumb } from '@/components/ui/part-thumb'
+import { PartThumb, bestPartImage } from '@/components/ui/part-thumb'
 import { VehicleTypeSelector, TypeIcon } from '@/components/vehicle-type-selector'
 import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
 import { CategoryCarousel, type CategoryTile } from '@/components/ui/category-carousel'
@@ -58,6 +58,8 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
       oemReference: string | null
       price: number | null
       imageThumbUrl: string | null
+      imageMediumUrl: string | null
+      imageOriginalUrl: string | null
       vendor: { shopName: string }
     }>
   >([])
@@ -409,7 +411,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                     className="flex gap-3 rounded-md border border-border bg-card p-3 transition-all hover:border-border-strong hover:shadow-sm"
                   >
                     <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
-                      <PartThumb src={item.imageThumbUrl} alt={item.name} />
+                      <PartThumb src={bestPartImage(item)} alt={item.name} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
