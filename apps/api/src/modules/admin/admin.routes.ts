@@ -8,6 +8,7 @@ import {
   getAdminCatalog,
   getAdminCatalogItem,
   updateAdminCatalogItem,
+  deleteAdminCatalogItem,
   addAdminPhoto,
   removeAdminPhoto,
   reorderAdminPhotos,
@@ -162,6 +163,21 @@ export async function adminRoutes(fastify: FastifyInstance) {
       const { id } = request.params as { id: string }
       const data = await updateAdminCatalogItem(id, request.body as Record<string, never>)
       request.log.info({ event: 'ADMIN_CATALOG_ITEM_UPDATED', itemId: id })
+      return reply.status(200).send({ data })
+    },
+  )
+
+  // Admin: delete an annonce (definitive)
+  fastify.delete(
+    '/catalog/:id',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Supprime définitivement une annonce (admin)' },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const data = await deleteAdminCatalogItem(id)
+      request.log.info({ event: 'ADMIN_CATALOG_ITEM_DELETED', itemId: id })
       return reply.status(200).send({ data })
     },
   )

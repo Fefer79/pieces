@@ -179,6 +179,28 @@ export async function updateAdminCatalogItem(id: string, patch: AdminCatalogItem
   return getAdminCatalogItem(id)
 }
 
+/**
+ * Suppression définitive d'une annonce (admin). Les photos et fitments cascadent
+ * (onDelete: Cascade). On retire d'abord les entrées de stock tampon entreprise
+ * qui la référencent (relation sans cascade → sinon la suppression échoue). Les
+ * OrderItem ne sont PAS liés par FK (snapshot dénormalisé) : l'historique des
+ * commandes reste intact. Les objets R2 orphelins sont laissés en place, comme
+ * pour removePhotoFromItem.
+ */
+export async function deleteAdminCatalogItem(id: string) {
+  const exists = await prisma.catalogItem.findUnique({ where: { id }, select: { id: true } })
+  if (!exists) {
+    throw new AppError('CATALOG_ITEM_NOT_FOUND', 404, { message: 'Annonce introuvable' })
+  }
+
+  await prisma.$transaction([
+    prisma.enterpriseBufferStock.deleteMany({ where: { catalogItemId: id } }),
+    prisma.catalogItem.delete({ where: { id } }),
+  ])
+
+  return { deleted: true }
+}
+
 // Admin fitment correction — bypasses the vendor-ownership guard used by the
 // SELLER-facing catalog API. An admin may fix compatibility on any annonce,
 // including externally-imported ones (subject to overwrite on next import).

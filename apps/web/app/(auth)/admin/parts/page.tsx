@@ -39,6 +39,9 @@ export default function AdminPartsPage() {
   const [status, setStatus] = useState('')
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  // Suppression : id en attente de confirmation, puis id en cours de suppression.
+  const [confirmId, setConfirmId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const load = useCallback(() => {
     const params = new URLSearchParams()
@@ -51,6 +54,28 @@ export default function AdminPartsPage() {
   }, [q, status, page])
 
   useEffect(() => { load() }, [load])
+
+  async function handleDelete(id: string) {
+    setDeletingId(id)
+    setError(null)
+    try {
+      await adminFetch(`/admin/catalog/${id}`, { method: 'DELETE' })
+      setConfirmId(null)
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.filter((it) => it.id !== id),
+              pagination: { ...prev.pagination, total: Math.max(0, prev.pagination.total - 1) },
+            }
+          : prev,
+      )
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Suppression impossible')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
     const res = await adminFetch<{ suggestions: PredictiveItem[] }>(
@@ -108,6 +133,7 @@ export default function AdminPartsPage() {
                   <Th align="right">Prix</Th>
                   <Th align="right">Commission</Th>
                   <Th>Statut</Th>
+                  <Th align="right"></Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -134,11 +160,38 @@ export default function AdminPartsPage() {
                         {it.status === 'DRAFT' && <Chip variant="status-warn">Brouillon</Chip>}
                         {it.status === 'ARCHIVED' && <Chip variant="plain">Archivé</Chip>}
                       </Td>
+                      <Td align="right">
+                        {confirmId === it.id ? (
+                          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                            <button
+                              onClick={() => handleDelete(it.id)}
+                              disabled={deletingId === it.id}
+                              className="rounded-sm bg-error-fg px-2 py-1 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                            >
+                              {deletingId === it.id ? 'Suppression…' : 'Confirmer'}
+                            </button>
+                            <button
+                              onClick={() => setConfirmId(null)}
+                              disabled={deletingId === it.id}
+                              className="rounded-sm border border-border-strong px-2 py-1 text-xs hover:bg-surface disabled:opacity-50"
+                            >
+                              Annuler
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmId(it.id)}
+                            className="rounded-sm border border-border-strong px-2 py-1 text-xs text-error-fg hover:border-error-fg hover:bg-error-bg"
+                          >
+                            Effacer
+                          </button>
+                        )}
+                      </Td>
                     </Tr>
                   )
                 })}
                 {data.items.length === 0 && (
-                  <Tr hover={false}><Td colSpan={6} align="center" className="py-6 text-muted">Aucune pièce.</Td></Tr>
+                  <Tr hover={false}><Td colSpan={7} align="center" className="py-6 text-muted">Aucune pièce.</Td></Tr>
                 )}
               </Tbody>
             </Table>
