@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { liaisonFetch } from '@/lib/liaison-api'
 import { CommissionBadge } from '@/components/CommissionBadge'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 interface PartItem {
   id: string
@@ -132,18 +133,7 @@ export default function LiaisonPartsPage() {
               <li key={p.id} className="px-3 py-3">
                 <div className="flex gap-3">
                   <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
-                    {p.imageThumbUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={p.imageThumbUrl}
-                        alt={p.name ?? ''}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-muted-2">
-                        —
-                      </div>
-                    )}
+                    <PartThumb src={p.imageThumbUrl} alt={p.name} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink">

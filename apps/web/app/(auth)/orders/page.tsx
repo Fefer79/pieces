@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase'
 import { Price } from '@/components/ui/price'
 import { StatusChip, ConditionChip, type Condition } from '@/components/ui/chip'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -205,10 +206,7 @@ export default function OrderHistoryPage() {
                   className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 border-b border-border px-5 py-4 transition-colors last:border-0 hover:bg-surface"
                 >
                   <div className="h-[52px] w-[52px] flex-shrink-0 overflow-hidden rounded-lg border border-border bg-surface">
-                    {first?.imageThumbUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={first.imageThumbUrl} alt="" className="h-full w-full object-cover" />
-                    ) : null}
+                    <PartThumb src={first?.imageThumbUrl} alt={first?.name} />
                   </div>
                   <div className="min-w-0">
                     <div className="font-mono text-[12px] text-muted">

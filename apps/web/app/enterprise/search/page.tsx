@@ -6,6 +6,7 @@ import { formatWarranty, type WarrantyUnit } from 'shared/constants'
 import { Price } from '@/components/ui/price'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 interface SearchResult {
   id: string
@@ -432,21 +433,7 @@ export default function EnterpriseSearchPage() {
                 className="overflow-hidden rounded-md border border-border bg-card transition-all hover:border-border-strong hover:shadow-md"
               >
                 <div className="h-40 bg-surface">
-                  {item.imageThumbUrl ? (
-                    <img
-                      src={item.imageThumbUrl}
-                      alt={item.name ?? ''}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-muted-2">
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <polyline points="21 15 16 10 5 21" />
-                      </svg>
-                    </div>
-                  )}
+                  <PartThumb src={item.imageThumbUrl} alt={item.name} />
                 </div>
 
                 <div className="p-4">

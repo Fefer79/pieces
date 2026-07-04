@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Price } from './price'
 import { ConditionChip, type Condition } from './chip'
+import { PartThumb } from './part-thumb'
 import { useCart } from '@/lib/cart'
 
 export interface ProductCardItem {
@@ -47,16 +48,7 @@ export function ProductCard({ item }: { item: ProductCardItem }) {
         href={`/produit/${item.id}`}
         className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-surface"
       >
-        {item.imageThumbUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.imageThumbUrl}
-            alt={item.name ?? ''}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-muted-2">—</div>
-        )}
+        <PartThumb src={item.imageThumbUrl} alt={item.name} />
       </Link>
       <div className="min-w-0 flex-1">
         <Link

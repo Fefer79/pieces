@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { adminFetch } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 type IngestSource =
   | 'HAUTOPARTS_3H'
@@ -214,12 +215,9 @@ export default function AdminExternalImportsPage() {
                 {data.items.map((it) => (
                   <Tr key={it.id} className="align-top">
                     <Td>
-                      {it.imageOriginalUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={it.imageOriginalUrl} alt="" className="h-12 w-12 rounded-sm object-cover" />
-                      ) : (
-                        <div className="h-12 w-12 rounded-sm bg-surface" />
-                      )}
+                      <div className="h-12 w-12 overflow-hidden rounded-sm bg-surface">
+                        <PartThumb src={it.imageOriginalUrl} alt={it.name} />
+                      </div>
                     </Td>
                     <Td>
                       <div className="font-medium text-ink-2">{it.name}</div>

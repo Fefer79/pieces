@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Chip } from '@/components/ui/chip'
 import { Price } from '@/components/ui/price'
 import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
+import { PartThumb } from '@/components/ui/part-thumb'
 import { useAuth } from '@/lib/auth-context'
 
 interface OrderItem {
@@ -205,17 +206,7 @@ export default function OwnerChoicePage() {
                     className={`flex items-center gap-3.5 px-4 py-3.5 ${idx > 0 ? 'border-t border-border' : ''}`}
                   >
                     <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
-                      {item.imageThumbUrl ? (
-                        <img
-                          src={item.imageThumbUrl}
-                          alt={item.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-sm text-muted-2">
-                          —
-                        </div>
-                      )}
+                      <PartThumb src={item.imageThumbUrl} alt={item.name} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-ink">{item.name}</p>

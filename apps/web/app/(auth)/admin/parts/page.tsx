@@ -6,6 +6,7 @@ import { adminFetch, downloadCsv, fmtFcfa } from '@/lib/admin-api'
 import { Chip } from '@/components/ui/chip'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 interface Item {
   id: string
@@ -115,7 +116,9 @@ export default function AdminPartsPage() {
                   return (
                     <Tr key={it.id}>
                       <Td>
-                        {src ? <img src={src} alt="" className="h-10 w-10 rounded-sm object-cover" /> : <div className="h-10 w-10 rounded-sm bg-surface" />}
+                        <div className="h-10 w-10 overflow-hidden rounded-sm bg-surface">
+                          <PartThumb src={src} alt={it.name} />
+                        </div>
                       </Td>
                       <Td>
                         <Link href={`/admin/catalog/${it.id}`} className="font-medium text-ink hover:text-accent hover:underline">{it.name ?? '—'}</Link>

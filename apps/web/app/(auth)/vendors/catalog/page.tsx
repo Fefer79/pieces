@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Chip } from '@/components/ui/chip'
 import { Price } from '@/components/ui/price'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -172,17 +173,7 @@ export default function VendorCatalogPage() {
                 className={`flex cursor-pointer items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface ${idx > 0 ? 'border-t border-border' : ''}`}
               >
                 <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm bg-surface">
-                  {item.imageThumbUrl ? (
-                    <img
-                      src={item.imageThumbUrl}
-                      alt={item.name ?? 'Pièce'}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] font-mono uppercase tracking-wider text-muted-2">
-                      Photo
-                    </div>
-                  )}
+                  <PartThumb src={item.imageThumbUrl} alt={item.name} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink">

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { DEFAULT_VEHICLE_TYPE } from 'shared/constants'
 import { createClient } from '@/lib/supabase'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -214,12 +215,8 @@ export default function YearPartsPage() {
         <div className="space-y-3">
           {parts.map((part) => (
             <div key={part.id} className="flex gap-3 rounded-lg border border-gray-200 p-3">
-              <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
-                {part.imageThumbUrl ? (
-                  <img src={part.imageThumbUrl} alt={part.name ?? ''} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">—</div>
-                )}
+              <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-surface">
+                <PartThumb src={part.imageThumbUrl} alt={part.name} />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-[#1A1A1A]">{part.name ?? 'Pièce'}</p>
