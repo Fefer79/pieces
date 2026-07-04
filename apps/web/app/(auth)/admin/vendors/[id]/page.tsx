@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { adminFetch, fmtFcfa } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
@@ -27,6 +27,7 @@ interface Detail {
 
 export default function AdminVendorDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const id = params.id as string
   const [data, setData] = useState<Detail | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -212,17 +213,26 @@ export default function AdminVendorDetailPage() {
               <Th align="right">Prix</Th>
               <Th align="right">Commission</Th>
               <Th>Statut</Th>
+              <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
             {data.items.map((it) => (
-              <Tr key={it.id}>
-                <Td>{it.name ?? '—'}</Td>
+              <Tr
+                key={it.id}
+                className="cursor-pointer"
+                onClick={() => router.push(`/admin/catalog/${it.id}`)}
+              >
+                <Td className="font-medium text-ink-2 hover:underline">{it.name ?? '—'}</Td>
                 <Td num>{fmtFcfa(it.price)}</Td>
                 <Td num>{fmtFcfa(it.commissionAmount)}</Td>
                 <Td className="text-xs">{it.status}</Td>
+                <Td align="right" className="text-muted-2">→</Td>
               </Tr>
             ))}
+            {data.items.length === 0 && (
+              <Tr hover={false}><Td colSpan={5} align="center" className="py-6 text-muted">Aucun article.</Td></Tr>
+            )}
           </Tbody>
         </Table>
       </div>

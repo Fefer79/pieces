@@ -1,4 +1,4 @@
-import type { ReactNode, TdHTMLAttributes } from 'react'
+import type { ReactNode, TdHTMLAttributes, HTMLAttributes } from 'react'
 
 type Align = 'left' | 'right' | 'center'
 
@@ -31,14 +31,18 @@ export function Tr({
   children,
   className = '',
   hover = true,
+  ...rest
 }: {
   children: ReactNode
   className?: string
   /** Désactive le survol pour les lignes d'en-tête. */
   hover?: boolean
-}) {
+} & HTMLAttributes<HTMLTableRowElement>) {
   return (
-    <tr className={`border-b border-border last:border-0 ${hover ? 'hover:bg-surface' : ''} ${className}`}>
+    <tr
+      className={`border-b border-border last:border-0 ${hover ? 'hover:bg-surface' : ''} ${className}`}
+      {...rest}
+    >
       {children}
     </tr>
   )
