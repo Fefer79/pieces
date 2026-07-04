@@ -98,6 +98,7 @@ export const ingestSourceSchema = z.enum([
 export const adminListQuerySchema = z.object({
   q: z.string().max(200).optional(),
   status: z.string().max(40).optional(),
+  category: z.string().max(120).optional(),
   vendorId: z.string().uuid().optional(),
   role: z.string().max(40).optional(),
   source: ingestSourceSchema.optional(),

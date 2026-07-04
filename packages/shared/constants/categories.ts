@@ -551,3 +551,25 @@ export const PART_CATALOG: Record<PartCategory, string[]> = {
     'Silicone étanchéité',
   ],
 }
+
+/**
+ * Sérialisation catégorie/sous-catégorie. La sélection à deux niveaux est
+ * aplatie dans le champ unique `category` sous la forme "Catégorie / Sous-catégorie"
+ * (séparateur = " / "). Source de vérité unique pour tous les formulaires de saisie
+ * et filtres (liaison, upload vendeur, édition vendeur/admin, filtre admin).
+ */
+export const CATEGORY_SEPARATOR = ' / '
+
+export function splitCategory(raw?: string | null): { category: string; subcategory: string } {
+  if (!raw) return { category: '', subcategory: '' }
+  const idx = raw.indexOf(CATEGORY_SEPARATOR)
+  if (idx === -1) return { category: raw, subcategory: '' }
+  return { category: raw.slice(0, idx), subcategory: raw.slice(idx + CATEGORY_SEPARATOR.length) }
+}
+
+export function joinCategory(category?: string | null, subcategory?: string | null): string {
+  const cat = (category ?? '').trim()
+  const sub = (subcategory ?? '').trim()
+  if (!cat) return ''
+  return sub ? `${cat}${CATEGORY_SEPARATOR}${sub}` : cat
+}

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { adminFetch, fmtFcfa } from '@/lib/admin-api'
 import { Chip, ConditionChip, PartSourceChip } from '@/components/ui/chip'
 import type { ChipVariant } from '@/components/ui/chip'
+import { CategoryCascadeSelect } from '@/components/ui/category-select'
 
 interface Photo {
   id: string
@@ -463,9 +464,9 @@ export default function AdminCatalogItemPage() {
             />
           </Field>
           <Field label="Catégorie">
-            <input
+            <CategoryCascadeSelect
               value={form.category}
-              onChange={(e) => set('category', e.target.value)}
+              onChange={(v) => set('category', v)}
               className={inputCls}
             />
           </Field>

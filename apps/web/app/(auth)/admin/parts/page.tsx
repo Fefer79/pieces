@@ -7,6 +7,7 @@ import { Chip } from '@/components/ui/chip'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 import { PartThumb } from '@/components/ui/part-thumb'
+import { CategoryCascadeSelect } from '@/components/ui/category-select'
 
 interface Item {
   id: string
@@ -37,6 +38,7 @@ export default function AdminPartsPage() {
   const [data, setData] = useState<ListResponse | null>(null)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
+  const [category, setCategory] = useState('')
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   // Suppression : id en attente de confirmation, puis id en cours de suppression.
@@ -47,11 +49,12 @@ export default function AdminPartsPage() {
     const params = new URLSearchParams()
     if (q) params.set('q', q)
     if (status) params.set('status', status)
+    if (category) params.set('category', category)
     params.set('page', String(page))
     adminFetch<ListResponse>(`/admin/catalog/list?${params}`)
       .then(setData)
       .catch((e) => setError(e.message))
-  }, [q, status, page])
+  }, [q, status, category, page])
 
   useEffect(() => { load() }, [load])
 
@@ -115,6 +118,15 @@ export default function AdminPartsPage() {
           <option value="PUBLISHED">Publié</option>
           <option value="ARCHIVED">Archivé</option>
         </select>
+        <div className="min-w-[180px]">
+          <CategoryCascadeSelect
+            value={category}
+            onChange={(v) => { setPage(1); setCategory(v) }}
+            className="w-full rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
+            categoryPlaceholder="Toutes les catégories"
+            subcategoryPlaceholder="Toutes les sous-catégories"
+          />
+        </div>
       </div>
 
       {error && <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">{error}</div>}

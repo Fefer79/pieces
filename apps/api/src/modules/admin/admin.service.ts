@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { Prisma } from '@prisma/client'
 import { AppError } from '../../lib/appError.js'
 import { addPhotoToItem, removePhotoFromItem, reorderItemPhotos } from '../catalog/catalog.service.js'
+import { splitCategory, CATEGORY_SEPARATOR } from 'shared/constants'
 
 // Story 9.1: Order history for user
 export async function getUserOrderHistory(userId: string, page = 1, limit = 20) {
@@ -389,6 +390,7 @@ export async function getAdminOverview() {
 interface AdminListQuery {
   q?: string
   status?: string
+  category?: string
   vendorId?: string
   role?: string
   source?: 'HAUTOPARTS_3H' | 'MAPA_CI' | 'JUMIA_CI' | 'COINAFRIQUE_CI' | 'ANNUAIRE_CI' | 'GLOBAL_AUTO_CI' | 'OSM' | 'GOOGLE_PLACES' | 'NHTSA' | 'WIKIPEDIA' | 'PARTSOUQ' | 'MANUAL'
@@ -408,25 +410,48 @@ export async function getAdminCatalogList(query: AdminListQuery) {
     where.status = query.status as typeof validStatuses[number]
   }
   if (query.vendorId) where.vendorId = query.vendorId
+
+  // q (recherche libre) et le filtre catégorie sont combinés en AND ; chacun
+  // porte son propre OR interne, d'où l'usage de where.AND plutôt que where.OR.
+  const and: Prisma.CatalogItemWhereInput[] = []
   if (query.q) {
-    where.OR = [
-      { name: { contains: query.q, mode: 'insensitive' } },
-      { category: { contains: query.q, mode: 'insensitive' } },
-      { oemReference: { contains: query.q, mode: 'insensitive' } },
-      { vehicleCompatibility: { contains: query.q, mode: 'insensitive' } },
-      { vendor: { shopName: { contains: query.q, mode: 'insensitive' } } },
-      {
-        fitments: {
-          some: {
-            OR: [
-              { brand: { contains: query.q, mode: 'insensitive' } },
-              { model: { contains: query.q, mode: 'insensitive' } },
-            ],
+    and.push({
+      OR: [
+        { name: { contains: query.q, mode: 'insensitive' } },
+        { category: { contains: query.q, mode: 'insensitive' } },
+        { oemReference: { contains: query.q, mode: 'insensitive' } },
+        { vehicleCompatibility: { contains: query.q, mode: 'insensitive' } },
+        { vendor: { shopName: { contains: query.q, mode: 'insensitive' } } },
+        {
+          fitments: {
+            some: {
+              OR: [
+                { brand: { contains: query.q, mode: 'insensitive' } },
+                { model: { contains: query.q, mode: 'insensitive' } },
+              ],
+            },
           },
         },
-      },
-    ]
+      ],
+    })
   }
+  if (query.category) {
+    // Le champ `category` stocke "Catégorie / Sous-catégorie". Si une sous-catégorie
+    // est sélectionnée → match exact ; sinon on inclut la catégorie seule ET toutes
+    // ses sous-catégories (préfixe "Catégorie / ").
+    const { subcategory } = splitCategory(query.category)
+    if (subcategory) {
+      and.push({ category: query.category })
+    } else {
+      and.push({
+        OR: [
+          { category: query.category },
+          { category: { startsWith: query.category + CATEGORY_SEPARATOR } },
+        ],
+      })
+    }
+  }
+  if (and.length > 0) where.AND = and
 
   const [items, total] = await Promise.all([
     prisma.catalogItem.findMany({

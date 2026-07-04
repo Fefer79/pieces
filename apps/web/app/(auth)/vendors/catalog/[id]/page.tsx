@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Chip } from '@/components/ui/chip'
 import { Price } from '@/components/ui/price'
+import { CategoryCascadeSelect } from '@/components/ui/category-select'
 import { WARRANTY_UNITS, type WarrantyUnit } from 'shared/constants'
 
 type SupabaseClient = ReturnType<typeof createClient>
@@ -503,13 +504,7 @@ export default function VendorCatalogDetailPage() {
 
         <div>
           <label className={LABEL}>Catégorie</label>
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Ex : Filtration, Freinage…"
-            className={INPUT}
-          />
+          <CategoryCascadeSelect value={category} onChange={setCategory} className={INPUT} />
         </div>
 
         <div>

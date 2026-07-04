@@ -154,22 +154,52 @@ describe('admin.service', () => {
       await getAdminCatalogList({ q: 'toyota' })
 
       const where = mockCatalogFindMany.mock.calls[0][0].where
-      expect(where.OR).toEqual(
-        expect.arrayContaining([
-          { name: { contains: 'toyota', mode: 'insensitive' } },
-          { vendor: { shopName: { contains: 'toyota', mode: 'insensitive' } } },
-          {
-            fitments: {
-              some: {
-                OR: [
-                  { brand: { contains: 'toyota', mode: 'insensitive' } },
-                  { model: { contains: 'toyota', mode: 'insensitive' } },
-                ],
+      // q est désormais un bloc OR à l'intérieur de where.AND (combinable avec le filtre catégorie).
+      expect(where.AND).toEqual([
+        {
+          OR: expect.arrayContaining([
+            { name: { contains: 'toyota', mode: 'insensitive' } },
+            { vendor: { shopName: { contains: 'toyota', mode: 'insensitive' } } },
+            {
+              fitments: {
+                some: {
+                  OR: [
+                    { brand: { contains: 'toyota', mode: 'insensitive' } },
+                    { model: { contains: 'toyota', mode: 'insensitive' } },
+                  ],
+                },
               },
             },
-          },
-        ]),
-      )
+          ]),
+        },
+      ])
+    })
+
+    it('filters by top-level category including its sub-categories (prefix match)', async () => {
+      mockCatalogFindMany.mockResolvedValueOnce([])
+      mockCatalogCount.mockResolvedValueOnce(0)
+
+      await getAdminCatalogList({ category: 'Freinage' })
+
+      const where = mockCatalogFindMany.mock.calls[0][0].where
+      expect(where.AND).toEqual([
+        {
+          OR: [
+            { category: 'Freinage' },
+            { category: { startsWith: 'Freinage / ' } },
+          ],
+        },
+      ])
+    })
+
+    it('filters by exact category when a sub-category is selected', async () => {
+      mockCatalogFindMany.mockResolvedValueOnce([])
+      mockCatalogCount.mockResolvedValueOnce(0)
+
+      await getAdminCatalogList({ category: 'Freinage / Plaquettes avant' })
+
+      const where = mockCatalogFindMany.mock.calls[0][0].where
+      expect(where.AND).toEqual([{ category: 'Freinage / Plaquettes avant' }])
     })
   })
 
