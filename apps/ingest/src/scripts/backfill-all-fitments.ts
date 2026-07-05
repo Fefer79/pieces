@@ -62,6 +62,9 @@ async function main(): Promise<void> {
   const bySource = new Map<string, { matched: number; total: number }>()
   const unmatched: string[] = []
   const sample: string[] = []
+  // On accumule TOUS les inserts pour n'émettre qu'un seul createMany : sur une base
+  // distante (db.prisma.io, Paris), un appel par article = des centaines d'allers-retours.
+  const toInsert: { catalogItemId: string; brand: string; model: string | null; yearFrom: number | null; yearTo: number | null }[] = []
 
   for (const item of items) {
     const src = item.externalSource ?? '(manuel)'
@@ -85,18 +88,14 @@ async function main(): Promise<void> {
       sample.push(`  "${item.name}" → ${desc}`)
     }
 
-    if (commit) {
-      await prisma.catalogItemFitment.createMany({
-        data: fitments.map((f) => ({
-          catalogItemId: item.id,
-          brand: f.brand,
-          model: f.model,
-          yearFrom: f.yearFrom,
-          yearTo: f.yearTo,
-        })),
-      })
-      fitmentsWritten += fitments.length
+    for (const f of fitments) {
+      toInsert.push({ catalogItemId: item.id, brand: f.brand, model: f.model, yearFrom: f.yearFrom, yearTo: f.yearTo })
     }
+  }
+
+  if (commit && toInsert.length > 0) {
+    const res = await prisma.catalogItemFitment.createMany({ data: toInsert })
+    fitmentsWritten = res.count
   }
 
   console.log(`\n[backfill-all-fitments] résumé :`)
