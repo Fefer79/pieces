@@ -2,7 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { Prisma } from '@prisma/client'
 import { AppError } from '../../lib/appError.js'
 import { addPhotoToItem, removePhotoFromItem, reorderItemPhotos } from '../catalog/catalog.service.js'
-import { splitCategory, CATEGORY_SEPARATOR } from 'shared/constants'
+import { splitCategory, subcategoryOf, CATEGORY_SEPARATOR } from 'shared/constants'
 
 // Story 9.1: Order history for user
 export async function getUserOrderHistory(userId: string, page = 1, limit = 20) {
@@ -165,7 +165,10 @@ export async function updateAdminCatalogItem(id: string, patch: AdminCatalogItem
 
   const data: Prisma.CatalogItemUpdateInput = {}
   if (patch.name !== undefined) data.name = patch.name
-  if (patch.category !== undefined) data.category = patch.category
+  if (patch.category !== undefined) {
+    data.category = patch.category
+    data.subcategory = patch.category == null ? null : subcategoryOf(patch.category)
+  }
   if (patch.oemReference !== undefined) data.oemReference = patch.oemReference
   if (patch.condition !== undefined) data.condition = patch.condition
   if (patch.partSource !== undefined) data.partSource = patch.partSource

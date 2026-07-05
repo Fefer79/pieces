@@ -10,6 +10,7 @@ export {
   CATEGORY_SEPARATOR,
   splitCategory,
   joinCategory,
+  subcategoryOf,
 } from './categories'
 export type { PartCategory } from './categories'
 export { parseCompatibilityText, extractFitmentsFromName } from './fitment'

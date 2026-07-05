@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma.js'
 import { downloadFromR2, uploadToR2 } from '../../../lib/r2.js'
 import { processVariants, assessQuality } from '../../../lib/imageProcessor.js'
 import { identifyPart } from '../../../lib/gemini.js'
+import { subcategoryOf } from 'shared/constants'
 import { markCompleted, markFailed } from '../queueService.js'
 
 interface ImageProcessPayload {
@@ -80,6 +81,7 @@ export async function handleAiIdentify(job: Job, logger: { info: (obj: Record<st
         data: {
           name: identification.name,
           category: identification.category,
+          subcategory: subcategoryOf(identification.category),
           oemReference: identification.oemReference,
           vehicleCompatibility: identification.vehicleCompatibility,
           suggestedPrice: identification.suggestedPrice,

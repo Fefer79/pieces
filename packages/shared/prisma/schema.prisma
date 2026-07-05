@@ -309,6 +309,7 @@ model CatalogItem {
   createdByLiaison     User?             @relation("CatalogItemCreatedByLiaison", fields: [createdByLiaisonId], references: [id])
   name                 String?
   category             String?
+  subcategory          String?
   oemReference         String?           @map("oem_reference")
   vehicleCompatibility String?           @map("vehicle_compatibility")
   suggestedPrice       Int?              @map("suggested_price")
@@ -346,6 +347,7 @@ model CatalogItem {
   @@index([vendorId, status], name: "idx_catalog_items_vendor_status")
   @@index([createdByLiaisonId], name: "idx_catalog_items_created_by_liaison")
   @@index([oemReference, partSource, condition], name: "idx_catalog_items_oem_group")
+  @@index([category, subcategory], name: "idx_catalog_items_category")
   @@unique([externalSource, externalSourceId], name: "uq_catalog_items_external")
 }
 
@@ -846,6 +848,7 @@ model OrderItem {
   vendorShopName  String   @map("vendor_shop_name")
   name            String
   category        String?
+  subcategory     String?
   priceSnapshot   Int      @map("price_snapshot")
   quantity        Int      @default(1)
   imageThumbUrl   String?  @map("image_thumb_url")

@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { uploadToR2 } from '../../lib/r2.js'
 import { processVariants } from '../../lib/imageProcessor.js'
+import { subcategoryOf } from 'shared/constants'
 import {
   liaisonCreateVendorSchema,
   liaisonUpdateVendorSchema,
@@ -254,6 +255,7 @@ export async function createPartForVendor(
       createdByLiaisonId: liaisonId,
       name: parsed.data.name,
       category: parsed.data.category,
+      subcategory: subcategoryOf(parsed.data.category),
       oemReference: parsed.data.oemReference,
       vehicleCompatibility: parsed.data.vehicleCompatibility,
       price: parsed.data.price,
@@ -365,6 +367,7 @@ export async function createPartWithQuickVendor(liaisonId: string, body: unknown
         createdByLiaisonId: liaisonId,
         name: partInput.name,
         category: partInput.category,
+        subcategory: subcategoryOf(partInput.category),
         oemReference: partInput.oemReference,
         vehicleCompatibility: partInput.vehicleCompatibility,
         price: partInput.price,
@@ -489,7 +492,10 @@ export async function updatePartForVendor(
   const updateData: Prisma.CatalogItemUpdateInput = {}
   const d = parsed.data
   if (d.name !== undefined) updateData.name = d.name
-  if (d.category !== undefined) updateData.category = d.category
+  if (d.category !== undefined) {
+    updateData.category = d.category
+    updateData.subcategory = d.category == null ? null : subcategoryOf(d.category)
+  }
   if (d.oemReference !== undefined) updateData.oemReference = d.oemReference
   if (d.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = d.vehicleCompatibility
   if (d.condition !== undefined) updateData.condition = d.condition

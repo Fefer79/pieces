@@ -91,6 +91,7 @@ interface VehicleAnalytics {
   ytdSpend: number
   spendByMonth: { month: string; total: number }[]
   spendByCategory: { category: string; total: number }[]
+  spendBySubcategory: { category: string; total: number }[]
   costPerKm: number | null
   items: {
     id: string
@@ -341,6 +342,13 @@ export default function VehicleDetailPage() {
         <div className="mb-4 rounded-md border border-border bg-card p-4">
           <h2 className="mb-3 font-display text-lg text-ink">Dépense par catégorie</h2>
           <CategoryBars data={analytics.spendByCategory} total={analytics.totalSpend} />
+        </div>
+      )}
+
+      {analytics && analytics.spendBySubcategory.length > 0 && (
+        <div className="mb-4 rounded-md border border-border bg-card p-4">
+          <h2 className="mb-3 font-display text-lg text-ink">Dépense par sous-catégorie</h2>
+          <CategoryBars data={analytics.spendBySubcategory} total={analytics.totalSpend} />
         </div>
       )}
 

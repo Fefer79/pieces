@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
 import { normalizeHeader, extractSheetRows } from './xlsxImport.js'
+import { splitCategory } from 'shared/constants'
 import type { VehicleUsageType } from '@prisma/client'
 
 type VehicleInput = {
@@ -156,6 +157,7 @@ export async function getVehicleAnalytics(
           id: true,
           name: true,
           category: true,
+          subcategory: true,
           priceSnapshot: true,
           quantity: true,
           vendorShopName: true,
@@ -227,13 +229,21 @@ export async function getVehicleAnalytics(
     }
   }
 
-  // Spend by part category (aggregated in-memory from items already loaded)
+  // Spend by part category (rollup top-level) + détail par sous-catégorie
   const byCategory = new Map<string, number>()
+  const bySubcategory = new Map<string, number>()
   for (const it of items) {
-    const key = it.category ?? 'Autre'
-    byCategory.set(key, (byCategory.get(key) ?? 0) + it.lineTotal)
+    const topKey = splitCategory(it.category).category || 'Autre'
+    byCategory.set(topKey, (byCategory.get(topKey) ?? 0) + it.lineTotal)
+    if (it.subcategory) {
+      const subKey = it.category ?? it.subcategory
+      bySubcategory.set(subKey, (bySubcategory.get(subKey) ?? 0) + it.lineTotal)
+    }
   }
   const spendByCategory = [...byCategory.entries()]
+    .map(([category, total]) => ({ category, total }))
+    .sort((a, b) => b.total - a.total)
+  const spendBySubcategory = [...bySubcategory.entries()]
     .map(([category, total]) => ({ category, total }))
     .sort((a, b) => b.total - a.total)
 
@@ -249,6 +259,7 @@ export async function getVehicleAnalytics(
     ytdSpend,
     spendByMonth,
     spendByCategory,
+    spendBySubcategory,
     costPerKm,
     items,
     peerCount: peerIds.length,

@@ -87,6 +87,39 @@ describe('enterprise/analytics.service', () => {
     )
   })
 
+  it('rolls spendByCategory up to top-level and breaks out spendBySubcategory', async () => {
+    const now = new Date()
+    orderFindMany.mockResolvedValueOnce([
+      {
+        id: 'o1',
+        paidAt: now,
+        totalAmount: 60_000,
+        vehicleId: 'v1',
+        items: [
+          { category: 'Freinage / Plaquettes avant', subcategory: 'Plaquettes avant', priceSnapshot: 30_000, quantity: 1 },
+          { category: 'Freinage / Disques avant', subcategory: 'Disques avant', priceSnapshot: 20_000, quantity: 1 },
+          { category: 'Filtration', subcategory: null, priceSnapshot: 10_000, quantity: 1 },
+        ],
+      },
+    ])
+    vehicleFindMany.mockResolvedValueOnce([
+      { id: 'v1', brand: 'Toyota', model: 'Hilux', year: 2018, plate: 'AB-1', mileage: 100_000, usageType: 'CHANTIER', groupName: 'A' },
+    ])
+
+    const res = await getFleetAnalytics('e1', 'u1')
+
+    // Rollup top-level : les deux sous-catégories Freinage fusionnent en 50 000.
+    expect(res.spendByCategory).toEqual([
+      { category: 'Freinage', total: 50_000 },
+      { category: 'Filtration', total: 10_000 },
+    ])
+    // Détail sous-catégorie : seuls les items avec une sous-catégorie, libellé combiné.
+    expect(res.spendBySubcategory).toEqual([
+      { category: 'Freinage / Plaquettes avant', total: 30_000 },
+      { category: 'Freinage / Disques avant', total: 20_000 },
+    ])
+  })
+
   it('returns zeros and null cost/km for an empty fleet', async () => {
     orderFindMany.mockResolvedValueOnce([])
     vehicleFindMany.mockResolvedValueOnce([])
@@ -95,6 +128,7 @@ describe('enterprise/analytics.service', () => {
 
     expect(res.totalSpend).toBe(0)
     expect(res.spendByCategory).toEqual([])
+    expect(res.spendBySubcategory).toEqual([])
     expect(res.avgCostPerKm).toBeNull()
     expect(res.costPerKmRanking).toEqual([])
     expect(res.spendByMonth).toHaveLength(12)

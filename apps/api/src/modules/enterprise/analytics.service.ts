@@ -1,4 +1,5 @@
 import { prisma } from '../../lib/prisma.js'
+import { splitCategory } from 'shared/constants'
 import { assertMember } from './enterprise.service.js'
 
 const SPENT_ORDER_STATUSES = [
@@ -147,7 +148,7 @@ export async function getFleetAnalytics(enterpriseId: string, userId: string) {
         paidAt: true,
         totalAmount: true,
         vehicleId: true,
-        items: { select: { category: true, priceSnapshot: true, quantity: true } },
+        items: { select: { category: true, subcategory: true, priceSnapshot: true, quantity: true } },
       },
     }),
     prisma.vehicle.findMany({
@@ -181,15 +182,26 @@ export async function getFleetAnalytics(enterpriseId: string, userId: string) {
     spendByMonth.push({ month: key, total })
   }
 
-  // --- Spend by part category (lignes de commande) ---
+  // --- Spend by part category / sub-category (lignes de commande) ---
+  // Rollup propre au niveau catégorie (top-level, via split) + détail indépendant
+  // par sous-catégorie (colonne dédiée `subcategory` snapshotée sur OrderItem).
   const byCategory = new Map<string, number>()
+  const bySubcategory = new Map<string, number>()
   for (const o of orders) {
     for (const it of o.items) {
-      const key = it.category ?? 'Autre'
-      byCategory.set(key, (byCategory.get(key) ?? 0) + it.priceSnapshot * it.quantity)
+      const amount = it.priceSnapshot * it.quantity
+      const topKey = splitCategory(it.category).category || 'Autre'
+      byCategory.set(topKey, (byCategory.get(topKey) ?? 0) + amount)
+      if (it.subcategory) {
+        const subKey = it.category ?? it.subcategory
+        bySubcategory.set(subKey, (bySubcategory.get(subKey) ?? 0) + amount)
+      }
     }
   }
   const spendByCategory = [...byCategory.entries()]
+    .map(([category, total]) => ({ category, total }))
+    .sort((a, b) => b.total - a.total)
+  const spendBySubcategory = [...bySubcategory.entries()]
     .map(([category, total]) => ({ category, total }))
     .sort((a, b) => b.total - a.total)
 
@@ -248,6 +260,7 @@ export async function getFleetAnalytics(enterpriseId: string, userId: string) {
     vehiclesCount: vehicles.length,
     spendByMonth,
     spendByCategory,
+    spendBySubcategory,
     spendByUsageType,
     spendByGroup,
     avgCostPerKm,

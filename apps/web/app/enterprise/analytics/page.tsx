@@ -12,6 +12,7 @@ interface FleetAnalytics {
   vehiclesCount: number
   spendByMonth: { month: string; total: number }[]
   spendByCategory: { category: string; total: number }[]
+  spendBySubcategory: { category: string; total: number }[]
   spendByUsageType: { usageType: string; total: number }[]
   spendByGroup: { groupName: string; total: number }[]
   avgCostPerKm: number | null
@@ -102,6 +103,14 @@ export default function FleetAnalyticsPage() {
                   <Card title="Par catégorie de pièce">
                     <Bars
                       data={data.spendByCategory.map((d) => ({ label: d.category, total: d.total }))}
+                      total={data.totalSpend}
+                    />
+                  </Card>
+                )}
+                {data.spendBySubcategory.length > 0 && (
+                  <Card title="Par sous-catégorie de pièce">
+                    <Bars
+                      data={data.spendBySubcategory.map((d) => ({ label: d.category, total: d.total }))}
                       total={data.totalSpend}
                     />
                   </Card>

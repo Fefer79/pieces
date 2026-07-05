@@ -573,3 +573,13 @@ export function joinCategory(category?: string | null, subcategory?: string | nu
   if (!cat) return ''
   return sub ? `${cat}${CATEGORY_SEPARATOR}${sub}` : cat
 }
+
+/**
+ * Valeur de la colonne dédiée `subcategory` dérivée du champ combiné `category`.
+ * Renvoie null si aucune sous-catégorie (pas de séparateur). À écrire en même
+ * temps que `category` par tout writer de CatalogItem/OrderItem.
+ */
+export function subcategoryOf(category?: string | null): string | null {
+  const sub = splitCategory(category).subcategory.trim()
+  return sub ? sub : null
+}

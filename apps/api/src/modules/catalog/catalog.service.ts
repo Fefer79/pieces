@@ -3,6 +3,7 @@ import { uploadToR2 } from '../../lib/r2.js'
 import { MAX_FILE_SIZE, processVariants } from '../../lib/imageProcessor.js'
 import { enqueue } from '../queue/queueService.js'
 import { AppError } from '../../lib/appError.js'
+import { subcategoryOf } from 'shared/constants'
 import type { CatalogItemStatus } from '@prisma/client'
 import { MAX_PHOTOS_PER_ITEM } from 'shared/validators'
 
@@ -91,7 +92,7 @@ export async function uploadPartImage(
       imageOriginalUrl,
       ...(extras.name && { name: extras.name }),
       ...(extras.serialNumber && { oemReference: extras.serialNumber }),
-      ...(extras.category && { category: extras.category }),
+      ...(extras.category && { category: extras.category, subcategory: subcategoryOf(extras.category) }),
       ...(extras.vehicleCompatibility && { vehicleCompatibility: extras.vehicleCompatibility }),
       ...(extras.condition && { condition: extras.condition }),
       ...(extras.warrantyValue !== undefined && { warrantyValue: extras.warrantyValue }),
@@ -277,7 +278,10 @@ export async function updateItem(
   const updateData: Record<string, unknown> = {}
 
   if (data.name !== undefined) updateData.name = data.name
-  if (data.category !== undefined) updateData.category = data.category
+  if (data.category !== undefined) {
+    updateData.category = data.category
+    updateData.subcategory = subcategoryOf(data.category)
+  }
   if (data.oemReference !== undefined) updateData.oemReference = data.oemReference
   if (data.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = data.vehicleCompatibility
   if (data.condition !== undefined) updateData.condition = data.condition
