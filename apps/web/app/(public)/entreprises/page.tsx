@@ -207,38 +207,50 @@ export default function EntreprisesPage() {
                 T2 2026 · 50 véh.
               </span>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-surface">
-                    <th className="px-4 py-2.5 text-left font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted">
-                      Véhicule
-                    </th>
-                    <th className="px-4 py-2.5 text-right font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted">
-                      Coût / km
-                    </th>
-                    <th className="px-4 py-2.5 text-right font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted">
-                      vs flotte
-                    </th>
-                    <th className="px-4 py-2.5 text-left font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted">
-                      Statut
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {DASH_ROWS.map((r) => (
-                    <tr key={r.veh} className="border-t border-border">
-                      <td className="whitespace-nowrap px-4 py-2.5 text-ink">{r.veh}</td>
-                      <td className="tabular whitespace-nowrap px-4 py-2.5 text-right font-mono">{r.cost}</td>
-                      <td className="tabular whitespace-nowrap px-4 py-2.5 text-right font-mono">{r.vs}</td>
-                      <td className="px-4 py-2.5">
+            {/*
+              Sur mobile, la colonne Statut disparaît et la chip passe sous le
+              nom du véhicule : le tableau tient dans l'écran sans défilement
+              horizontal.
+            */}
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-surface">
+                  <th className="px-3 py-2.5 text-left font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted sm:px-4">
+                    Véhicule
+                  </th>
+                  <th className="px-3 py-2.5 text-right font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted sm:px-4">
+                    Coût / km
+                  </th>
+                  <th className="px-3 py-2.5 text-right font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted sm:px-4">
+                    vs flotte
+                  </th>
+                  <th className="hidden px-4 py-2.5 text-left font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted sm:table-cell">
+                    Statut
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {DASH_ROWS.map((r) => (
+                  <tr key={r.veh} className="border-t border-border">
+                    <td className="px-3 py-2.5 text-ink sm:whitespace-nowrap sm:px-4">
+                      {r.veh}
+                      <div className="mt-1.5 sm:hidden">
                         <Chip variant={r.chip}>{r.status}</Chip>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </td>
+                    <td className="tabular whitespace-nowrap px-3 py-2.5 text-right align-top font-mono sm:px-4 sm:align-middle">
+                      {r.cost}
+                    </td>
+                    <td className="tabular whitespace-nowrap px-3 py-2.5 text-right align-top font-mono sm:px-4 sm:align-middle">
+                      {r.vs}
+                    </td>
+                    <td className="hidden px-4 py-2.5 sm:table-cell">
+                      <Chip variant={r.chip}>{r.status}</Chip>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
