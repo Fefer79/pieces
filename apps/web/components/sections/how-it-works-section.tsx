@@ -47,7 +47,7 @@ const ENTERPRISE_STEPS: Step[] = [
     number: '4',
     title: 'Facturation et livraison',
     description:
-      'Une facture DGI consolidée en fin de mois, et la livraison express avec SLA jusqu’à votre garage.',
+      'Une facture DGI consolidée en fin de mois, et la livraison express en 6 h (12 h max) jusqu’à votre garage.',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
         <path fillRule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zm5.97 9.66a.75.75 0 10-1.19-.91l-2.66 3.48-.99-.99a.75.75 0 00-1.06 1.06l1.6 1.6a.75.75 0 001.124-.08l3.226-4.22z" clipRule="evenodd" />

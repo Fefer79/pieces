@@ -21,7 +21,8 @@ export interface FleetPlan {
 }
 
 /** La promesse de livraison rapide du palier Pro + (sans SLA ni pénalité). */
-export const DELIVERY_PROMISE = 'Livraison express à Abidjan : 3 heures, 6 heures maximum.'
+export const DELIVERY_PROMISE =
+  'Livraison express à Abidjan : 6 heures, 12 heures maximum. Offerte avec Flotte Pro + ; en option sinon (5 000 – 19 900 F en Gratuit, 5 000 – 9 900 F en Flotte Pro). Livraison standard 48–72 h : 1 500 – 9 000 F en Gratuit, 1 000 – 5 000 F en Flotte Pro.'
 
 export const FLEET_PLANS: FleetPlan[] = [
   {
@@ -35,6 +36,7 @@ export const FLEET_PLANS: FleetPlan[] = [
       'Catalogue avec compatibilité véhicule',
       'Comparateur multi-fournisseurs sur le prix',
       'Garantie pièce intermédiée + retours',
+      'Livraison standard 48–72 h (express en option)',
       'Jusqu’à 3 véhicules, 1 utilisateur',
     ],
   },
@@ -50,6 +52,7 @@ export const FLEET_PLANS: FleetPlan[] = [
       'Tableau de bord et analytique des coûts (coût/km, par catégorie)',
       'Détection automatique des véhicules « gouffres »',
       'Alertes d’entretien prédictives',
+      'Tarifs de livraison réduits (standard 1 000 – 5 000 F, express 5 000 – 9 900 F)',
       'Multi-centres + rôles fins (gestionnaire / mécano / compta)',
       'Stock tampon sur pièces critiques',
       'Factures normalisées DGI à l’unité',
@@ -66,7 +69,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     badge: 'Recommandé — meilleur rapport',
     highlights: [
       'Tout Flotte Pro inclus',
-      'Livraison express : 3 h, 6 h maximum (Abidjan)',
+      'Livraison express offerte : 6 h, 12 h maximum (Abidjan)',
       'Réapprovisionnement automatique du stock tampon',
       'Facture mensuelle consolidée + optimisation fiscale + export FEC',
       'Support prioritaire WhatsApp dédié',
@@ -127,8 +130,8 @@ export const FLEET_COMPARISON: ComparisonGroup[] = [
   {
     group: 'Logistique',
     rows: [
-      { label: 'Livraison standard', free: '✓', pro: '✓', plus: '✓' },
-      { label: 'Livraison express 3 h (6 h max) à Abidjan', free: '—', pro: '—', plus: '✓' },
+      { label: 'Livraison standard (48–72 h)', free: '1 500 – 9 000 F', pro: '1 000 – 5 000 F', plus: 'Offerte' },
+      { label: 'Livraison express 6 h (12 h max) à Abidjan', free: '+ 5 000 – 19 900 F', pro: '+ 5 000 – 9 900 F', plus: 'Offerte' },
       { label: 'Livraison prioritaire hors Abidjan', free: '—', pro: '—', plus: '✓' },
       { label: 'Concierge sourcing (hors catalogue)', free: '—', pro: '—', plus: '✓' },
     ],
@@ -144,21 +147,25 @@ export const FLEET_COMPARISON: ComparisonGroup[] = [
   },
 ]
 
-/** Leviers d'économies mis en avant sur la vitrine. */
-export const COST_LEVERS: Array<{ title: string; body: string }> = [
+/** Leviers d'économies mis en avant sur la vitrine. `line` = la ligne du budget d'exploitation que le levier fait baisser. */
+export const COST_LEVERS: Array<{ line: string; title: string; body: string }> = [
   {
+    line: 'Achats',
     title: 'Le bon prix, à chaque achat',
     body: 'Comparateur multi-fournisseurs et scoring qualité : vous arrêtez de surpayer les pièces et d’acheter de la mauvaise qualité qui casse vite.',
   },
   {
+    line: 'Pilotage',
     title: 'Vos véhicules sous contrôle',
     body: 'L’analytique par véhicule (coût/km, par catégorie) révèle les véhicules qui coûtent anormalement cher, ce qui permet d’investiguer si le problème est le chauffeur ou le véhicule.',
   },
   {
+    line: 'Immobilisation',
     title: 'Moins de pannes, moins d’immobilisation',
-    body: 'Les alertes d’entretien préviennent la casse avant qu’elle arrive. Avec Flotte Pro +, la pièce est livrée en 3 h (6 h max) à Abidjan.',
+    body: 'Les alertes d’entretien préviennent la casse avant qu’elle arrive. Avec Flotte Pro +, la pièce est livrée en 6 h (12 h max) à Abidjan, livraison offerte.',
   },
   {
+    line: 'Administration',
     title: 'Administration et fiscalité allégées',
     body: 'Factures normalisées DGI, facture mensuelle consolidée et export FEC : votre comptabilité flotte est prête, sans ressaisie.',
   },
