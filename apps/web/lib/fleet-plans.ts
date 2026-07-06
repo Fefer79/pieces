@@ -15,6 +15,11 @@ export interface FleetPlan {
   priceNote: string
   cta: string
   highlights: string[]
+  /**
+   * Temps et coûts de livraison, affichés dans une rangée alignée en bas des
+   * cartes tarifaires (après les autres avantages) pour comparer les formules.
+   */
+  delivery: Array<{ label: string; value: string }>
   /** Carte mise en avant (le palier que l'on recommande) */
   highlight?: boolean
   badge?: string
@@ -36,8 +41,11 @@ export const FLEET_PLANS: FleetPlan[] = [
       'Catalogue avec compatibilité véhicule',
       'Comparateur multi-fournisseurs sur le prix',
       'Garantie pièce intermédiée + retours',
-      'Livraison standard 48–72 h (express en option)',
       'Jusqu’à 3 véhicules, 1 utilisateur',
+    ],
+    delivery: [
+      { label: 'Standard 48–72 h', value: '1 500 – 9 000 F' },
+      { label: 'Express 6 h (12 h max)', value: '+ 5 000 – 19 900 F' },
     ],
   },
   {
@@ -52,10 +60,13 @@ export const FLEET_PLANS: FleetPlan[] = [
       'Tableau de bord et analytique des coûts (coût/km, par catégorie)',
       'Détection automatique des véhicules « gouffres »',
       'Alertes d’entretien prédictives',
-      'Tarifs de livraison réduits (standard 1 000 – 5 000 F, express 5 000 – 9 900 F)',
       'Multi-centres + rôles fins (gestionnaire / mécano / compta)',
       'Stock tampon sur pièces critiques',
       'Factures normalisées DGI à l’unité',
+    ],
+    delivery: [
+      { label: 'Standard 48–72 h', value: '1 000 – 5 000 F' },
+      { label: 'Express 6 h (12 h max)', value: '+ 5 000 – 9 900 F' },
     ],
   },
   {
@@ -69,12 +80,15 @@ export const FLEET_PLANS: FleetPlan[] = [
     badge: 'Recommandé — meilleur rapport',
     highlights: [
       'Tout Flotte Pro inclus',
-      'Livraison express offerte : 6 h, 12 h maximum (Abidjan)',
       'Réapprovisionnement automatique du stock tampon',
       'Facture mensuelle consolidée + optimisation fiscale + export FEC',
       'Support prioritaire WhatsApp dédié',
       'Concierge sourcing (même hors catalogue)',
       'Revue trimestrielle avec un expert Pièces',
+    ],
+    delivery: [
+      { label: 'Standard 48–72 h', value: 'Offerte' },
+      { label: 'Express 6 h (12 h max)', value: 'Offerte' },
     ],
   },
 ]

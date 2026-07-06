@@ -170,7 +170,12 @@ export default function EnterpriseBillingPage() {
               : 'Pour 5 000 F de plus par véhicule, vous ajoutez la livraison express, le réapprovisionnement automatique, la facture mensuelle consolidée + export FEC et le support prioritaire dédié.'}
           </p>
           <ul className="mt-4 grid gap-2 text-sm text-ink sm:grid-cols-2">
-            {PLAN_BY_KEY.PRO_FLOTTE_PLUS.highlights.map((h) => (
+            {[
+              ...PLAN_BY_KEY.PRO_FLOTTE_PLUS.highlights,
+              ...PLAN_BY_KEY.PRO_FLOTTE_PLUS.delivery.map(
+                (d) => `Livraison ${d.label.toLowerCase()} : ${d.value.toLowerCase()}`,
+              ),
+            ].map((h) => (
               <li key={h} className="flex gap-2">
                 <span className="mt-0.5 text-accent">✓</span>
                 <span className="leading-snug">{h}</span>

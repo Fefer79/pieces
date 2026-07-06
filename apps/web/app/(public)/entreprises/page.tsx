@@ -31,7 +31,7 @@ const DOMAINS = ['Transport', 'VTC', 'BTP', 'Mines', 'Location', 'Services']
 
 // Aperçu marketing du tableau de bord « détection des gouffres ».
 const DASH_ROWS: Array<{ veh: string; cost: string; vs: string; chip: ChipVariant; status: string }> = [
-  { veh: 'Toyota Hiace · AB-472-CD', cost: '142 F', vs: '+38 %', chip: 'status-err', status: 'Gouffre' },
+  { veh: 'Toyota Hiace · AB-472-CD', cost: '142 F', vs: '+38 %', chip: 'status-err', status: 'Surconsommateur' },
   { veh: 'Kia K2700 · CI-816-EF', cost: '109 F', vs: '+11 %', chip: 'status-warn', status: 'À surveiller' },
   { veh: 'Hyundai H-1 · GH-233-IJ', cost: '96 F', vs: '−4 %', chip: 'status-ok', status: 'Normal' },
   { veh: 'Toyota Hilux · KL-590-MN', cost: '88 F', vs: '−12 %', chip: 'status-ok', status: 'Normal' },
@@ -192,16 +192,17 @@ export default function EntreprisesPage() {
         {/* Preuve produit : détection des gouffres */}
         <div className="mt-14 grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
           <div>
-            <h3 className="text-2xl">Vos « gouffres », noir sur blanc.</h3>
+            <h3 className="text-2xl">Vos « surconsommateurs », noir sur blanc.</h3>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
               Le tableau de bord Flotte Pro compare chaque véhicule à la moyenne de
-              votre flotte. Un coût/km qui dérape est signalé immédiatement — vous
-              investiguez avant que la facture n&apos;enfle.
+              votre flotte. Flotte Pro vous signale immédiatement un coût/km qui
+              dérape et cela vous permet de chercher à comprendre avant que la
+              facture n&apos;enfle.
             </p>
           </div>
           <div className="overflow-hidden rounded-lg border border-border bg-card shadow-md">
             <div className="flex items-baseline gap-3 bg-ink px-5 py-3.5 text-white">
-              <span className={`${EYEBROW} text-white/60`}>Détection des gouffres</span>
+              <span className={`${EYEBROW} text-white/60`}>Détection des surconsommateurs</span>
               <span className="tabular ml-auto font-mono text-[11px] text-white/60">
                 T2 2026 · 50 véh.
               </span>
@@ -255,12 +256,13 @@ export default function EntreprisesPage() {
         </div>
 
         {/*
-          Subgrid layout: the section owns 6 row tracks (label, tagline, price,
-          priceNote, advantages[1fr], CTA) and each card spans all of them via
-          `grid-rows-subgrid`, so rows stay aligned across cards at any width.
+          Subgrid layout: the section owns 7 row tracks (label, tagline, price,
+          priceNote, advantages[1fr], delivery, CTA) and each card spans all of
+          them via `grid-rows-subgrid`, so rows stay aligned across cards at any
+          width — delivery times/costs line up across the three plans.
           Collapses to a plain stacked flex column below `md`.
         */}
-        <div className="mt-14 grid gap-y-10 md:grid-cols-3 md:grid-rows-[auto_auto_auto_auto_1fr_auto] md:gap-x-5 md:gap-y-0">
+        <div className="mt-14 grid gap-y-10 md:grid-cols-3 md:grid-rows-[auto_auto_auto_auto_1fr_auto_auto] md:gap-x-5 md:gap-y-0">
           {FLEET_PLANS.map((t) => (
             <article
               key={t.key}
@@ -268,7 +270,7 @@ export default function EntreprisesPage() {
                 (t.highlight
                   ? 'bg-ink text-white shadow-[0_20px_50px_rgba(0,17,58,0.28)]'
                   : 'border border-border bg-card') +
-                ' relative flex flex-col rounded-lg p-6 md:row-span-6 md:grid md:grid-rows-subgrid'
+                ' relative flex flex-col rounded-lg p-6 md:row-span-7 md:grid md:grid-rows-subgrid'
               }
             >
               {t.highlight && t.badge ? (
@@ -293,7 +295,7 @@ export default function EntreprisesPage() {
                 {t.priceNote}
               </div>
 
-              <ul className="mb-7 mt-6 space-y-2.5 text-sm">
+              <ul className="mb-6 mt-6 space-y-2.5 text-sm">
                 {t.highlights.map((h) => (
                   <li key={h} className="flex gap-2.5">
                     <span className={'font-mono ' + (t.highlight ? 'text-accent' : 'text-muted-2')}>
@@ -303,6 +305,35 @@ export default function EntreprisesPage() {
                   </li>
                 ))}
               </ul>
+
+              <div
+                className={
+                  'mb-6 border-t pt-4 ' + (t.highlight ? 'border-white/15' : 'border-border')
+                }
+              >
+                <div className={`${EYEBROW} ${t.highlight ? 'text-white/60' : 'text-muted-2'}`}>
+                  Livraison
+                </div>
+                <dl className="mt-2.5 space-y-1.5 text-[13px]">
+                  {t.delivery.map((d) => (
+                    <div key={d.label} className="flex items-baseline justify-between gap-3">
+                      <dt className={t.highlight ? 'text-white/80' : 'text-muted'}>{d.label}</dt>
+                      <dd
+                        className={
+                          'tabular whitespace-nowrap text-right font-mono text-xs ' +
+                          (d.value === 'Offerte'
+                            ? 'font-medium text-accent'
+                            : t.highlight
+                              ? 'text-white'
+                              : 'text-ink')
+                        }
+                      >
+                        {d.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
 
               <Link
                 href="/login"
