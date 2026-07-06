@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 
 const PRICE_PER_VEHICLE = {
-  PRO_FLOTTE: 5_000,
-  PRO_FLOTTE_PLUS: 10_000,
+  PRO_FLOTTE: 4_900,
+  PRO_FLOTTE_PLUS: 9_900,
 } as const
 
 type Tier = keyof typeof PRICE_PER_VEHICLE
@@ -305,7 +305,7 @@ export default function CalculateurRoiPage() {
       </section>
 
       <p className="mt-10 text-xs text-muted">
-        Hypothèses : abonnement Flotte Pro 5 000 F/véh/mois, Flotte Pro + 10 000 F/véh/mois.
+        Hypothèses : abonnement Flotte Pro 4 900 F/véh/mois, Flotte Pro + 9 900 F/véh/mois.
         Économie pièces appliquée au budget pièces annuel (s&apos;applique aux deux tiers).
         Économie downtime = véhicules × jours d&apos;immobilisation × manque à gagner / jour,
         comptée uniquement pour Flotte Pro + (express 6 h Abidjan, prioritaire hors Abidjan, concierge).

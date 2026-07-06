@@ -13,8 +13,8 @@ const ANNUAL_MONTHS_BILLED = 10 // payer 10 mois pour 12 = 2 mois offerts
 // Prix flat par véhicule (FCFA / véhicule / mois). Pas de paliers dégressifs.
 const PRICE_PER_VEHICLE: Record<SubscriptionTier, number> = {
   FREE: 0,
-  PRO_FLOTTE: 5_000,
-  PRO_FLOTTE_PLUS: 10_000,
+  PRO_FLOTTE: 4_900,
+  PRO_FLOTTE_PLUS: 9_900,
 }
 
 export function priceForVehicleCount(tier: SubscriptionTier, n: number): number {

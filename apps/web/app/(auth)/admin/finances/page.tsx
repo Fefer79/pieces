@@ -15,8 +15,8 @@ type TooltipCtx = { dataset: { label?: string }; parsed: { y: number | null } }
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants — prix officiels Flotte Pro / Flotte Pro +
 // ─────────────────────────────────────────────────────────────────────────────
-const PRICE_PRO = 5_000
-const PRICE_PRO_PLUS = 10_000
+const PRICE_PRO = 4_900
+const PRICE_PRO_PLUS = 9_900
 
 type Scenario = 'PESSIMIST' | 'BASE' | 'OPTIMIST'
 
@@ -273,8 +273,8 @@ export default function AdminFinancesPage() {
 
           <Group title="Mix d'adoption (% des entreprises)">
             <PctSlider label="Gratuit" value={a.mixFreePct} onChange={(v) => update('mixFreePct', v)} min={0} max={100} />
-            <PctSlider label="Flotte Pro · 5 000 F/véh" value={a.mixProPct} onChange={(v) => update('mixProPct', v)} min={0} max={100} />
-            <PctSlider label="Flotte Pro + · 10 000 F/véh" value={a.mixProPlusPct} onChange={(v) => update('mixProPlusPct', v)} min={0} max={100} />
+            <PctSlider label="Flotte Pro · 4 900 F/véh" value={a.mixProPct} onChange={(v) => update('mixProPct', v)} min={0} max={100} />
+            <PctSlider label="Flotte Pro + · 9 900 F/véh" value={a.mixProPlusPct} onChange={(v) => update('mixProPlusPct', v)} min={0} max={100} />
             <PctSlider label="% payant à l'année (2 mois offerts)" value={a.annualBillingSharePct} onChange={(v) => update('annualBillingSharePct', v)} min={0} max={100} />
           </Group>
 
@@ -411,7 +411,7 @@ export default function AdminFinancesPage() {
           </div>
 
           <p className="text-xs text-muted">
-            Hypothèses : prix Flotte Pro 5 000 F/véh/mois, Flotte Pro + 10 000 F/véh/mois. Paiement annuel
+            Hypothèses : prix Flotte Pro 4 900 F/véh/mois, Flotte Pro + 9 900 F/véh/mois. Paiement annuel
             applique un rabais de 2 mois sur 12 (~16,7 %) au prorata de la part annuelle. Le scénario
             multiplie la croissance entreprises ({SCENARIO_MULT[scenario].growth}×), la croissance GMV
             ({SCENARIO_MULT[scenario].gmv}×) et décale le mix d&apos;adoption vers les tiers payants

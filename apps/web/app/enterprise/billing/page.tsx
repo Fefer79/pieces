@@ -155,7 +155,7 @@ export default function EnterpriseBillingPage() {
         )}
       </section>
 
-      {/* Upgrade prompt — pousse vers Flotte Pro + (10 000 F) */}
+      {/* Upgrade prompt — pousse vers Flotte Pro + (9 900 F) */}
       {tier !== 'PRO_FLOTTE_PLUS' && (
         <section className="mt-6 rounded-xl border border-accent bg-accent/5 p-6">
           <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-accent">
@@ -166,7 +166,7 @@ export default function EnterpriseBillingPage() {
           </h2>
           <p className="mt-2 text-sm text-muted">
             {tier === 'FREE'
-              ? 'Pilotage et analytique des coûts, détection des véhicules « gouffres », alertes d\'entretien — plus la livraison express et l\'administration déléguée. Pour 10 000 F par véhicule / mois, soit seulement 5 000 F de plus que Flotte Pro.'
+              ? 'Pilotage et analytique des coûts, détection des véhicules « gouffres », alertes d\'entretien — plus la livraison express et l\'administration déléguée. Pour 9 900 F par véhicule / mois, soit seulement 5 000 F de plus que Flotte Pro.'
               : 'Pour 5 000 F de plus par véhicule, vous ajoutez la livraison express, le réapprovisionnement automatique, la facture mensuelle consolidée + export FEC et le support prioritaire dédié.'}
           </p>
           <ul className="mt-4 grid gap-2 text-sm text-ink sm:grid-cols-2">

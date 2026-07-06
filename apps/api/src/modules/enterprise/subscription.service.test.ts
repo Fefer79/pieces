@@ -60,18 +60,18 @@ describe('prix flat par véhicule', () => {
     expect(priceForVehicleCount('FREE', 200)).toBe(0)
   })
 
-  it('Flotte Pro: 5 000 F flat à tous les volumes', () => {
-    expect(priceForVehicleCount('PRO_FLOTTE', 1)).toBe(5_000)
-    expect(priceForVehicleCount('PRO_FLOTTE', 20)).toBe(5_000)
-    expect(priceForVehicleCount('PRO_FLOTTE', 100)).toBe(5_000)
-    expect(priceForVehicleCount('PRO_FLOTTE', 500)).toBe(5_000)
+  it('Flotte Pro: 4 900 F flat à tous les volumes', () => {
+    expect(priceForVehicleCount('PRO_FLOTTE', 1)).toBe(4_900)
+    expect(priceForVehicleCount('PRO_FLOTTE', 20)).toBe(4_900)
+    expect(priceForVehicleCount('PRO_FLOTTE', 100)).toBe(4_900)
+    expect(priceForVehicleCount('PRO_FLOTTE', 500)).toBe(4_900)
   })
 
-  it('Flotte Pro +: 10 000 F flat à tous les volumes', () => {
-    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 1)).toBe(10_000)
-    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 20)).toBe(10_000)
-    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 100)).toBe(10_000)
-    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 500)).toBe(10_000)
+  it('Flotte Pro +: 9 900 F flat à tous les volumes', () => {
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 1)).toBe(9_900)
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 20)).toBe(9_900)
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 100)).toBe(9_900)
+    expect(priceForVehicleCount('PRO_FLOTTE_PLUS', 500)).toBe(9_900)
   })
 
   it('zero or negative count returns 0', () => {
@@ -81,22 +81,22 @@ describe('prix flat par véhicule', () => {
 })
 
 describe('computeMonthlyAmount', () => {
-  it('Pro Flotte 20 véhicules = 100 000 F', () => {
+  it('Pro Flotte 20 véhicules = 98 000 F', () => {
     const r = computeMonthlyAmount('PRO_FLOTTE', 20)
-    expect(r.pricePerVehicle).toBe(5_000)
-    expect(r.monthlyTotal).toBe(100_000)
-    expect(r.annualTotal).toBe(1_000_000) // 10 mois facturés
+    expect(r.pricePerVehicle).toBe(4_900)
+    expect(r.monthlyTotal).toBe(98_000)
+    expect(r.annualTotal).toBe(980_000) // 10 mois facturés
   })
 
-  it('Flotte Pro + 20 véhicules = 200 000 F (Flotte Pro ×2)', () => {
+  it('Flotte Pro + 20 véhicules = 198 000 F', () => {
     const r = computeMonthlyAmount('PRO_FLOTTE_PLUS', 20)
-    expect(r.pricePerVehicle).toBe(10_000)
-    expect(r.monthlyTotal).toBe(200_000)
+    expect(r.pricePerVehicle).toBe(9_900)
+    expect(r.monthlyTotal).toBe(198_000)
   })
 
-  it('Flotte Pro + 50 véhicules = 10 000 × 50 = 500 000 F (prix flat)', () => {
+  it('Flotte Pro + 50 véhicules = 9 900 × 50 = 495 000 F (prix flat)', () => {
     const r = computeMonthlyAmount('PRO_FLOTTE_PLUS', 50)
-    expect(r.monthlyTotal).toBe(500_000)
+    expect(r.monthlyTotal).toBe(495_000)
   })
 
   it('FREE = 0', () => {

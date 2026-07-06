@@ -271,8 +271,8 @@ export default function AdminSubscriptionPage() {
                 className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
               >
                 <option value="FREE">Gratuit</option>
-                <option value="PRO_FLOTTE">Flotte Pro · 5 000 F/véh/mois</option>
-                <option value="PRO_FLOTTE_PLUS">Flotte Pro + · 10 000 F/véh/mois</option>
+                <option value="PRO_FLOTTE">Flotte Pro · 4 900 F/véh/mois</option>
+                <option value="PRO_FLOTTE_PLUS">Flotte Pro + · 9 900 F/véh/mois</option>
               </select>
             </Field>
             <Field label="Cycle">

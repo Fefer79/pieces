@@ -78,7 +78,7 @@ Auth cookies are scoped to `.pieces.ci` via a shared cookie-domain helper so ses
 
 The public marketing site for fleets lives at `app/(public)/entreprises/` and is served on the custom domain **flotte.pieces.ci** (Cloudflare Workers; middleware routes the subdomain to `/entreprises`). Pages: the pricing/positioning landing (`page.tsx`), the interactive `calculateur-roi/`, and `guide/`. CTAs point to `/enterprise/dashboard` (the "Créer mon entreprise" flow).
 
-**Single source for fleet plans**: `apps/web/lib/fleet-plans.ts` exports `FLEET_PLANS` (3 tiers: Gratuit / Flotte Pro 5 000 F / Flotte Pro + 10 000 F per vehicle/month), `FLEET_COMPARISON`, `COST_LEVERS`, and `DELIVERY_PROMISE`. Shared by the vitrine AND `/enterprise/billing`. Edit copy/pricing here, not inline in pages. All tiers get 30 days free trial by default. No SLA/penalty/refund language — fast delivery is framed as a service benefit, not a contractual guarantee.
+**Single source for fleet plans**: `apps/web/lib/fleet-plans.ts` exports `FLEET_PLANS` (3 tiers: Gratuit / Flotte Pro 4 900 F / Flotte Pro + 9 900 F per vehicle/month), `FLEET_COMPARISON`, `COST_LEVERS`, and `DELIVERY_PROMISE`. Shared by the vitrine AND `/enterprise/billing`. Edit copy/pricing here, not inline in pages. All tiers get 30 days free trial by default. No SLA/penalty/refund language — fast delivery is framed as a service benefit, not a contractual guarantee.
 
 Pricing/comparison cards use **CSS subgrid** (`grid-rows-subgrid`) so rows stay aligned across cards at any width — prefer this over fragile min-heights. ROI figures assume ~1,3 M F parts spend per vehicle/year; keep marketing claims consistent with that.
 

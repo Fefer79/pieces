@@ -5,7 +5,7 @@ import { FLEET_PLANS, FLEET_COMPARISON, COST_LEVERS, DELIVERY_PROMISE } from '@/
 export const metadata = {
   title: 'Pièces Entreprises — Optimisez les coûts de votre flotte',
   description:
-    'La plateforme qui réduit les coûts d\'exploitation de votre flotte en Côte d\'Ivoire : achats au meilleur prix, pilotage des coûts, entretien préventif, livraison express. Gratuit, Flotte Pro 5 000 F, Flotte Pro + 10 000 F par véhicule / mois.',
+    'La plateforme qui réduit les coûts d\'exploitation de votre flotte en Côte d\'Ivoire : achats au meilleur prix, pilotage des coûts, entretien préventif, livraison express. Gratuit, Flotte Pro 4 900 F, Flotte Pro + 9 900 F par véhicule / mois.',
 }
 
 const EYEBROW = 'font-mono text-[11px] font-medium uppercase tracking-[0.1em]'

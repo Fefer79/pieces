@@ -1,7 +1,7 @@
 // Source unique des formules flotte — partagée par la vitrine publique
 // (/entreprises) et la page abonnement (/enterprise/billing).
 // Positionnement : Pièces optimise les coûts d'exploitation des flottes.
-// Stratégie tarifaire : 3 paliers, Flotte Pro + (10 000 F) mis en avant.
+// Stratégie tarifaire : 3 paliers, Flotte Pro + (9 900 F) mis en avant.
 // Aucune mention de SLA contractuel / pénalité / remboursement : la livraison
 // rapide est présentée comme un bénéfice de service.
 
@@ -52,7 +52,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     key: 'PRO_FLOTTE',
     label: 'Flotte Pro',
     tagline: 'Pilotez vos coûts.',
-    price: '5 000 F',
+    price: '4 900 F',
     priceNote: 'par véhicule / mois',
     cta: 'Demander un essai 30 jours',
     highlights: [
@@ -73,7 +73,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     key: 'PRO_FLOTTE_PLUS',
     label: 'Flotte Pro +',
     tagline: 'Zéro immobilisation, administration déléguée.',
-    price: '10 000 F',
+    price: '9 900 F',
     priceNote: 'par véhicule / mois — tout inclus',
     cta: 'Demander un essai 30 jours',
     highlight: true,
