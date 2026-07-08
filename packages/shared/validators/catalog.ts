@@ -30,10 +30,15 @@ export const updateCatalogItemSchema = z.object({
   warrantyUnit: warrantyUnitSchema.optional(),
   commissionAmount: z.number().int().min(0).optional(),
   commissionAccepted: z.boolean().optional(),
+  // null = désactiver le suivi de quantité (retour au inStock manuel)
+  stockQuantity: z.number().int().min(0).max(99999).nullable().optional(),
+  lowStockThreshold: z.number().int().min(0).max(99999).optional(),
 })
 
 export const toggleStockSchema = z.object({
   inStock: z.boolean(),
+  // Optionnel : quantité à la remise en stock (pour les fiches à quantité suivie)
+  stockQuantity: z.number().int().min(0).max(99999).optional(),
 })
 
 // Admin edit of an annonce — broader than the vendor self-service schema:
@@ -48,6 +53,8 @@ export const adminUpdateCatalogItemSchema = z
     partSource: partSourceSchema.nullable().optional(),
     status: catalogItemStatusSchema.optional(),
     inStock: z.boolean().optional(),
+    stockQuantity: z.number().int().min(0).max(99999).nullable().optional(),
+    lowStockThreshold: z.number().int().min(0).max(99999).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: 'Aucun champ à modifier' })
 

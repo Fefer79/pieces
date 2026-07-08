@@ -37,6 +37,8 @@ interface CatalogItem {
   qualityScore: number | null
   qualityIssue: string | null
   inStock: boolean
+  stockQuantity: number | null
+  lowStockThreshold: number
   priceAlertFlag: boolean
   condition: 'NEW' | 'USED' | 'REFURBISHED' | null
   partSource: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
@@ -82,6 +84,8 @@ export default function VendorCatalogDetailPage() {
   const [warrantyUnit, setWarrantyUnit] = useState<WarrantyUnit>('MONTH')
   const [commissionAmount, setCommissionAmount] = useState<string>('')
   const [commissionAccepted, setCommissionAccepted] = useState<boolean>(false)
+  const [stockQuantity, setStockQuantity] = useState<string>('')
+  const [lowStockThreshold, setLowStockThreshold] = useState<string>('')
   const [photoUploading, setPhotoUploading] = useState(false)
 
   const getAccessToken = useCallback(async () => {
@@ -123,6 +127,8 @@ export default function VendorCatalogDetailPage() {
       setWarrantyUnit(data.warrantyUnit ?? 'MONTH')
       setCommissionAmount(data.commissionAmount !== null ? String(data.commissionAmount) : '')
       setCommissionAccepted(!!data.commissionAcceptedAt)
+      setStockQuantity(data.stockQuantity !== null ? String(data.stockQuantity) : '')
+      setLowStockThreshold(String(data.lowStockThreshold ?? 1))
     } catch {
       setError('Erreur réseau. Vérifiez votre connexion.')
     } finally {
@@ -162,6 +168,15 @@ export default function VendorCatalogDetailPage() {
     // If user has just toggled acceptance ON and it wasn't accepted before, send it.
     if (commissionAccepted && !item?.commissionAcceptedAt) {
       body.commissionAccepted = true
+    }
+    const currentStockQty = item?.stockQuantity !== null && item?.stockQuantity !== undefined ? String(item.stockQuantity) : ''
+    if (stockQuantity !== currentStockQty) {
+      // Champ vidé = désactiver le suivi de quantité (retour au toggle manuel)
+      body.stockQuantity = stockQuantity === '' ? null : parseInt(stockQuantity, 10)
+    }
+    const currentThreshold = String(item?.lowStockThreshold ?? 1)
+    if (lowStockThreshold !== '' && lowStockThreshold !== currentThreshold) {
+      body.lowStockThreshold = parseInt(lowStockThreshold, 10)
     }
     return body
   }
@@ -470,6 +485,12 @@ export default function VendorCatalogDetailPage() {
         {item.status === 'PUBLISHED' && !item.inStock && (
           <Chip variant="status-err">Épuisée</Chip>
         )}
+        {item.inStock &&
+          item.stockQuantity !== null &&
+          item.stockQuantity > 0 &&
+          item.stockQuantity <= item.lowStockThreshold && (
+            <Chip variant="status-warn">Stock faible : {item.stockQuantity}</Chip>
+          )}
         {item.priceAlertFlag && <Chip variant="status-warn">Alerte prix</Chip>}
         {item.qualityIssue && (
           <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-warn-fg" title={item.qualityIssue}>
@@ -629,6 +650,41 @@ export default function VendorCatalogDetailPage() {
             </select>
           </div>
           <p className="mt-1 text-xs text-muted">Mettez 0 pour « sans garantie ».</p>
+        </div>
+
+        <div>
+          <label htmlFor="stock-quantity" className={LABEL}>Quantité en stock</label>
+          <div className="flex gap-2">
+            <input
+              id="stock-quantity"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={stockQuantity}
+              onChange={(e) => setStockQuantity(e.target.value)}
+              placeholder="Non suivie"
+              className={`${INPUT} flex-1 font-mono`}
+            />
+            <div className="flex-1">
+              <input
+                id="low-stock-threshold"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={lowStockThreshold}
+                onChange={(e) => setLowStockThreshold(e.target.value)}
+                placeholder="Seuil d'alerte"
+                aria-label="Seuil d'alerte stock faible"
+                disabled={stockQuantity === ''}
+                className={`${INPUT} font-mono disabled:opacity-50`}
+              />
+            </div>
+          </div>
+          <p className="mt-1 text-xs text-muted">
+            Indiquez combien d&apos;exemplaires vous avez : la quantité baisse à chaque vente et vous recevez
+            une alerte WhatsApp quand elle atteint le seuil (2e champ). À 0, la pièce passe automatiquement
+            en « épuisée ». Laissez vide pour gérer le stock à la main.
+          </p>
         </div>
 
         <div className="rounded-md border border-border-strong bg-surface p-4">

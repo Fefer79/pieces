@@ -72,8 +72,11 @@ export async function notifyVendorNewOrder(phone: string, orderId: string, itemC
   return sendNotification({ to: phone, channel: 'whatsapp', message })
 }
 
-export async function notifyVendorLowStock(phone: string, itemName: string) {
-  const message = `Stock critique : "${itemName}" est en rupture. Mettez à jour votre catalogue.`
+export async function notifyVendorLowStock(phone: string, itemName: string, remaining?: number) {
+  const message =
+    remaining == null || remaining <= 0
+      ? `⚠️ Rupture de stock : "${itemName}" est épuisée et n'apparaît plus dans les recherches. Réapprovisionnez ou mettez à jour votre catalogue sur Pièces.`
+      : `⚠️ Stock faible : il ne reste que ${remaining} exemplaire(s) de "${itemName}". Pensez à réapprovisionner sur Pièces.`
   return sendNotification({ to: phone, channel: 'whatsapp', message })
 }
 

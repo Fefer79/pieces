@@ -4,6 +4,7 @@ import { AppError } from '../../lib/appError.js'
 import { canTransition } from './order.stateMachine.js'
 import { recomputeVendorScore } from '../vendor/vendorScore.service.js'
 import { getOrCreateInvoiceForOrder } from '../enterprise/invoice.service.js'
+import { consumeStockForOrder } from '../catalog/stock.service.js'
 import { ABIDJAN_DELIVERY_FEES } from 'shared/constants'
 
 const DELIVERED_STATUSES = new Set(['DELIVERED', 'CONFIRMED', 'COMPLETED'])
@@ -97,12 +98,23 @@ async function buildOrderItems(qtyById: Map<string, number>) {
       partSource: true,
       vendorId: true,
       commissionAmount: true,
+      stockQuantity: true,
       vendor: { select: { id: true, shopName: true, status: true } },
     },
   })
 
   if (catalogItems.length === 0) {
     throw new AppError('ORDER_NO_VALID_ITEMS', 400, { message: 'Aucun article valide trouvé' })
+  }
+
+  // Quantité suivie : impossible de commander plus que le stock disponible.
+  for (const item of catalogItems) {
+    const requested = qtyById.get(item.id) ?? 1
+    if (item.stockQuantity !== null && requested > item.stockQuantity) {
+      throw new AppError('ORDER_INSUFFICIENT_STOCK', 400, {
+        message: `Stock insuffisant pour « ${item.name ?? 'Pièce'} » : ${item.stockQuantity} disponible(s), ${requested} demandée(s)`,
+      })
+    }
   }
 
   const totalAmount = catalogItems.reduce(
@@ -398,6 +410,10 @@ export async function transitionOrder(
       // eslint-disable-next-line no-console
       console.error('[invoice] failed to issue', orderId, err)
     })
+
+    // Fire-and-forget : décrémente le stock des pièces à quantité suivie
+    // et alerte les vendeurs sous le seuil. Ne throw jamais.
+    void consumeStockForOrder(orderId)
   }
 
   return updated
@@ -448,6 +464,11 @@ export async function selectPaymentMethod(
     },
     include: { items: true },
   })
+
+  // Le chemin COD passe en PAID sans transitionOrder : consommer le stock ici aussi.
+  if (toStatus === 'PAID') {
+    void consumeStockForOrder(orderId)
+  }
 
   return updated
 }

@@ -250,6 +250,8 @@ export interface UpdateCatalogItemData {
   warrantyUnit?: 'DAY' | 'WEEK' | 'MONTH'
   commissionAmount?: number
   commissionAccepted?: boolean
+  stockQuantity?: number | null
+  lowStockThreshold?: number
 }
 
 export async function updateItem(
@@ -288,6 +290,15 @@ export async function updateItem(
   if (data.partSource !== undefined) updateData.partSource = data.partSource
   if (data.warrantyValue !== undefined) updateData.warrantyValue = data.warrantyValue
   if (data.warrantyUnit !== undefined) updateData.warrantyUnit = data.warrantyUnit
+  if (data.lowStockThreshold !== undefined) updateData.lowStockThreshold = data.lowStockThreshold
+
+  if (data.stockQuantity !== undefined) {
+    updateData.stockQuantity = data.stockQuantity
+    // Quantité suivie → inStock dérivé. Quantité remise à null → inStock reste manuel.
+    if (data.stockQuantity !== null) {
+      updateData.inStock = data.stockQuantity > 0
+    }
+  }
 
   if (data.price !== undefined) {
     updateData.price = data.price
@@ -373,7 +384,12 @@ export async function publishItem(userId: string, itemId: string) {
   })
 }
 
-export async function toggleStock(userId: string, itemId: string, inStock: boolean) {
+export async function toggleStock(
+  userId: string,
+  itemId: string,
+  inStock: boolean,
+  stockQuantity?: number,
+) {
   const vendor = await prisma.vendor.findUnique({
     where: { userId },
     select: { id: true },
@@ -395,9 +411,19 @@ export async function toggleStock(userId: string, itemId: string, inStock: boole
     throw new AppError('CATALOG_ITEM_NOT_PUBLISHED', 422, { message: 'Le stock ne peut être modifié que sur les fiches publiées' })
   }
 
+  const data: Record<string, unknown> = { inStock }
+  if (stockQuantity !== undefined) {
+    data.stockQuantity = stockQuantity
+    data.inStock = stockQuantity > 0
+  } else if (inStock && item.stockQuantity === 0) {
+    // Remise en stock d'une fiche à quantité suivie tombée à 0 sans quantité
+    // fournie : repartir à 1 pour garder inStock cohérent avec la quantité.
+    data.stockQuantity = 1
+  }
+
   return prisma.catalogItem.update({
     where: { id: itemId },
-    data: { inStock },
+    data,
   })
 }
 

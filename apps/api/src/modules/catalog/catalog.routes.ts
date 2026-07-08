@@ -357,10 +357,10 @@ export async function catalogRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
-      const { inStock } = request.body as { inStock: boolean }
-      const result = await toggleStock(request.user.id, id, inStock)
+      const { inStock, stockQuantity } = request.body as { inStock: boolean; stockQuantity?: number }
+      const result = await toggleStock(request.user.id, id, inStock, stockQuantity)
 
-      request.log.info({ event: 'CATALOG_STOCK_TOGGLED', userId: request.user.id, itemId: id, inStock })
+      request.log.info({ event: 'CATALOG_STOCK_TOGGLED', userId: request.user.id, itemId: id, inStock, stockQuantity })
 
       return reply.status(200).send({ data: result })
     },

@@ -326,6 +326,10 @@ model CatalogItem {
   qualityScore         Float?            @map("quality_score")
   qualityIssue         String?           @map("quality_issue")
   inStock              Boolean           @default(true) @map("in_stock")
+  // null = quantité non suivie (le vendeur gère inStock à la main, comportement historique).
+  // Renseignée : décrémentée à chaque commande payée, inStock dérivé (quantité > 0).
+  stockQuantity        Int?              @map("stock_quantity")
+  lowStockThreshold    Int               @default(1) @map("low_stock_threshold")
   condition            PartCondition?
   partSource           PartSource?       @map("part_source")
   warrantyValue        Int?              @map("warranty_value")

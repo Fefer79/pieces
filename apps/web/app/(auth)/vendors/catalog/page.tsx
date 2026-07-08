@@ -22,6 +22,8 @@ interface CatalogItem {
   qualityIssue: string | null
   aiGenerated: boolean
   inStock: boolean
+  stockQuantity: number | null
+  lowStockThreshold: number
   priceAlertFlag: boolean
   createdAt: string
 }
@@ -182,6 +184,12 @@ export default function VendorCatalogPage() {
                   <p className="truncate text-xs text-muted">{item.category ?? '—'}</p>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                     <Chip variant={statusChip.variant}>{statusChip.label}</Chip>
+                    {item.inStock &&
+                      item.stockQuantity !== null &&
+                      item.stockQuantity > 0 &&
+                      item.stockQuantity <= item.lowStockThreshold && (
+                        <Chip variant="status-warn">Stock : {item.stockQuantity}</Chip>
+                      )}
                     {item.status === 'PUBLISHED' && !item.inStock && (
                       <Chip variant="status-err">Épuisée</Chip>
                     )}
