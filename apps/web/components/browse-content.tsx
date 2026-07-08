@@ -10,6 +10,7 @@ import { PartThumb, bestPartImage } from '@/components/ui/part-thumb'
 import { VehicleTypeSelector, TypeIcon } from '@/components/vehicle-type-selector'
 import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
 import { CategoryCarousel, type CategoryTile } from '@/components/ui/category-carousel'
+import { CatalogueSection } from '@/components/catalogue-section'
 import { VEHICLE_TYPES, DEFAULT_VEHICLE_TYPE } from 'shared/constants'
 import type { VehicleTypeId } from 'shared/constants'
 
@@ -75,6 +76,11 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
   } : null
 
   const [waMenuOpen, setWaMenuOpen] = useState(false)
+
+  // Repli mobile de la CARTE 1 une fois le véhicule choisi (null = auto : replié
+  // dès qu'un véhicule est sélectionné, rouvert s'il est supprimé).
+  const [identifyOpen, setIdentifyOpen] = useState<boolean | null>(null)
+  const identifyCollapsed = variant === 'mobile' && !!vehicle && !(identifyOpen ?? false)
 
   const clearVehicle = () => {
     clearPersistedVehicle()
@@ -181,12 +187,39 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
        <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
         {/* ───── CARTE 1 — Identifier le véhicule ───── */}
         <section className="rounded-lg border border-border bg-card p-4 lg:p-6">
-          <h2 className="flex items-center gap-2.5 font-display text-lg text-ink lg:text-xl">
-            <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-ink-2 font-sans text-sm font-semibold text-white">1</span>
-            Identifiez votre véhicule
-          </h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2.5 font-display text-lg text-ink lg:text-xl">
+              <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-ink-2 font-sans text-sm font-semibold text-white">1</span>
+              Identifiez votre véhicule
+            </h2>
+            {variant === 'mobile' && vehicle && (
+              <button
+                type="button"
+                onClick={() => setIdentifyOpen(identifyCollapsed)}
+                aria-expanded={!identifyCollapsed}
+                aria-label={identifyCollapsed ? 'Afficher l’identification du véhicule' : 'Replier l’identification du véhicule'}
+                className="flex flex-shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:text-ink"
+                style={{ minWidth: 44, minHeight: 44 }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className={`h-5 w-5 transition-transform duration-200 ${identifyCollapsed ? '' : 'rotate-180'}`}
+                >
+                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
+          </div>
+          {identifyCollapsed && (
+            <p className="mt-1.5 text-xs text-muted">
+              Véhicule identifié — touchez la flèche pour changer de méthode.
+            </p>
+          )}
 
           {/* Bloc unique : rail de types (gauche) + onglets méthode & contenu (droite) */}
+          {!identifyCollapsed && (
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:gap-5">
             {/* Rail de types — horizontal sur mobile, vertical sur desktop */}
             <div
@@ -336,6 +369,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               </div>
             </div>
           </div>
+          )}
         </section>
 
         {/* ───── CARTE 2 — Trouver la pièce ───── */}
@@ -452,6 +486,13 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
               tiles={categoryTiles}
               heading={`Parcourir par catégorie · ${vehicle.brand} ${vehicle.model}`}
             />
+          </section>
+        )}
+
+        {/* ───── Catalogue des pièces compatibles — après les catégories ───── */}
+        {vehicle && (
+          <section id="catalogue" className="mt-8">
+            <CatalogueSection />
           </section>
         )}
       </div>

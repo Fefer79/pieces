@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { LandingPage } from '@/components/landing-page'
 import { BrowseContent } from '@/components/browse-content'
 import { MobileDrawer } from '@/components/mobile-drawer'
@@ -67,6 +69,11 @@ const PROMO_SLIDES: PromoSlide[] = [
 ]
 
 export default function BrowsePage() {
+  const { vehicle } = useSelectedVehicle()
+  // Carrousel promo replié sur mobile dès qu'un véhicule est sélectionné,
+  // pour laisser la place au catalogue des pièces compatibles.
+  const [promoOpen, setPromoOpen] = useState(false)
+
   return (
     <>
       {/* Desktop */}
@@ -112,10 +119,39 @@ export default function BrowsePage() {
           </a>
         </div>
 
-        {/* Mobile carousel */}
-        <div className="px-4 pb-4">
-          <PromoCarousel slides={PROMO_SLIDES} />
-        </div>
+        {/* Mobile carousel — replié quand un véhicule est sélectionné */}
+        {vehicle ? (
+          <div className="px-4 pb-4">
+            <button
+              type="button"
+              onClick={() => setPromoOpen(!promoOpen)}
+              aria-expanded={promoOpen}
+              className="flex w-full items-center justify-between gap-2 rounded-md border border-border bg-card px-4 py-2.5 text-left transition-colors hover:border-border-strong"
+              style={{ minHeight: 48 }}
+            >
+              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                Offres & annonces
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className={`h-5 w-5 flex-shrink-0 text-muted transition-transform duration-200 ${promoOpen ? 'rotate-180' : ''}`}
+              >
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+              </svg>
+            </button>
+            {promoOpen && (
+              <div className="mt-3">
+                <PromoCarousel slides={PROMO_SLIDES} />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="px-4 pb-4">
+            <PromoCarousel slides={PROMO_SLIDES} />
+          </div>
+        )}
 
         {/* Browse content (sélection véhicule + recherche + catégories) */}
         <BrowseContent variant="mobile" />
