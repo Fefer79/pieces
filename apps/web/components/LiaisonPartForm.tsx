@@ -55,6 +55,7 @@ export interface PartFormInitial {
   warrantyUnit?: WarrantyUnit | null
   commissionAmount?: number | null
   inStock?: boolean
+  stockQuantity?: number | null
   imageOriginalUrl?: string | null
   imageThumbUrl?: string | null
 }
@@ -106,6 +107,12 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
     initial?.commissionAmount != null ? String(initial.commissionAmount) : '',
   )
   const [inStock, setInStock] = useState(initial?.inStock ?? true)
+  const [stockQuantity, setStockQuantity] = useState(
+    initial?.stockQuantity != null ? String(initial.stockQuantity) : '',
+  )
+  // Quantité renseignée : inStock est dérivé côté serveur (>0), le toggle manuel
+  // ne s'applique plus.
+  const stockTracked = stockQuantity !== ''
   const [imageUrls, setImageUrls] = useState<ImageUrls>({
     imageOriginalUrl: initial?.imageOriginalUrl ?? undefined,
     imageThumbUrl: initial?.imageThumbUrl ?? undefined,
@@ -280,6 +287,12 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       warrantyUnit: warrantyValue ? warrantyUnit : undefined,
       commissionAmount: commission ? Number(commission) : undefined,
       inStock,
+      // Vide en édition = null (désactive le suivi) ; vide en création = non suivi.
+      stockQuantity: stockTracked
+        ? Number(stockQuantity)
+        : mode === 'edit'
+          ? null
+          : undefined,
       fitments,
       ...imagePayload,
       ...(quickVendor && {
@@ -653,14 +666,34 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
         </div>
       </Field>
 
+      <Field
+        label="Nombre d'articles disponibles"
+        hint="Optionnel — à renseigner par le liaison ou le vendeur. Le stock diminue à chaque commande ; à 0 la pièce passe en rupture."
+      >
+        <input
+          type="number"
+          inputMode="numeric"
+          value={stockQuantity}
+          onChange={(e) => setStockQuantity(e.target.value)}
+          className="liaison-input"
+          placeholder="Ex : 4 — vide si non suivi"
+          min={0}
+          max={99999}
+        />
+      </Field>
+
       <label className="flex items-center gap-3">
         <input
           type="checkbox"
-          checked={inStock}
+          checked={stockTracked ? Number(stockQuantity) > 0 : inStock}
           onChange={(e) => setInStock(e.target.checked)}
+          disabled={stockTracked}
           className="h-4 w-4"
         />
-        <span className="text-sm text-ink">En stock</span>
+        <span className={`text-sm ${stockTracked ? 'text-muted' : 'text-ink'}`}>
+          En stock
+          {stockTracked && ' — géré automatiquement par la quantité'}
+        </span>
       </label>
 
       <div className="flex justify-end gap-2 pt-2">

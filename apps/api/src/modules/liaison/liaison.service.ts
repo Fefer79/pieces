@@ -263,7 +263,12 @@ export async function createPartForVendor(
       warrantyValue: parsed.data.warrantyValue,
       warrantyUnit: parsed.data.warrantyUnit,
       commissionAmount,
-      inStock: parsed.data.inStock,
+      // Quantité fournie : inStock dérivé (>0), sinon toggle manuel du formulaire.
+      stockQuantity: parsed.data.stockQuantity,
+      inStock:
+        parsed.data.stockQuantity != null
+          ? parsed.data.stockQuantity > 0
+          : parsed.data.inStock,
       imageOriginalUrl: parsed.data.imageOriginalUrl,
       imageThumbUrl: parsed.data.imageThumbUrl,
       imageSmallUrl: parsed.data.imageSmallUrl,
@@ -375,7 +380,12 @@ export async function createPartWithQuickVendor(liaisonId: string, body: unknown
         warrantyValue: partInput.warrantyValue,
         warrantyUnit: partInput.warrantyUnit,
         commissionAmount,
-        inStock: partInput.inStock,
+        // Même règle que createPartForVendor : quantité fournie → inStock dérivé.
+        stockQuantity: partInput.stockQuantity,
+        inStock:
+          partInput.stockQuantity != null
+            ? partInput.stockQuantity > 0
+            : partInput.inStock,
         imageOriginalUrl: partInput.imageOriginalUrl,
         imageThumbUrl: partInput.imageThumbUrl,
         imageSmallUrl: partInput.imageSmallUrl,
@@ -434,6 +444,7 @@ export async function getLiaisonPart(liaisonId: string, vendorId: string, partId
       commissionAmount: true,
       commissionAcceptedAt: true,
       inStock: true,
+      stockQuantity: true,
       status: true,
       imageThumbUrl: true,
       imageOriginalUrl: true,
@@ -502,6 +513,13 @@ export async function updatePartForVendor(
   if (d.warrantyValue !== undefined) updateData.warrantyValue = d.warrantyValue
   if (d.warrantyUnit !== undefined) updateData.warrantyUnit = d.warrantyUnit
   if (d.inStock !== undefined) updateData.inStock = d.inStock
+  if (d.stockQuantity !== undefined) {
+    updateData.stockQuantity = d.stockQuantity
+    // Quantité suivie : inStock dérivé. null = retour au toggle manuel.
+    if (d.stockQuantity !== null) {
+      updateData.inStock = d.stockQuantity > 0
+    }
+  }
   if (d.imageOriginalUrl !== undefined) updateData.imageOriginalUrl = d.imageOriginalUrl
   if (d.imageThumbUrl !== undefined) updateData.imageThumbUrl = d.imageThumbUrl
   if (d.imageSmallUrl !== undefined) updateData.imageSmallUrl = d.imageSmallUrl

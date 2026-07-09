@@ -82,6 +82,9 @@ export const liaisonCreatePartSchema = z.object({
   warrantyUnit: z.enum(['DAY', 'WEEK', 'MONTH']).optional(),
   commissionAmount: z.number().int().min(0).optional(),
   inStock: z.boolean().default(true),
+  // Optionnel : quantité disponible renseignée par le liaison ou le vendeur.
+  // Absente = pas de suivi de quantité (toggle inStock manuel).
+  stockQuantity: z.number().int().min(0).max(99999).optional(),
   imageOriginalUrl: z.string().url().optional(),
   imageThumbUrl: z.string().url().optional(),
   imageSmallUrl: z.string().url().optional(),
@@ -116,6 +119,8 @@ export const liaisonUpdatePartSchema = z.object({
   warrantyUnit: z.enum(['DAY', 'WEEK', 'MONTH']).nullable().optional(),
   commissionAmount: z.number().int().min(0).optional(),
   inStock: z.boolean().optional(),
+  // null = désactiver le suivi de quantité (retour au inStock manuel)
+  stockQuantity: z.number().int().min(0).max(99999).nullable().optional(),
   imageOriginalUrl: z.string().url().nullable().optional(),
   imageThumbUrl: z.string().url().nullable().optional(),
   imageSmallUrl: z.string().url().nullable().optional(),

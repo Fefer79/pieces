@@ -248,6 +248,39 @@ describe('liaison.service', () => {
         select: expect.any(Object),
       })
     })
+
+    it('derives inStock from stockQuantity when provided', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v1' })
+      mockCatalogItemCreate.mockResolvedValue({ id: 'p1' })
+
+      await createPartForVendor('liaison-1', 'v1', {
+        name: 'Alternateur 90A',
+        condition: 'USED',
+        stockQuantity: 0,
+        inStock: true,
+      })
+
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({ stockQuantity: 0, inStock: false }),
+        select: expect.any(Object),
+      })
+    })
+
+    it('keeps manual inStock when stockQuantity is absent', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v1' })
+      mockCatalogItemCreate.mockResolvedValue({ id: 'p1' })
+
+      await createPartForVendor('liaison-1', 'v1', {
+        name: 'Alternateur 90A',
+        condition: 'USED',
+        inStock: false,
+      })
+
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({ stockQuantity: undefined, inStock: false }),
+        select: expect.any(Object),
+      })
+    })
   })
 
   describe('createPartWithQuickVendor', () => {
