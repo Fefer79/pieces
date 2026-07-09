@@ -55,7 +55,7 @@ export default function CataloguePage() {
                   </svg>
                 </span>
                 <p className="truncate text-sm">
-                  <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-2">
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-2 max-lg:sr-only">
                     Véhicule sélectionné ·{' '}
                   </span>
                   <span className="font-semibold text-ink">
