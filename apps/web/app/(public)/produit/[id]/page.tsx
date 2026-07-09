@@ -462,24 +462,22 @@ export default function ProductPage() {
               </Button>
 
               {/* Caractéristiques */}
-              <dl className="mt-6 divide-y divide-border rounded-md border border-border bg-card text-sm">
-                {item.oemReference && (
-                  <div className="flex justify-between gap-4 px-4 py-2.5">
-                    <dt className="text-muted">Référence OEM</dt>
-                    <dd className="font-mono text-ink">{item.oemReference}</dd>
-                  </div>
-                )}
-                {warrantyText && (
-                  <div className="flex justify-between gap-4 px-4 py-2.5">
-                    <dt className="text-muted">Garantie</dt>
-                    <dd className="text-ink">{warrantyText}</dd>
-                  </div>
-                )}
-                <div className="flex justify-between gap-4 px-4 py-2.5">
-                  <dt className="text-muted">Vendeur</dt>
-                  <dd className="text-ink">{item.vendor.shopName}</dd>
-                </div>
-              </dl>
+              {(item.oemReference || warrantyText) && (
+                <dl className="mt-6 divide-y divide-border rounded-md border border-border bg-card text-sm">
+                  {item.oemReference && (
+                    <div className="flex justify-between gap-4 px-4 py-2.5">
+                      <dt className="text-muted">Référence OEM</dt>
+                      <dd className="font-mono text-ink">{item.oemReference}</dd>
+                    </div>
+                  )}
+                  {warrantyText && (
+                    <div className="flex justify-between gap-4 px-4 py-2.5">
+                      <dt className="text-muted">Garantie</dt>
+                      <dd className="text-ink">{warrantyText}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
 
               {/* Compatibilité véhicule */}
               {(item.fitments.length > 0 || item.vehicleCompatibility) && (
