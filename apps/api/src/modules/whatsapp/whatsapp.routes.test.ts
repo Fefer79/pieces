@@ -61,6 +61,7 @@ const mockDownloadMedia = vi.fn().mockResolvedValue(Buffer.from('fake-image'))
 const mockGetSession = vi.fn().mockReturnValue(null)
 const mockSetSession = vi.fn()
 const mockClearSession = vi.fn()
+const mockRegisterUser = vi.fn().mockResolvedValue({ id: 'u-new', roles: ['MECHANIC'] })
 
 vi.mock('./whatsapp.service.js', async (importOriginal) => {
   const original = await importOriginal() as Record<string, unknown>
@@ -69,6 +70,7 @@ vi.mock('./whatsapp.service.js', async (importOriginal) => {
     sendWhatsAppMessage: (...args: unknown[]) => mockSendMessage(...args),
     verifyWebhookSignature: (...args: unknown[]) => mockVerifySignature(...args),
     findUserByWhatsApp: (...args: unknown[]) => mockFindUser(...args),
+    registerWhatsAppUser: (...args: unknown[]) => mockRegisterUser(...args),
     downloadWhatsAppMedia: (...args: unknown[]) => mockDownloadMedia(...args),
     getSession: (...args: unknown[]) => mockGetSession(...args),
     setSession: (...args: unknown[]) => mockSetSession(...args),
@@ -422,6 +424,162 @@ describe('WhatsApp Routes', () => {
       expect(mockCreateOrder).not.toHaveBeenCalled()
       const msg = mockSendMessage.mock.calls[0][1] as string
       expect(msg).toContain('https://pieces.ci/browse')
+    })
+
+    // Onboarding: conversational account creation for unknown numbers
+    describe('onboarding', () => {
+      it('invites an unknown number to create an account on unrecognized text', async () => {
+        mockFindUser.mockResolvedValueOnce(null)
+
+        const app = buildApp()
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/whatsapp/webhook',
+          payload: makePayload('2250700000000', 'text', 'bonjour'),
+        })
+
+        const msg = mockSendMessage.mock.calls[0][1] as string
+        expect(msg).toContain('Bienvenue')
+        expect(msg).toContain('OUI')
+        expect(mockSetSession).toHaveBeenCalledWith('2250700000000', {
+          type: 'onboarding',
+          data: {},
+        })
+      })
+
+      it('keeps "Commande non reconnue" for known users', async () => {
+        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['MECHANIC'], vehicles: [] })
+
+        const app = buildApp()
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/whatsapp/webhook',
+          payload: makePayload('2250700000000', 'text', 'bonjour'),
+        })
+
+        const msg = mockSendMessage.mock.calls[0][1] as string
+        expect(msg).toContain('Commande non reconnue')
+        expect(mockSetSession).not.toHaveBeenCalled()
+      })
+
+      it('creates the account with consent on "oui"', async () => {
+        mockFindUser.mockResolvedValueOnce(null)
+        mockGetSession.mockReturnValueOnce({
+          type: 'onboarding',
+          data: {},
+          expiresAt: new Date(Date.now() + 60000),
+        })
+
+        const app = buildApp()
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/whatsapp/webhook',
+          payload: makePayload('2250700000000', 'text', 'OUI'),
+        })
+
+        expect(mockRegisterUser).toHaveBeenCalledWith('2250700000000')
+        expect(mockClearSession).toHaveBeenCalledWith('2250700000000')
+        const msg = mockSendMessage.mock.calls[0][1] as string
+        expect(msg).toContain('Compte créé')
+      })
+
+      it('does not re-create an account that appeared meanwhile', async () => {
+        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['MECHANIC'], vehicles: [] })
+        mockGetSession.mockReturnValueOnce({
+          type: 'onboarding',
+          data: {},
+          expiresAt: new Date(Date.now() + 60000),
+        })
+
+        const app = buildApp()
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/whatsapp/webhook',
+          payload: makePayload('2250700000000', 'text', 'oui'),
+        })
+
+        expect(mockRegisterUser).not.toHaveBeenCalled()
+        const msg = mockSendMessage.mock.calls[0][1] as string
+        expect(msg).toContain('Compte créé')
+      })
+
+      it('declines politely on "non"', async () => {
+        mockFindUser.mockResolvedValueOnce(null)
+        mockGetSession.mockReturnValueOnce({
+          type: 'onboarding',
+          data: {},
+          expiresAt: new Date(Date.now() + 60000),
+        })
+
+        const app = buildApp()
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/whatsapp/webhook',
+          payload: makePayload('2250700000000', 'text', 'non'),
+        })
+
+        expect(mockRegisterUser).not.toHaveBeenCalled()
+        expect(mockClearSession).toHaveBeenCalledWith('2250700000000')
+        const msg = mockSendMessage.mock.calls[0][1] as string
+        expect(msg).toContain('sans compte')
+      })
+
+      it('falls through to normal commands when onboarding answer is not yes/no', async () => {
+        mockFindUser.mockResolvedValueOnce(null)
+        mockGetSession.mockReturnValueOnce({
+          type: 'onboarding',
+          data: {},
+          expiresAt: new Date(Date.now() + 60000),
+        })
+        mockSearchParts.mockResolvedValueOnce({
+          query: 'filtre',
+          items: [],
+          pagination: { page: 1, limit: 5, total: 0, totalPages: 0 },
+        })
+
+        const app = buildApp()
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/whatsapp/webhook',
+          payload: makePayload('2250700000000', 'text', 'recherche filtre'),
+        })
+
+        expect(mockClearSession).toHaveBeenCalledWith('2250700000000')
+        expect(mockSearchParts).toHaveBeenCalledWith('filtre', { limit: 5 })
+        expect(mockRegisterUser).not.toHaveBeenCalled()
+      })
+
+      it('re-sends the invite on "compte" for unknown users', async () => {
+        mockFindUser.mockResolvedValueOnce(null)
+
+        const app = buildApp()
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/whatsapp/webhook',
+          payload: makePayload('2250700000000', 'text', 'compte'),
+        })
+
+        const msg = mockSendMessage.mock.calls[0][1] as string
+        expect(msg).toContain('OUI')
+        expect(mockSetSession).toHaveBeenCalledWith('2250700000000', {
+          type: 'onboarding',
+          data: {},
+        })
+      })
+
+      it('tells known users they already have an account on "compte"', async () => {
+        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['MECHANIC'], vehicles: [] })
+
+        const app = buildApp()
+        await app.inject({
+          method: 'POST',
+          url: '/api/v1/whatsapp/webhook',
+          payload: makePayload('2250700000000', 'text', 'compte'),
+        })
+
+        const msg = mockSendMessage.mock.calls[0][1] as string
+        expect(msg).toContain('déjà un compte')
+      })
     })
 
     // AC6: Session expiry — non-numeric text falls through to normal commands

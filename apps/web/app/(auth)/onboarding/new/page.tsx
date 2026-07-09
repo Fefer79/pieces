@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { getPiecesSession } from '@/lib/pieces-session'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -40,7 +41,8 @@ export default function OnboardingNewPage() {
 
   const getAccessToken = useCallback(async () => {
     const { data: { session } } = await getSupabase().auth.getSession()
-    return session?.access_token ?? null
+    // WhatsApp reverse-OTP users have a Pièces token instead of a Supabase session
+    return session?.access_token ?? getPiecesSession()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {

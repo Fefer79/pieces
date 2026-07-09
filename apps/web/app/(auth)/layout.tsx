@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { getPiecesSession } from '@/lib/pieces-session'
 import { ConsentModal } from './consent-modal'
 import { AppShell } from '@/components/app-shell'
 
@@ -23,7 +24,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   const getAccessToken = useCallback(async () => {
     const { data: { session } } = await getSupabase().auth.getSession()
-    return session?.access_token ?? null
+    // WhatsApp reverse-OTP users have a Pièces token instead of a Supabase session
+    return session?.access_token ?? getPiecesSession()
   }, [])
 
   const checkConsent = useCallback(async () => {

@@ -8,6 +8,7 @@ vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),
+      upsert: vi.fn(),
     },
   },
 }))
@@ -24,6 +25,7 @@ const {
   setSession,
   clearSession,
   findUserByWhatsApp,
+  registerWhatsAppUser,
   _getSessionsMap,
 } = await import('./whatsapp.service.js')
 
@@ -190,6 +192,24 @@ describe('whatsapp.service', () => {
 
       const result = await findUserByWhatsApp('2250700000000')
       expect(result).toBeNull()
+    })
+  })
+
+  describe('registerWhatsAppUser', () => {
+    it('creates a MECHANIC account with consent and synthetic supabaseId', async () => {
+      const created = { id: 'u-new', roles: ['MECHANIC'] }
+      ;(prisma.user.upsert as ReturnType<typeof vi.fn>).mockResolvedValueOnce(created)
+
+      const result = await registerWhatsAppUser('2250700000000')
+      expect(result).toEqual(created)
+
+      const args = (prisma.user.upsert as ReturnType<typeof vi.fn>).mock.calls[0][0]
+      expect(args.where).toEqual({ phone: '+2250700000000' })
+      expect(args.create.supabaseId).toBe('wa:+2250700000000')
+      expect(args.create.phone).toBe('+2250700000000')
+      expect(args.create.roles).toEqual(['MECHANIC'])
+      expect(args.create.consentedAt).toBeInstanceOf(Date)
+      expect(args.update.consentedAt).toBeInstanceOf(Date)
     })
   })
 

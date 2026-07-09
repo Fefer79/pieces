@@ -5,6 +5,7 @@ import {
   sendWhatsAppMessage,
   verifyWebhookSignature,
   findUserByWhatsApp,
+  registerWhatsAppUser,
   downloadWhatsAppMedia,
   formatSearchResults,
   getSession,
@@ -106,6 +107,15 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
         const session = getSession(from)
 
         // Handle session-based responses first
+        if (session && session.type === 'onboarding') {
+          const handled = await handleOnboardingResponse(from, text, !!user)
+          if (handled) {
+            return reply.status(200).send({ status: 'ok' })
+          }
+          // Not a yes/no — drop the onboarding context and process normally
+          clearSession(from)
+        }
+
         if (session && session.type === 'disambiguation' && session.data.category) {
           await handleDisambiguationResponse(from, text, session.data.category, vehicleFilter)
           return reply.status(200).send({ status: 'ok' })
@@ -123,9 +133,18 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
 
         if (command === 'aide' || command === 'help') {
           await sendWhatsAppMessage(from, 'Bienvenue sur Pièces! Envoyez une photo de votre pièce auto pour l\'identifier, ou tapez "recherche [nom]" pour chercher.')
+        } else if (command === 'compte') {
+          if (user) {
+            await sendWhatsAppMessage(from, '✅ Vous avez déjà un compte Pièces. Envoyez une photo ou tapez "recherche [nom]" pour trouver une pièce.')
+          } else {
+            await sendOnboardingInvite(from)
+          }
         } else if (command.startsWith('recherche ')) {
           // AC2: Real catalog search
           await handleSearch(from, text.slice(10).trim())
+        } else if (!user) {
+          // Unknown number: welcome + conversational account creation
+          await sendOnboardingInvite(from)
         } else {
           await sendWhatsAppMessage(from, 'Commande non reconnue. Tapez "aide" pour les options disponibles.')
         }
@@ -140,6 +159,55 @@ export async function whatsappRoutes(fastify: FastifyInstance) {
       return reply.status(200).send({ status: 'ok' })
     },
   )
+}
+
+// Onboarding: welcome an unknown number and offer conversational signup.
+// Explicit "OUI" doubles as ARTCI consent (loi n°2013-450), recorded on the account.
+async function sendOnboardingInvite(from: string) {
+  await sendWhatsAppMessage(
+    from,
+    '👋 Bienvenue sur *Pièces* ! Le marché des pièces auto d\'Abidjan, directement sur WhatsApp.\n\n' +
+      '📸 Envoyez une photo d\'une pièce pour l\'identifier\n' +
+      '🔎 Tapez "recherche [nom]" pour chercher\n\n' +
+      'Pour commander directement ici, créez votre compte : répondez *OUI*.\n\n' +
+      'En répondant OUI, vous acceptez que Pièces traite votre numéro de téléphone conformément à la loi n°2013-450 (protection des données). Détails : https://pieces.ci/profile/data',
+  )
+  setSession(from, { type: 'onboarding', data: {} })
+}
+
+// Onboarding session response: "oui" creates the account (with consent),
+// "non" politely declines. Anything else falls through to normal commands.
+async function handleOnboardingResponse(from: string, text: string, userExists: boolean): Promise<boolean> {
+  const answer = text.trim().toLowerCase()
+
+  if (answer === 'oui' || answer === 'o' || answer === 'ok') {
+    clearSession(from)
+    try {
+      if (!userExists) {
+        await registerWhatsAppUser(from)
+      }
+      await sendWhatsAppMessage(
+        from,
+        '✅ Compte créé ! Vous pouvez maintenant commander directement sur WhatsApp.\n\n' +
+          '📸 Envoyez une photo de votre pièce, ou tapez "recherche [nom]".\n\n' +
+          '💡 Astuce : ajoutez votre véhicule sur https://pieces.ci/vehicles pour des résultats adaptés à votre voiture.',
+      )
+    } catch {
+      await sendWhatsAppMessage(from, 'Erreur lors de la création du compte. Veuillez réessayer en tapant "aide".')
+    }
+    return true
+  }
+
+  if (answer === 'non') {
+    clearSession(from)
+    await sendWhatsAppMessage(
+      from,
+      'Pas de problème ! Vous pouvez chercher des pièces sans compte : envoyez une photo ou tapez "recherche [nom]".\n\nPour créer un compte plus tard, tapez "compte".',
+    )
+    return true
+  }
+
+  return false
 }
 
 // AC2: Real search handler

@@ -22,7 +22,7 @@ export interface SearchResultItem {
 }
 
 export interface WhatsAppSession {
-  type: 'disambiguation' | 'selection'
+  type: 'disambiguation' | 'selection' | 'onboarding'
   data: {
     category?: string
     items?: SearchResultItem[]
@@ -60,6 +60,29 @@ export async function findUserByWhatsApp(waNumber: string) {
   return prisma.user.findUnique({
     where: { phone },
     include: { vehicles: true },
+  })
+}
+
+/**
+ * Create an account for a WhatsApp-only user after explicit conversational
+ * consent ("OUI"). Meta certifies the sender, so possession of the phone is
+ * already proven. Mirrors whatsappLogin.upsertLoginUser (synthetic supabaseId)
+ * but also records consent, since the bot asked for it explicitly.
+ */
+export async function registerWhatsAppUser(waNumber: string) {
+  const phone = `+${waNumber}`
+  return prisma.user.upsert({
+    where: { phone },
+    // Existing account (e.g. created via web login without consent yet):
+    // record the consent just given in conversation.
+    update: { consentedAt: new Date() },
+    create: {
+      supabaseId: `wa:${phone}`,
+      phone,
+      roles: ['MECHANIC'],
+      consentedAt: new Date(),
+    },
+    select: { id: true, roles: true },
   })
 }
 

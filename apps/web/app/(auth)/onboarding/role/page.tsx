@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { getPiecesSession } from '@/lib/pieces-session'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -52,11 +53,13 @@ export default function OnboardingRolePage() {
     // If user already has a role selected, skip this page
     async function check() {
       try {
+        // WhatsApp reverse-OTP users have a Pièces token instead of a Supabase session
         const { data: { session } } = await getSupabase().auth.getSession()
-        if (!session) { router.push('/login'); return }
+        const token = session?.access_token ?? getPiecesSession()
+        if (!token) { router.push('/login'); return }
 
         const res = await fetch('/api/v1/users/me', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${token}` },
         })
         if (res.ok) {
           const body = await res.json()
@@ -80,12 +83,13 @@ export default function OnboardingRolePage() {
 
     try {
       const { data: { session } } = await getSupabase().auth.getSession()
-      if (!session) return
+      const token = session?.access_token ?? getPiecesSession()
+      if (!token) return
 
       const res = await fetch('/api/v1/users/me/role', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ role }),

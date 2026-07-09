@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { getPiecesSession } from '@/lib/pieces-session'
 import { Button } from '@/components/ui/button'
 
 type SupabaseClient = ReturnType<typeof createClient>
@@ -36,15 +37,17 @@ export default function VendorOnboardingPage() {
   useEffect(() => {
     async function check() {
       try {
+        // WhatsApp reverse-OTP users have a Pièces token instead of a Supabase session
         const { data: { session } } = await getSupabase().auth.getSession()
-        if (!session) {
+        const token = session?.access_token ?? getPiecesSession()
+        if (!token) {
           router.push('/login')
           return
         }
 
         // Check if vendor already exists
         const res = await fetch('/api/v1/vendors/me', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${token}` },
         })
         if (res.ok) {
           const body = await res.json()
@@ -53,7 +56,7 @@ export default function VendorOnboardingPage() {
 
         // Pre-fill phone from user profile
         const profileRes = await fetch('/api/v1/users/me', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${token}` },
         })
         if (profileRes.ok) {
           const body = await profileRes.json()
@@ -98,12 +101,13 @@ export default function VendorOnboardingPage() {
     setSaving(true)
     try {
       const { data: { session } } = await getSupabase().auth.getSession()
-      if (!session) return
+      const token = session?.access_token ?? getPiecesSession()
+      if (!token) return
 
       const res = await fetch('/api/v1/vendors/', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -125,7 +129,7 @@ export default function VendorOnboardingPage() {
       // Vendor created, now sign guarantees to activate
       await fetch('/api/v1/vendors/me/signature', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       router.push('/vendors/catalog')
