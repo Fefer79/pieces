@@ -14,9 +14,24 @@ function buildClient() {
 
   const host = typeof window !== 'undefined' ? window.location.host : undefined
 
-  return createBrowserClient(supabaseUrl, anonKey, {
+  const client = createBrowserClient(supabaseUrl, anonKey, {
     cookieOptions: { domain: authCookieDomain(host) },
   })
+
+  // Le cookie de session est partagé entre pieces.ci et flotte.pieces.ci, mais
+  // les Web Locks qui sérialisent les refresh sont scopés par origine : deux
+  // onglets sur les deux domaines rafraîchissent le même token (à usage unique)
+  // en parallèle et se le volent → boucle 400/429. Une seule origine
+  // (pieces.ci) garde le ticker de refresh en arrière-plan ; sur flotte.* le
+  // refresh reste possible à la demande (getSession() rafraîchit un token
+  // expiré), seul le ticker est coupé. NB : @supabase/ssr force
+  // autoRefreshToken:true côté navigateur, d'où la coupure après création.
+  if (host?.startsWith('flotte.')) {
+    ;(client.auth as unknown as { autoRefreshToken: boolean }).autoRefreshToken = false
+    void client.auth.stopAutoRefresh()
+  }
+
+  return client
 }
 
 let browserClient: ReturnType<typeof buildClient> | undefined

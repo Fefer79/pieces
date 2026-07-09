@@ -15,6 +15,17 @@ const PROTECTED_PATHS = [
 ]
 
 export async function middleware(request: NextRequest) {
+  // Prefetches App Router : chaque lien visible déclenchait un getUser() (donc
+  // potentiellement un refresh du token, à usage unique) en parallèle → courses
+  // sur la rotation et 429. On les laisse passer sans toucher à l'auth ; la
+  // navigation réelle repasse par le middleware.
+  if (
+    request.headers.get('next-router-prefetch') !== null ||
+    request.headers.get('purpose') === 'prefetch'
+  ) {
+    return NextResponse.next()
+  }
+
   const { supabase, response } = createSupabaseMiddlewareClient(request)
 
   const {
@@ -58,5 +69,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|manifest\\.json|icons/|.*\\.png$|api).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.ico|manifest\\.json|icons/|api|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|css|js|map|txt|woff2?)$).*)',
+  ],
 }
