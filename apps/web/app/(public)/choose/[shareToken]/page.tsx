@@ -172,30 +172,30 @@ export default function OwnerChoicePage() {
   ]
 
   return (
-    <div className="min-h-dvh bg-surface pb-16">
+    <div className="min-h-dvh overflow-x-hidden bg-surface pb-16">
       {/* Header band */}
-      <div className="bg-[linear-gradient(135deg,#00113A_0%,#002366_100%)] px-4 py-6 text-white md:px-10 md:py-10">
+      <div className="bg-[linear-gradient(135deg,#00113A_0%,#002366_100%)] px-4 py-4 text-white md:px-10 md:py-10">
         <div className="mx-auto max-w-3xl lg:max-w-[1280px]">
           <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
             Commande partagée · #{order.id.slice(0, 8)}
           </div>
-          <h1 className="mt-2 font-display text-[28px] leading-tight md:text-[40px]">
+          <h1 className="mt-1.5 font-display text-[22px] leading-tight md:mt-2 md:text-[40px]">
             {isSelf
               ? 'Validez et payez votre sélection'
               : 'Votre mécanicien vous demande d’approuver'}
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-white/80 md:text-base">
+          <p className="mt-1.5 max-w-xl text-[13px] text-white/80 md:mt-2 md:text-base">
             {order.items.length} {order.items.length > 1 ? 'articles' : 'article'} sélectionnés.
-            Vérifiez le détail, choisissez votre moyen de paiement. Fonds sous séquestre jusqu&apos;à livraison.
+            Fonds sous séquestre jusqu&apos;à livraison.
           </p>
         </div>
       </div>
 
-      <div className="mx-auto max-w-3xl px-4 py-6 md:px-10 md:py-8 lg:max-w-[1280px] lg:py-10">
+      <div className="mx-auto max-w-3xl px-4 py-5 md:px-10 md:py-8 lg:max-w-[1280px] lg:py-10">
         {order.status === 'DRAFT' && (
-          <div className="grid gap-6 md:grid-cols-[1fr_380px] lg:gap-10 lg:grid-cols-[1fr_420px]">
+          <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_380px] lg:gap-10 lg:grid-cols-[minmax(0,1fr)_420px]">
             {/* Items */}
-            <div className="space-y-3">
+            <div className="min-w-0 space-y-3 order-2 md:order-none">
               <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
                 Articles
               </h2>
@@ -223,7 +223,7 @@ export default function OwnerChoicePage() {
             </div>
 
             {/* Sidebar: breakdown + payment */}
-            <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+            <div className="order-1 min-w-0 space-y-4 md:order-none md:space-y-5 lg:sticky lg:top-24 lg:self-start">
               <PriceBreakdown
                 title="Le détail, avant de payer"
                 lines={priceLines}
@@ -240,7 +240,7 @@ export default function OwnerChoicePage() {
                 <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
                   Moyen de paiement
                 </h2>
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
                   {availableMethods.map((id) => {
                     const pm = PAY_METHODS[id]
                     const isSelected = selectedMethod === id
@@ -248,23 +248,27 @@ export default function OwnerChoicePage() {
                       <button
                         key={id}
                         onClick={() => setSelectedMethod(id)}
-                        className={`flex w-full items-center gap-3 rounded-md border-2 bg-card p-3 text-left transition-all ${
+                        className={`flex min-h-11 w-full min-w-0 items-center gap-2.5 rounded-md border-2 bg-card p-2.5 text-left transition-all md:gap-3 md:p-3 ${
                           isSelected
                             ? 'border-ink-2 bg-[rgba(0,35,102,0.04)]'
                             : 'border-border hover:border-border-strong'
                         }`}
                       >
                         <div
-                          className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-sm font-mono text-[13px] font-bold ${pm.bg} ${pm.fg}`}
+                          className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-sm font-mono text-[12px] font-bold md:h-11 md:w-11 md:text-[13px] ${pm.bg} ${pm.fg}`}
                         >
                           {pm.short}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-ink">{pm.label}</div>
-                          <div className="text-[11.5px] text-muted">{pm.subtitle}</div>
+                          <div className="truncate text-[13px] font-semibold text-ink md:text-sm">
+                            {pm.label}
+                          </div>
+                          <div className="truncate text-[11px] text-muted md:text-[11.5px]">
+                            {pm.subtitle}
+                          </div>
                         </div>
                         <div
-                          className={`relative h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 ${
+                          className={`relative hidden h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 md:block ${
                             isSelected ? 'border-ink-2' : 'border-border-strong'
                           }`}
                         >

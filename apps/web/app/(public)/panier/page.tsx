@@ -306,7 +306,7 @@ export default function PanierPage() {
               <PriceBreakdown
                 lines={priceLines}
                 total={grandTotal}
-                note="Main-d'œuvre et frais plateforme calculés à la commande — aucun frais caché."
+                note="Pièces effectue la livraison et le paiement n'est libéré au vendeur qu'après votre bonne réception."
               />
 
               {error && (
