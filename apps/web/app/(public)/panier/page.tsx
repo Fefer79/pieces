@@ -47,20 +47,20 @@ export default function PanierPage() {
   const [created, setCreated] = useState<CreatedOrder | null>(null)
   const [deliveryMode, setDeliveryMode] = useState<DeliveryPricingMode>('STANDARD')
   // Palier de tarification livraison : FREE par défaut, résolu côté serveur
-  // depuis l'abonnement de l'entreprise du véhicule sélectionné.
-  const [deliveryTier, setDeliveryTier] = useState<DeliveryPricingTier>('FREE')
+  // depuis l'abonnement de l'entreprise du véhicule sélectionné. Le palier
+  // effectif est dérivé au rendu (pas de setState synchrone dans l'effet).
+  const [fetchedTier, setFetchedTier] = useState<DeliveryPricingTier>('FREE')
+  const deliveryTier: DeliveryPricingTier =
+    isAuthenticated && vehicle?.vehicleId ? fetchedTier : 'FREE'
   const hydrated = useRef(false)
 
   useEffect(() => {
-    if (!isAuthenticated || !vehicle?.vehicleId) {
-      setDeliveryTier('FREE')
-      return
-    }
+    if (!isAuthenticated || !vehicle?.vehicleId) return
     let cancelled = false
     apiFetch<{ tier: DeliveryPricingTier }>(
       `/orders/delivery-context?vehicleId=${encodeURIComponent(vehicle.vehicleId)}`,
     ).then((res) => {
-      if (!cancelled && res.ok && res.data?.tier) setDeliveryTier(res.data.tier)
+      if (!cancelled && res.ok && res.data?.tier) setFetchedTier(res.data.tier)
     })
     return () => {
       cancelled = true

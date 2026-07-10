@@ -44,11 +44,11 @@ describe('API Server', () => {
 
   it('error handler returns 422 for schema validation errors', async () => {
     const app = buildApp()
-    // POST /api/v1/auth/verify with invalid token format triggers Fastify schema validation
+    // POST /api/v1/auth/whatsapp/start with invalid phone triggers Fastify schema validation
     const response = await app.inject({
       method: 'POST',
-      url: '/api/v1/auth/verify',
-      payload: { phone: '+2250700000000', token: 'bad' },
+      url: '/api/v1/auth/whatsapp/start',
+      payload: { phone: 'bad' },
     })
     expect(response.statusCode).toBe(422)
     const body = response.json()
