@@ -87,6 +87,11 @@ const start = async () => {
     await fastify.listen({ port: env.PORT, host: '0.0.0.0' })
     fastify.log.info(`Server listening on port ${env.PORT}`)
     startWorker(fastify.log)
+    if (env.WHATSAPP_PROVIDER === 'baileys') {
+      // Dynamic import keeps baileys out of the process when the Cloud API webhook is used.
+      const { startBaileysGateway } = await import('./modules/whatsapp/baileys.gateway.js')
+      startBaileysGateway(fastify.log).catch((err) => fastify.log.error({ err }, 'Baileys gateway failed to start'))
+    }
     void ensureMaintenanceReminderScheduled(fastify.log)
     void ensureBufferReplenishScheduled(fastify.log)
     void ensureVendorRelanceScheduled(fastify.log)

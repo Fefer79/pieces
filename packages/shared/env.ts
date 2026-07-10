@@ -15,6 +15,11 @@ export const apiEnvSchema = z.object({
   // WhatsApp reverse-OTP login (optional; falls back to service-role key for signing)
   AUTH_SESSION_SECRET: z.string().optional(),
   WHATSAPP_BUSINESS_NUMBER: z.string().optional(),
+  // Inbound WhatsApp channel: Meta Cloud API webhook ('cloud', default) or a
+  // self-hosted Baileys socket on a regular WhatsApp account ('baileys', free).
+  WHATSAPP_PROVIDER: z.enum(['cloud', 'baileys']).default('cloud'),
+  BAILEYS_AUTH_DIR: z.string().optional(),
+  BAILEYS_PAIRING_PHONE: z.string().optional(),
   PINO_LOG_LEVEL: z
     .enum(['info', 'warn', 'error', 'fatal'])
     .default('info'),
