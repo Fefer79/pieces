@@ -26,6 +26,11 @@ vi.mock('../../lib/supabase.js', () => ({
   },
 }))
 
+const mockExtractOemLabel = vi.fn()
+vi.mock('../../lib/gemini.js', () => ({
+  extractOemLabel: (...args: unknown[]) => mockExtractOemLabel(...args),
+}))
+
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     vendor: {
@@ -53,6 +58,7 @@ const {
   createPartWithQuickVendor,
   getLiaisonDashboard,
   updateLiaisonVendor,
+  scanOemLabelForLiaison,
 } = await import('./liaison.service.js')
 
 const validVendorBody = {
@@ -266,6 +272,34 @@ describe('liaison.service', () => {
       })
     })
 
+    it('creates CatalogItemPhoto rows and derives legacy image fields from the first photo', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v1' })
+      mockCatalogItemCreate.mockResolvedValue({ id: 'p1' })
+
+      await createPartForVendor('liaison-1', 'v1', {
+        name: 'Alternateur 90A',
+        condition: 'USED',
+        photos: [
+          { urlOriginal: 'https://r2/a.jpg', urlThumb: 'https://r2/a_thumb.webp' },
+          { urlOriginal: 'https://r2/b.jpg' },
+        ],
+      })
+
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          imageOriginalUrl: 'https://r2/a.jpg',
+          imageThumbUrl: 'https://r2/a_thumb.webp',
+          photos: {
+            create: [
+              expect.objectContaining({ position: 0, urlOriginal: 'https://r2/a.jpg' }),
+              expect.objectContaining({ position: 1, urlOriginal: 'https://r2/b.jpg' }),
+            ],
+          },
+        }),
+        select: expect.any(Object),
+      })
+    })
+
     it('keeps manual inStock when stockQuantity is absent', async () => {
       mockVendorFindFirst.mockResolvedValue({ id: 'v1' })
       mockCatalogItemCreate.mockResolvedValue({ id: 'p1' })
@@ -279,6 +313,65 @@ describe('liaison.service', () => {
       expect(mockCatalogItemCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({ stockQuantity: undefined, inStock: false }),
         select: expect.any(Object),
+      })
+    })
+
+    it('rejects more than 3 photos', async () => {
+      mockVendorFindFirst.mockResolvedValue({ id: 'v1' })
+      const photo = { urlOriginal: 'https://r2/a.jpg' }
+      await expect(
+        createPartForVendor('liaison-1', 'v1', {
+          name: 'Alternateur',
+          condition: 'USED',
+          photos: [photo, photo, photo, photo],
+        }),
+      ).rejects.toMatchObject({ code: 'LIAISON_PART_INVALID' })
+    })
+  })
+
+  describe('scanOemLabelForLiaison', () => {
+    const buffer = Buffer.from('fake-image')
+
+    it('returns references and suggested compatibilities', async () => {
+      mockExtractOemLabel.mockResolvedValue({
+        oemReferences: ['27060-0L010'],
+        partName: 'Alternateur',
+        partBrand: 'Toyota',
+        compatibilities: [
+          { brand: 'Toyota', model: 'Hilux', yearFrom: 2005, yearTo: 2015, engine: '2.5 D-4D' },
+        ],
+        confidence: 0.9,
+      })
+
+      const out = await scanOemLabelForLiaison(buffer, 'image/jpeg')
+      expect(out.oemReferences).toEqual(['27060-0L010'])
+      expect(out.compatibilities).toHaveLength(1)
+    })
+
+    it('rejects unsupported mime type', async () => {
+      await expect(scanOemLabelForLiaison(buffer, 'application/pdf')).rejects.toMatchObject({
+        code: 'INVALID_FILE_TYPE',
+      })
+      expect(mockExtractOemLabel).not.toHaveBeenCalled()
+    })
+
+    it('maps Gemini unavailability to 503', async () => {
+      mockExtractOemLabel.mockResolvedValue(null)
+      await expect(scanOemLabelForLiaison(buffer, 'image/jpeg')).rejects.toMatchObject({
+        code: 'OEM_SCAN_UNAVAILABLE',
+      })
+    })
+
+    it('rejects when no reference is readable on the label', async () => {
+      mockExtractOemLabel.mockResolvedValue({
+        oemReferences: [],
+        partName: null,
+        partBrand: null,
+        compatibilities: [],
+        confidence: 0.1,
+      })
+      await expect(scanOemLabelForLiaison(buffer, 'image/jpeg')).rejects.toMatchObject({
+        code: 'OEM_SCAN_UNREADABLE',
       })
     })
   })

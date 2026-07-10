@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { uploadToR2 } from '../../lib/r2.js'
 import { processVariants } from '../../lib/imageProcessor.js'
+import { extractOemLabel } from '../../lib/gemini.js'
 import { subcategoryOf } from 'shared/constants'
 import {
   liaisonCreateVendorSchema,
@@ -50,6 +51,73 @@ export async function uploadLiaisonPartImage(
     ])
 
   return { imageOriginalUrl, imageThumbUrl, imageSmallUrl, imageMediumUrl, imageLargeUrl }
+}
+
+/**
+ * Scan d'une étiquette / code-barres OEM : Gemini lit les références imprimées
+ * et propose les compatibilités véhicule connues pour ces références. Résultat
+ * purement suggestif — la liaison relit et corrige avant publication.
+ */
+export async function scanOemLabelForLiaison(
+  fileBuffer: Buffer,
+  mimeType: string,
+  logger?: { warn: (obj: Record<string, unknown>, msg: string) => void },
+) {
+  if (fileBuffer.length > MAX_IMAGE_BYTES) {
+    throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
+  }
+  if (!ALLOWED_IMAGE_MIME.includes(mimeType)) {
+    throw new AppError('INVALID_FILE_TYPE', 422, { message: 'Format accepté : JPEG, PNG ou WebP' })
+  }
+
+  const extraction = await extractOemLabel(fileBuffer, mimeType, logger)
+  if (!extraction) {
+    throw new AppError('OEM_SCAN_UNAVAILABLE', 503, {
+      message: 'Analyse indisponible pour le moment. Saisissez la référence manuellement.',
+    })
+  }
+  if (extraction.oemReferences.length === 0) {
+    throw new AppError('OEM_SCAN_UNREADABLE', 422, {
+      message:
+        'Aucune référence lisible sur la photo. Rapprochez-vous de l\'étiquette et évitez les reflets.',
+    })
+  }
+
+  return extraction
+}
+
+/**
+ * Les listes (browse, catalogue, admin) lisent encore les champs image* de
+ * CatalogItem : on les dérive de la première photo pour que les fiches
+ * multi-photos restent visibles partout.
+ */
+type LiaisonPhotoInput = {
+  urlOriginal: string
+  urlThumb?: string | null
+  urlSmall?: string | null
+  urlMedium?: string | null
+  urlLarge?: string | null
+}
+
+function legacyImageFields(photo: LiaisonPhotoInput | undefined) {
+  return {
+    imageOriginalUrl: photo?.urlOriginal ?? null,
+    imageThumbUrl: photo?.urlThumb ?? null,
+    imageSmallUrl: photo?.urlSmall ?? null,
+    imageMediumUrl: photo?.urlMedium ?? null,
+    imageLargeUrl: photo?.urlLarge ?? null,
+  }
+}
+
+function photoCreateRows(photos: LiaisonPhotoInput[]) {
+  return photos.map((p, position) => ({
+    position,
+    urlOriginal: p.urlOriginal,
+    urlThumb: p.urlThumb ?? null,
+    urlSmall: p.urlSmall ?? null,
+    urlMedium: p.urlMedium ?? null,
+    urlLarge: p.urlLarge ?? null,
+  }))
 }
 
 const VENDOR_DETAIL_SELECT = {
@@ -248,6 +316,7 @@ export async function createPartForVendor(
   // sur la livraison mais la donnée annonce a de la valeur.
   const commissionAmount = parsed.data.commissionAmount ?? 0
   const fitments = parsed.data.fitments ?? []
+  const photos = parsed.data.photos ?? []
 
   return prisma.catalogItem.create({
     data: {
@@ -269,11 +338,15 @@ export async function createPartForVendor(
         parsed.data.stockQuantity != null
           ? parsed.data.stockQuantity > 0
           : parsed.data.inStock,
-      imageOriginalUrl: parsed.data.imageOriginalUrl,
-      imageThumbUrl: parsed.data.imageThumbUrl,
-      imageSmallUrl: parsed.data.imageSmallUrl,
-      imageMediumUrl: parsed.data.imageMediumUrl,
-      imageLargeUrl: parsed.data.imageLargeUrl,
+      ...(photos.length > 0
+        ? { ...legacyImageFields(photos[0]), photos: { create: photoCreateRows(photos) } }
+        : {
+            imageOriginalUrl: parsed.data.imageOriginalUrl,
+            imageThumbUrl: parsed.data.imageThumbUrl,
+            imageSmallUrl: parsed.data.imageSmallUrl,
+            imageMediumUrl: parsed.data.imageMediumUrl,
+            imageLargeUrl: parsed.data.imageLargeUrl,
+          }),
       status: 'PUBLISHED',
       aiGenerated: false,
       ...(fitments.length > 0 && {
@@ -333,6 +406,7 @@ export async function createPartWithQuickVendor(liaisonId: string, body: unknown
   // Pas de plancher : commission facultative, 0 accepté (cf. createPartForVendor).
   const commissionAmount = partInput.commissionAmount ?? 0
   const fitments = partInput.fitments ?? []
+  const photos = partInput.photos ?? []
 
   return prisma.$transaction(async (tx) => {
     let vendorId: string
@@ -386,11 +460,15 @@ export async function createPartWithQuickVendor(liaisonId: string, body: unknown
           partInput.stockQuantity != null
             ? partInput.stockQuantity > 0
             : partInput.inStock,
-        imageOriginalUrl: partInput.imageOriginalUrl,
-        imageThumbUrl: partInput.imageThumbUrl,
-        imageSmallUrl: partInput.imageSmallUrl,
-        imageMediumUrl: partInput.imageMediumUrl,
-        imageLargeUrl: partInput.imageLargeUrl,
+        ...(photos.length > 0
+          ? { ...legacyImageFields(photos[0]), photos: { create: photoCreateRows(photos) } }
+          : {
+              imageOriginalUrl: partInput.imageOriginalUrl,
+              imageThumbUrl: partInput.imageThumbUrl,
+              imageSmallUrl: partInput.imageSmallUrl,
+              imageMediumUrl: partInput.imageMediumUrl,
+              imageLargeUrl: partInput.imageLargeUrl,
+            }),
         status: 'PUBLISHED',
         aiGenerated: false,
         ...(fitments.length > 0 && {
@@ -449,6 +527,18 @@ export async function getLiaisonPart(liaisonId: string, vendorId: string, partId
       imageThumbUrl: true,
       imageOriginalUrl: true,
       createdAt: true,
+      photos: {
+        select: {
+          id: true,
+          position: true,
+          urlOriginal: true,
+          urlThumb: true,
+          urlSmall: true,
+          urlMedium: true,
+          urlLarge: true,
+        },
+        orderBy: { position: 'asc' },
+      },
       fitments: {
         select: {
           id: true,
@@ -525,6 +615,9 @@ export async function updatePartForVendor(
   if (d.imageSmallUrl !== undefined) updateData.imageSmallUrl = d.imageSmallUrl
   if (d.imageMediumUrl !== undefined) updateData.imageMediumUrl = d.imageMediumUrl
   if (d.imageLargeUrl !== undefined) updateData.imageLargeUrl = d.imageLargeUrl
+  // La liste de photos remplace l'existant ; les champs image* suivent la
+  // première photo (ou sont vidés si la liste est vide).
+  if (d.photos !== undefined) Object.assign(updateData, legacyImageFields(d.photos[0]))
   if (d.price !== undefined) {
     updateData.price = d.price
     updateData.priceUpdatedAt = new Date()
@@ -555,6 +648,15 @@ export async function updatePartForVendor(
         inStock: true,
       },
     })
+
+    if (d.photos !== undefined) {
+      await tx.catalogItemPhoto.deleteMany({ where: { catalogItemId: partId } })
+      if (d.photos.length > 0) {
+        await tx.catalogItemPhoto.createMany({
+          data: photoCreateRows(d.photos).map((p) => ({ ...p, catalogItemId: partId })),
+        })
+      }
+    }
 
     if (d.fitments !== undefined) {
       await tx.catalogItemFitment.deleteMany({ where: { catalogItemId: partId } })

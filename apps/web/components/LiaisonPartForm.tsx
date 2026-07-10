@@ -43,12 +43,38 @@ export interface FitmentEntry {
   engine?: string | null
 }
 
+/** Même convention de clés que CatalogItemPhoto côté API. */
+export interface PartPhoto {
+  urlOriginal: string
+  urlThumb?: string | null
+  urlSmall?: string | null
+  urlMedium?: string | null
+  urlLarge?: string | null
+}
+
+const MAX_PHOTOS = 3
+
+interface OemScanResult {
+  oemReferences: string[]
+  partName: string | null
+  partBrand: string | null
+  compatibilities: {
+    brand: string
+    model: string | null
+    yearFrom: number | null
+    yearTo: number | null
+    engine: string | null
+  }[]
+  confidence: number
+}
+
 export interface PartFormInitial {
   name?: string
   category?: string | null
   oemReference?: string | null
   vehicleCompatibility?: string | null
   fitments?: FitmentEntry[]
+  photos?: PartPhoto[]
   price?: number | null
   condition?: Condition
   warrantyValue?: number | null
@@ -113,41 +139,80 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
   // Quantité renseignée : inStock est dérivé côté serveur (>0), le toggle manuel
   // ne s'applique plus.
   const stockTracked = stockQuantity !== ''
-  const [imageUrls, setImageUrls] = useState<ImageUrls>({
-    imageOriginalUrl: initial?.imageOriginalUrl ?? undefined,
-    imageThumbUrl: initial?.imageThumbUrl ?? undefined,
+  // Photos (max 3). Les anciennes annonces mono-photo n'ont pas de lignes
+  // CatalogItemPhoto : on ressuscite la photo depuis les champs image* hérités.
+  const [photos, setPhotos] = useState<PartPhoto[]>(() => {
+    if (initial?.photos && initial.photos.length > 0) {
+      // Ne garder que les URLs : l'API renvoie aussi id/position, que le
+      // schéma de mise à jour n'accepte pas.
+      return initial.photos.slice(0, MAX_PHOTOS).map((p) => ({
+        urlOriginal: p.urlOriginal,
+        urlThumb: p.urlThumb ?? null,
+        urlSmall: p.urlSmall ?? null,
+        urlMedium: p.urlMedium ?? null,
+        urlLarge: p.urlLarge ?? null,
+      }))
+    }
+    if (initial?.imageOriginalUrl) {
+      return [{ urlOriginal: initial.imageOriginalUrl, urlThumb: initial.imageThumbUrl ?? null }]
+    }
+    return []
   })
   const [imgUploading, setImgUploading] = useState(false)
   const [imgError, setImgError] = useState<string | null>(null)
-  const previewUrl =
-    imageUrls.imageSmallUrl ?? imageUrls.imageThumbUrl ?? imageUrls.imageOriginalUrl ?? null
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const files = Array.from(e.target.files ?? [])
     e.target.value = '' // autorise re-sélection du même fichier après retrait
-    if (!file) return
+    if (files.length === 0) return
     setImgError(null)
-    if (file.size > 5 * 1024 * 1024) {
-      setImgError('Image trop volumineuse (max 5 MB)')
-      return
+
+    const room = MAX_PHOTOS - photos.length
+    if (files.length > room) {
+      setImgError(`Maximum ${MAX_PHOTOS} photos par pièce`)
     }
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      setImgError('Format accepté : JPEG, PNG ou WebP')
-      return
+    const batch = files.slice(0, Math.max(0, room))
+    if (batch.length === 0) return
+
+    for (const file of batch) {
+      if (file.size > 5 * 1024 * 1024) {
+        setImgError('Image trop volumineuse (max 5 MB)')
+        continue
+      }
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        setImgError('Format accepté : JPEG, PNG ou WebP')
+        continue
+      }
+      setImgUploading(true)
+      const fd = new FormData()
+      fd.append('file', file)
+      const r = await liaisonUpload<ImageUrls>('/parts/image', fd)
+      if (!r.ok) {
+        setImgError(r.message)
+        continue
+      }
+      const { imageOriginalUrl, imageThumbUrl, imageSmallUrl, imageMediumUrl, imageLargeUrl } =
+        r.data
+      if (!imageOriginalUrl) continue
+      setPhotos((prev) =>
+        prev.length >= MAX_PHOTOS
+          ? prev
+          : [
+              ...prev,
+              {
+                urlOriginal: imageOriginalUrl,
+                urlThumb: imageThumbUrl ?? null,
+                urlSmall: imageSmallUrl ?? null,
+                urlMedium: imageMediumUrl ?? null,
+                urlLarge: imageLargeUrl ?? null,
+              },
+            ],
+      )
     }
-    setImgUploading(true)
-    const fd = new FormData()
-    fd.append('file', file)
-    const r = await liaisonUpload<ImageUrls>('/parts/image', fd)
     setImgUploading(false)
-    if (!r.ok) {
-      setImgError(r.message)
-      return
-    }
-    setImageUrls(r.data)
   }
-  const clearImage = () => {
-    setImageUrls({})
+  const removePhoto = (idx: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== idx))
     setImgError(null)
   }
 
@@ -217,6 +282,70 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
     setFitEngine('')
   }
 
+  // Scan d'étiquette OEM : Gemini lit les références (code-barres inclus) et
+  // suggère les compatibilités véhicule, que la liaison relit avant publication.
+  const [scanning, setScanning] = useState(false)
+  const [scanError, setScanError] = useState<string | null>(null)
+  const [scanSummary, setScanSummary] = useState<string | null>(null)
+
+  const handleOemScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setScanError(null)
+    setScanSummary(null)
+    if (file.size > 5 * 1024 * 1024) {
+      setScanError('Image trop volumineuse (max 5 MB)')
+      return
+    }
+    setScanning(true)
+    const fd = new FormData()
+    fd.append('file', file)
+    const r = await liaisonUpload<OemScanResult>('/parts/oem-scan', fd)
+    setScanning(false)
+    if (!r.ok) {
+      setScanError(r.message)
+      return
+    }
+    const scan = r.data
+
+    const refs = scan.oemReferences
+    if (refs[0]) setOemReference(refs[0].slice(0, 80))
+
+    // Compatibilités suggérées : ajoutées à la liste structurée, sans doublons.
+    const key = (f: FitmentEntry) =>
+      [f.brand, f.model ?? '', f.yearFrom ?? '', f.yearTo ?? '', f.engine ?? '']
+        .join('|')
+        .toLowerCase()
+    const seen = new Set(fitments.map(key))
+    const fresh = scan.compatibilities.filter((c) => !seen.has(key(c)))
+    const added = fresh.length
+    if (added > 0) setFitments((prev) => [...prev, ...fresh])
+
+    // Texte libre de recherche : rempli seulement s'il est encore vide.
+    if (!vehicleCompatibility && scan.compatibilities.length > 0) {
+      const text = scan.compatibilities
+        .map((c) =>
+          [c.brand, c.model, c.yearFrom || c.yearTo ? `${c.yearFrom ?? ''}-${c.yearTo ?? ''}` : null]
+            .filter(Boolean)
+            .join(' '),
+        )
+        .join(', ')
+        .slice(0, 255)
+      setVehicleCompatibility(text)
+    }
+
+    if (!name && scan.partName) setName(scan.partName)
+
+    const parts = [
+      refs.length > 1 ? `${refs.length} références lues (${refs.join(', ')})` : `Référence lue : ${refs[0]}`,
+      added > 0
+        ? `${added} compatibilité${added > 1 ? 's' : ''} ajoutée${added > 1 ? 's' : ''}`
+        : 'aucune compatibilité connue',
+    ]
+    setScanSummary(`${parts.join(' — ')}. Vérifiez avant de publier.`)
+  }
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -254,27 +383,13 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       vContactName.trim().length >= 2 &&
       phoneValid &&
       vCommune.length > 0)
-  const valid = name.length >= 2 && vendorValid && !imgUploading
+  const valid = name.length >= 2 && vendorValid && !imgUploading && !scanning
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!valid) return
     setSubmitting(true)
     setError(null)
-
-    // Photo : on envoie les URLs si présentes ; en édition, des null pour
-    // effacer une photo retirée (le schéma update accepte null).
-    const imagePayload = imageUrls.imageOriginalUrl
-      ? imageUrls
-      : mode === 'edit'
-        ? {
-            imageOriginalUrl: null,
-            imageThumbUrl: null,
-            imageSmallUrl: null,
-            imageMediumUrl: null,
-            imageLargeUrl: null,
-          }
-        : {}
 
     const payload = {
       name,
@@ -294,7 +409,9 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
           ? null
           : undefined,
       fitments,
-      ...imagePayload,
+      // La liste remplace l'existant côté API ; les champs image* hérités sont
+      // dérivés de la première photo (ou vidés si la liste est vide).
+      photos,
       ...(quickVendor && {
         vendor: {
           shopName: vShopName.trim(),
@@ -409,40 +526,56 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
         />
       </Field>
 
-      <Field label="Photo" hint="JPEG, PNG ou WebP — 5 MB max">
-        {previewUrl ? (
-          <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={previewUrl}
-              alt="Aperçu de la pièce"
-              className="h-20 w-20 rounded-md object-cover ring-1 ring-border"
-            />
-            <button
-              type="button"
-              onClick={clearImage}
-              className="rounded-md bg-card px-3 py-2 text-sm text-[#D32F2F] ring-1 ring-border"
+      <Field label="Photos" hint={`JPEG, PNG ou WebP — 5 MB max, jusqu'à ${MAX_PHOTOS} photos`}>
+        <div className="grid grid-cols-3 gap-2">
+          {photos.map((p, idx) => (
+            <div key={p.urlOriginal} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={p.urlSmall ?? p.urlThumb ?? p.urlOriginal}
+                alt={`Photo ${idx + 1} de la pièce`}
+                className="aspect-square w-full rounded-md object-cover ring-1 ring-border"
+              />
+              <button
+                type="button"
+                onClick={() => removePhoto(idx)}
+                aria-label={`Retirer la photo ${idx + 1}`}
+                className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-sm text-white"
+              >
+                ✕
+              </button>
+              {idx === 0 && (
+                <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+                  Principale
+                </span>
+              )}
+            </div>
+          ))}
+          {photos.length < MAX_PHOTOS && (
+            <label
+              className={`flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border bg-card px-2 text-center text-sm ${
+                imgUploading ? 'text-muted' : 'text-ink'
+              }`}
             >
-              Retirer la photo
-            </button>
-          </div>
-        ) : (
-          <label
-            className={`flex cursor-pointer items-center justify-center rounded-md border border-dashed border-border bg-card px-3 py-4 text-sm ${
-              imgUploading ? 'text-muted' : 'text-ink'
-            }`}
-            style={{ minHeight: 44 }}
-          >
-            {imgUploading ? 'Envoi en cours…' : '+ Ajouter une photo'}
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleImageSelect}
-              disabled={imgUploading}
-              className="sr-only"
-            />
-          </label>
-        )}
+              {imgUploading ? 'Envoi…' : (
+                <>
+                  <span className="text-xl leading-none">+</span>
+                  <span className="text-xs">
+                    {photos.length === 0 ? 'Ajouter des photos' : 'Ajouter'}
+                  </span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handleImageSelect}
+                disabled={imgUploading}
+                className="sr-only"
+              />
+            </label>
+          )}
+        </div>
         {imgError && <p className="mt-1 text-xs text-[#D32F2F]">{imgError}</p>}
       </Field>
 
@@ -522,13 +655,36 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
         />
       </Field>
 
-      <Field label="Référence OEM">
-        <input
-          value={oemReference ?? ''}
-          onChange={(e) => setOemReference(e.target.value)}
-          className="liaison-input"
-          placeholder="Ex : 27060-0L010"
-        />
+      <Field
+        label="Référence OEM"
+        hint="Photographiez l'étiquette ou le code-barres : référence et compatibilités sont remplies automatiquement"
+      >
+        <div className="flex gap-2">
+          <input
+            value={oemReference ?? ''}
+            onChange={(e) => setOemReference(e.target.value)}
+            className="liaison-input min-w-0 flex-1"
+            placeholder="Ex : 27060-0L010"
+          />
+          <label
+            className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md bg-card px-3 text-sm ring-1 ring-border ${
+              scanning ? 'text-muted' : 'text-ink'
+            }`}
+            style={{ minHeight: 44 }}
+          >
+            {scanning ? 'Analyse…' : '📷 Scanner'}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              capture="environment"
+              onChange={handleOemScan}
+              disabled={scanning}
+              className="sr-only"
+            />
+          </label>
+        </div>
+        {scanError && <p className="mt-1 text-xs text-[#D32F2F]">{scanError}</p>}
+        {scanSummary && <p className="mt-1 text-xs text-[#1E6F4C]">{scanSummary}</p>}
       </Field>
 
       <Field label="Compatibilité véhicule (texte libre)" hint="Conservé pour la recherche plein-texte">
@@ -648,7 +804,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             inputMode="numeric"
             value={warrantyValue}
             onChange={(e) => setWarrantyValue(e.target.value)}
-            className="liaison-input flex-1"
+            className="liaison-input min-w-0 flex-1"
             placeholder="Durée"
             min={0}
             max={365}
@@ -723,13 +879,22 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       <style jsx>{`
         :global(.liaison-input) {
           width: 100%;
+          max-width: 100%;
+          min-width: 0;
           padding: 0.65rem 0.75rem;
           border-radius: 6px;
           border: 1px solid var(--border, #e5e5e5);
           background: var(--card, #fff);
           color: var(--ink, #1a1a1a);
-          font-size: 14px;
+          /* 16px minimum : en dessous, iOS Safari zoome au focus et laisse la
+             page scrollable horizontalement (le « scroll à droite » terrain). */
+          font-size: 16px;
           min-height: 44px;
+        }
+        @media (min-width: 1024px) {
+          :global(.liaison-input) {
+            font-size: 14px;
+          }
         }
         :global(.liaison-input:focus) {
           outline: 2px solid rgba(0, 35, 102, 0.4);

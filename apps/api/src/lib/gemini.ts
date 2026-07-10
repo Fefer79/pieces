@@ -16,6 +16,128 @@ let genAIInstance: GoogleGenerativeAI | null = null
 let callCount = 0
 let quotaAlerted = false
 
+export interface OemCompatibility {
+  brand: string
+  model: string | null
+  yearFrom: number | null
+  yearTo: number | null
+  engine: string | null
+}
+
+export interface OemLabelExtraction {
+  oemReferences: string[]
+  partName: string | null
+  partBrand: string | null
+  compatibilities: OemCompatibility[]
+  confidence: number
+}
+
+const OEM_LABEL_PROMPT = `You are reading a photo of an auto part label, box or barcode sticker (OEM or aftermarket), taken in a spare parts shop in Côte d'Ivoire.
+Extract the text printed on the label (including numbers under barcodes) and use your knowledge of auto part references to identify the part.
+Return ONLY a valid JSON object with these fields:
+{
+  "oemReferences": ["Every part number / OEM reference visible on the label, most prominent first. Keep original formatting (dashes, dots). Empty array if none readable."],
+  "partName": "Part name in French if identifiable from the label or the reference (e.g. 'Filtre à huile'), null otherwise",
+  "partBrand": "Manufacturer brand printed on the label (e.g. 'Toyota', 'Bosch', 'Denso'), null otherwise",
+  "compatibilities": [
+    {
+      "brand": "Vehicle brand (e.g. 'Toyota')",
+      "model": "Vehicle model (e.g. 'Hilux'), null if unknown",
+      "yearFrom": 2005,
+      "yearTo": 2015,
+      "engine": "Engine code or description (e.g. '2.5 D-4D'), null if unknown"
+    }
+  ],
+  "confidence": "Number between 0 and 1: confidence that the references were read correctly"
+}
+For "compatibilities": list the vehicles this part fits, based on the OEM references you read and your knowledge. Only include vehicles you are reasonably sure about; empty array if the references are unknown to you. yearFrom/yearTo are integers or null.
+Only return valid JSON, no markdown, no other text.`
+
+/**
+ * Lit une photo d'étiquette / code-barres de pièce : extrait les références
+ * OEM et propose les compatibilités véhicule connues pour ces références.
+ */
+export async function extractOemLabel(
+  imageBuffer: Buffer,
+  mimeType: string,
+  logger?: { warn: (obj: Record<string, unknown>, msg: string) => void },
+): Promise<OemLabelExtraction | null> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    logger?.warn({ event: 'GEMINI_NOT_CONFIGURED' }, 'Gemini API key not configured — skipping OEM label extraction')
+    return null
+  }
+
+  callCount++
+
+  try {
+    if (!genAIInstance) genAIInstance = new GoogleGenerativeAI(apiKey)
+    const model = genAIInstance.getGenerativeModel({ model: GEMINI_MODEL })
+
+    const result = await model.generateContent([
+      OEM_LABEL_PROMPT,
+      {
+        inlineData: {
+          mimeType,
+          data: imageBuffer.toString('base64'),
+        },
+      },
+    ])
+
+    const text = result.response.text().trim()
+    const jsonText = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '')
+    const parsed = JSON.parse(jsonText)
+
+    const toYear = (v: unknown): number | null => {
+      const n = typeof v === 'number' ? Math.trunc(v) : Number.parseInt(String(v ?? ''), 10)
+      return Number.isFinite(n) && n >= 1950 && n <= 2100 ? n : null
+    }
+    const toStr = (v: unknown, max: number): string | null => {
+      if (typeof v !== 'string') return null
+      const t = v.trim().slice(0, max)
+      return t.length > 0 ? t : null
+    }
+
+    const oemReferences = Array.isArray(parsed.oemReferences)
+      ? parsed.oemReferences
+          .map((r: unknown) => toStr(r, 80))
+          .filter((r: string | null): r is string => r !== null)
+          .slice(0, 10)
+      : []
+
+    const compatibilities: OemCompatibility[] = Array.isArray(parsed.compatibilities)
+      ? parsed.compatibilities
+          .map((c: Record<string, unknown>) => {
+            const brand = toStr(c?.brand, 60)
+            if (!brand) return null
+            const yearFrom = toYear(c?.yearFrom)
+            const yearTo = toYear(c?.yearTo)
+            return {
+              brand,
+              model: toStr(c?.model, 80),
+              yearFrom,
+              yearTo: yearFrom != null && yearTo != null && yearTo < yearFrom ? null : yearTo,
+              engine: toStr(c?.engine, 60),
+            }
+          })
+          .filter((c: OemCompatibility | null): c is OemCompatibility => c !== null)
+          .slice(0, 20)
+      : []
+
+    return {
+      oemReferences,
+      partName: toStr(parsed.partName, 120),
+      partBrand: toStr(parsed.partBrand, 60),
+      compatibilities,
+      confidence:
+        typeof parsed.confidence === 'number' ? Math.min(1, Math.max(0, parsed.confidence)) : 0,
+    }
+  } catch {
+    logger?.warn({ event: 'GEMINI_OEM_LABEL_FAILED', callCount }, 'Gemini Flash API error — OEM label extraction failed')
+    return null
+  }
+}
+
 const PROMPT = `Analyze this auto part image from an Ivory Coast (Côte d'Ivoire) marketplace.
 Return ONLY a valid JSON object with these fields:
 {

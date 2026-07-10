@@ -59,6 +59,16 @@ export const liaisonUpdateVendorSchema = z
     path: ['kycType'],
   })
 
+// Photo déjà uploadée via POST /liaison/parts/image : on rattache les URLs
+// renvoyées. Même convention de clés que CatalogItemPhoto (urlOriginal…).
+export const liaisonPartPhotoSchema = z.object({
+  urlOriginal: z.string().url(),
+  urlThumb: z.string().url().nullable().optional(),
+  urlSmall: z.string().url().nullable().optional(),
+  urlMedium: z.string().url().nullable().optional(),
+  urlLarge: z.string().url().nullable().optional(),
+})
+
 const liaisonFitmentSchema = z.object({
   brand: z.string().min(1).max(60),
   model: z.string().min(1).max(80).nullable().optional(),
@@ -76,6 +86,7 @@ export const liaisonCreatePartSchema = z.object({
   oemReference: z.string().max(80).optional(),
   vehicleCompatibility: z.string().max(255).optional(),
   fitments: z.array(liaisonFitmentSchema).max(50).optional(),
+  photos: z.array(liaisonPartPhotoSchema).max(3).optional(),
   price: z.number().int().min(1).optional(),
   condition: z.enum(['NEW', 'USED', 'REFURBISHED']),
   warrantyValue: z.number().int().min(0).max(365).optional(),
@@ -113,6 +124,7 @@ export const liaisonUpdatePartSchema = z.object({
   oemReference: z.string().max(80).nullable().optional(),
   vehicleCompatibility: z.string().max(255).nullable().optional(),
   fitments: z.array(liaisonFitmentSchema).max(50).optional(),
+  photos: z.array(liaisonPartPhotoSchema).max(3).optional(),
   price: z.number().int().min(1).optional(),
   condition: z.enum(['NEW', 'USED', 'REFURBISHED']).optional(),
   warrantyValue: z.number().int().min(0).max(365).nullable().optional(),

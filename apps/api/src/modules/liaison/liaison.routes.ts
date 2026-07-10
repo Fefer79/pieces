@@ -18,6 +18,7 @@ import {
   createPartForVendor,
   createPartWithQuickVendor,
   uploadLiaisonPartImage,
+  scanOemLabelForLiaison,
   getLiaisonPart,
   updatePartForVendor,
   acceptCommissionByLiaison,
@@ -255,6 +256,36 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
         liaisonId: request.user.id,
       })
       return reply.status(201).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/parts/oem-scan',
+    {
+      schema: {
+        tags: ['Liaison'],
+        description:
+          'Analyse une photo d\'étiquette / code-barres OEM : références + compatibilités véhicule suggérées',
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const result = await scanOemLabelForLiaison(buffer, file.mimetype, request.log)
+      request.log.info({
+        event: 'LIAISON_OEM_SCANNED',
+        liaisonId: request.user.id,
+        referenceCount: result.oemReferences.length,
+        compatibilityCount: result.compatibilities.length,
+        confidence: result.confidence,
+      })
+      return reply.status(200).send({ data: result })
     },
   )
 
