@@ -12,7 +12,7 @@ import { MiniCartButton } from '@/components/cart/mini-cart'
 import { useCart } from '@/lib/cart'
 import { useSelectedVehicle, type SelectedVehicle } from '@/lib/selected-vehicle'
 import { apiFetch } from '@/lib/enterprise-api'
-import { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES, formatWarranty, type WarrantyUnit } from 'shared/constants'
+import { ABIDJAN_COMMUNES, computeDeliveryFee, formatWarranty, type WarrantyUnit } from 'shared/constants'
 
 const WA_NUMBER = '2250706846268'
 
@@ -219,9 +219,16 @@ export default function ProductPage() {
         )
     : []
 
+  // Estimation livraison standard, palier Gratuit (la fiche produit n'a pas de
+  // contexte flotte) — même formule que le panier et le serveur (delivery-pricing.ts).
   const deliveryFee: number | null =
-    deliveryCommune && deliveryCommune in ABIDJAN_DELIVERY_FEES
-      ? ABIDJAN_DELIVERY_FEES[deliveryCommune as keyof typeof ABIDJAN_DELIVERY_FEES]
+    item?.price != null
+      ? computeDeliveryFee({
+          tier: 'FREE',
+          mode: 'STANDARD',
+          commune: deliveryCommune,
+          vendorSubtotals: [item.price * qty],
+        })
       : null
 
   const priceLines: PriceLine[] =

@@ -820,6 +820,7 @@ model Order {
   totalAmount     Int           @default(0) @map("total_amount")
   deliveryFee     Int           @default(0) @map("delivery_fee")
   deliveryCommune String?       @map("delivery_commune")
+  deliveryMode    DeliveryMode  @default(STANDARD) @map("delivery_mode")
   laborCost       Int?          @map("labor_cost")
   vendorConfirmedAt DateTime?   @map("vendor_confirmed_at")
   paidAt          DateTime?     @map("paid_at")

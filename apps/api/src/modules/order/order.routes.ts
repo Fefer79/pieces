@@ -12,6 +12,7 @@ import {
   vendorConfirmOrder,
   getOpenDraft,
   upsertDraft,
+  getDeliveryTier,
 } from './order.service.js'
 import { getUserOrderHistory } from '../admin/admin.service.js'
 import { generateDevisPdf } from './devis.service.js'
@@ -30,14 +31,34 @@ export async function orderRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const body = request.body as { items: { catalogItemId: string; quantity?: number }[]; ownerPhone?: string; laborCost?: number; vehicleId?: string; deliveryCommune?: string }
+      const body = request.body as { items: { catalogItemId: string; quantity?: number }[]; ownerPhone?: string; laborCost?: number; vehicleId?: string; deliveryCommune?: string; deliveryMode?: 'STANDARD' | 'EXPRESS' }
       const order = await createOrder(request.user.id, body.items, {
         ownerPhone: body.ownerPhone,
         laborCost: body.laborCost,
         vehicleId: body.vehicleId,
         deliveryCommune: body.deliveryCommune,
+        deliveryMode: body.deliveryMode,
       })
       return reply.status(201).send({ data: order })
+    },
+  )
+
+  // Palier de livraison du panier (FREE / PRO_FLOTTE / PRO_FLOTTE_PLUS) selon
+  // le véhicule sélectionné — permet au panier d'afficher les bons tarifs.
+  fastify.get(
+    '/delivery-context',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Orders'],
+        description: 'Palier de tarification livraison pour le panier',
+        security: [{ BearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const query = request.query as { vehicleId?: string }
+      const tier = await getDeliveryTier(request.user.id, query.vehicleId)
+      return reply.status(200).send({ data: { tier } })
     },
   )
 

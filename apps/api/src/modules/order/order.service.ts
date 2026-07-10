@@ -5,7 +5,8 @@ import { canTransition } from './order.stateMachine.js'
 import { recomputeVendorScore } from '../vendor/vendorScore.service.js'
 import { getOrCreateInvoiceForOrder } from '../enterprise/invoice.service.js'
 import { consumeStockForOrder } from '../catalog/stock.service.js'
-import { ABIDJAN_DELIVERY_FEES } from 'shared/constants'
+import { computeDeliveryFee, type DeliveryPricingMode, type DeliveryPricingTier } from 'shared/constants'
+import { currentTier } from '../enterprise/subscription.service.js'
 
 const DELIVERED_STATUSES = new Set(['DELIVERED', 'CONFIRMED', 'COMPLETED'])
 
@@ -143,7 +144,13 @@ async function buildOrderItems(qtyById: Map<string, number>) {
 export async function createOrder(
   initiatorId: string,
   items: { catalogItemId: string; quantity?: number }[],
-  options: { ownerPhone?: string; laborCost?: number; vehicleId?: string; deliveryCommune?: string } = {},
+  options: {
+    ownerPhone?: string
+    laborCost?: number
+    vehicleId?: string
+    deliveryCommune?: string
+    deliveryMode?: DeliveryPricingMode
+  } = {},
 ) {
   const qtyById = qtyMapFromItems(items)
 
@@ -181,15 +188,24 @@ export async function createOrder(
   const { create, totalAmount } = await buildOrderItems(qtyById)
   const shareToken = generateShareToken()
 
-  // Frais de livraison = forfait commune × nombre de vendeurs distincts
-  // (chaque vendeur expédie séparément). Calculé serveur-side, jamais confié au client.
+  // Frais de livraison : % du sous-total par vendeur (chacun expédie séparément),
+  // plancher zone / plafond palier — voir shared/constants/delivery-pricing.ts.
+  // Le palier vient de l'abonnement actif de l'entreprise rattachée au véhicule
+  // (essai 30 j inclus). Calculé serveur-side, jamais confié au client.
   const deliveryCommune = options.deliveryCommune?.trim() || undefined
-  const perVendorFee =
-    deliveryCommune && deliveryCommune in ABIDJAN_DELIVERY_FEES
-      ? ABIDJAN_DELIVERY_FEES[deliveryCommune as keyof typeof ABIDJAN_DELIVERY_FEES]
-      : 0
-  const vendorCount = new Set(create.map((c) => c.vendorId)).size
-  const deliveryFee = perVendorFee * vendorCount
+  const deliveryMode: DeliveryPricingMode = options.deliveryMode ?? 'STANDARD'
+  const tier: DeliveryPricingTier = enterpriseId ? await currentTier(enterpriseId) : 'FREE'
+  const subtotalByVendor = new Map<string, number>()
+  for (const c of create) {
+    subtotalByVendor.set(c.vendorId, (subtotalByVendor.get(c.vendorId) ?? 0) + c.priceSnapshot * c.quantity)
+  }
+  const deliveryFee =
+    computeDeliveryFee({
+      tier,
+      mode: deliveryMode,
+      commune: deliveryCommune,
+      vendorSubtotals: [...subtotalByVendor.values()],
+    }) ?? 0
 
   const order = await prisma.order.create({
     data: {
@@ -199,6 +215,7 @@ export async function createOrder(
       totalAmount,
       deliveryFee,
       deliveryCommune,
+      deliveryMode,
       laborCost: options.laborCost,
       vehicleId,
       enterpriseId,
@@ -217,6 +234,24 @@ export async function createOrder(
   })
 
   return order
+}
+
+// Palier de livraison applicable au panier : abonnement actif (essai inclus) de
+// l'entreprise du véhicule sélectionné, si l'utilisateur en est membre. Sert au
+// front pour afficher les frais par mode — le calcul autoritaire reste createOrder.
+export async function getDeliveryTier(userId: string, vehicleId?: string): Promise<DeliveryPricingTier> {
+  if (!vehicleId) return 'FREE'
+  const vehicle = await prisma.vehicle.findUnique({
+    where: { id: vehicleId },
+    select: { enterpriseId: true },
+  })
+  if (!vehicle?.enterpriseId) return 'FREE'
+  const membership = await prisma.enterpriseMember.findUnique({
+    where: { uq_enterprise_member: { enterpriseId: vehicle.enterpriseId, userId } },
+    select: { id: true },
+  })
+  if (!membership) return 'FREE'
+  return currentTier(vehicle.enterpriseId)
 }
 
 // Note d'événement qui distingue un brouillon-panier d'une commande envoyée au

@@ -9,6 +9,7 @@ export const createOrderSchema = z.object({
   laborCost: z.number().int().min(0).optional(),
   vehicleId: z.string().uuid().optional(),
   deliveryCommune: z.string().max(50).optional(),
+  deliveryMode: z.enum(['STANDARD', 'EXPRESS']).optional(),
 })
 
 export const upsertDraftSchema = z.object({

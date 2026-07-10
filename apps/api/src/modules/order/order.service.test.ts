@@ -18,6 +18,11 @@ const mockOrderEventDeleteMany = vi.fn()
 const mockVehicleFindUnique = vi.fn()
 const mockEnterpriseMemberFindUnique = vi.fn()
 const mockVendorFindFirst = vi.fn()
+const mockCurrentTier = vi.fn()
+
+vi.mock('../enterprise/subscription.service.js', () => ({
+  currentTier: (...args: unknown[]) => mockCurrentTier(...args),
+}))
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -61,6 +66,7 @@ const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionO
 describe('order.service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockCurrentTier.mockResolvedValue('FREE')
   })
 
   describe('createOrder', () => {
@@ -427,6 +433,119 @@ describe('order.service', () => {
       const createArg = mockOrderCreate.mock.calls[0]![0] as { data: { vehicleId: string | undefined; enterpriseId: string | undefined } }
       expect(createArg.data.vehicleId).toBeUndefined()
       expect(createArg.data.enterpriseId).toBeUndefined()
+    })
+  })
+
+  describe('createOrder delivery pricing', () => {
+    type FeeArg = { data: { deliveryFee: number; deliveryMode: string } }
+    const item = (over: Record<string, unknown> = {}) => ({
+      id: 'item-1',
+      name: 'Filtre',
+      category: 'Filtration',
+      price: 60_000,
+      imageThumbUrl: null,
+      vendorId: 'v1',
+      commissionAmount: null,
+      vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' },
+      ...over,
+    })
+
+    it('standard FREE : 3 % du sous-total vendeur, arrondi à la centaine', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([item()])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }], { deliveryCommune: 'Cocody' })
+
+      const arg = mockOrderCreate.mock.calls[0]![0] as FeeArg
+      expect(arg.data.deliveryFee).toBe(1800) // 3 % de 60 000
+      expect(arg.data.deliveryMode).toBe('STANDARD')
+    })
+
+    it('standard FREE : plancher zone quand le pourcentage est en dessous', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([item({ price: 10_000 })])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }], { deliveryCommune: 'Bingerville' })
+
+      const arg = mockOrderCreate.mock.calls[0]![0] as FeeArg
+      expect(arg.data.deliveryFee).toBe(2500) // 300 < plancher périphérie 2 500
+    })
+
+    it('express FREE : 6 % avec plancher 5 000 F', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([item({ price: 20_000 })])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }], {
+        deliveryCommune: 'Cocody',
+        deliveryMode: 'EXPRESS',
+      })
+
+      const arg = mockOrderCreate.mock.calls[0]![0] as FeeArg
+      expect(arg.data.deliveryFee).toBe(5000) // 1 200 < plancher express 5 000
+      expect(arg.data.deliveryMode).toBe('EXPRESS')
+    })
+
+    it('plafonne la somme multi-vendeurs au plafond du palier', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        item({ id: 'i1', price: 200_000, vendorId: 'v1', vendor: { id: 'v1', shopName: 'A', status: 'ACTIVE' } }),
+        item({ id: 'i2', price: 200_000, vendorId: 'v2', vendor: { id: 'v2', shopName: 'B', status: 'ACTIVE' } }),
+        item({ id: 'i3', price: 200_000, vendorId: 'v3', vendor: { id: 'v3', shopName: 'C', status: 'ACTIVE' } }),
+      ])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder(
+        'user-1',
+        [{ catalogItemId: 'i1' }, { catalogItemId: 'i2' }, { catalogItemId: 'i3' }],
+        { deliveryCommune: 'Cocody' },
+      )
+
+      const arg = mockOrderCreate.mock.calls[0]![0] as FeeArg
+      expect(arg.data.deliveryFee).toBe(9000) // 3 × 6 000 = 18 000 → plafond FREE 9 000
+    })
+
+    it('PRO_FLOTTE : 2 % avec plancher réduit', async () => {
+      mockVehicleFindUnique.mockResolvedValueOnce({ id: 'veh-1', userId: null, enterpriseId: 'e-1' })
+      mockEnterpriseMemberFindUnique.mockResolvedValueOnce({ id: 'm1' })
+      mockCurrentTier.mockResolvedValueOnce('PRO_FLOTTE')
+      mockCatalogItemFindMany.mockResolvedValueOnce([item()])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }], {
+        vehicleId: 'veh-1',
+        deliveryCommune: 'Cocody',
+      })
+
+      expect(mockCurrentTier).toHaveBeenCalledWith('e-1')
+      const arg = mockOrderCreate.mock.calls[0]![0] as FeeArg
+      expect(arg.data.deliveryFee).toBe(1200) // 2 % de 60 000, > plancher 1 000
+    })
+
+    it('PRO_FLOTTE_PLUS : livraison offerte, même en express', async () => {
+      mockVehicleFindUnique.mockResolvedValueOnce({ id: 'veh-1', userId: null, enterpriseId: 'e-1' })
+      mockEnterpriseMemberFindUnique.mockResolvedValueOnce({ id: 'm1' })
+      mockCurrentTier.mockResolvedValueOnce('PRO_FLOTTE_PLUS')
+      mockCatalogItemFindMany.mockResolvedValueOnce([item()])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }], {
+        vehicleId: 'veh-1',
+        deliveryCommune: 'Cocody',
+        deliveryMode: 'EXPRESS',
+      })
+
+      const arg = mockOrderCreate.mock.calls[0]![0] as FeeArg
+      expect(arg.data.deliveryFee).toBe(0)
+    })
+
+    it('sans commune : frais à 0, pas de lookup de palier hors entreprise', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([item()])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }])
+
+      const arg = mockOrderCreate.mock.calls[0]![0] as FeeArg
+      expect(arg.data.deliveryFee).toBe(0)
+      expect(mockCurrentTier).not.toHaveBeenCalled()
     })
   })
 })

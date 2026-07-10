@@ -18,19 +18,17 @@ export async function createDelivery(orderId: string, options: {
 
   // À défaut d'adresse explicite, on reprend la commune choisie par l'acheteur
   // au panier (Order.deliveryCommune) pour que le rider ait au moins la zone.
-  let deliveryAddress = options.deliveryAddress
-  if (!deliveryAddress) {
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      select: { deliveryCommune: true },
-    })
-    deliveryAddress = order?.deliveryCommune ?? undefined
-  }
+  // Idem pour le mode : la livraison hérite du mode payé à la commande.
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { deliveryCommune: true, deliveryMode: true },
+  })
+  const deliveryAddress = options.deliveryAddress ?? order?.deliveryCommune ?? undefined
 
   return prisma.delivery.create({
     data: {
       orderId,
-      mode: options.mode ?? 'STANDARD',
+      mode: options.mode ?? order?.deliveryMode ?? 'STANDARD',
       pickupAddress: options.pickupAddress,
       pickupLat: options.pickupLat,
       pickupLng: options.pickupLng,

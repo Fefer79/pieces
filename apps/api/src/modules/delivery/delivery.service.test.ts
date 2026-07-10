@@ -56,6 +56,28 @@ describe('delivery.service', () => {
       )
     })
 
+    it('inherits the delivery mode paid on the order when none is provided', async () => {
+      mockDeliveryFindUnique.mockResolvedValueOnce(null)
+      mockOrderFindUnique.mockResolvedValueOnce({ deliveryCommune: 'Cocody', deliveryMode: 'EXPRESS' })
+      mockDeliveryCreate.mockResolvedValueOnce({ id: 'd1', orderId: 'o1', status: 'PENDING_ASSIGNMENT' })
+
+      await createDelivery('o1', {})
+      expect(mockDeliveryCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ mode: 'EXPRESS' }) }),
+      )
+    })
+
+    it('lets an explicit mode override the order mode', async () => {
+      mockDeliveryFindUnique.mockResolvedValueOnce(null)
+      mockOrderFindUnique.mockResolvedValueOnce({ deliveryCommune: 'Cocody', deliveryMode: 'EXPRESS' })
+      mockDeliveryCreate.mockResolvedValueOnce({ id: 'd1', orderId: 'o1', status: 'PENDING_ASSIGNMENT' })
+
+      await createDelivery('o1', { mode: 'STANDARD' })
+      expect(mockDeliveryCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ mode: 'STANDARD' }) }),
+      )
+    })
+
     it('throws if delivery already exists', async () => {
       mockDeliveryFindUnique.mockResolvedValueOnce({ id: 'd1' })
       await expect(createDelivery('o1', {})).rejects.toThrow()

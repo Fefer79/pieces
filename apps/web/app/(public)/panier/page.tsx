@@ -12,7 +12,13 @@ import { QuantityStepper } from '@/components/ui/quantity-stepper'
 import { useCart, type CartItem } from '@/lib/cart'
 import { apiFetch } from '@/lib/enterprise-api'
 import { useAuth } from '@/lib/auth-context'
-import { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES } from 'shared/constants'
+import {
+  ABIDJAN_COMMUNES,
+  computeDeliveryFee,
+  DELIVERY_MODES,
+  type DeliveryPricingMode,
+  type DeliveryPricingTier,
+} from 'shared/constants'
 
 type CreatedOrder = { id: string; shareToken: string }
 
@@ -39,7 +45,27 @@ export default function PanierPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<CreatedOrder | null>(null)
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryPricingMode>('STANDARD')
+  // Palier de tarification livraison : FREE par défaut, résolu côté serveur
+  // depuis l'abonnement de l'entreprise du véhicule sélectionné.
+  const [deliveryTier, setDeliveryTier] = useState<DeliveryPricingTier>('FREE')
   const hydrated = useRef(false)
+
+  useEffect(() => {
+    if (!isAuthenticated || !vehicle?.vehicleId) {
+      setDeliveryTier('FREE')
+      return
+    }
+    let cancelled = false
+    apiFetch<{ tier: DeliveryPricingTier }>(
+      `/orders/delivery-context?vehicleId=${encodeURIComponent(vehicle.vehicleId)}`,
+    ).then((res) => {
+      if (!cancelled && res.ok && res.data?.tier) setDeliveryTier(res.data.tier)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, vehicle?.vehicleId])
 
   // Hybride : au montage (connecté), fusionner le brouillon serveur dans le local.
   useEffect(() => {
@@ -92,6 +118,7 @@ export default function PanierPage() {
         items: items.map((i) => ({ catalogItemId: i.catalogItemId, quantity: i.quantity })),
         ...(vehicle ? { vehicleId: vehicle.vehicleId } : {}),
         ...(commune ? { deliveryCommune: commune } : {}),
+        deliveryMode,
       }),
     })
     if (res.ok) {
@@ -112,23 +139,25 @@ export default function PanierPage() {
     setSubmitting(false)
   }
 
-  // Frais de livraison = forfait commune × nombre de vendeurs (chacun expédie
-  // séparément). Aligné sur le calcul serveur dans order.service.createOrder.
+  // Frais de livraison : % du sous-total par vendeur (chacun expédie séparément),
+  // plancher zone / plafond palier. Même helper que le serveur (createOrder) —
+  // l'affichage est donc exactement le montant facturé.
   const vendorCount = itemsByVendor.length
-  const perVendorFee: number | null =
-    commune && commune in ABIDJAN_DELIVERY_FEES
-      ? ABIDJAN_DELIVERY_FEES[commune as keyof typeof ABIDJAN_DELIVERY_FEES]
-      : null
-  const deliveryFee = perVendorFee != null ? perVendorFee * vendorCount : null
+  const vendorSubtotals = itemsByVendor.map((g) => g.subtotal)
+  const feeForMode = (mode: DeliveryPricingMode) =>
+    computeDeliveryFee({ tier: deliveryTier, mode, commune, vendorSubtotals })
+  const deliveryFee = feeForMode(deliveryMode)
+  const isPlus = deliveryTier === 'PRO_FLOTTE_PLUS'
+  const modeLabel = deliveryMode === 'EXPRESS' ? 'Livraison express' : 'Livraison'
   const priceLines: PriceLine[] = [
     { label: 'Sous-total pièces', amount: subtotal },
     ...(deliveryFee != null
       ? [
           {
             label:
-              vendorCount > 1
-                ? `Livraison · ${commune} (${vendorCount} vendeurs)`
-                : `Livraison · ${commune}`,
+              (vendorCount > 1
+                ? `${modeLabel} · ${commune} (${vendorCount} vendeurs)`
+                : `${modeLabel} · ${commune}`) + (isPlus ? ' — offerte' : ''),
             amount: deliveryFee,
           },
         ]
@@ -301,6 +330,49 @@ export default function PanierPage() {
                     </option>
                   ))}
                 </select>
+
+                {/* Mode de livraison : tarifs du palier, affichés dès qu'une commune est choisie. */}
+                <fieldset className="mt-3">
+                  <legend className="block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                    Mode de livraison
+                  </legend>
+                  <div className="mt-1.5 space-y-1.5">
+                    {DELIVERY_MODES.map(({ mode, label, detail }) => {
+                      const fee = feeForMode(mode)
+                      return (
+                        <label
+                          key={mode}
+                          className={`flex cursor-pointer items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
+                            deliveryMode === mode ? 'border-accent bg-accent/5' : 'border-border bg-surface'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="cart-delivery-mode"
+                              value={mode}
+                              checked={deliveryMode === mode}
+                              onChange={() => setDeliveryMode(mode)}
+                              className="accent-accent"
+                            />
+                            <span className="text-sm text-ink">
+                              {label} <span className="text-xs text-muted">{detail}</span>
+                            </span>
+                          </span>
+                          <span className="shrink-0">
+                            {fee == null ? (
+                              <span className="text-xs text-muted">—</span>
+                            ) : fee === 0 ? (
+                              <span className="text-xs font-semibold text-accent">Offerte</span>
+                            ) : (
+                              <Price amount={fee} className="text-xs" />
+                            )}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </fieldset>
               </div>
 
               <PriceBreakdown

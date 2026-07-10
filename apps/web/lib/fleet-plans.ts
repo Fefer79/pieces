@@ -4,6 +4,9 @@
 // Stratégie tarifaire : 3 paliers, Flotte Pro + (9 900 F) mis en avant.
 // Aucune mention de SLA contractuel / pénalité / remboursement : la livraison
 // rapide est présentée comme un bénéfice de service.
+// Les fourchettes de livraison affichées ici doivent rester cohérentes avec la
+// grille réellement facturée : packages/shared/constants/delivery-pricing.ts
+// (% du sous-total par vendeur, plancher zone = borne basse, plafond = borne haute).
 
 export type TierKey = 'FREE' | 'PRO_FLOTTE' | 'PRO_FLOTTE_PLUS'
 
