@@ -220,9 +220,9 @@ export default function PanierPage() {
 
         {/* Panier rempli */}
         {!created && items.length > 0 && (
-          <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
             {/* Lignes groupées par vendeur */}
-            <div className="space-y-5">
+            <div className="min-w-0 space-y-5">
               <div className="flex items-baseline justify-between">
                 <h1 className="font-display text-2xl text-ink lg:text-3xl">Ma sélection</h1>
                 <span className="font-mono tabular text-sm text-muted">
@@ -231,8 +231,8 @@ export default function PanierPage() {
               </div>
 
               {vehicle && (
-                <div className="flex items-center justify-between rounded-md border border-accent/30 bg-accent/5 px-4 py-2.5">
-                  <span className="text-sm text-ink">
+                <div className="flex items-center justify-between gap-3 rounded-md border border-accent/30 bg-accent/5 px-4 py-2.5">
+                  <span className="min-w-0 text-sm text-ink">
                     🔧 Commande pour&nbsp;
                     <span className="font-semibold">{vehicle.label}</span>
                     <span className="ml-1 text-muted">— rattachée au suivi de coûts du véhicule</span>
@@ -308,7 +308,7 @@ export default function PanierPage() {
             </div>
 
             {/* Récapitulatif */}
-            <aside className="lg:sticky lg:top-6 lg:self-start">
+            <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
               {/* Lieu de livraison : persisté depuis la fiche produit, modifiable ici. */}
               <div className="mb-4 rounded-md border border-border bg-card px-4 py-3">
                 <label
