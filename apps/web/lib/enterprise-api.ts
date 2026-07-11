@@ -26,7 +26,7 @@ export async function enterpriseFetch<T = unknown>(
     ...(init?.headers as Record<string, string> | undefined),
     Authorization: `Bearer ${token}`,
   }
-  if (!(init?.body instanceof FormData) && !headers['Content-Type']) {
+  if (init?.body != null && !(init.body instanceof FormData) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json'
   }
 
@@ -52,7 +52,7 @@ export async function apiFetch<T = unknown>(
     ...(init?.headers as Record<string, string> | undefined),
     Authorization: `Bearer ${token}`,
   }
-  if (!(init?.body instanceof FormData) && !headers['Content-Type']) {
+  if (init?.body != null && !(init.body instanceof FormData) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json'
   }
 

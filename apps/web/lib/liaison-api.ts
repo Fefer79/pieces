@@ -20,10 +20,12 @@ export async function liaisonFetch<T = unknown>(
   const token = await getToken()
   if (!token) return { ok: false, message: 'Session expirée. Reconnectez-vous.' }
 
+  // Fastify rejette un body vide si Content-Type: application/json est posé —
+  // on ne l'envoie donc que lorsqu'il y a réellement un body.
   const res = await fetch(`/api/v1/liaison${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      ...(init?.body != null ? { 'Content-Type': 'application/json' } : {}),
       ...(init?.headers ?? {}),
       Authorization: `Bearer ${token}`,
     },
