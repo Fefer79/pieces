@@ -12,6 +12,7 @@ import { MiniCartButton } from '@/components/cart/mini-cart'
 import { useCart } from '@/lib/cart'
 import { useSelectedVehicle, type SelectedVehicle } from '@/lib/selected-vehicle'
 import { apiFetch } from '@/lib/enterprise-api'
+import { createClient } from '@/lib/supabase'
 import { ABIDJAN_COMMUNES, computeDeliveryFee, formatWarranty, type WarrantyUnit } from 'shared/constants'
 
 const WA_NUMBER = '2250706846268'
@@ -271,6 +272,15 @@ export default function ProductPage() {
   async function handleBuyNow() {
     if (!item) return
     setBuying(true)
+
+    // Non connecté → renvoyer vers la connexion, avec retour sur cette fiche.
+    const { data: { session } } = await createClient().auth.getSession()
+    if (!session) {
+      const returnTo = `/produit/${item.id}`
+      router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`)
+      return
+    }
+
     const res = await apiFetch<{ shareToken: string }>('/orders', {
       method: 'POST',
       body: JSON.stringify({ items: [{ catalogItemId: item.id, quantity: qty }] }),
