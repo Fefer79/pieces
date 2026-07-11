@@ -69,7 +69,6 @@ export const FLEET_PLANS: FleetPlan[] = [
       'Détection automatique des véhicules « gouffres »',
       'Alertes d’entretien prédictives',
       'Multi-centres + rôles fins (gestionnaire / mécano / compta)',
-      'Stock tampon sur pièces critiques',
       'Factures normalisées DGI à l’unité',
     ],
     delivery: [
@@ -89,6 +88,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     highlights: [
       'Tout Flotte Pro inclus',
       'Gestion déléguée de vos achats de pièces (en option, sans surcoût)',
+      'Stock tampon sur pièces critiques',
       'Réapprovisionnement automatique du stock tampon',
       'Facture mensuelle consolidée + optimisation fiscale + export FEC',
       'Support prioritaire WhatsApp dédié',
@@ -138,7 +138,7 @@ export const FLEET_COMPARISON: ComparisonGroup[] = [
   {
     group: 'Stock & approvisionnement',
     rows: [
-      { label: 'Stock tampon sur SKU critiques', free: '—', pro: '✓', plus: '✓' },
+      { label: 'Stock tampon sur SKU critiques', free: '—', pro: '—', plus: '✓' },
       { label: 'Réapprovisionnement automatique', free: '—', pro: '—', plus: '✓' },
       { label: 'Gestion déléguée des achats de pièces', free: '—', pro: '—', plus: 'En option, incluse' },
     ],
@@ -181,7 +181,7 @@ export const DELEGATED_PROCUREMENT = {
   eyebrow: 'Gestion déléguée — exclusif Flotte Pro +',
   title: 'Confiez-nous vos achats de pièces.',
   intro:
-    'En option et sans surcoût dans Flotte Pro + : une équipe Pièces dédiée gère vos besoins en pièces détachées à votre place. Sur la base de vos dépenses actuelles, elle achète au meilleur rapport qualité/prix du marché et anticipe les besoins — parce que c’est son seul métier, vos temps d’immobilisation sont les plus courts possibles.',
+    'En option et sans surcoût dans Flotte Pro + : une équipe Pièces dédiée gère vos besoins en pièces détachées à votre place. Sur la base de vos dépenses actuelles, elle achète au meilleur rapport qualité/prix du marché et anticipe les besoins. Parce que c’est son seul métier, vos temps d’immobilisation sont les plus courts possibles.',
   steps: [
     {
       title: 'Audit de vos dépenses',
@@ -208,7 +208,7 @@ export const COST_LEVERS: Array<{ line: string; title: string; body: string }> =
   {
     line: 'Achats',
     title: 'Le bon prix, à chaque achat',
-    body: 'Comparateur multi-fournisseurs et scoring qualité : vous arrêtez de surpayer les pièces et d’acheter de la mauvaise qualité qui casse vite.',
+    body: 'Comparateur multi-fournisseurs et scoring qualité : vous arrêtez de surpayer les pièces et savez exactement ce que vous achetez.',
   },
   {
     line: 'Pilotage',

@@ -49,7 +49,7 @@ const STEPS = [
   { title: 'Essai 30 jours activé', body: 'Toutes les fonctionnalités Flotte Pro +, automatiquement, sans carte bancaire.' },
   { title: 'Déclarez vos centres', body: 'Rattachez vos véhicules à vos centres de maintenance.' },
   { title: 'Invitez votre équipe', body: 'Rôles distincts : gestionnaire, mécanicien, comptable.' },
-  { title: 'Choisissez à J+30', body: 'Flotte Pro +, Flotte Pro, ou le niveau gratuit — au vu de vos chiffres.' },
+  { title: 'Choisissez à J+30', body: 'Gratuit, Flotte Pro, ou Flotte Pro +.' },
 ]
 
 function CompareCell({ value, plus = false }: { value: string; plus?: boolean }) {
@@ -176,8 +176,8 @@ export default function EntreprisesPage() {
             Chaque fonctionnalité fait baisser une ligne de votre budget.
           </h2>
           <p className="mt-4 text-base leading-relaxed text-muted">
-            Pas de gadgets : chaque module de Pièces s&apos;attaque à un poste de coût
-            précis de votre exploitation.
+            Chaque module de Pièces s&apos;attaque à un poste de coût précis de votre
+            exploitation.
           </p>
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2">
@@ -203,7 +203,7 @@ export default function EntreprisesPage() {
               Le tableau de bord Flotte Pro compare chaque véhicule à la moyenne de
               votre flotte. Flotte Pro vous signale immédiatement un coût/km qui
               dérape et cela vous permet de chercher à comprendre avant que la
-              facture n&apos;enfle.
+              facture n&apos;enfle. Nous pouvons aussi vous aider dans ce domaine.
             </p>
           </div>
           <div className="overflow-hidden rounded-lg border border-border bg-card shadow-md">

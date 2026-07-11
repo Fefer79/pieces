@@ -35,7 +35,7 @@ export default function EnterpriseGuidePage() {
         <p className="mt-4 max-w-2xl text-base text-muted">
           Tout ce qu&apos;il faut savoir pour gérer la maintenance de votre parc
           véhicules sur Pièces : du premier compte à l&apos;export comptable.
-          Conçu pour les transporteurs, BTP, mines et entreprises ivoiriennes.
+          Conçu pour les VTC, transporteurs, BTP, mines et entreprises de service.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -99,15 +99,15 @@ export default function EnterpriseGuidePage() {
           <Section id="pourquoi" title="Pourquoi Pièces pour votre flotte ?">
             <p>
               En Côte d&apos;Ivoire, gérer la maintenance d&apos;une flotte rime
-              souvent avec cahier papier, achats informels et opacité sur les
-              prix. Pièces digitalise la chaîne : <strong>une seule plateforme</strong>{' '}
-              pour identifier la pièce, comparer les fournisseurs, commander
-              en Mobile Money, et suivre les dépenses par véhicule.
+              souvent avec opacité sur les prix. Pièces digitalise la chaîne :{' '}
+              <strong>une seule plateforme</strong> pour identifier la pièce,
+              comparer les fournisseurs, commander, se faire livrer les pièces et
+              suivre les dépenses par véhicule.
             </p>
             <div className="my-6 grid grid-cols-1 gap-4 md:grid-cols-3">
               <Bullet
                 title="Garage digital"
-                body="Enregistrez votre flotte une fois — toutes les recherches sont contextualisées par véhicule."
+                body="Enregistrez votre flotte une fois. Toutes les recherches sont contextualisées par véhicule."
               />
               <Bullet
                 title="Prix transparents"
@@ -144,8 +144,7 @@ export default function EnterpriseGuidePage() {
             />
             <Tip>
               <strong>Astuce :</strong> le GPS exact n&apos;est pas obligatoire,
-              mais il facilite la livraison sur site pour les chantiers BTP ou
-              les sites distants.
+              mais il facilite la livraison et vous fait gagner du temps.
             </Tip>
           </Section>
 
@@ -232,8 +231,8 @@ export default function EnterpriseGuidePage() {
               le moyen le plus rapide. Le plus simple : téléchargez notre{' '}
               <strong>modèle Excel d&apos;onboarding</strong>, remplissez les onglets
               « Véhicules » et « Chauffeurs », puis importez-le depuis le tableau de
-              bord. Vous pouvez aussi importer un fichier CSV — les en-têtes sont
-              acceptés en <strong>français ou en anglais</strong>.
+              bord. Vous pouvez aussi importer un fichier CSV, notamment un export de{' '}
+              <strong>fleet.yango</strong>.
             </p>
             <Steps
               steps={[
@@ -360,7 +359,7 @@ Mercedes,Sprinter,2019,GH-3456-CI,92000,TRANSPORT,Treichville,`}
               <li>Vos coordonnées entreprise (nom, commune, RCCM si renseigné)</li>
               <li>Le véhicule concerné (marque, modèle, plaque, VIN)</li>
               <li>Le détail par pièce : référence, fournisseur, prix unitaire</li>
-              <li>Le découpage des coûts : pièces, main d&apos;œuvre, livraison, total en FCFA</li>
+              <li>Le découpage des coûts : pièces et livraison, total en FCFA</li>
               <li>Validité 7 jours par défaut</li>
             </ul>
             <Steps
@@ -408,7 +407,7 @@ Mercedes,Sprinter,2019,GH-3456-CI,92000,TRANSPORT,Treichville,`}
             />
             <Faq
               q="Mes données sont-elles partagées avec les fournisseurs ?"
-              a="Non. Seul le ticket de commande est transmis au fournisseur concerné (références, quantités, adresse de livraison). Votre flotte, vos coûts et vos membres restent privés."
+              a="Non. Seul le ticket de commande est transmis au fournisseur concerné (références et quantités). Votre flotte, vos coûts et vos membres restent privés."
             />
             <Faq
               q="Puis-je utiliser Pièces sans connexion stable ?"
