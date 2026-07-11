@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && node esbuild.config.js",
     "start": "pnpm -F shared run db:deploy && node dist/server.js",
     "lint": "eslint src",
-    "test": "vitest run"
+    "test": "vitest run",
+    "whatsapp:pair": "tsx --env-file=.env scripts/pair-baileys.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1000.0",

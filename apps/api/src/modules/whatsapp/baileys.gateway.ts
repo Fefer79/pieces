@@ -1,3 +1,4 @@
+import { rm } from 'node:fs/promises'
 import makeWASocket, {
   DisconnectReason,
   fetchLatestBaileysVersion,
@@ -71,12 +72,20 @@ export async function startBaileysGateway(log: FastifyBaseLogger): Promise<void>
       const statusCode = (lastDisconnect?.error as { output?: { statusCode?: number } } | undefined)
         ?.output?.statusCode
       if (statusCode === DisconnectReason.loggedOut) {
-        log.error(
-          `[baileys] Session déconnectée par WhatsApp. Supprimez ${authDir} puis relancez pour ré-appairer.`,
-        )
-        return
+        if (state.creds.registered) {
+          log.error(
+            `[baileys] Session déconnectée par WhatsApp. Supprimez ${authDir} puis relancez pour ré-appairer.`,
+          )
+          return
+        }
+        // Pairing never completed (code expired / not entered): wipe the
+        // half-initialized creds so the retry below starts a fresh pairing.
+        log.warn('[baileys] Appairage non abouti, nouvelle tentative avec un nouveau code')
+        rm(authDir, { recursive: true, force: true }).catch(() => {})
       }
       if (stopped) return
+      // Allow a fresh pairing code on the next connection attempt.
+      pairingRequested = false
       log.warn({ statusCode }, `[baileys] Connection closed, reconnecting in ${RECONNECT_DELAY_MS}ms`)
       setTimeout(() => {
         startBaileysGateway(log).catch((err) => log.error({ err }, '[baileys] reconnect failed'))
