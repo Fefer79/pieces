@@ -1,11 +1,17 @@
 import Link from 'next/link'
 import { Chip, type ChipVariant } from '@/components/ui/chip'
-import { FLEET_PLANS, FLEET_COMPARISON, COST_LEVERS, DELIVERY_PROMISE } from '@/lib/fleet-plans'
+import {
+  FLEET_PLANS,
+  FLEET_COMPARISON,
+  COST_LEVERS,
+  DELIVERY_PROMISE,
+  DELEGATED_PROCUREMENT,
+} from '@/lib/fleet-plans'
 
 export const metadata = {
   title: 'Pièces Entreprises — Optimisez les coûts de votre flotte',
   description:
-    'La plateforme qui réduit les coûts d\'exploitation de votre flotte en Côte d\'Ivoire : achats au meilleur prix, pilotage des coûts, entretien préventif, livraison express. Gratuit, Flotte Pro 4 900 F, Flotte Pro + 9 900 F par véhicule / mois.',
+    'La plateforme qui réduit les coûts d\'exploitation de votre flotte en Côte d\'Ivoire : achats au meilleur prix, pilotage des coûts, entretien préventif, livraison express, gestion déléguée des achats de pièces. Gratuit, Flotte Pro 4 900 F, Flotte Pro + 9 900 F par véhicule / mois.',
 }
 
 const EYEBROW = 'font-mono text-[11px] font-medium uppercase tracking-[0.1em]'
@@ -251,6 +257,37 @@ export default function EntreprisesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== Gestion déléguée des achats (exclusif Flotte Pro +) ===== */}
+      <section className="mx-auto w-full max-w-6xl px-4 pt-20 lg:px-8" id="gestion-deleguee">
+        <div className="overflow-hidden rounded-lg bg-ink text-white">
+          <div className="grid gap-10 px-6 py-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:px-12 lg:py-14">
+            <div>
+              <div className={`${EYEBROW} text-accent`}>{DELEGATED_PROCUREMENT.eyebrow}</div>
+              <h2 className="mt-3 text-3xl text-white lg:text-4xl">
+                {DELEGATED_PROCUREMENT.title}
+              </h2>
+              <p className="mt-4 text-[15px] leading-relaxed text-white/70">
+                {DELEGATED_PROCUREMENT.intro}
+              </p>
+              <p className="mt-5 text-xs leading-relaxed text-white/50">
+                {DELEGATED_PROCUREMENT.note}
+              </p>
+            </div>
+            <div className="grid gap-7 sm:grid-cols-2">
+              {DELEGATED_PROCUREMENT.steps.map((s, i) => (
+                <div key={s.title} className="relative border-t-2 border-white/20 pt-4">
+                  <span className="tabular absolute -top-2.5 left-0 bg-ink pr-2.5 font-mono text-xs text-accent">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div className="text-[15px] font-semibold text-white">{s.title}</div>
+                  <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/60">{s.body}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
