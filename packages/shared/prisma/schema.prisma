@@ -45,6 +45,7 @@ model User {
   liaisonCatalogItems  CatalogItem[] @relation("CatalogItemCreatedByLiaison")
   activityLogs         ActivityLog[]
   driverProfiles       Driver[]      @relation("UserDriverProfile")
+  partEnrichments      PartEnrichment[] @relation("EnrichmentLiaison")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -168,6 +169,9 @@ enum JobType {
   MAINTENANCE_REMINDER_SCAN
   BUFFER_STOCK_REPLENISH_SCAN
   RELANCE_INCOMPLETE_VENDORS_SCAN
+  ENRICHMENT_FITMENTS
+  ENRICHMENT_SOURCING_SCAN
+  ENRICHMENT_SOURCING_COLLECT
 }
 
 enum JobStatus {
@@ -219,6 +223,7 @@ model Vendor {
   guaranteeSignatures VendorGuaranteeSignature[]
   catalogItems        CatalogItem[]
   contracts           VendorContract[]
+  partEnrichments     PartEnrichment[] @relation("EnrichmentVendeur")
 
   @@map("vendors")
   @@unique([externalSource, externalSellerId], name: "uq_vendors_external_seller")
@@ -1290,4 +1295,111 @@ model DriverIncident {
   @@map("driver_incidents")
   @@index([driverId], name: "idx_driver_incidents_driver")
   @@index([vehicleId], name: "idx_driver_incidents_vehicle")
+}
+
+// ---------------------------------------------------------------------------
+// Agent Fiche Terrain — fiches produit générées par photo (spec v1.1)
+// ---------------------------------------------------------------------------
+
+enum EnrichmentOrigin {
+  LIAISON
+  VENDEUR
+}
+
+// Statuts de workflow volontairement génériques : côté Liaison/vendeur ils se
+// lisent comme des étapes de modération classiques ; le sens complet (lien avec
+// le score d'authenticité) n'existe qu'au niveau administrateur.
+enum EnrichmentStatus {
+  BROUILLON
+  EN_MODERATION
+  A_VERIFIER // inspection physique programmée (motif non exposé hors admin)
+  VALIDE
+  BLOQUE // revue manuelle anti-contrefaçon (jamais exposé tel quel hors admin)
+}
+
+model PartEnrichment {
+  id     String  @id @default(cuid())
+  partId String? @map("part_id") // CatalogItem créé à la publication
+
+  origine EnrichmentOrigin
+  statut  EnrichmentStatus @default(BROUILLON)
+
+  identification Json?
+  classification Json?
+  photoFeedback  String? @map("photo_feedback")
+  // score, signaux, justification — accès administrateur exclusif : le champ
+  // est ABSENT des réponses API pour les autres rôles (pas null).
+  authenticite   Json?
+  fitments       Json?
+  // Phase 2 (batch nocturne) : cross-références, fournisseurs, contacts
+  // producteurs. Réservé au tableau de bord administrateur.
+  sourcing       Json?
+  sourcingBatchId String? @map("sourcing_batch_id")
+
+  // Livrables clients flottes, publiés après approbation admin.
+  noteQualite             Int?    @map("note_qualite")
+  descriptionIndependante String? @map("description_independante")
+  livrablesApprouvesAt    DateTime? @map("livrables_approuves_at")
+
+  confianceGlobale Float? @map("confiance_globale")
+
+  photos      String[] // URLs stockage R2 (originaux, EXIF conservés)
+  photoHashes String[] @map("photo_hashes") // hash perceptuel anti-réutilisation
+  // Variantes WebP par photo (thumb/small/medium/large) pour la publication
+  // catalogue : [{ urlOriginal, urlThumb, urlSmall, urlMedium, urlLarge }]
+  photosVariants Json? @map("photos_variants")
+
+  // Saisie humaine (prix/stock/garantie déclarés avec le vendeur)
+  prix          Int?
+  stockQuantite Int?    @map("stock_quantite")
+  warrantyValue Int?    @map("warranty_value")
+  warrantyUnit  String? @map("warranty_unit")
+
+  liaisonId         String? @map("liaison_id") // créateur (mode Liaison) ou modérateur (mode vendeur)
+  liaison           User?   @relation("EnrichmentLiaison", fields: [liaisonId], references: [id])
+  vendeurId         String? @map("vendeur_id") // Vendor créateur/rattaché
+  vendeur           Vendor? @relation("EnrichmentVendeur", fields: [vendeurId], references: [id])
+  fournisseurVisite String? @map("fournisseur_visite")
+
+  corrections Json? // diff agent vs validation humaine (jeu de données précision)
+  tentatives  Int   @default(1) // resoumissions de la même pièce (signal fraude)
+
+  contentValidatedAt DateTime? @map("content_validated_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  validatedAt        DateTime? @map("validated_at")
+
+  @@map("part_enrichments")
+  @@index([liaisonId], name: "idx_part_enrichments_liaison")
+  @@index([vendeurId, createdAt], name: "idx_part_enrichments_vendeur_date")
+  @@index([statut], name: "idx_part_enrichments_statut")
+}
+
+model CrossReference {
+  id          String   @id @default(cuid())
+  refSource   String   @map("ref_source") // réf OEM pivot
+  refCible    String   @map("ref_cible")
+  marqueCible String   @map("marque_cible")
+  type        String // aftermarket | oem_croisee
+  sourceUrl   String   @map("source_url")
+  verifieLe   DateTime @map("verifie_le")
+
+  @@map("cross_references")
+  @@unique([refSource, refCible, marqueCible], name: "uq_cross_reference")
+  @@index([refSource], name: "idx_cross_references_source")
+}
+
+model ManufacturerContact {
+  id        String   @id @default(cuid())
+  marque    String
+  entite    String
+  role      String
+  email     String?
+  telephone String?
+  url       String
+  verifieLe DateTime @map("verifie_le")
+
+  @@map("manufacturer_contacts")
+  @@unique([marque, entite, role], name: "uq_manufacturer_contact")
+  @@index([marque], name: "idx_manufacturer_contacts_marque")
 }

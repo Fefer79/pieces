@@ -73,3 +73,21 @@ export {
   createSubscriptionSchema,
   updateSubscriptionSchema,
 } from './enterprise'
+export {
+  enrichmentPass1OutputSchema,
+  enrichmentPass2OutputSchema,
+  enrichmentSourcingOutputSchema,
+  enrichmentParamsSchema,
+  enrichmentCompleteSchema,
+  enrichmentModerateSchema,
+  enrichmentArbitrateSchema,
+  enrichmentListQuerySchema,
+} from './enrichment'
+export type {
+  EnrichmentPass1Output,
+  EnrichmentPass2Output,
+  EnrichmentSourcingOutput,
+  EnrichmentCompleteInput,
+  EnrichmentModerateInput,
+  EnrichmentArbitrateInput,
+} from './enrichment'

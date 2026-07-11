@@ -20,6 +20,14 @@ export const apiEnvSchema = z.object({
   WHATSAPP_PROVIDER: z.enum(['cloud', 'baileys']).default('cloud'),
   BAILEYS_AUTH_DIR: z.string().optional(),
   BAILEYS_PAIRING_PHONE: z.string().optional(),
+  // Agent Fiche Terrain (identification de pièces par photo via l'API Claude).
+  // Absente, les endpoints d'enrichissement répondent 503 — le reste de l'API
+  // fonctionne normalement.
+  ANTHROPIC_API_KEY: z.string().optional(),
+  // Modèles surchargeables sans redéploiement (ex. passer la passe 1 sur Sonnet
+  // si le taux d'erreur de lecture d'étiquettes dégradées est trop haut).
+  ENRICHMENT_PASS1_MODEL: z.string().default('claude-haiku-4-5'),
+  ENRICHMENT_PASS2_MODEL: z.string().default('claude-sonnet-4-6'),
   PINO_LOG_LEVEL: z
     .enum(['info', 'warn', 'error', 'fatal'])
     .default('info'),

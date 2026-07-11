@@ -8,12 +8,17 @@ export type ActivityAction =
   | 'LIAISON_QUICK_PART_CREATED'
   | 'LIAISON_PART_UPDATED'
   | 'LIAISON_COMMISSION_ACCEPTED'
+  | 'ENRICHMENT_PHOTO_REUSE'
+  | 'ENRICHMENT_RESUBMISSION'
+  | 'ENRICHMENT_INSPECTION_REQUESTED'
+  | 'ENRICHMENT_BLOCKED'
+  | 'ENRICHMENT_APPROVED'
 
 interface RecordParams {
   actorId: string
   actorRole: Role
   action: ActivityAction
-  targetType: 'Vendor' | 'CatalogItem'
+  targetType: 'Vendor' | 'CatalogItem' | 'PartEnrichment'
   targetId?: string | null
   payload?: Record<string, unknown>
 }

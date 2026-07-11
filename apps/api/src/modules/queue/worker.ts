@@ -4,6 +4,11 @@ import { handleImageProcess, handleAiIdentify } from './handlers/imageProcess.js
 import { handleMaintenanceReminderScan } from './handlers/maintenanceReminder.js'
 import { handleBufferStockReplenishScan } from './handlers/bufferStockReplenish.js'
 import { handleVendorRelanceScan } from './handlers/vendorRelance.js'
+import {
+  handleEnrichmentFitments,
+  handleEnrichmentSourcingScan,
+  handleEnrichmentSourcingCollect,
+} from './handlers/enrichment.js'
 import type { Job } from '@prisma/client'
 
 type Logger = {
@@ -13,7 +18,7 @@ type Logger = {
 }
 
 const POLL_INTERVAL = 30_000 // 30 seconds
-const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN'] as const
+const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN', 'ENRICHMENT_FITMENTS', 'ENRICHMENT_SOURCING_SCAN', 'ENRICHMENT_SOURCING_COLLECT'] as const
 
 const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   IMAGE_PROCESS_VARIANTS: handleImageProcess,
@@ -21,6 +26,9 @@ const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   MAINTENANCE_REMINDER_SCAN: handleMaintenanceReminderScan,
   BUFFER_STOCK_REPLENISH_SCAN: handleBufferStockReplenishScan,
   RELANCE_INCOMPLETE_VENDORS_SCAN: handleVendorRelanceScan,
+  ENRICHMENT_FITMENTS: handleEnrichmentFitments,
+  ENRICHMENT_SOURCING_SCAN: handleEnrichmentSourcingScan,
+  ENRICHMENT_SOURCING_COLLECT: handleEnrichmentSourcingCollect,
 }
 
 /**
@@ -80,6 +88,30 @@ export async function ensureVendorRelanceScheduled(logger: Logger) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     logger.error({ event: 'VENDOR_RELANCE_SCHEDULE_ERROR', error: message }, 'Failed to schedule vendor relance')
+  }
+}
+
+/**
+ * Idem pour le scan nocturne de sourcing (Agent Fiche Terrain, phase 2).
+ * Idempotent ; premier passage programmé à la prochaine occurrence de 2h du
+ * matin, puis le handler se replanifie à +24h. Sans ANTHROPIC_API_KEY le
+ * handler se contente de logger et de se replanifier.
+ */
+export async function ensureEnrichmentSourcingScheduled(logger: Logger) {
+  try {
+    const existing = await prisma.job.findFirst({
+      where: { type: 'ENRICHMENT_SOURCING_SCAN', status: { in: ['PENDING', 'PROCESSING'] } },
+      select: { id: true },
+    })
+    if (existing) return
+    const next2am = new Date()
+    next2am.setHours(2, 0, 0, 0)
+    if (next2am <= new Date()) next2am.setDate(next2am.getDate() + 1)
+    await enqueue('ENRICHMENT_SOURCING_SCAN', {}, { scheduledAt: next2am })
+    logger.info({ event: 'ENRICHMENT_SOURCING_SCHEDULED', scheduledAt: next2am.toISOString() }, 'Enrichment sourcing scan scheduled')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    logger.error({ event: 'ENRICHMENT_SOURCING_SCHEDULE_ERROR', error: message }, 'Failed to schedule enrichment sourcing')
   }
 }
 

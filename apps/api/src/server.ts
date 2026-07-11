@@ -26,8 +26,9 @@ import { enterpriseRoutes } from './modules/enterprise/enterprise.routes.js'
 import { driverRoutes } from './modules/driver/driver.routes.js'
 import { returnRoutes } from './modules/returns/return.routes.js'
 import { vendorContractRoutes } from './modules/vendorContract/vendorContract.routes.js'
+import { enrichmentRoutes } from './modules/enrichment/enrichment.routes.js'
 import multipart from '@fastify/multipart'
-import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled } from './modules/queue/worker.js'
+import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled, ensureEnrichmentSourcingScheduled } from './modules/queue/worker.js'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -76,6 +77,7 @@ export function buildApp() {
   fastify.register(driverRoutes, { prefix: '/api/v1/driver' })
   fastify.register(returnRoutes, { prefix: '/api/v1' })
   fastify.register(vendorContractRoutes, { prefix: '/api/v1/vendor-contracts' })
+  fastify.register(enrichmentRoutes, { prefix: '/api/v1/enrichments' })
 
   return fastify
 }
@@ -95,6 +97,7 @@ const start = async () => {
     void ensureMaintenanceReminderScheduled(fastify.log)
     void ensureBufferReplenishScheduled(fastify.log)
     void ensureVendorRelanceScheduled(fastify.log)
+    void ensureEnrichmentSourcingScheduled(fastify.log)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)

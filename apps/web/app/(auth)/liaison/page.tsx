@@ -61,8 +61,22 @@ export default function LiaisonDashboardPage() {
 
           <section className="mt-6 grid gap-3 sm:grid-cols-2">
             <Link
-              href="/liaison/vendors/new"
+              href="/liaison/fiches/new"
               className="rounded-md bg-accent px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:opacity-90"
+              style={{ minHeight: 48 }}
+            >
+              📷 Fiche express par photo
+            </Link>
+            <Link
+              href="/liaison/fiches"
+              className="rounded-md bg-card px-4 py-3 text-center text-sm font-medium text-ink ring-1 ring-border transition-colors hover:bg-surface"
+              style={{ minHeight: 48 }}
+            >
+              Fiches terrain &amp; modération
+            </Link>
+            <Link
+              href="/liaison/vendors/new"
+              className="rounded-md bg-card px-4 py-3 text-center text-sm font-medium text-ink ring-1 ring-border transition-colors hover:bg-surface"
               style={{ minHeight: 48 }}
             >
               + Onboarder un vendeur

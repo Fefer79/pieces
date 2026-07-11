@@ -11,6 +11,7 @@ const NAV = [
   { href: '/admin', label: 'Tableau de bord' },
   { href: '/admin/finances', label: 'Modélisation' },
   { href: '/admin/parts', label: 'Pièces' },
+  { href: '/admin/enrichments', label: 'Fiches terrain' },
   { href: '/admin/vendors', label: 'Vendeurs' },
   { href: '/admin/clients', label: 'Clients' },
   { href: '/admin/enterprises', label: 'Entreprises' },
