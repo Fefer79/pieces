@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
@@ -15,6 +15,20 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
 
   const returnTo = searchParams.get('returnTo') ?? ''
+
+  // Le callback OAuth (app/auth/callback) renvoie ici avec ?error=… quand
+  // l'échange de code échoue (ex. secret Google invalide côté Supabase →
+  // « missing_token »). Sans ça, l'utilisateur revenait au menu de connexion
+  // sans aucun message — la connexion « tournait » puis échouait en silence.
+  const oauthError = searchParams.get('error')
+  useEffect(() => {
+    if (!oauthError) return
+    setError(
+      oauthError === 'missing_token' || oauthError === 'server_error'
+        ? 'La connexion avec Google a échoué. Réessayez, ou connectez-vous avec votre email.'
+        : oauthError,
+    )
+  }, [oauthError])
 
   async function redirectAfterLogin(accessToken: string | undefined) {
     // Check if user has a role; if not, send to onboarding
