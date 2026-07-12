@@ -22,6 +22,7 @@ import {
   updateAdminVendor,
   getAdminClientsList,
   getAdminClientDetail,
+  registerWhatsAppClient,
   getAdminEnterprisesList,
   getAdminEnterpriseDetail,
   getAdminLiaisonsList,
@@ -58,6 +59,7 @@ import {
   replaceFitmentsSchema,
   createSubscriptionSchema,
   updateSubscriptionSchema,
+  adminRegisterWhatsAppSchema,
 } from 'shared/validators'
 
 export async function adminRoutes(fastify: FastifyInstance) {
@@ -416,6 +418,23 @@ export async function adminRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const data = await getAdminClientsList(request.query as Record<string, never>)
       return reply.status(200).send({ data })
+    },
+  )
+
+  fastify.post(
+    '/clients/register-whatsapp',
+    {
+      preHandler: [requireAuth, requireRole('ADMIN')],
+      schema: {
+        tags: ['Admin'], security: [{ BearerAuth: [] }],
+        description: 'Enregistre manuellement un utilisateur WhatsApp (téléphone + nom optionnel)',
+        body: zodToFastify(adminRegisterWhatsAppSchema),
+      },
+    },
+    async (request, reply) => {
+      const data = await registerWhatsAppClient(request.body as { phone: string; name?: string })
+      request.log.info({ event: 'ADMIN_WA_USER_REGISTERED', userId: data.id, alreadyExisted: data.alreadyExisted })
+      return reply.status(data.alreadyExisted ? 200 : 201).send({ data })
     },
   )
 

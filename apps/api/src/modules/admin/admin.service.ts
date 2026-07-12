@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { Prisma } from '@prisma/client'
 import { AppError } from '../../lib/appError.js'
 import { addPhotoToItem, removePhotoFromItem, reorderItemPhotos } from '../catalog/catalog.service.js'
+import { registerWhatsAppUser, normalizeWaNumber } from '../whatsapp/whatsapp.service.js'
 import { splitCategory, subcategoryOf, CATEGORY_SEPARATOR } from 'shared/constants'
 
 // Story 9.1: Order history for user
@@ -689,6 +690,29 @@ export async function getAdminVendorDetail(vendorId: string) {
     },
     commissionByMonth: monthBuckets,
   }
+}
+
+/**
+ * Enregistrement manuel d'un utilisateur WhatsApp par un admin, tant que le bot
+ * (webhook Meta) n'est pas branché en prod. Réutilise exactement la logique du
+ * bot (`registerWhatsAppUser` : rôle ACHETEUR/OWNER + consentement) puis pose le nom.
+ * Idempotent : signale si le compte existait déjà.
+ */
+export async function registerWhatsAppClient(input: { phone: string; name?: string | null }) {
+  const waNumber = normalizeWaNumber(input.phone)
+  if (!waNumber) {
+    throw new AppError('INVALID_PHONE', 400, {
+      message: 'Numéro invalide. Format attendu : +2250700000000 ou 0700000000.',
+    })
+  }
+  const phone = `+${waNumber}`
+  const existing = await prisma.user.findUnique({ where: { phone }, select: { id: true } })
+  const user = await registerWhatsAppUser(waNumber)
+  const name = input.name?.trim()
+  if (name) {
+    await prisma.user.update({ where: { id: user.id }, data: { name } })
+  }
+  return { id: user.id, phone, name: name ?? null, roles: user.roles, alreadyExisted: Boolean(existing) }
 }
 
 export async function getAdminClientsList(query: AdminListQuery) {

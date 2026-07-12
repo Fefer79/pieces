@@ -26,6 +26,7 @@ export default function AdminClientsPage() {
   const [role, setRole] = useState('')
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  const [showRegister, setShowRegister] = useState(false)
 
   const load = useCallback(() => {
     const params = new URLSearchParams()
@@ -46,10 +47,24 @@ export default function AdminClientsPage() {
 
   return (
     <div className="p-4 lg:p-6">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h1 className="font-display text-2xl text-ink">Clients</h1>
-        <button onClick={() => downloadCsv('clients')} className="rounded-sm border border-border-strong px-3 py-1.5 text-sm hover:bg-card">Export CSV</button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setShowRegister((v) => !v)}
+            className="rounded-sm border border-border-strong px-3 py-1.5 text-sm hover:bg-card"
+          >
+            {showRegister ? 'Fermer' : '+ Utilisateur WhatsApp'}
+          </button>
+          <button onClick={() => downloadCsv('clients')} className="rounded-sm border border-border-strong px-3 py-1.5 text-sm hover:bg-card">Export CSV</button>
+        </div>
       </div>
+
+      {showRegister && (
+        <RegisterWhatsAppForm
+          onDone={() => { setShowRegister(false); setPage(1); load() }}
+        />
+      )}
       <div className="mb-3 flex flex-wrap gap-2">
         <PredictiveSearch
           value={q}
@@ -108,5 +123,93 @@ export default function AdminClientsPage() {
         </>
       )}
     </div>
+  )
+}
+
+interface RegisterResult {
+  id: string
+  phone: string
+  name: string | null
+  roles: string[]
+  alreadyExisted: boolean
+}
+
+/**
+ * Enregistrement manuel d'un utilisateur WhatsApp (le bot n'étant pas encore
+ * branché en prod). Le numéro est normalisé côté serveur — on accepte
+ * +2250700000000 comme 0700000000.
+ */
+function RegisterWhatsAppForm({ onDone }: { onDone: () => void }) {
+  const [phone, setPhone] = useState('')
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+  const [ok, setOk] = useState<string | null>(null)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!phone.trim() || busy) return
+    setBusy(true)
+    setErr(null)
+    setOk(null)
+    try {
+      const res = await adminFetch<RegisterResult>('/admin/clients/register-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone.trim(), name: name.trim() || undefined }),
+      })
+      setOk(
+        res.alreadyExisted
+          ? `Déjà enregistré : ${res.phone}. Consentement mis à jour.`
+          : `Enregistré : ${res.phone}${res.name ? ` (${res.name})` : ''}.`,
+      )
+      setPhone('')
+      setName('')
+      // Laisse le message visible un instant avant de rafraîchir la liste.
+      setTimeout(onDone, 1200)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form
+      onSubmit={submit}
+      className="mb-4 rounded-md border border-border bg-card p-4"
+    >
+      <h2 className="text-sm font-semibold text-ink">Enregistrer un utilisateur WhatsApp</h2>
+      <p className="mt-1 text-xs text-muted">
+        Pour ajouter une personne qui vous a écrit sur WhatsApp. Rôle Acheteur (Propriétaire) + consentement enregistré.
+      </p>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <input
+          type="tel"
+          inputMode="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="Téléphone (+2250700000000)"
+          className="flex-1 rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm"
+          autoFocus
+        />
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nom (optionnel)"
+          className="flex-1 rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm"
+        />
+        <button
+          type="submit"
+          disabled={busy || !phone.trim()}
+          className="rounded-sm bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+        >
+          {busy ? 'Enregistrement…' : 'Enregistrer'}
+        </button>
+      </div>
+      {err && <div className="mt-2 rounded-sm border border-error-fg/20 bg-error-bg p-2 text-xs text-error-fg">{err}</div>}
+      {ok && <div className="mt-2 rounded-sm border border-accent/20 bg-accent/5 p-2 text-xs text-ink">{ok}</div>}
+    </form>
   )
 }

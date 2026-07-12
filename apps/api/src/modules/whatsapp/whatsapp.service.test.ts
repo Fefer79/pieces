@@ -26,6 +26,7 @@ const {
   clearSession,
   findUserByWhatsApp,
   registerWhatsAppUser,
+  normalizeWaNumber,
   _getSessionsMap,
 } = await import('./whatsapp.service.js')
 
@@ -35,6 +36,29 @@ describe('whatsapp.service', () => {
   describe('getVerifyToken', () => {
     it('returns the configured verify token', () => {
       expect(getVerifyToken()).toBe('my-verify-token')
+    })
+  })
+
+  describe('normalizeWaNumber', () => {
+    it('accepts +225 international format', () => {
+      expect(normalizeWaNumber('+2250700000000')).toBe('2250700000000')
+      expect(normalizeWaNumber('2250700000000')).toBe('2250700000000')
+    })
+    it('prefixes 225 for a local 10-digit number', () => {
+      expect(normalizeWaNumber('0700000000')).toBe('2250700000000')
+    })
+    it('prefixes 225 for a legacy 8-digit number', () => {
+      expect(normalizeWaNumber('07000000')).toBe('22507000000')
+    })
+    it('keeps a foreign international number', () => {
+      expect(normalizeWaNumber('+33123456789')).toBe('33123456789')
+    })
+    it('strips spaces, dots and dashes', () => {
+      expect(normalizeWaNumber('+225 07-00.00 00 00')).toBe('2250700000000')
+    })
+    it('rejects too-short or empty input', () => {
+      expect(normalizeWaNumber('123')).toBeNull()
+      expect(normalizeWaNumber('')).toBeNull()
     })
   })
 
@@ -196,8 +220,8 @@ describe('whatsapp.service', () => {
   })
 
   describe('registerWhatsAppUser', () => {
-    it('creates a MECHANIC account with consent and synthetic supabaseId', async () => {
-      const created = { id: 'u-new', roles: ['MECHANIC'] }
+    it('creates an OWNER (acheteur) account with consent and synthetic supabaseId', async () => {
+      const created = { id: 'u-new', roles: ['OWNER'] }
       ;(prisma.user.upsert as ReturnType<typeof vi.fn>).mockResolvedValueOnce(created)
 
       const result = await registerWhatsAppUser('2250700000000')
@@ -207,7 +231,7 @@ describe('whatsapp.service', () => {
       expect(args.where).toEqual({ phone: '+2250700000000' })
       expect(args.create.supabaseId).toBe('wa:+2250700000000')
       expect(args.create.phone).toBe('+2250700000000')
-      expect(args.create.roles).toEqual(['MECHANIC'])
+      expect(args.create.roles).toEqual(['OWNER'])
       expect(args.create.consentedAt).toBeInstanceOf(Date)
       expect(args.update.consentedAt).toBeInstanceOf(Date)
     })

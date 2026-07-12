@@ -53,6 +53,26 @@ export function clearSession(waNumber: string) {
 // Exposed for testing
 export function _getSessionsMap() { return sessions }
 
+// ---------- Phone Normalization ----------
+
+/**
+ * Normalise un numéro saisi (variantes ivoiriennes ou international) vers le
+ * format WhatsApp attendu : chiffres sans « + ». Retourne null si invalide.
+ *   +2250700000000 / 2250700000000 → 2250700000000
+ *   0700000000 (10 chiffres)        → 2250700000000
+ *   07000000  (ancien 8 chiffres)   → 22507000000
+ *   +33123456789 (international)     → 33123456789
+ */
+export function normalizeWaNumber(raw: string): string | null {
+  const digits = raw.replace(/\D/g, '')
+  if (digits.startsWith('225') && digits.length === 13) return digits
+  if (digits.length === 10 && digits.startsWith('0')) return `225${digits}`
+  if (digits.length === 8) return `225${digits}`
+  // Numéro international déjà avec indicatif pays (pas de 0 en tête).
+  if (digits.length >= 11 && !digits.startsWith('0')) return digits
+  return null
+}
+
 // ---------- User Lookup ----------
 
 export async function findUserByWhatsApp(waNumber: string) {
@@ -79,7 +99,8 @@ export async function registerWhatsAppUser(waNumber: string) {
     create: {
       supabaseId: `wa:${phone}`,
       phone,
-      roles: ['MECHANIC'],
+      // Rôle de base : ACHETEUR (= OWNER, le propriétaire qui achète/paie).
+      roles: ['OWNER'],
       consentedAt: new Date(),
     },
     select: { id: true, roles: true },

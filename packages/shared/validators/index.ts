@@ -1,5 +1,10 @@
 export { phoneSchema, emailSchema, passwordSchema, credentialsSchema, registerSchema, whatsappLoginStartSchema, whatsappLoginStatusSchema } from './auth'
-export { switchContextSchema, selectRoleSchema, updateRolesSchema } from './user'
+export {
+  switchContextSchema,
+  selectRoleSchema,
+  updateRolesSchema,
+  adminRegisterWhatsAppSchema,
+} from './user'
 export { consentSchema, deletionRequestSchema } from './consent'
 export { createVendorSchema, vendorTypeSchema, kycTypeSchema, guaranteeTypeSchema, updateDeliveryZonesSchema, adminUpdateVendorSchema } from './vendor'
 export {

@@ -9,7 +9,8 @@
     "start": "pnpm -F shared run db:deploy && node dist/server.js",
     "lint": "eslint src",
     "test": "vitest run",
-    "whatsapp:pair": "tsx --env-file=.env scripts/pair-baileys.ts"
+    "whatsapp:pair": "tsx --env-file=.env scripts/pair-baileys.ts",
+    "whatsapp:register": "tsx scripts/register-whatsapp-user.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

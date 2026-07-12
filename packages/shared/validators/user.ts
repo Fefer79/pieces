@@ -19,3 +19,10 @@ export const updateRolesSchema = z.object({
     .array(z.enum(validRoles, { message: 'Rôle invalide' }))
     .min(1, 'Au moins un rôle est requis'),
 })
+
+// Enregistrement manuel d'un utilisateur WhatsApp par un admin (le bot n'étant
+// pas encore branché en prod). Le numéro est normalisé côté serveur.
+export const adminRegisterWhatsAppSchema = z.object({
+  phone: z.string().min(8, 'Numéro requis').max(20, 'Numéro trop long'),
+  name: z.string().trim().max(80, 'Nom trop long').optional(),
+})
