@@ -13,7 +13,13 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
+vi.mock('./baileys.sender.js', () => ({
+  isBaileysConnected: vi.fn(() => false),
+  sendBaileysText: vi.fn(),
+}))
+
 const { prisma } = await import('../../lib/prisma.js')
+const { isBaileysConnected, sendBaileysText } = await import('./baileys.sender.js')
 
 const {
   getVerifyToken,
@@ -27,6 +33,7 @@ const {
   findUserByWhatsApp,
   registerWhatsAppUser,
   normalizeWaNumber,
+  notifyWhatsAppUser,
   _getSessionsMap,
 } = await import('./whatsapp.service.js')
 
@@ -36,6 +43,51 @@ describe('whatsapp.service', () => {
   describe('getVerifyToken', () => {
     it('returns the configured verify token', () => {
       expect(getVerifyToken()).toBe('my-verify-token')
+    })
+  })
+
+  describe('notifyWhatsAppUser', () => {
+    it('sends via Baileys when connected', async () => {
+      ;(isBaileysConnected as ReturnType<typeof vi.fn>).mockReturnValueOnce(true)
+      ;(sendBaileysText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true)
+
+      const res = await notifyWhatsAppUser('+2250700000000', 'Bonjour')
+
+      expect(res).toEqual({ sent: true, channel: 'baileys' })
+      expect(sendBaileysText).toHaveBeenCalledWith('+2250700000000', 'Bonjour')
+    })
+
+    it('falls back to the Cloud API when Baileys is offline', async () => {
+      ;(isBaileysConnected as ReturnType<typeof vi.fn>).mockReturnValueOnce(false)
+      const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true })
+      vi.stubGlobal('fetch', mockFetch)
+
+      const res = await notifyWhatsAppUser('+2250700000000', 'Bonjour')
+
+      expect(res).toEqual({ sent: true, channel: 'cloud' })
+      // L'API Cloud reçoit le numéro sans le « + ».
+      expect(mockFetch.mock.calls[0][1].body).toContain('"to":"2250700000000"')
+    })
+
+    it('falls back to the Cloud API when Baileys send throws/fails', async () => {
+      ;(isBaileysConnected as ReturnType<typeof vi.fn>).mockReturnValueOnce(true)
+      ;(sendBaileysText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(false)
+      const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true })
+      vi.stubGlobal('fetch', mockFetch)
+
+      const res = await notifyWhatsAppUser('+2250700000000', 'Bonjour')
+
+      expect(res).toEqual({ sent: true, channel: 'cloud' })
+    })
+
+    it('reports not sent when no channel is available', async () => {
+      ;(isBaileysConnected as ReturnType<typeof vi.fn>).mockReturnValueOnce(false)
+      const mockFetch = vi.fn().mockResolvedValueOnce({ ok: false })
+      vi.stubGlobal('fetch', mockFetch)
+
+      const res = await notifyWhatsAppUser('+2250700000000', 'Bonjour')
+
+      expect(res).toEqual({ sent: false, channel: null })
     })
   })
 

@@ -16,7 +16,11 @@
  * Le numéro accepte les formats +2250700000000, 2250700000000 ou 0700000000
  * (préfixe +225 ajouté automatiquement pour un numéro ivoirien à 10 chiffres).
  */
-import { registerWhatsAppUser, normalizeWaNumber } from '../src/modules/whatsapp/whatsapp.service.js'
+import {
+  registerWhatsAppUser,
+  normalizeWaNumber,
+  notifyWhatsAppUser,
+} from '../src/modules/whatsapp/whatsapp.service.js'
 import { prisma } from '../src/lib/prisma.js'
 
 function arg(flag: string): string | undefined {
@@ -54,4 +58,20 @@ if (name) {
 
 console.log(`✅ Utilisateur enregistré : +${waNumber}${name ? ` (${name})` : ''}`)
 console.log(`   id=${user.id} · rôles=${user.roles.join(', ')}`)
+
+// Message de confirmation. ⚠️ Depuis un script one-off, la passerelle Baileys
+// n'est pas connectée (elle vit dans le process API) : l'envoi ne part que si
+// l'API Cloud Meta est configurée. Sinon c'est un no-op — l'admin panel, lui,
+// tourne dans le process API et peut envoyer via Baileys.
+const greeting = name ? ` ${name}` : ''
+const notif = await notifyWhatsAppUser(
+  `+${waNumber}`,
+  `✅ Bonjour${greeting}, vous êtes connecté sur Pièces ! ` +
+    'Répondez à ce message avec la pièce auto que vous cherchez (ou envoyez une photo) et on s’en occupe.',
+)
+console.log(
+  notif.sent
+    ? `   📩 Message de confirmation envoyé (canal ${notif.channel}).`
+    : '   ⚠️ Message de confirmation non envoyé (canal WhatsApp indisponible depuis le CLI).',
+)
 await prisma.$disconnect()

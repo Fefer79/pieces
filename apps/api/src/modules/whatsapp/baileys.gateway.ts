@@ -8,6 +8,7 @@ import qrcode from 'qrcode-terminal'
 import pino from 'pino'
 import type { FastifyBaseLogger } from 'fastify'
 import { handleBaileysMessage } from './baileys.messages.js'
+import { registerBaileysSender } from './baileys.sender.js'
 
 // ---------------------------------------------------------------------------
 // Baileys gateway (WHATSAPP_PROVIDER=baileys) — free reverse-OTP channel.
@@ -65,10 +66,14 @@ export async function startBaileysGateway(log: FastifyBaseLogger): Promise<void>
     }
 
     if (connection === 'open') {
+      // Expose the live socket so transactional confirmations (e.g. account
+      // activation) can be sent from other modules via baileys.sender.
+      registerBaileysSender((jid, content) => sock.sendMessage(jid, content))
       log.info('[baileys] WhatsApp gateway connected')
     }
 
     if (connection === 'close') {
+      registerBaileysSender(null)
       const statusCode = (lastDisconnect?.error as { output?: { statusCode?: number } } | undefined)
         ?.output?.statusCode
       if (statusCode === DisconnectReason.loggedOut) {

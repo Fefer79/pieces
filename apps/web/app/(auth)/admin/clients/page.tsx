@@ -132,6 +132,8 @@ interface RegisterResult {
   name: string | null
   roles: string[]
   alreadyExisted: boolean
+  notified: boolean
+  channel: 'baileys' | 'cloud' | null
 }
 
 /**
@@ -158,10 +160,14 @@ function RegisterWhatsAppForm({ onDone }: { onDone: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phone.trim(), name: name.trim() || undefined }),
       })
+      const base = res.alreadyExisted
+        ? `Déjà enregistré : ${res.phone}. Consentement mis à jour.`
+        : `Enregistré : ${res.phone}${res.name ? ` (${res.name})` : ''}.`
       setOk(
-        res.alreadyExisted
-          ? `Déjà enregistré : ${res.phone}. Consentement mis à jour.`
-          : `Enregistré : ${res.phone}${res.name ? ` (${res.name})` : ''}.`,
+        base +
+          (res.notified
+            ? ' Message WhatsApp de confirmation envoyé.'
+            : ' ⚠️ Message WhatsApp non envoyé (canal indisponible).'),
       )
       setPhone('')
       setName('')

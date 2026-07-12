@@ -1,6 +1,7 @@
 import crypto from 'node:crypto'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
+import { isBaileysConnected, sendBaileysText } from './baileys.sender.js'
 
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID
@@ -238,6 +239,26 @@ export async function sendWhatsAppTemplate(to: string, templateName: string, par
   } catch {
     return { success: false, reason: 'Network error' }
   }
+}
+
+/**
+ * Envoie un texte transactionnel à un utilisateur, quel que soit le canal
+ * disponible : privilégie Baileys (canal libre, actif en prod) s'il est
+ * connecté, sinon retombe sur l'API Cloud Meta. Retourne le canal utilisé
+ * (null si aucun n'a pu envoyer — p. ex. token Meta absent et Baileys hors
+ * ligne). N'échoue jamais : l'appelant décide quoi faire du statut.
+ */
+export async function notifyWhatsAppUser(
+  phone: string,
+  text: string,
+): Promise<{ sent: boolean; channel: 'baileys' | 'cloud' | null }> {
+  if (isBaileysConnected()) {
+    const ok = await sendBaileysText(phone, text)
+    if (ok) return { sent: true, channel: 'baileys' }
+  }
+  // L'API Cloud attend le numéro en chiffres (le webhook fournit `from` sans +).
+  const res = await sendWhatsAppMessage(phone.replace(/^\+/, ''), text)
+  return res.success ? { sent: true, channel: 'cloud' } : { sent: false, channel: null }
 }
 
 interface WhatsAppMessage {

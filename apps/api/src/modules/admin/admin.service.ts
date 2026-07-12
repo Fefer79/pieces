@@ -2,7 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { Prisma } from '@prisma/client'
 import { AppError } from '../../lib/appError.js'
 import { addPhotoToItem, removePhotoFromItem, reorderItemPhotos } from '../catalog/catalog.service.js'
-import { registerWhatsAppUser, normalizeWaNumber } from '../whatsapp/whatsapp.service.js'
+import { registerWhatsAppUser, normalizeWaNumber, notifyWhatsAppUser } from '../whatsapp/whatsapp.service.js'
 import { splitCategory, subcategoryOf, CATEGORY_SEPARATOR } from 'shared/constants'
 
 // Story 9.1: Order history for user
@@ -712,7 +712,25 @@ export async function registerWhatsAppClient(input: { phone: string; name?: stri
   if (name) {
     await prisma.user.update({ where: { id: user.id }, data: { name } })
   }
-  return { id: user.id, phone, name: name ?? null, roles: user.roles, alreadyExisted: Boolean(existing) }
+
+  // Confirme à l'utilisateur qu'il est bien enregistré (message transactionnel,
+  // en réponse à sa demande WhatsApp — pas une campagne).
+  const greeting = name ? ` ${name}` : ''
+  const notification = await notifyWhatsAppUser(
+    phone,
+    `✅ Bonjour${greeting}, vous êtes connecté sur Pièces ! ` +
+      'Répondez à ce message avec la pièce auto que vous cherchez (ou envoyez une photo) et on s’en occupe.',
+  )
+
+  return {
+    id: user.id,
+    phone,
+    name: name ?? null,
+    roles: user.roles,
+    alreadyExisted: Boolean(existing),
+    notified: notification.sent,
+    channel: notification.channel,
+  }
 }
 
 export async function getAdminClientsList(query: AdminListQuery) {
