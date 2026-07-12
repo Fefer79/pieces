@@ -99,7 +99,7 @@ export async function registerWhatsAppUser(waNumber: string) {
     create: {
       supabaseId: `wa:${phone}`,
       phone,
-      // Rôle de base : ACHETEUR (= OWNER, le propriétaire qui achète/paie).
+      // Rôle de base : OWNER (Propriétaire — celui qui achète/paie).
       roles: ['OWNER'],
       consentedAt: new Date(),
     },

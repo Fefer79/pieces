@@ -181,7 +181,7 @@ function RegisterWhatsAppForm({ onDone }: { onDone: () => void }) {
     >
       <h2 className="text-sm font-semibold text-ink">Enregistrer un utilisateur WhatsApp</h2>
       <p className="mt-1 text-xs text-muted">
-        Pour ajouter une personne qui vous a écrit sur WhatsApp. Rôle Acheteur (Propriétaire) + consentement enregistré.
+        Pour ajouter une personne qui vous a écrit sur WhatsApp. Rôle Propriétaire + consentement enregistré.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <input

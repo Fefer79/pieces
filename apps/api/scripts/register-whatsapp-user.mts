@@ -4,7 +4,7 @@
  * "TODO WhatsApp token not set in prod".
  *
  * Crée (ou met à jour) le compte par numéro de téléphone, exactement comme le
- * ferait le bot après un "OUI" : rôle ACHETEUR (OWNER), consentement horodaté, même
+ * ferait le bot après un "OUI" : rôle OWNER (Propriétaire), consentement horodaté, même
  * supabaseId synthétique `wa:+225…`. Idempotent.
  *
  * Usage (⚠️ toujours viser la PROD db.prisma.io, PAS le .env fantôme) :

@@ -220,7 +220,7 @@ describe('whatsapp.service', () => {
   })
 
   describe('registerWhatsAppUser', () => {
-    it('creates an OWNER (acheteur) account with consent and synthetic supabaseId', async () => {
+    it('creates an OWNER (propriétaire) account with consent and synthetic supabaseId', async () => {
       const created = { id: 'u-new', roles: ['OWNER'] }
       ;(prisma.user.upsert as ReturnType<typeof vi.fn>).mockResolvedValueOnce(created)
 
