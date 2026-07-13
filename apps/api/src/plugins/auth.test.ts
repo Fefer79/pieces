@@ -51,7 +51,7 @@ describe('requireAuth', () => {
     mockUpsert.mockResolvedValueOnce({
       id: 'prisma-user-123',
       phone: '+2250700000000',
-      roles: ['MECHANIC'],
+      roles: ['BUYER'],
       activeContext: null,
       consentedAt: null,
     })
@@ -63,21 +63,21 @@ describe('requireAuth', () => {
     expect(request.user).toEqual({
       id: 'prisma-user-123',
       phone: '+2250700000000',
-      roles: ['MECHANIC'],
-      activeContext: 'MECHANIC',
+      roles: ['BUYER'],
+      activeContext: 'BUYER',
       consentedAt: null,
     })
     expect(mockGetUser).toHaveBeenCalledWith('valid-token')
     expect(mockUpsert).toHaveBeenCalledWith({
       where: { supabaseId: 'supabase-123' },
       update: {},
-      create: { supabaseId: 'supabase-123', phone: '+2250700000000', email: null, roles: ['MECHANIC'] },
+      create: { supabaseId: 'supabase-123', phone: '+2250700000000', email: null, roles: ['BUYER'] },
       select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
     })
     // Auto-set activeContext for single role user
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: 'prisma-user-123' },
-      data: { activeContext: 'MECHANIC' },
+      data: { activeContext: 'BUYER' },
     })
   })
 
@@ -89,8 +89,8 @@ describe('requireAuth', () => {
     mockUpsert.mockResolvedValueOnce({
       id: 'prisma-user-456',
       phone: '+2250500000000',
-      roles: ['MECHANIC'],
-      activeContext: 'MECHANIC',
+      roles: ['BUYER'],
+      activeContext: 'BUYER',
       consentedAt: null,
     })
 
@@ -100,7 +100,7 @@ describe('requireAuth', () => {
     expect(mockUpsert).toHaveBeenCalledWith({
       where: { supabaseId: 'supabase-456' },
       update: {},
-      create: { supabaseId: 'supabase-456', phone: '+2250500000000', email: null, roles: ['MECHANIC'] },
+      create: { supabaseId: 'supabase-456', phone: '+2250500000000', email: null, roles: ['BUYER'] },
       select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
     })
   })
@@ -137,13 +137,13 @@ describe('requireAuth', () => {
 
 describe('requireRole', () => {
   it('passes when user has required role', async () => {
-    const request = createMockRequest({}, { id: 'user-123', roles: ['MECHANIC', 'OWNER'] })
-    const handler = requireRole('MECHANIC')
+    const request = createMockRequest({}, { id: 'user-123', roles: ['BUYER', 'SELLER'] })
+    const handler = requireRole('BUYER')
     await expect(handler(request, mockReply)).resolves.toBeUndefined()
   })
 
   it('throws 403 when user lacks required role', async () => {
-    const request = createMockRequest({}, { id: 'user-123', roles: ['OWNER'] })
+    const request = createMockRequest({}, { id: 'user-123', roles: ['SELLER'] })
     const handler = requireRole('ADMIN')
     await expect(handler(request, mockReply)).rejects.toMatchObject({
       code: 'AUTH_INSUFFICIENT_ROLE',
@@ -153,7 +153,7 @@ describe('requireRole', () => {
 
   it('throws 401 when no user on request', async () => {
     const request = createMockRequest({}, null)
-    const handler = requireRole('MECHANIC')
+    const handler = requireRole('BUYER')
     await expect(handler(request, mockReply)).rejects.toMatchObject({
       code: 'AUTH_MISSING_TOKEN',
       statusCode: 401,

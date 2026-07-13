@@ -81,19 +81,9 @@ export async function selectRole(userId: string, role: string, switchTo = true) 
   }
 
   const newRole = parsed.data.role
-  let newRoles = user.roles.includes(newRole) ? user.roles : [...user.roles, newRole]
+  const newRoles = user.roles.includes(newRole) ? user.roles : [...user.roles, newRole]
 
-  // MECHANIC et OWNER sont deux variantes du même espace Achat : choisir
-  // l'une remplace l'autre (préférence, pas cumul).
-  const otherBuyerRole =
-    newRole === 'MECHANIC' ? 'OWNER' : newRole === 'OWNER' ? 'MECHANIC' : null
-  const removedRole = otherBuyerRole && newRoles.includes(otherBuyerRole) ? otherBuyerRole : null
-  if (removedRole) {
-    newRoles = newRoles.filter((r) => r !== removedRole)
-  }
-
-  const mustSwitch =
-    switchTo || !user.activeContext || user.activeContext === removedRole
+  const mustSwitch = switchTo || !user.activeContext
 
   const updated = await prisma.user.update({
     where: { id: userId },

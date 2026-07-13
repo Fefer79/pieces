@@ -47,8 +47,8 @@ function mockAuthUser(overrides?: Record<string, unknown>) {
   mockUpsert.mockResolvedValueOnce({
     id: 'prisma-user-123',
     phone: '+2250700000000',
-    roles: ['MECHANIC'],
-    activeContext: 'MECHANIC',
+    roles: ['BUYER'],
+    activeContext: 'BUYER',
     consentedAt: null,
     ...overrides,
   })
@@ -108,8 +108,8 @@ describe('Consent Routes', () => {
       mockAuthUser({ consentedAt: new Date('2026-03-01T12:00:00Z') })
       mockFindUnique.mockResolvedValueOnce({
         phone: '+2250700000000',
-        roles: ['MECHANIC'],
-        activeContext: 'MECHANIC',
+        roles: ['BUYER'],
+        activeContext: 'BUYER',
         consentedAt: new Date('2026-03-01T12:00:00Z'),
         createdAt: new Date('2026-02-15T10:00:00Z'),
       })

@@ -26,7 +26,7 @@ vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     user: {
       upsert: (...args: unknown[]) => mockUserUpsert(...args),
-      findUnique: vi.fn().mockResolvedValue({ id: 'u1', phone: '+2250700000000', roles: ['MECHANIC'], vehicles: [] }),
+      findUnique: vi.fn().mockResolvedValue({ id: 'u1', phone: '+2250700000000', roles: ['BUYER'], vehicles: [] }),
       update: vi.fn(),
     },
     vendor: { findUnique: vi.fn() },
@@ -61,7 +61,7 @@ const mockDownloadMedia = vi.fn().mockResolvedValue(Buffer.from('fake-image'))
 const mockGetSession = vi.fn().mockReturnValue(null)
 const mockSetSession = vi.fn()
 const mockClearSession = vi.fn()
-const mockRegisterUser = vi.fn().mockResolvedValue({ id: 'u-new', roles: ['MECHANIC'] })
+const mockRegisterUser = vi.fn().mockResolvedValue({ id: 'u-new', roles: ['BUYER'] })
 
 vi.mock('./whatsapp.service.js', async (importOriginal) => {
   const original = await importOriginal() as Record<string, unknown>
@@ -361,7 +361,7 @@ describe('WhatsApp Routes', () => {
         },
         expiresAt: new Date(Date.now() + 60000),
       })
-      mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['OWNER'], vehicles: [] })
+      mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['BUYER'], vehicles: [] })
       mockCreateOrder.mockResolvedValueOnce({ id: 'ord1', shareToken: 'token123', items: [] })
 
       const app = buildApp()
@@ -412,7 +412,7 @@ describe('WhatsApp Routes', () => {
         },
         expiresAt: new Date(Date.now() + 60000),
       })
-      mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['OWNER'], vehicles: [] })
+      mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['BUYER'], vehicles: [] })
 
       const app = buildApp()
       await app.inject({
@@ -448,7 +448,7 @@ describe('WhatsApp Routes', () => {
       })
 
       it('keeps "Commande non reconnue" for known users', async () => {
-        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['MECHANIC'], vehicles: [] })
+        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['BUYER'], vehicles: [] })
 
         const app = buildApp()
         await app.inject({
@@ -484,7 +484,7 @@ describe('WhatsApp Routes', () => {
       })
 
       it('does not re-create an account that appeared meanwhile', async () => {
-        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['MECHANIC'], vehicles: [] })
+        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['BUYER'], vehicles: [] })
         mockGetSession.mockReturnValueOnce({
           type: 'onboarding',
           data: {},
@@ -568,7 +568,7 @@ describe('WhatsApp Routes', () => {
       })
 
       it('tells known users they already have an account on "compte"', async () => {
-        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['MECHANIC'], vehicles: [] })
+        mockFindUser.mockResolvedValueOnce({ id: 'u1', phone: '+2250700000000', roles: ['BUYER'], vehicles: [] })
 
         const app = buildApp()
         await app.inject({

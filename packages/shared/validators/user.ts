@@ -9,8 +9,8 @@ export const switchContextSchema = z.object({
 })
 
 export const selectRoleSchema = z.object({
-  role: z.enum(['MECHANIC', 'OWNER', 'SELLER', 'ENTERPRISE'] as const, {
-    message: 'Rôle invalide. Choisissez MECHANIC, OWNER, SELLER ou ENTERPRISE',
+  role: z.enum(['BUYER', 'SELLER', 'ENTERPRISE'] as const, {
+    message: 'Rôle invalide. Choisissez BUYER, SELLER ou ENTERPRISE',
   }),
   // switch: false → ajoute le rôle sans changer le contexte actif (activation
   // d'un espace depuis le profil, sans y basculer).

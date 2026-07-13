@@ -37,11 +37,12 @@ type Draft = { items: DraftItem[] } | null
 export default function PanierPage() {
   const { items, itemsByVendor, count, subtotal, vehicle, commune, setQuantity, removeItem, clear, mergeItems, setVehicle, setCommune } =
     useCart()
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated } = useAuth()
   const router = useRouter()
-  // Le propriétaire valide sa propre sélection : on l'envoie directement au
-  // paiement, sans l'étape « envoyer au propriétaire » / partage de lien.
-  const isOwner = user?.activeContext === 'OWNER'
+  // Qui paie ? Ce n'est plus déduit d'un rôle : l'acheteur choisit au checkout.
+  // SELF → paiement direct ; OWNER_LINK → lien de validation à partager.
+  const [payer, setPayer] = useState<'SELF' | 'OWNER_LINK'>('SELF')
+  const paySelf = payer === 'SELF'
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<CreatedOrder | null>(null)
@@ -127,8 +128,8 @@ export default function PanierPage() {
         await apiFetch('/orders/draft', { method: 'PUT', body: JSON.stringify({ items: [] }) })
       }
       clear()
-      // Propriétaire : aller droit au paiement. Sinon : écran de partage du lien.
-      if (isOwner) {
+      // « Je paie moi-même » : aller droit au paiement. Sinon : écran de partage du lien.
+      if (paySelf) {
         router.push(`/choose/${res.data.shareToken}`)
         return
       }
@@ -381,6 +382,44 @@ export default function PanierPage() {
                 note="Pièces effectue la livraison et le paiement n'est libéré au vendeur qu'après votre bonne réception."
               />
 
+              {/* Qui paie ? — choix explicite au checkout, quel que soit le profil. */}
+              <fieldset className="mt-4 rounded-md border border-border bg-card px-4 py-3">
+                <legend className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                  Qui paie cette commande ?
+                </legend>
+                <div className="mt-1.5 space-y-1.5">
+                  {(
+                    [
+                      { value: 'SELF', label: 'Je paie moi-même', detail: 'paiement immédiat' },
+                      {
+                        value: 'OWNER_LINK',
+                        label: 'Le propriétaire du véhicule',
+                        detail: 'lien de validation à lui envoyer',
+                      },
+                    ] as const
+                  ).map(({ value, label, detail }) => (
+                    <label
+                      key={value}
+                      className={`flex cursor-pointer items-center gap-2 rounded-sm border px-3 py-2 ${
+                        payer === value ? 'border-accent bg-accent/5' : 'border-border bg-surface'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="cart-payer"
+                        value={value}
+                        checked={payer === value}
+                        onChange={() => setPayer(value)}
+                        className="accent-accent"
+                      />
+                      <span className="text-sm text-ink">
+                        {label} <span className="text-xs text-muted">{detail}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
               {error && (
                 <p className="mt-3 rounded-sm bg-error-bg px-3 py-2 text-[12.5px] text-error-fg">
                   {error}
@@ -397,12 +436,12 @@ export default function PanierPage() {
               >
                 {submitting
                   ? 'Envoi…'
-                  : isOwner
+                  : paySelf
                     ? 'Procéder au paiement'
                     : 'Envoyer au propriétaire'}
               </Button>
               <p className="mt-2 text-center text-xs text-muted">
-                {isOwner
+                {paySelf
                   ? 'Vous passez directement au choix du moyen de paiement.'
                   : 'Un lien de validation et de paiement sera généré.'}
               </p>

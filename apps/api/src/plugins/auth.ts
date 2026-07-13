@@ -113,7 +113,7 @@ export async function requireAuth(request: FastifyRequest) {
         supabaseId: data.user.id,
         phone,
         email,
-        roles: ['MECHANIC'],
+        roles: ['BUYER'],
       },
       select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
     })

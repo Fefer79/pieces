@@ -68,7 +68,7 @@ describe('whatsappLogin.service', () => {
 
   describe('verifyLoginCode', () => {
     it('verifies a matching sender and mints a session token for an existing user', async () => {
-      mockFindUnique.mockResolvedValue({ id: 'user-1', roles: ['MECHANIC'], activeContext: 'MECHANIC' })
+      mockFindUnique.mockResolvedValue({ id: 'user-1', roles: ['BUYER'], activeContext: 'BUYER' })
       const { code } = createLoginCode(PHONE)
 
       const result = await verifyLoginCode(code, SENDER)
@@ -81,16 +81,16 @@ describe('whatsappLogin.service', () => {
       expect(mockCreate).not.toHaveBeenCalled()
     })
 
-    it('creates a MECHANIC user with a synthetic supabaseId when none exists', async () => {
+    it('creates a BUYER user with a synthetic supabaseId when none exists', async () => {
       mockFindUnique.mockResolvedValue(null)
-      mockCreate.mockResolvedValue({ id: 'new-user', roles: ['MECHANIC'], activeContext: null })
+      mockCreate.mockResolvedValue({ id: 'new-user', roles: ['BUYER'], activeContext: null })
       const { code } = createLoginCode(PHONE)
 
       const result = await verifyLoginCode(code, SENDER)
       expect(result.ok).toBe(true)
       expect(mockCreate).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ supabaseId: `wa:${PHONE}`, phone: PHONE, roles: ['MECHANIC'] }),
+          data: expect.objectContaining({ supabaseId: `wa:${PHONE}`, phone: PHONE, roles: ['BUYER'] }),
         }),
       )
     })
@@ -120,7 +120,7 @@ describe('whatsappLogin.service', () => {
     })
 
     it('is one-shot: the token is only returned once', async () => {
-      mockFindUnique.mockResolvedValue({ id: 'user-1', roles: ['MECHANIC'], activeContext: 'MECHANIC' })
+      mockFindUnique.mockResolvedValue({ id: 'user-1', roles: ['BUYER'], activeContext: 'BUYER' })
       const { code } = createLoginCode(PHONE)
       await verifyLoginCode(code, SENDER)
 
@@ -133,7 +133,7 @@ describe('whatsappLogin.service', () => {
     })
 
     it('accepts the code in normalized or display form', async () => {
-      mockFindUnique.mockResolvedValue({ id: 'user-1', roles: ['MECHANIC'], activeContext: 'MECHANIC' })
+      mockFindUnique.mockResolvedValue({ id: 'user-1', roles: ['BUYER'], activeContext: 'BUYER' })
       const { code } = createLoginCode(PHONE) // e.g. "P-4832"
       await verifyLoginCode(normalizeCode(code), SENDER) // verify with "P4832"
       expect(getLoginStatus(code).status).toBe('verified')

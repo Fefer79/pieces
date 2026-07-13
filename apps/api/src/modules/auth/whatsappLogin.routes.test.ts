@@ -104,8 +104,8 @@ describe('WhatsApp reverse-OTP login routes', () => {
         id: 'user-1',
         phone: '+2250700000000',
         email: null,
-        roles: ['MECHANIC'],
-        activeContext: 'MECHANIC',
+        roles: ['BUYER'],
+        activeContext: 'BUYER',
         consentedAt: null,
       })
 

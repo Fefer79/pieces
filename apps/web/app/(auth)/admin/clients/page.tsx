@@ -75,8 +75,7 @@ export default function AdminClientsPage() {
         />
         <select value={role} onChange={(e) => { setPage(1); setRole(e.target.value) }} className="rounded-sm border border-border-strong bg-card px-3 py-2 text-sm">
           <option value="">Tous les rôles</option>
-          <option value="MECHANIC">Mécanicien</option>
-          <option value="OWNER">Propriétaire</option>
+          <option value="BUYER">Acheteur</option>
           <option value="SELLER">Vendeur</option>
           <option value="RIDER">Livreur</option>
           <option value="ENTERPRISE">Entreprise</option>

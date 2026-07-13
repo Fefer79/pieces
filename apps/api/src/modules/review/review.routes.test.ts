@@ -34,7 +34,7 @@ vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     user: {
       upsert: (...args: unknown[]) => mockUserUpsert(...args),
-      findUnique: vi.fn().mockResolvedValue({ roles: ['MECHANIC'] }),
+      findUnique: vi.fn().mockResolvedValue({ roles: ['BUYER'] }),
       update: vi.fn(),
     },
     vendor: { findUnique: vi.fn() },
@@ -92,7 +92,7 @@ vi.mock('../whatsapp/whatsapp.service.js', () => ({
 
 const { buildApp } = await import('../../server.js')
 
-function mockAuth(role = 'MECHANIC') {
+function mockAuth(role = 'BUYER') {
   mockGetUser.mockResolvedValueOnce({
     data: { user: { id: 'sup-1', phone: '+2250700000000' } },
     error: null,

@@ -34,16 +34,16 @@ describe('getProfile', () => {
     mockFindUnique.mockResolvedValueOnce({
       id: 'user-1',
       phone: '+2250700000000',
-      roles: ['MECHANIC'],
-      activeContext: 'MECHANIC',
+      roles: ['BUYER'],
+      activeContext: 'BUYER',
     })
 
     const result = await getProfile('user-1')
     expect(result).toEqual({
       id: 'user-1',
       phone: '+2250700000000',
-      roles: ['MECHANIC'],
-      activeContext: 'MECHANIC',
+      roles: ['BUYER'],
+      activeContext: 'BUYER',
     })
   })
 
@@ -64,27 +64,27 @@ describe('switchContext', () => {
 
   it('switches context to an assigned role', async () => {
     mockFindUnique.mockResolvedValueOnce({
-      roles: ['MECHANIC', 'OWNER'],
+      roles: ['BUYER', 'SELLER'],
     })
     mockUpdate.mockResolvedValueOnce({
       id: 'user-1',
       phone: '+2250700000000',
-      roles: ['MECHANIC', 'OWNER'],
-      activeContext: 'OWNER',
+      roles: ['BUYER', 'SELLER'],
+      activeContext: 'SELLER',
     })
 
-    const result = await switchContext('user-1', 'OWNER')
-    expect(result.activeContext).toBe('OWNER')
+    const result = await switchContext('user-1', 'SELLER')
+    expect(result.activeContext).toBe('SELLER')
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: 'user-1' },
-      data: { activeContext: 'OWNER' },
+      data: { activeContext: 'SELLER' },
       select: { id: true, phone: true, roles: true, activeContext: true },
     })
   })
 
   it('throws 403 when role is not assigned', async () => {
     mockFindUnique.mockResolvedValueOnce({
-      roles: ['MECHANIC'],
+      roles: ['BUYER'],
     })
 
     await expect(switchContext('user-1', 'ADMIN')).rejects.toMatchObject({
@@ -103,7 +103,7 @@ describe('switchContext', () => {
   it('throws 404 when user not found', async () => {
     mockFindUnique.mockResolvedValueOnce(null)
 
-    await expect(switchContext('nonexistent', 'MECHANIC')).rejects.toMatchObject({
+    await expect(switchContext('nonexistent', 'BUYER')).rejects.toMatchObject({
       code: 'USER_NOT_FOUND',
       statusCode: 404,
     })
@@ -116,11 +116,11 @@ describe('selectRole', () => {
   })
 
   it('adds the role and switches activeContext by default', async () => {
-    mockFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC'], activeContext: 'MECHANIC' })
+    mockFindUnique.mockResolvedValueOnce({ roles: ['BUYER'], activeContext: 'BUYER' })
     mockUpdate.mockResolvedValueOnce({
       id: 'user-1',
       phone: '+2250700000000',
-      roles: ['MECHANIC', 'SELLER'],
+      roles: ['BUYER', 'SELLER'],
       activeContext: 'SELLER',
       consentedAt: null,
     })
@@ -128,48 +128,29 @@ describe('selectRole', () => {
     const result = await selectRole('user-1', 'SELLER')
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { roles: ['MECHANIC', 'SELLER'], activeContext: 'SELLER' },
+        data: { roles: ['BUYER', 'SELLER'], activeContext: 'SELLER' },
       }),
     )
     expect(result.activeContext).toBe('SELLER')
   })
 
   it('adds the role without switching context when switchTo is false', async () => {
-    mockFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC'], activeContext: 'MECHANIC' })
+    mockFindUnique.mockResolvedValueOnce({ roles: ['BUYER'], activeContext: 'BUYER' })
     mockUpdate.mockResolvedValueOnce({
       id: 'user-1',
       phone: '+2250700000000',
-      roles: ['MECHANIC', 'SELLER'],
-      activeContext: 'MECHANIC',
+      roles: ['BUYER', 'SELLER'],
+      activeContext: 'BUYER',
       consentedAt: null,
     })
 
     const result = await selectRole('user-1', 'SELLER', false)
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { roles: ['MECHANIC', 'SELLER'] },
+        data: { roles: ['BUYER', 'SELLER'] },
       }),
     )
-    expect(result.activeContext).toBe('MECHANIC')
-  })
-
-  it('swaps MECHANIC for OWNER (buyer variants are exclusive)', async () => {
-    mockFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC', 'SELLER'], activeContext: 'MECHANIC' })
-    mockUpdate.mockResolvedValueOnce({
-      id: 'user-1',
-      phone: '+2250700000000',
-      roles: ['SELLER', 'OWNER'],
-      activeContext: 'OWNER',
-      consentedAt: null,
-    })
-
-    await selectRole('user-1', 'OWNER', false)
-    // switchTo=false mais MECHANIC (le contexte actif) est remplacé → bascule forcée
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: { roles: ['SELLER', 'OWNER'], activeContext: 'OWNER' },
-      }),
-    )
+    expect(result.activeContext).toBe('BUYER')
   })
 
   it('still sets activeContext with switchTo false when the user has none', async () => {
@@ -197,17 +178,17 @@ describe('updateRoles', () => {
   })
 
   it('updates roles and preserves activeContext if still valid', async () => {
-    mockFindUnique.mockResolvedValueOnce({ activeContext: 'MECHANIC' })
+    mockFindUnique.mockResolvedValueOnce({ activeContext: 'BUYER' })
     mockUpdate.mockResolvedValueOnce({
       id: 'user-1',
       phone: '+2250700000000',
-      roles: ['MECHANIC', 'SELLER'],
-      activeContext: 'MECHANIC',
+      roles: ['BUYER', 'SELLER'],
+      activeContext: 'BUYER',
     })
 
-    const result = await updateRoles('user-1', ['MECHANIC', 'SELLER'])
-    expect(result.roles).toEqual(['MECHANIC', 'SELLER'])
-    expect(result.activeContext).toBe('MECHANIC')
+    const result = await updateRoles('user-1', ['BUYER', 'SELLER'])
+    expect(result.roles).toEqual(['BUYER', 'SELLER'])
+    expect(result.activeContext).toBe('BUYER')
   })
 
   it('resets activeContext when current context removed from roles', async () => {
@@ -215,17 +196,17 @@ describe('updateRoles', () => {
     mockUpdate.mockResolvedValueOnce({
       id: 'user-1',
       phone: '+2250700000000',
-      roles: ['MECHANIC', 'SELLER'],
-      activeContext: 'MECHANIC',
+      roles: ['BUYER', 'SELLER'],
+      activeContext: 'BUYER',
     })
 
-    const result = await updateRoles('user-1', ['MECHANIC', 'SELLER'])
+    const result = await updateRoles('user-1', ['BUYER', 'SELLER'])
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ activeContext: 'MECHANIC' }),
+        data: expect.objectContaining({ activeContext: 'BUYER' }),
       }),
     )
-    expect(result.activeContext).toBe('MECHANIC')
+    expect(result.activeContext).toBe('BUYER')
   })
 
   it('throws 400 for empty roles array', async () => {
@@ -238,7 +219,7 @@ describe('updateRoles', () => {
   it('throws 404 when user not found', async () => {
     mockFindUnique.mockResolvedValueOnce(null)
 
-    await expect(updateRoles('nonexistent', ['MECHANIC'])).rejects.toMatchObject({
+    await expect(updateRoles('nonexistent', ['BUYER'])).rejects.toMatchObject({
       code: 'USER_NOT_FOUND',
       statusCode: 404,
     })

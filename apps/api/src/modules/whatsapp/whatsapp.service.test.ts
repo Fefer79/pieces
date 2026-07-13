@@ -252,7 +252,7 @@ describe('whatsapp.service', () => {
 
   describe('findUserByWhatsApp', () => {
     it('looks up user by formatted phone +{waNumber}', async () => {
-      const mockUser = { id: 'u1', phone: '+2250700000000', roles: ['OWNER'], vehicles: [] }
+      const mockUser = { id: 'u1', phone: '+2250700000000', roles: ['BUYER'], vehicles: [] }
       ;(prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce(mockUser)
 
       const result = await findUserByWhatsApp('2250700000000')
@@ -272,8 +272,8 @@ describe('whatsapp.service', () => {
   })
 
   describe('registerWhatsAppUser', () => {
-    it('creates an OWNER (propriétaire) account with consent and synthetic supabaseId', async () => {
-      const created = { id: 'u-new', roles: ['OWNER'] }
+    it('creates a BUYER (acheteur) account with consent and synthetic supabaseId', async () => {
+      const created = { id: 'u-new', roles: ['BUYER'] }
       ;(prisma.user.upsert as ReturnType<typeof vi.fn>).mockResolvedValueOnce(created)
 
       const result = await registerWhatsAppUser('2250700000000')
@@ -283,7 +283,7 @@ describe('whatsapp.service', () => {
       expect(args.where).toEqual({ phone: '+2250700000000' })
       expect(args.create.supabaseId).toBe('wa:+2250700000000')
       expect(args.create.phone).toBe('+2250700000000')
-      expect(args.create.roles).toEqual(['OWNER'])
+      expect(args.create.roles).toEqual(['BUYER'])
       expect(args.create.consentedAt).toBeInstanceOf(Date)
       expect(args.update.consentedAt).toBeInstanceOf(Date)
     })

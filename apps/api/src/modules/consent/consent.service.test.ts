@@ -92,8 +92,8 @@ describe('getUserData', () => {
   it('returns user personal data', async () => {
     const userData = {
       phone: '+2250700000000',
-      roles: ['MECHANIC'],
-      activeContext: 'MECHANIC',
+      roles: ['BUYER'],
+      activeContext: 'BUYER',
       consentedAt: new Date('2026-03-01T12:00:00Z'),
       createdAt: new Date('2026-02-15T10:00:00Z'),
     }

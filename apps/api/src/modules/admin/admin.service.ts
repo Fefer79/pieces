@@ -695,7 +695,7 @@ export async function getAdminVendorDetail(vendorId: string) {
 /**
  * Enregistrement manuel d'un utilisateur WhatsApp par un admin, tant que le bot
  * (webhook Meta) n'est pas branché en prod. Réutilise exactement la logique du
- * bot (`registerWhatsAppUser` : rôle OWNER/Propriétaire + consentement) puis pose le nom.
+ * bot (`registerWhatsAppUser` : rôle BUYER/Acheteur + consentement) puis pose le nom.
  * Idempotent : signale si le compte existait déjà.
  */
 export async function registerWhatsAppClient(input: { phone: string; name?: string | null }) {

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Pièces** is a marketplace for used auto parts in Côte d'Ivoire (Abidjan). All user-facing text is in French, currency is FCFA. The platform supports 6 roles: MECHANIC (default), OWNER, SELLER, RIDER, ADMIN, ENTERPRISE. The core flow is tripartite: mechanic finds parts → creates order with shareToken → owner pays.
+**Pièces** is a marketplace for used auto parts in Côte d'Ivoire (Abidjan). All user-facing text is in French, currency is FCFA. The platform supports 7 roles: BUYER (default), SELLER, RIDER, DRIVER, ADMIN, ENTERPRISE, LIAISON — surfaced in the UI as « espaces » (see `apps/web/lib/spaces.ts`). The core flow is tripartite: a buyer (mechanic) finds parts → creates order with shareToken → another buyer (vehicle owner) pays. « Who pays » is a checkout choice, not a role.
 
 ## Monorepo Structure
 

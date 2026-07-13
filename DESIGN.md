@@ -8,7 +8,7 @@
 - **What this is:** Marketplace de pièces détachées automobiles en Côte d'Ivoire — neuves, occasions importées, ré-usinées.
 - **USP:** La transparence. Fin des marges cachées des intermédiaires — chaque annonce affiche le détail du prix (vendeur / livraison / frais plateforme), chaque pièce affiche sa condition de façon proéminente.
 - **Who it's for:** Mécaniciens (trouvent la pièce), propriétaires véhicule (approuvent/paient), vendeurs formels et informels de CI, livreurs (riders), entreprises (flotte), administrateurs Pièces.ci.
-- **Roles:** MECHANIC (default), OWNER, SELLER, RIDER, ADMIN, ENTERPRISE.
+- **Roles:** BUYER (default), SELLER, RIDER, DRIVER, ADMIN, ENTERPRISE, LIAISON — affichés comme « espaces » dans l'UI.
 - **Locale:** Français · FCFA · +225 (Côte d'Ivoire).
 - **Project type:** PWA mobile-first + back-office desktop multi-rôles (Next.js 15, React 19, Tailwind v4, Serwist PWA).
 
@@ -296,11 +296,11 @@ Géométrie de référence (viewBox `0 0 196 80`) : texte `x=0 y=62`, Gloock `fo
 
 ## Espaces (2026-07 — implémenté)
 
-Le vocabulaire RBAC (« rôle », « contexte actif », « permission ») ne s'affiche **jamais** dans l'UI. On parle d'**espaces** : Espace Achat (MECHANIC/OWNER fusionnés) · Espace Vendeur · Espace Flotte · Espace Livreur · Espace Chauffeur · Espace Liaison · Administration. Source unique : `apps/web/lib/spaces.ts` (libellés, descriptions, préfixes d'URL, copy d'activation).
+Le vocabulaire RBAC (« rôle », « contexte actif », « permission ») ne s'affiche **jamais** dans l'UI. On parle d'**espaces** : Espace Achat (BUYER) · Espace Vendeur · Espace Flotte · Espace Livreur · Espace Chauffeur · Espace Liaison · Administration. Source unique : `apps/web/lib/spaces.ts` (libellés, descriptions, préfixes d'URL, copy d'activation).
 
 - **Bascule automatique** : entrer dans un espace qu'on possède bascule le contexte silencieusement (`SpaceGuard` dans l'AppShell) + toast navy « ● Espace X » (chip `bg-ink`, dot accent, 2,5 s, au-dessus de la bottom nav).
 - **Activation en contexte** : entrer dans un espace non activé affiche un interstitiel (eyebrow mono « Espaces », titre Gloock, 3 bénéfices en puces `→` accent, note rassurante, CTA accent « Activer et continuer », ghost « Pas maintenant »). Espaces attribués (Livreur, Chauffeur, Liaison, Admin) → écran « Espace réservé ».
-- **Onboarding** : plus d'écran de choix de rôle. Bandeau ignorable sur `/browse` (1ʳᵉ visite connectée) : « Vous êtes plutôt ? Mécanicien / Particulier / Passer » — règle la variante acheteur, rien d'autre.
+- **Onboarding** : plus d'écran de choix de rôle ni de question à l'arrivée — tout le monde démarre BUYER, direct sur `/browse`.
 - **Profil** : hub court (`/profile`) → sous-pages Identité · Mes espaces · Sécurité · Mes données. Le switcher sidebar est un menu « Aller à… » qui navigue vers la racine des espaces (mono-espace : simple lien profil, pas de menu).
 
 **Vitrine flotte.pieces.ci.** Hero + 3 tiers `FLEET_PLANS` (Gratuit / Flotte Pro 5 000 F / Flotte Pro+ 10 000 F par véh./mois, essai 30 j). Aucun langage SLA/pénalité ; livraison = bénéfice service.
@@ -322,5 +322,6 @@ Le vocabulaire RBAC (« rôle », « contexte actif », « permission ») ne s'a
 | 2026-06-21 | Back-office = shell desktop dense ; rider mobile | Sidebar navy contextualisée par rôle + tables denses pour vendeur/admin/flotte. Rider reste terrain (mobile). Choix owner « desktop dense ». _(proposé)_ |
 | 2026-07-13 | UX « un profil, des espaces » | Validé owner. Rôles/contexte → « espaces » dans toute l'UI ; bascule auto par navigation (SpaceGuard) ; activation en contexte (interstitiel) au lieu du 403/cul-de-sac ; profil découpé en hub + sous-pages ; suppression de l'écran /onboarding/role (remplace le « choix de rôle en cartes » du redesign 2026-06). Source unique `lib/spaces.ts`. |
 | 2026-07-13 | MECHANIC/OWNER = un seul espace Achat | Même nav, même redirect : la distinction devient une préférence (« Vous êtes plutôt ? » sur /browse, toggle dans Profil → Identité). Côté API les deux variantes sont exclusives (`selectRole` remplace l'une par l'autre). |
+| 2026-07-13 | Fusion MECHANIC + OWNER → rôle unique BUYER | Va au bout de la logique espaces : la préférence Mécanicien/Particulier (bandeau, toggle Identité) est supprimée — « qui paie ? » est un choix au checkout, pas un rôle. Migration SQL `20260713_buyer_role` (fusion + dédoublonnage en base). DRIVER ajouté au type `Role` partagé (aligné sur l'enum Prisma). |
 </content>
 </invoke>

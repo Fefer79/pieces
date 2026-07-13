@@ -37,8 +37,8 @@ export const SPACES: Space[] = [
     key: 'achat',
     label: 'Espace Achat',
     description: 'Recherche de pièces, commandes, véhicules',
-    role: 'MECHANIC',
-    matchRoles: ['MECHANIC', 'OWNER'],
+    role: 'BUYER',
+    matchRoles: ['BUYER'],
     prefix: '/vehicles',
     root: '/browse',
     activation: {
@@ -152,7 +152,7 @@ export function spaceForRole(role: string | null | undefined): Space | null {
   )
 }
 
-/** Espaces accessibles avec ces rôles (dédoublonnés — MECHANIC+OWNER = Achat). */
+/** Espaces accessibles avec ces rôles. */
 export function spacesForRoles(roles: string[]): Space[] {
   return SPACES.filter((s) => roles.some((r) => s.matchRoles.includes(r)))
 }

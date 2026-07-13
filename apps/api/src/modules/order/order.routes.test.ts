@@ -68,8 +68,8 @@ function mockAuth() {
   mockUserUpsert.mockResolvedValueOnce({
     id: 'prisma-user-1',
     phone: '+2250700000000',
-    roles: ['MECHANIC'],
-    activeContext: 'MECHANIC',
+    roles: ['BUYER'],
+    activeContext: 'BUYER',
     consentedAt: new Date(),
   })
   return { authorization: 'Bearer test-token' }

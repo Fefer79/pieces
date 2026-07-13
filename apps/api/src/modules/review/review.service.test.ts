@@ -179,7 +179,7 @@ describe('review.service', () => {
   describe('getDisputesByOrder', () => {
     it('returns disputes for order initiator', async () => {
       mockOrderFindUnique.mockResolvedValueOnce({ initiatorId: 'u1' })
-      mockUserFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC'] })
+      mockUserFindUnique.mockResolvedValueOnce({ roles: ['BUYER'] })
       mockDisputeFindMany.mockResolvedValueOnce([{ id: 'disp1' }])
 
       const result = await getDisputesByOrder('o1', 'u1')
@@ -197,7 +197,7 @@ describe('review.service', () => {
 
     it('rejects non-party non-admin', async () => {
       mockOrderFindUnique.mockResolvedValueOnce({ initiatorId: 'other' })
-      mockUserFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC'] })
+      mockUserFindUnique.mockResolvedValueOnce({ roles: ['BUYER'] })
 
       await expect(
         getDisputesByOrder('o1', 'u1'),

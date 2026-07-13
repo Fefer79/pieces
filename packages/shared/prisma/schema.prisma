@@ -8,8 +8,7 @@ generator client {
 }
 
 enum Role {
-  MECHANIC
-  OWNER
+  BUYER
   SELLER
   RIDER
   ADMIN

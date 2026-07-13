@@ -1,6 +1,5 @@
 export const ROLE_LABELS: Record<string, string> = {
-  MECHANIC: 'Mécanicien',
-  OWNER: 'Propriétaire',
+  BUYER: 'Acheteur',
   SELLER: 'Vendeur',
   RIDER: 'Livreur',
   ADMIN: 'Administrateur',

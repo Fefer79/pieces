@@ -70,7 +70,7 @@ function getNavItems(
         { href: '/profile', label: 'Profil', icon: ProfileIcon },
       ]
     default:
-      // MECHANIC, OWNER, or null
+      // BUYER or null
       return [
         { href: '/', label: 'Accueil', icon: HomeIcon },
         { href: '/panier', label: 'Sélection', icon: CartIcon },

@@ -101,7 +101,7 @@ function getSections(
         ...adminSection,
       ]
     default:
-      // MECHANIC, OWNER, or null
+      // BUYER or null
       return [
         { title: 'Acheter', items: [
           { href: '/dashboard', label: 'Accueil', icon: HomeIcon },

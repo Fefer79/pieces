@@ -132,7 +132,7 @@ describe('admin.service', () => {
 
   describe('getEnterpriseMembers', () => {
     it('returns empty for non-enterprise user', async () => {
-      mockUserFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC'] })
+      mockUserFindUnique.mockResolvedValueOnce({ roles: ['BUYER'] })
 
       const result = await getEnterpriseMembers('user-1')
       expect(result.members).toHaveLength(0)

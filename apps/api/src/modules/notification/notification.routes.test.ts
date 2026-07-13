@@ -62,7 +62,7 @@ vi.mock('../whatsapp/whatsapp.service.js', () => ({
 
 const { buildApp } = await import('../../server.js')
 
-function mockAuth(role = 'MECHANIC') {
+function mockAuth(role = 'BUYER') {
   mockGetUser.mockResolvedValueOnce({
     data: { user: { id: 'sup-1', phone: '+2250700000000' } },
     error: null,

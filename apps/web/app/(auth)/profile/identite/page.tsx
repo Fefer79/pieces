@@ -17,7 +17,6 @@ export default function IdentityPage() {
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [error, setError] = useState('')
-  const [switchingBuyer, setSwitchingBuyer] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -26,9 +25,6 @@ export default function IdentityPage() {
       setEditPhone(user.phone ? user.phone.replace('+225', '') : '')
     }
   }, [user])
-
-  const hasBuyerRole = !!user && user.roles.some((r) => r === 'MECHANIC' || r === 'OWNER')
-  const buyerPref = user?.roles.includes('OWNER') ? 'OWNER' : 'MECHANIC'
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -74,30 +70,6 @@ export default function IdentityPage() {
       setError('Erreur de connexion')
     } finally {
       setSaving(false)
-    }
-  }
-
-  async function handleBuyerPref(role: 'MECHANIC' | 'OWNER') {
-    if (switchingBuyer || role === buyerPref) return
-    setSwitchingBuyer(true)
-    setError('')
-    try {
-      const token = await getAccessToken()
-      if (!token) return
-      const res = await fetch('/api/v1/users/me/role', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        // switch:false — c'est une préférence de libellé, pas un changement d'espace
-        body: JSON.stringify({ role, switch: false }),
-      })
-      if (res.ok) await refreshProfile()
-    } catch {
-      setError('Erreur de connexion')
-    } finally {
-      setSwitchingBuyer(false)
     }
   }
 
@@ -187,40 +159,6 @@ export default function IdentityPage() {
           </button>
         </div>
       </form>
-
-      {hasBuyerRole && (
-        <section className="rounded-md border border-border bg-card p-5">
-          <p className="mb-1 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-            Vous êtes
-          </p>
-          <p className="mb-3 text-xs text-muted">
-            Pour adapter nos conseils — ça ne change rien à votre compte.
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {(
-              [
-                ['MECHANIC', 'Mécanicien'],
-                ['OWNER', 'Particulier'],
-              ] as const
-            ).map(([role, label]) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => handleBuyerPref(role)}
-                disabled={switchingBuyer}
-                className={`rounded-md border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${
-                  buyerPref === role
-                    ? 'border-ink-2 bg-[rgba(0,35,102,0.04)] font-semibold text-ink'
-                    : 'border-border-strong text-muted hover:border-ink-2 hover:text-ink'
-                }`}
-                style={{ minHeight: '44px' }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
     </main>
   )
 }

@@ -168,7 +168,7 @@ async function upsertLoginUser(phone: string) {
   return prisma.user.create({
     // WhatsApp-only accounts have no Supabase identity; use a deterministic
     // synthetic supabaseId so re-login resolves the same row.
-    data: { supabaseId: `wa:${phone}`, phone, roles: ['MECHANIC'] },
+    data: { supabaseId: `wa:${phone}`, phone, roles: ['BUYER'] },
     select: { id: true, roles: true, activeContext: true },
   })
 }

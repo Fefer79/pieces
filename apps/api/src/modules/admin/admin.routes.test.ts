@@ -106,7 +106,7 @@ describe('Admin Routes', () => {
       const response = await app.inject({
         method: 'GET',
         url: '/api/v1/admin/dashboard',
-        headers: mockAuth('MECHANIC'),
+        headers: mockAuth('BUYER'),
       })
 
       expect(response.statusCode).toBe(403)
@@ -132,7 +132,7 @@ describe('Admin Routes', () => {
       const response = await app.inject({
         method: 'GET',
         url: '/api/v1/orders/history',
-        headers: mockAuth('MECHANIC'),
+        headers: mockAuth('BUYER'),
       })
 
       expect(response.statusCode).toBe(200)
@@ -169,7 +169,7 @@ describe('Admin Routes', () => {
       const response = await app.inject({
         method: 'GET',
         url: '/api/v1/admin/external-imports/list',
-        headers: mockAuth('MECHANIC'),
+        headers: mockAuth('BUYER'),
       })
       expect(response.statusCode).toBe(403)
     })

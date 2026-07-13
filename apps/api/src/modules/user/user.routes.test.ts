@@ -42,8 +42,8 @@ function mockAuthUser(overrides?: Record<string, unknown>) {
   mockUpsert.mockResolvedValueOnce({
     id: 'prisma-user-123',
     phone: '+2250700000000',
-    roles: ['MECHANIC'],
-    activeContext: 'MECHANIC',
+    roles: ['BUYER'],
+    activeContext: 'BUYER',
     consentedAt: null,
     ...overrides,
   })
@@ -60,8 +60,8 @@ describe('User Routes', () => {
       mockFindUnique.mockResolvedValueOnce({
         id: 'prisma-user-123',
         phone: '+2250700000000',
-        roles: ['MECHANIC'],
-        activeContext: 'MECHANIC',
+        roles: ['BUYER'],
+        activeContext: 'BUYER',
       })
 
       const app = buildApp()
@@ -74,7 +74,7 @@ describe('User Routes', () => {
       expect(response.statusCode).toBe(200)
       const body = response.json()
       expect(body.data.id).toBe('prisma-user-123')
-      expect(body.data.roles).toEqual(['MECHANIC'])
+      expect(body.data.roles).toEqual(['BUYER'])
     })
 
     it('returns 401 without auth token', async () => {
@@ -90,15 +90,15 @@ describe('User Routes', () => {
 
   describe('PATCH /api/v1/users/me/context', () => {
     it('returns 200 when switching to valid role', async () => {
-      mockAuthUser({ roles: ['MECHANIC', 'OWNER'] })
+      mockAuthUser({ roles: ['BUYER', 'SELLER'] })
       mockFindUnique.mockResolvedValueOnce({
-        roles: ['MECHANIC', 'OWNER'],
+        roles: ['BUYER', 'SELLER'],
       })
       mockUpdate.mockResolvedValueOnce({
         id: 'prisma-user-123',
         phone: '+2250700000000',
-        roles: ['MECHANIC', 'OWNER'],
-        activeContext: 'OWNER',
+        roles: ['BUYER', 'SELLER'],
+        activeContext: 'SELLER',
       })
 
       const app = buildApp()
@@ -106,17 +106,17 @@ describe('User Routes', () => {
         method: 'PATCH',
         url: '/api/v1/users/me/context',
         headers: { authorization: 'Bearer valid-token' },
-        payload: { role: 'OWNER' },
+        payload: { role: 'SELLER' },
       })
 
       expect(response.statusCode).toBe(200)
-      expect(response.json().data.activeContext).toBe('OWNER')
+      expect(response.json().data.activeContext).toBe('SELLER')
     })
 
     it('returns 403 when role is not assigned', async () => {
-      mockAuthUser({ roles: ['MECHANIC'] })
+      mockAuthUser({ roles: ['BUYER'] })
       mockFindUnique.mockResolvedValueOnce({
-        roles: ['MECHANIC'],
+        roles: ['BUYER'],
       })
 
       const app = buildApp()
@@ -135,12 +135,12 @@ describe('User Routes', () => {
   describe('PATCH /api/v1/users/:userId/roles', () => {
     it('returns 200 when admin updates roles', async () => {
       mockAuthUser({ roles: ['ADMIN'], activeContext: 'ADMIN' })
-      mockFindUnique.mockResolvedValueOnce({ activeContext: 'MECHANIC' })
+      mockFindUnique.mockResolvedValueOnce({ activeContext: 'BUYER' })
       mockUpdate.mockResolvedValueOnce({
         id: 'target-user',
         phone: '+2250500000000',
-        roles: ['MECHANIC', 'SELLER'],
-        activeContext: 'MECHANIC',
+        roles: ['BUYER', 'SELLER'],
+        activeContext: 'BUYER',
       })
 
       const app = buildApp()
@@ -148,22 +148,22 @@ describe('User Routes', () => {
         method: 'PATCH',
         url: '/api/v1/users/target-user/roles',
         headers: { authorization: 'Bearer valid-token' },
-        payload: { roles: ['MECHANIC', 'SELLER'] },
+        payload: { roles: ['BUYER', 'SELLER'] },
       })
 
       expect(response.statusCode).toBe(200)
-      expect(response.json().data.roles).toEqual(['MECHANIC', 'SELLER'])
+      expect(response.json().data.roles).toEqual(['BUYER', 'SELLER'])
     })
 
     it('returns 403 when non-admin tries to update roles', async () => {
-      mockAuthUser({ roles: ['MECHANIC'], activeContext: 'MECHANIC' })
+      mockAuthUser({ roles: ['BUYER'], activeContext: 'BUYER' })
 
       const app = buildApp()
       const response = await app.inject({
         method: 'PATCH',
         url: '/api/v1/users/target-user/roles',
         headers: { authorization: 'Bearer valid-token' },
-        payload: { roles: ['MECHANIC', 'SELLER'] },
+        payload: { roles: ['BUYER', 'SELLER'] },
       })
 
       expect(response.statusCode).toBe(403)

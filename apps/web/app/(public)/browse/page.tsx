@@ -6,7 +6,6 @@ import { LandingPage } from '@/components/landing-page'
 import { BrowseContent } from '@/components/browse-content'
 import { MobileDrawer } from '@/components/mobile-drawer'
 import { BottomNav } from '@/components/bottom-nav'
-import { WelcomePrompt } from '@/components/welcome-prompt'
 import { PromoCarousel, type PromoSlide } from '@/components/ui/promo-carousel'
 
 function PromoArt({ src, alt }: { src: string; alt: string }) {
@@ -81,7 +80,6 @@ export default function BrowsePage() {
       <div className="hidden lg:block">
         <LandingPage>
           <div className="mx-auto max-w-[1280px] px-6 pt-8">
-            <WelcomePrompt />
             <PromoCarousel slides={PROMO_SLIDES} />
           </div>
         </LandingPage>
@@ -119,11 +117,6 @@ export default function BrowsePage() {
           >
             (225) 07 06 84 62 68
           </a>
-        </div>
-
-        {/* Bandeau de bienvenue (1ʳᵉ visite connectée) */}
-        <div className="px-4 pt-3">
-          <WelcomePrompt />
         </div>
 
         {/* Mobile carousel — replié quand un véhicule est sélectionné */}
