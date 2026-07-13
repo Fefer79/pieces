@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { LiaisonPartForm } from '@/components/LiaisonPartForm'
+import { PartForm } from '@/components/part-form'
 
 export default function NewQuickPartPage() {
   return (
@@ -17,7 +17,7 @@ export default function NewQuickPartPage() {
         Enregistrez le vendeur (nom, contact, commune) et publiez l&apos;annonce en une
         étape. Si ce vendeur existe déjà sous le même numéro, il est réutilisé.
       </p>
-      <LiaisonPartForm mode="create" quickVendor />
+      <PartForm actor="liaison" mode="create" quickVendor />
     </div>
   )
 }

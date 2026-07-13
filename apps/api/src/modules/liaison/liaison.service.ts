@@ -2,7 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { uploadToR2 } from '../../lib/r2.js'
 import { processVariants } from '../../lib/imageProcessor.js'
-import { extractOemLabel } from '../../lib/gemini.js'
+import { scanOemLabel } from '../../lib/oemScan.js'
 import { subcategoryOf } from 'shared/constants'
 import {
   liaisonCreateVendorSchema,
@@ -54,36 +54,15 @@ export async function uploadLiaisonPartImage(
 }
 
 /**
- * Scan d'une étiquette / code-barres OEM : Gemini lit les références imprimées
- * et propose les compatibilités véhicule connues pour ces références. Résultat
- * purement suggestif — la liaison relit et corrige avant publication.
+ * Scan d'une étiquette / code-barres OEM — wrapper partagé avec le flux
+ * vendeur (catalog), voir lib/oemScan.ts.
  */
 export async function scanOemLabelForLiaison(
   fileBuffer: Buffer,
   mimeType: string,
   logger?: { warn: (obj: Record<string, unknown>, msg: string) => void },
 ) {
-  if (fileBuffer.length > MAX_IMAGE_BYTES) {
-    throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
-  }
-  if (!ALLOWED_IMAGE_MIME.includes(mimeType)) {
-    throw new AppError('INVALID_FILE_TYPE', 422, { message: 'Format accepté : JPEG, PNG ou WebP' })
-  }
-
-  const extraction = await extractOemLabel(fileBuffer, mimeType, logger)
-  if (!extraction) {
-    throw new AppError('OEM_SCAN_UNAVAILABLE', 503, {
-      message: 'Analyse indisponible pour le moment. Saisissez la référence manuellement.',
-    })
-  }
-  if (extraction.oemReferences.length === 0) {
-    throw new AppError('OEM_SCAN_UNREADABLE', 422, {
-      message:
-        'Aucune référence lisible sur la photo. Rapprochez-vous de l\'étiquette et évitez les reflets.',
-    })
-  }
-
-  return extraction
+  return scanOemLabel(fileBuffer, mimeType, logger)
 }
 
 /**

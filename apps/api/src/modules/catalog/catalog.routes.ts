@@ -1,11 +1,94 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock, retryImageJob, addPhoto, removePhoto, reorderPhotos, listPhotos, listFitments, replaceFitments, addFitment, deleteFitment, type UpdateCatalogItemData, type FitmentInput } from './catalog.service.js'
+import { uploadPartImage, createItem, uploadStandalonePartImage, getMyItems, getItem, updateItem, publishItem, toggleStock, retryImageJob, addPhoto, removePhoto, reorderPhotos, listPhotos, listFitments, replaceFitments, addFitment, deleteFitment, type UpdateCatalogItemData, type FitmentInput } from './catalog.service.js'
 import { AppError } from '../../lib/appError.js'
+import { scanOemLabel } from '../../lib/oemScan.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { catalogItemFilterSchema, catalogItemParamsSchema, updateCatalogItemSchema, toggleStockSchema, photoParamsSchema, reorderPhotosSchema, fitmentSchema, fitmentParamsSchema, replaceFitmentsSchema } from 'shared/validators'
+import { catalogItemFilterSchema, catalogItemParamsSchema, createCatalogItemSchema, updateCatalogItemSchema, toggleStockSchema, photoParamsSchema, reorderPhotosSchema, fitmentSchema, fitmentParamsSchema, replaceFitmentsSchema } from 'shared/validators'
 
 export async function catalogRoutes(fastify: FastifyInstance) {
+  fastify.post(
+    '/items',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Créer une annonce manuellement (photos pré-uploadées, publication immédiate)',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(createCatalogItemSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const result = await createItem(request.user.id, request.body)
+
+      request.log.info({
+        event: 'CATALOG_ITEM_CREATED',
+        userId: request.user.id,
+        itemId: result.id,
+      })
+
+      return reply.status(201).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/items/image',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Upload une photo de pièce (original + variantes) et renvoie les URLs',
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const result = await uploadStandalonePartImage(
+        request.user.id,
+        buffer,
+        file.filename,
+        file.mimetype,
+      )
+      request.log.info({ event: 'CATALOG_PART_IMAGE_UPLOADED', userId: request.user.id })
+      return reply.status(201).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/items/oem-scan',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description:
+          'Analyse une photo d\'étiquette / code-barres OEM : références + compatibilités véhicule suggérées',
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const result = await scanOemLabel(buffer, file.mimetype, request.log)
+      request.log.info({
+        event: 'CATALOG_OEM_SCANNED',
+        userId: request.user.id,
+        referenceCount: result.oemReferences.length,
+        compatibilityCount: result.compatibilities.length,
+        confidence: result.confidence,
+      })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
   fastify.post(
     '/items/upload',
     {

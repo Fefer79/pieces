@@ -1,377 +1,62 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { catalogFetch } from '@/lib/catalog-api'
+import { PartForm, type PartFormInitial } from '@/components/part-form'
 import { Button } from '@/components/ui/button'
 import { Chip } from '@/components/ui/chip'
 import { Price } from '@/components/ui/price'
-import { CategoryCascadeSelect } from '@/components/ui/category-select'
-import { WARRANTY_UNITS, type WarrantyUnit } from 'shared/constants'
 
-type SupabaseClient = ReturnType<typeof createClient>
-
-interface CatalogPhoto {
+interface CatalogItemDetail extends PartFormInitial {
   id: string
-  position: number
-  urlOriginal: string
-  urlThumb: string | null
-  urlSmall: string | null
-  urlMedium: string | null
-  urlLarge: string | null
-}
-
-interface CatalogItem {
-  id: string
-  name: string | null
-  category: string | null
-  oemReference: string | null
-  vehicleCompatibility: string | null
-  suggestedPrice: number | null
-  price: number | null
   status: string
-  imageMediumUrl: string | null
-  imageThumbUrl: string | null
+  suggestedPrice: number | null
   aiGenerated: boolean
-  aiConfidence: number | null
-  qualityScore: number | null
   qualityIssue: string | null
-  inStock: boolean
-  stockQuantity: number | null
-  lowStockThreshold: number
   priceAlertFlag: boolean
-  condition: 'NEW' | 'USED' | 'REFURBISHED' | null
-  partSource: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
-  warrantyValue: number | null
-  warrantyUnit: WarrantyUnit | null
-  commissionAmount: number | null
   commissionAcceptedAt: string | null
-  photos: CatalogPhoto[]
-  createdAt: string
   imageJobStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | null
   imageJobError: string | null
 }
 
-const MAX_PHOTOS = 3
-
 export default function VendorCatalogDetailPage() {
-  const router = useRouter()
   const params = useParams()
   const itemId = params.id as string
-  const supabaseRef = useRef<SupabaseClient | null>(null)
 
-  function getSupabase() {
-    if (!supabaseRef.current) supabaseRef.current = createClient()
-    return supabaseRef.current
-  }
-
-  const [item, setItem] = useState<CatalogItem | null>(null)
+  const [item, setItem] = useState<CatalogItemDetail | null>(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [retrying, setRetrying] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [retrying, setRetrying] = useState(false)
+  const [retryMessage, setRetryMessage] = useState<string | null>(null)
 
-  // Form state
-  const [name, setName] = useState('')
-  const [category, setCategory] = useState('')
-  const [oemReference, setOemReference] = useState('')
-  const [vehicleCompatibility, setVehicleCompatibility] = useState('')
-  const [price, setPrice] = useState('')
-  const [condition, setCondition] = useState<'NEW' | 'USED' | 'REFURBISHED' | ''>('')
-  const [partSource, setPartSource] = useState<'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | ''>('')
-  const [warrantyValue, setWarrantyValue] = useState<string>('')
-  const [warrantyUnit, setWarrantyUnit] = useState<WarrantyUnit>('MONTH')
-  const [commissionAmount, setCommissionAmount] = useState<string>('')
-  const [commissionAccepted, setCommissionAccepted] = useState<boolean>(false)
-  const [stockQuantity, setStockQuantity] = useState<string>('')
-  const [lowStockThreshold, setLowStockThreshold] = useState<string>('')
-  const [photoUploading, setPhotoUploading] = useState(false)
-
-  const getAccessToken = useCallback(async () => {
-    const { data: { session } } = await getSupabase().auth.getSession()
-    return session?.access_token ?? null
-  }, [])
-
-  const fetchItem = useCallback(async () => {
-    setLoading(true)
-    try {
-      const token = await getAccessToken()
-      if (!token) {
-        setError('Session expirée. Veuillez vous reconnecter.')
+  const fetchItem = useCallback(
+    () =>
+      catalogFetch<CatalogItemDetail>(`/items/${itemId}`).then((r) => {
+        if (r.ok) setItem(r.data)
+        else setError(r.message)
         setLoading(false)
-        return
-      }
-
-      const res = await fetch(`/api/v1/catalog/items/${itemId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const body = await res.json()
-
-      if (!res.ok) {
-        setError(body.error?.message ?? 'Erreur lors du chargement')
-        setLoading(false)
-        return
-      }
-
-      const data = body.data as CatalogItem
-      setItem(data)
-      setName(data.name ?? '')
-      setCategory(data.category ?? '')
-      setOemReference(data.oemReference ?? '')
-      setVehicleCompatibility(data.vehicleCompatibility ?? '')
-      setPrice(data.price !== null ? String(data.price) : '')
-      setCondition(data.condition ?? '')
-      setPartSource(data.partSource ?? '')
-      setWarrantyValue(data.warrantyValue !== null ? String(data.warrantyValue) : '')
-      setWarrantyUnit(data.warrantyUnit ?? 'MONTH')
-      setCommissionAmount(data.commissionAmount !== null ? String(data.commissionAmount) : '')
-      setCommissionAccepted(!!data.commissionAcceptedAt)
-      setStockQuantity(data.stockQuantity !== null ? String(data.stockQuantity) : '')
-      setLowStockThreshold(String(data.lowStockThreshold ?? 1))
-    } catch {
-      setError('Erreur réseau. Vérifiez votre connexion.')
-    } finally {
-      setLoading(false)
-    }
-  }, [getAccessToken, itemId])
+      }),
+    [itemId],
+  )
 
   useEffect(() => {
     fetchItem()
   }, [fetchItem])
 
-  const buildDirtyBody = (): Record<string, unknown> => {
-    const body: Record<string, unknown> = {}
-    if (name !== (item?.name ?? '')) body.name = name
-    if (category !== (item?.category ?? '')) body.category = category
-    if (oemReference !== (item?.oemReference ?? '')) body.oemReference = oemReference || null
-    if (vehicleCompatibility !== (item?.vehicleCompatibility ?? '')) body.vehicleCompatibility = vehicleCompatibility || null
-    if (price !== (item?.price !== null ? String(item?.price) : '')) {
-      body.price = price ? parseInt(price, 10) : undefined
-    }
-    if (condition !== (item?.condition ?? '')) {
-      if (condition) body.condition = condition
-    }
-    if (partSource !== (item?.partSource ?? '')) {
-      body.partSource = partSource || null
-    }
-    const currentWarrantyValue = item?.warrantyValue !== null && item?.warrantyValue !== undefined ? String(item.warrantyValue) : ''
-    const currentWarrantyUnit = item?.warrantyUnit ?? 'MONTH'
-    if (warrantyValue !== '' && (warrantyValue !== currentWarrantyValue || warrantyUnit !== currentWarrantyUnit)) {
-      body.warrantyValue = parseInt(warrantyValue, 10)
-      body.warrantyUnit = warrantyUnit
-    }
-    const currentCommission = item?.commissionAmount !== null && item?.commissionAmount !== undefined ? String(item.commissionAmount) : ''
-    if (commissionAmount !== currentCommission && commissionAmount !== '') {
-      body.commissionAmount = parseInt(commissionAmount, 10)
-    }
-    // If user has just toggled acceptance ON and it wasn't accepted before, send it.
-    if (commissionAccepted && !item?.commissionAcceptedAt) {
-      body.commissionAccepted = true
-    }
-    const currentStockQty = item?.stockQuantity !== null && item?.stockQuantity !== undefined ? String(item.stockQuantity) : ''
-    if (stockQuantity !== currentStockQty) {
-      // Champ vidé = désactiver le suivi de quantité (retour au toggle manuel)
-      body.stockQuantity = stockQuantity === '' ? null : parseInt(stockQuantity, 10)
-    }
-    const currentThreshold = String(item?.lowStockThreshold ?? 1)
-    if (lowStockThreshold !== '' && lowStockThreshold !== currentThreshold) {
-      body.lowStockThreshold = parseInt(lowStockThreshold, 10)
-    }
-    return body
-  }
-
-  // Persist any pending form edits. Returns true on success (or no-op), false on failure.
-  const persistDirty = async (token: string): Promise<boolean> => {
-    const body = buildDirtyBody()
-    if (Object.keys(body).length === 0) return true
-
-    const res = await fetch(`/api/v1/catalog/items/${itemId}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    const result = await res.json()
-    if (!res.ok) {
-      setError(result.error?.message ?? 'Erreur lors de la sauvegarde')
-      return false
-    }
-    setItem(result.data)
-    return true
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      const token = await getAccessToken()
-      if (!token) { setError('Session expirée.'); setSaving(false); return }
-
-      if (Object.keys(buildDirtyBody()).length === 0) {
-        setSuccess('Aucune modification.')
-        setSaving(false)
-        return
-      }
-
-      if (await persistDirty(token)) {
-        setSuccess('Modifications enregistrées.')
-      }
-    } catch {
-      setError('Erreur réseau.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handlePublish = async () => {
-    setSaving(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      const token = await getAccessToken()
-      if (!token) { setError('Session expirée.'); setSaving(false); return }
-
-      // Publish validates the persisted row, so flush any unsaved form edits first.
-      if (!(await persistDirty(token))) { setSaving(false); return }
-
-      const res = await fetch(`/api/v1/catalog/items/${itemId}/publish`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const result = await res.json()
-
-      if (!res.ok) {
-        setError(result.error?.message ?? 'Erreur lors de la publication')
-      } else {
-        setItem(result.data)
-        setSuccess('Fiche publiée !')
-      }
-    } catch {
-      setError('Erreur réseau.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleToggleStock = async () => {
-    if (!item) return
-    setSaving(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      const token = await getAccessToken()
-      if (!token) { setError('Session expirée.'); setSaving(false); return }
-
-      const res = await fetch(`/api/v1/catalog/items/${itemId}/stock`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inStock: !item.inStock }),
-      })
-      const result = await res.json()
-
-      if (!res.ok) {
-        setError(result.error?.message ?? 'Erreur')
-      } else {
-        setItem(result.data)
-        setSuccess(result.data.inStock ? 'Pièce remise en stock.' : 'Pièce marquée épuisée.')
-      }
-    } catch {
-      setError('Erreur réseau.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleAddPhoto = async (file: File) => {
-    setPhotoUploading(true)
-    setError(null)
-    setSuccess(null)
-    try {
-      const token = await getAccessToken()
-      if (!token) { setError('Session expirée.'); setPhotoUploading(false); return }
-      const form = new FormData()
-      form.append('file', file)
-      const res = await fetch(`/api/v1/catalog/items/${itemId}/photos`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
-      })
-      const result = await res.json()
-      if (!res.ok) {
-        setError(result.error?.message ?? 'Erreur lors de l\'envoi de la photo')
-      } else {
-        setSuccess('Photo ajoutée.')
-        await fetchItem()
-      }
-    } catch {
-      setError('Erreur réseau.')
-    } finally {
-      setPhotoUploading(false)
-    }
-  }
-
-  const handleDeletePhoto = async (photoId: string) => {
-    if (!confirm('Supprimer cette photo ?')) return
-    setPhotoUploading(true)
-    setError(null)
-    setSuccess(null)
-    try {
-      const token = await getAccessToken()
-      if (!token) { setError('Session expirée.'); setPhotoUploading(false); return }
-      const res = await fetch(`/api/v1/catalog/items/${itemId}/photos/${photoId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const result = await res.json()
-      if (!res.ok) {
-        setError(result.error?.message ?? 'Erreur lors de la suppression')
-      } else {
-        setSuccess('Photo supprimée.')
-        await fetchItem()
-      }
-    } catch {
-      setError('Erreur réseau.')
-    } finally {
-      setPhotoUploading(false)
-    }
-  }
-
   const handleRetryImage = async () => {
-    if (!item) return
     setRetrying(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      const token = await getAccessToken()
-      if (!token) { setError('Session expirée.'); setRetrying(false); return }
-
-      const res = await fetch(`/api/v1/catalog/items/${itemId}/retry-image`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const result = await res.json()
-
-      if (!res.ok) {
-        setError(result.error?.message ?? 'Erreur')
-      } else {
-        setSuccess('Traitement relancé. La photo apparaîtra dans quelques instants.')
-        await fetchItem()
-      }
-    } catch {
-      setError('Erreur réseau.')
-    } finally {
-      setRetrying(false)
+    setRetryMessage(null)
+    const r = await catalogFetch(`/items/${itemId}/retry-image`, { method: 'POST' })
+    setRetrying(false)
+    if (!r.ok) {
+      setRetryMessage(r.message)
+      return
     }
+    setRetryMessage('Traitement relancé. La photo apparaîtra dans quelques instants.')
+    await fetchItem()
   }
-
-  const INPUT =
-    'w-full rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]'
-  const LABEL = 'mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
 
   if (loading) {
     return (
@@ -387,12 +72,9 @@ export default function VendorCatalogDetailPage() {
         <div className="rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
           {error ?? 'Fiche introuvable'}
         </div>
-        <button
-          onClick={() => router.push('/vendors/catalog')}
-          className="mt-4 text-sm text-ink-2 hover:underline"
-        >
+        <Link href="/vendors/catalog" className="mt-4 inline-block text-sm text-ink-2 hover:underline">
           ← Retour au catalogue
-        </button>
+        </Link>
       </div>
     )
   }
@@ -406,356 +88,57 @@ export default function VendorCatalogDetailPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 lg:py-8">
-      <button
-        onClick={() => router.push('/vendors/catalog')}
-        className="mb-4 text-sm text-ink-2 hover:underline"
-      >
+      <Link href="/vendors/catalog" className="mb-4 inline-block text-sm text-ink-2 hover:underline">
         ← Retour au catalogue
-      </button>
+      </Link>
 
-      {/* Photo gallery (max 3) */}
-      <div className="mb-5">
-        <label className={LABEL}>Photos ({item.photos.length}/{MAX_PHOTOS})</label>
-        <div className="grid grid-cols-3 gap-2">
-          {Array.from({ length: MAX_PHOTOS }).map((_, idx) => {
-            const photo = item.photos[idx]
-            if (photo) {
-              const src = photo.urlMedium ?? photo.urlSmall ?? photo.urlOriginal
-              return (
-                <div key={photo.id} className="relative aspect-square overflow-hidden rounded-md border border-border bg-surface">
-                  <img src={src} alt={`Photo ${idx + 1}`} className="h-full w-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => handleDeletePhoto(photo.id)}
-                    disabled={photoUploading}
-                    className="absolute right-1 top-1 rounded-full bg-ink/80 px-1.5 py-0.5 text-[10px] font-bold text-white hover:bg-ink disabled:opacity-50"
-                    aria-label="Supprimer la photo"
-                  >
-                    ×
-                  </button>
-                  {idx === 0 && (
-                    <span className="absolute left-1 top-1 rounded-sm bg-accent px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-white">
-                      Principale
-                    </span>
-                  )}
-                </div>
-              )
-            }
-            return (
-              <label
-                key={`empty-${idx}`}
-                className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-border-strong bg-surface text-muted-2 transition-colors hover:border-ink-2 hover:text-ink-2"
-              >
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  disabled={photoUploading}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleAddPhoto(file)
-                    e.target.value = ''
-                  }}
-                />
-                <span className="text-2xl leading-none">+</span>
-                <span className="mt-1 font-mono text-[10px] uppercase">{photoUploading ? 'Envoi…' : 'Ajouter'}</span>
-              </label>
-            )
-          })}
-        </div>
-        {item.imageJobStatus === 'FAILED' && (
-          <div className="mt-2 flex items-center gap-2">
-            <p className="text-xs text-status-err">Échec du traitement de la photo principale</p>
-            <Button size="sm" variant="secondary" onClick={handleRetryImage} disabled={retrying}>
-              {retrying ? 'Relance…' : 'Réessayer'}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Status + alerts */}
+      {/* Statut + alertes */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Chip variant={statusChip.variant}>{statusChip.label}</Chip>
-        {item.condition === 'NEW' && <Chip variant="neuf">Neuf</Chip>}
-        {item.condition === 'USED' && <Chip variant="occasion">Occasion</Chip>}
-        {item.condition === 'REFURBISHED' && <Chip variant="reusine">Ré-usiné</Chip>}
-        {item.partSource === 'OEM' && <Chip variant="oem">OEM</Chip>}
-        {item.partSource === 'AFTERMARKET' && <Chip variant="aftermarket">Aftermarket</Chip>}
-        {item.partSource === 'COMPATIBLE' && <Chip variant="plain">Compatible</Chip>}
-        {item.status === 'PUBLISHED' && !item.inStock && (
+        {item.status === 'PUBLISHED' && item.inStock === false && (
           <Chip variant="status-err">Épuisée</Chip>
         )}
-        {item.inStock &&
-          item.stockQuantity !== null &&
-          item.stockQuantity > 0 &&
-          item.stockQuantity <= item.lowStockThreshold && (
-            <Chip variant="status-warn">Stock faible : {item.stockQuantity}</Chip>
-          )}
         {item.priceAlertFlag && <Chip variant="status-warn">Alerte prix</Chip>}
         {item.qualityIssue && (
-          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-warn-fg" title={item.qualityIssue}>
+          <span
+            className="font-mono text-[11px] uppercase tracking-[0.08em] text-warn-fg"
+            title={item.qualityIssue}
+          >
             ⚠ Photo
           </span>
         )}
       </div>
 
-      {error && (
-        <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-3 rounded-md border border-success-fg/20 bg-success-bg p-3 text-sm text-success-fg">
-          {success}
-        </div>
+      {item.status === 'DRAFT' && (
+        <p className="mb-4 rounded-md border border-border bg-card p-3 text-xs text-muted">
+          Cette fiche est un <strong>brouillon</strong>. Complétez au minimum le prix,
+          l&apos;état et la garantie, puis « Enregistrer et publier ».
+        </p>
       )}
 
-      {/* Edit form */}
-      <div className="space-y-4 rounded-md border border-border bg-card p-5">
-        <div>
-          <label className={LABEL}>Nom de la pièce</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={item.aiGenerated ? 'Identifié par IA…' : 'Saisissez le nom'}
-            className={INPUT}
-          />
-        </div>
+      {item.suggestedPrice != null && item.price == null && (
+        <p className="mb-4 text-xs text-muted">
+          Suggestion de prix IA : <Price amount={item.suggestedPrice} className="text-xs" />
+        </p>
+      )}
 
-        <div>
-          <label className={LABEL}>Catégorie</label>
-          <CategoryCascadeSelect value={category} onChange={setCategory} className={INPUT} />
-        </div>
-
-        <div>
-          <label className={LABEL}>Référence OEM</label>
-          <input
-            type="text"
-            value={oemReference}
-            onChange={(e) => setOemReference(e.target.value)}
-            placeholder="Ex : 90915-YZZD4"
-            className={`${INPUT} font-mono`}
-          />
-        </div>
-
-        <div>
-          <label className={LABEL}>Compatibilité véhicule</label>
-          <input
-            type="text"
-            value={vehicleCompatibility}
-            onChange={(e) => setVehicleCompatibility(e.target.value)}
-            placeholder="Ex : Toyota Hilux 2005-2015"
-            className={INPUT}
-          />
-        </div>
-
-        <div>
-          <label className={LABEL}>Prix (FCFA)</label>
-          {item.suggestedPrice && !price && (
-            <div className="mb-1.5 text-xs text-muted">
-              Suggestion IA : <Price amount={item.suggestedPrice} className="text-xs" />
-            </div>
-          )}
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder={item.suggestedPrice ? `${item.suggestedPrice.toLocaleString('fr-FR')} (suggestion IA)` : 'Saisissez votre prix'}
-            className={`${INPUT} font-mono`}
-            min="0"
-          />
-        </div>
-
-        <div>
-          <label className={LABEL}>
-            État <span className="text-accent">*</span>
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { value: 'NEW', label: 'Neuf', active: 'border-neuf-fg/50 bg-neuf-bg text-neuf-fg' },
-              { value: 'USED', label: 'Occasion', active: 'border-occasion-fg/50 bg-occasion-bg text-occasion-fg' },
-              { value: 'REFURBISHED', label: 'Reconditionné', active: 'border-reusine-fg/50 bg-reusine-bg text-reusine-fg' },
-            ].map(({ value, label, active }) => {
-              const isActive = condition === value
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setCondition(value as 'NEW' | 'USED' | 'REFURBISHED')}
-                  className={`rounded-md border-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] transition-all ${
-                    isActive ? active : 'border-border bg-card text-muted hover:border-border-strong hover:text-ink'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div>
-          <label className={LABEL}>Origine</label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { value: 'OEM', label: 'OEM', active: 'border-oem-fg/50 bg-oem-bg text-oem-fg' },
-              { value: 'AFTERMARKET', label: 'Aftermarket', active: 'border-aftermarket-fg/50 bg-aftermarket-bg text-aftermarket-fg' },
-              { value: 'COMPATIBLE', label: 'Compatible', active: 'border-border-strong bg-surface text-ink' },
-            ].map(({ value, label, active }) => {
-              const isActive = partSource === value
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPartSource(isActive ? '' : (value as 'OEM' | 'AFTERMARKET' | 'COMPATIBLE'))}
-                  className={`rounded-md border-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.04em] transition-all ${
-                    isActive ? active : 'border-border bg-card text-muted hover:border-border-strong hover:text-ink'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-          <p className="mt-1 text-xs text-muted">
-            OEM = pièce d&apos;origine constructeur. Aftermarket = équipementier reconnu (Bosch, Valeo…). Compatible = générique.
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="warranty" className={LABEL}>
-            Garantie vendeur <span className="text-accent">*</span>
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="warranty"
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={365}
-              value={warrantyValue}
-              onChange={(e) => setWarrantyValue(e.target.value)}
-              placeholder="Durée"
-              className={`${INPUT} flex-1`}
-            />
-            <select
-              aria-label="Unité de garantie"
-              value={warrantyUnit}
-              onChange={(e) => setWarrantyUnit(e.target.value as WarrantyUnit)}
-              className={`${INPUT} flex-1`}
-            >
-              {WARRANTY_UNITS.map((u) => (
-                <option key={u.value} value={u.value}>{u.label}</option>
-              ))}
-            </select>
-          </div>
-          <p className="mt-1 text-xs text-muted">Mettez 0 pour « sans garantie ».</p>
-        </div>
-
-        <div>
-          <label htmlFor="stock-quantity" className={LABEL}>Quantité en stock</label>
-          <div className="flex gap-2">
-            <input
-              id="stock-quantity"
-              type="number"
-              inputMode="numeric"
-              min={0}
-              value={stockQuantity}
-              onChange={(e) => setStockQuantity(e.target.value)}
-              placeholder="Non suivie"
-              className={`${INPUT} flex-1 font-mono`}
-            />
-            <div className="flex-1">
-              <input
-                id="low-stock-threshold"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                value={lowStockThreshold}
-                onChange={(e) => setLowStockThreshold(e.target.value)}
-                placeholder="Seuil d'alerte"
-                aria-label="Seuil d'alerte stock faible"
-                disabled={stockQuantity === ''}
-                className={`${INPUT} font-mono disabled:opacity-50`}
-              />
-            </div>
-          </div>
-          <p className="mt-1 text-xs text-muted">
-            Indiquez combien d&apos;exemplaires vous avez : la quantité baisse à chaque vente et vous recevez
-            une alerte WhatsApp quand elle atteint le seuil (2e champ). À 0, la pièce passe automatiquement
-            en « épuisée ». Laissez vide pour gérer le stock à la main.
-          </p>
-        </div>
-
-        <div className="rounded-md border border-border-strong bg-surface p-4">
-          <label htmlFor="commission" className={LABEL}>
-            Commission pieces.ci <span className="text-accent">*</span>
-          </label>
-          <p className="mb-2 text-xs text-muted">
-            Vous gardez la totalité du prix de vente moins cette commission, versée à pieces.ci sur chaque vente. Laissez 0 si vous ne donnez pas de commission.
-          </p>
-          <input
-            id="commission"
-            type="number"
-            value={commissionAmount}
-            onChange={(e) => setCommissionAmount(e.target.value)}
-            placeholder="0"
-            min={0}
-            className={`${INPUT} font-mono`}
-          />
-          <label className="mt-3 flex cursor-pointer items-start gap-2 text-sm text-ink">
-            <input
-              type="checkbox"
-              checked={commissionAccepted}
-              onChange={(e) => setCommissionAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-accent"
-            />
-            <span>
-              J&apos;accepte de payer cette commission à pieces.ci sur chaque vente de cette pièce.
-            </span>
-          </label>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="mt-6 space-y-2.5">
-        <Button variant="secondary" block onClick={handleSave} disabled={saving}>
-          {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
-        </Button>
-
-        {item.status === 'DRAFT' && (() => {
-          // Plus de plancher : une commission doit être décidée (0 permis) et acceptée.
-          const commissionSet = commissionAmount !== '' || item.commissionAmount != null
-          const acceptedOrAlready = commissionAccepted || !!item.commissionAcceptedAt
-          const canPublish = !!price && commissionSet && acceptedOrAlready
-          return (
-            <>
-              <Button
-                variant="accent"
-                size="lg"
-                block
-                onClick={handlePublish}
-                disabled={saving || !canPublish}
-              >
-                Publier la fiche
-              </Button>
-              {!canPublish && (
-                <p className="text-center text-xs text-muted">
-                  {!price && 'Renseignez un prix. '}
-                  {price && !commissionSet && 'Indiquez une commission (0 si aucune). '}
-                  {price && commissionSet && !acceptedOrAlready && 'Cochez l\'acceptation de la commission. '}
-                </p>
-              )}
-            </>
-          )
-        })()}
-
-        {item.status === 'PUBLISHED' && (
-          <Button variant="secondary" block onClick={handleToggleStock} disabled={saving}>
-            {item.inStock ? 'Marquer épuisée' : 'Remettre en stock'}
+      {item.imageJobStatus === 'FAILED' && (
+        <div className="mb-4 flex items-center gap-2">
+          <p className="text-xs text-status-err">Échec du traitement de la photo principale</p>
+          <Button size="sm" variant="secondary" onClick={handleRetryImage} disabled={retrying}>
+            {retrying ? 'Relance…' : 'Réessayer'}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
+      {retryMessage && <p className="mb-4 text-xs text-muted">{retryMessage}</p>}
+
+      <PartForm
+        actor="vendor"
+        mode="edit"
+        partId={itemId}
+        initial={item}
+        publishAfterSave={item.status === 'DRAFT'}
+      />
     </div>
   )
 }

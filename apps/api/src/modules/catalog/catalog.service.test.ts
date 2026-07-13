@@ -12,6 +12,11 @@ const mockCatalogItemFindMany = vi.fn()
 const mockCatalogItemCount = vi.fn()
 const mockCatalogItemFindFirst = vi.fn()
 const mockCatalogItemUpdate = vi.fn()
+const mockCatalogItemFindUniqueOrThrow = vi.fn()
+const mockPhotoDeleteMany = vi.fn()
+const mockPhotoCreateMany = vi.fn()
+const mockFitmentDeleteMany = vi.fn()
+const mockFitmentCreateMany = vi.fn()
 const mockJobCreate = vi.fn()
 const mockJobFindFirst = vi.fn()
 
@@ -21,8 +26,8 @@ vi.mock('../../lib/supabase.js', () => ({
   },
 }))
 
-vi.mock('../../lib/prisma.js', () => ({
-  prisma: {
+vi.mock('../../lib/prisma.js', () => {
+  const prisma = {
     vendor: {
       findUnique: (...args: unknown[]) => mockVendorFindUnique(...args),
     },
@@ -32,19 +37,42 @@ vi.mock('../../lib/prisma.js', () => ({
       count: (...args: unknown[]) => mockCatalogItemCount(...args),
       findFirst: (...args: unknown[]) => mockCatalogItemFindFirst(...args),
       update: (...args: unknown[]) => mockCatalogItemUpdate(...args),
+      findUniqueOrThrow: (...args: unknown[]) => mockCatalogItemFindUniqueOrThrow(...args),
+    },
+    catalogItemPhoto: {
+      deleteMany: (...args: unknown[]) => mockPhotoDeleteMany(...args),
+      createMany: (...args: unknown[]) => mockPhotoCreateMany(...args),
+    },
+    catalogItemFitment: {
+      deleteMany: (...args: unknown[]) => mockFitmentDeleteMany(...args),
+      createMany: (...args: unknown[]) => mockFitmentCreateMany(...args),
     },
     job: {
       create: (...args: unknown[]) => mockJobCreate(...args),
       findFirst: (...args: unknown[]) => mockJobFindFirst(...args),
     },
-  },
-}))
+    $transaction: undefined as unknown,
+  }
+  prisma.$transaction = (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma)
+  return { prisma }
+})
 
 vi.mock('../../lib/r2.js', () => ({
   uploadToR2: vi.fn().mockResolvedValue('https://r2.dev/catalog/vendor-1/image.jpg'),
 }))
 
-const { uploadPartImage, getMyItems, getItem, updateItem, publishItem, toggleStock } = await import('./catalog.service.js')
+vi.mock('../../lib/imageProcessor.js', () => ({
+  MAX_FILE_SIZE: 5 * 1024 * 1024,
+  processVariants: vi.fn(async () => ({
+    thumb: Buffer.from('thumb'),
+    small: Buffer.from('small'),
+    medium: Buffer.from('medium'),
+    large: Buffer.from('large'),
+  })),
+}))
+
+const { uploadPartImage, createItem, uploadStandalonePartImage, getMyItems, getItem, updateItem, publishItem, toggleStock } = await import('./catalog.service.js')
+const { uploadToR2 } = await import('../../lib/r2.js')
 
 describe('catalog.service', () => {
   beforeEach(() => {
@@ -105,6 +133,133 @@ describe('catalog.service', () => {
       mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
 
       await expect(uploadPartImage('user-1', validBuffer, 'doc.pdf', 'application/pdf'))
+        .rejects.toMatchObject({ code: 'INVALID_FILE_TYPE', statusCode: 422 })
+    })
+  })
+
+  describe('createItem', () => {
+    const validBody = {
+      name: 'Alternateur 90A',
+      condition: 'USED',
+      price: 45000,
+      commissionAmount: 3000,
+      stockQuantity: 4,
+      photos: [
+        {
+          urlOriginal: 'https://r2.dev/catalog/vendor-1/p.jpg',
+          urlThumb: 'https://r2.dev/catalog/vendor-1/p_thumb.webp',
+        },
+      ],
+      fitments: [{ brand: 'Toyota', model: 'Hilux', yearFrom: 2010, yearTo: 2015 }],
+    }
+
+    it('creates a published item with photos, fitments and auto-accepted commission', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+      mockCatalogItemCreate.mockResolvedValueOnce({
+        id: 'item-1',
+        vendorId: 'vendor-1',
+        status: 'PUBLISHED',
+        inStock: true,
+      })
+
+      const result = await createItem('user-1', validBody)
+
+      expect(result.status).toBe('PUBLISHED')
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            vendorId: 'vendor-1',
+            status: 'PUBLISHED',
+            aiGenerated: false,
+            commissionAmount: 3000,
+            // Le vendeur fixe lui-même sa commission : acceptation immédiate.
+            commissionAcceptedAt: expect.any(Date),
+            stockQuantity: 4,
+            inStock: true,
+            imageOriginalUrl: 'https://r2.dev/catalog/vendor-1/p.jpg',
+            imageThumbUrl: 'https://r2.dev/catalog/vendor-1/p_thumb.webp',
+            photos: { create: [expect.objectContaining({ position: 0 })] },
+            fitments: {
+              create: [expect.objectContaining({ brand: 'Toyota', model: 'Hilux' })],
+            },
+          }),
+        }),
+      )
+    })
+
+    it('defaults commission to 0 and derives inStock=false from stockQuantity 0', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+      mockCatalogItemCreate.mockResolvedValueOnce({ id: 'item-1', inStock: false })
+
+      await createItem('user-1', { name: 'Filtre à huile', condition: 'NEW', stockQuantity: 0 })
+
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ commissionAmount: 0, inStock: false }),
+        }),
+      )
+    })
+
+    it('throws CATALOG_ITEM_INVALID on invalid body', async () => {
+      await expect(createItem('user-1', { name: 'X', condition: 'USED' }))
+        .rejects.toMatchObject({ code: 'CATALOG_ITEM_INVALID', statusCode: 422 })
+    })
+
+    it('throws VENDOR_NOT_FOUND when no vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(createItem('user-1', validBody))
+        .rejects.toMatchObject({ code: 'VENDOR_NOT_FOUND', statusCode: 404 })
+    })
+
+    it('throws VENDOR_NOT_ACTIVE when vendor is pending', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'PENDING_ACTIVATION' })
+
+      await expect(createItem('user-1', validBody))
+        .rejects.toMatchObject({ code: 'VENDOR_NOT_ACTIVE', statusCode: 403 })
+    })
+  })
+
+  describe('uploadStandalonePartImage', () => {
+    const validBuffer = Buffer.from('fake-image-data')
+
+    it('uploads original + 4 variants and returns the URLs', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+
+      const result = await uploadStandalonePartImage('user-1', validBuffer, 'photo.jpg', 'image/jpeg')
+
+      expect(result.imageOriginalUrl).toBeTruthy()
+      expect(result.imageThumbUrl).toBeTruthy()
+      expect(result.imageLargeUrl).toBeTruthy()
+      expect(uploadToR2).toHaveBeenCalledTimes(5)
+    })
+
+    it('throws VENDOR_NOT_FOUND when no vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(uploadStandalonePartImage('user-1', validBuffer, 'photo.jpg', 'image/jpeg'))
+        .rejects.toMatchObject({ code: 'VENDOR_NOT_FOUND', statusCode: 404 })
+    })
+
+    it('throws VENDOR_NOT_ACTIVE when vendor is pending', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'PENDING_ACTIVATION' })
+
+      await expect(uploadStandalonePartImage('user-1', validBuffer, 'photo.jpg', 'image/jpeg'))
+        .rejects.toMatchObject({ code: 'VENDOR_NOT_ACTIVE', statusCode: 403 })
+    })
+
+    it('throws FILE_TOO_LARGE when file exceeds 5MB', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+      const bigBuffer = Buffer.alloc(6 * 1024 * 1024)
+
+      await expect(uploadStandalonePartImage('user-1', bigBuffer, 'photo.jpg', 'image/jpeg'))
+        .rejects.toMatchObject({ code: 'FILE_TOO_LARGE', statusCode: 422 })
+    })
+
+    it('throws INVALID_FILE_TYPE for non-image files', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+
+      await expect(uploadStandalonePartImage('user-1', validBuffer, 'doc.pdf', 'application/pdf'))
         .rejects.toMatchObject({ code: 'INVALID_FILE_TYPE', statusCode: 422 })
     })
   })
@@ -225,6 +380,89 @@ describe('catalog.service', () => {
 
       await expect(updateItem('user-1', 'item-1', { name: 'Test' }))
         .rejects.toMatchObject({ code: 'CATALOG_ITEM_NOT_FOUND', statusCode: 404 })
+    })
+
+    it('auto-accepts commission when the vendor sets the amount himself', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'DRAFT', price: null, priceUpdatedAt: null,
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({ id: 'item-1', commissionAmount: 3000 })
+
+      await updateItem('user-1', 'item-1', { commissionAmount: 3000 })
+
+      expect(mockCatalogItemUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            commissionAmount: 3000,
+            commissionAcceptedAt: expect.any(Date),
+          }),
+        }),
+      )
+    })
+
+    it('replaces photos and fitments and derives legacy image fields', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'PUBLISHED', price: 5000, priceUpdatedAt: null,
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({ id: 'item-1' })
+      mockCatalogItemFindUniqueOrThrow.mockResolvedValueOnce({
+        id: 'item-1', photos: [], fitments: [],
+      })
+
+      const result = await updateItem('user-1', 'item-1', {
+        photos: [
+          {
+            urlOriginal: 'https://r2.dev/catalog/vendor-1/new.jpg',
+            urlThumb: 'https://r2.dev/catalog/vendor-1/new_thumb.webp',
+          },
+        ],
+        fitments: [{ brand: 'Toyota', model: 'Hilux' }],
+      })
+
+      expect(result.id).toBe('item-1')
+      expect(mockCatalogItemUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            imageOriginalUrl: 'https://r2.dev/catalog/vendor-1/new.jpg',
+            imageThumbUrl: 'https://r2.dev/catalog/vendor-1/new_thumb.webp',
+          }),
+        }),
+      )
+      expect(mockPhotoDeleteMany).toHaveBeenCalledWith({ where: { catalogItemId: 'item-1' } })
+      expect(mockPhotoCreateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: [expect.objectContaining({ catalogItemId: 'item-1', position: 0 })],
+        }),
+      )
+      expect(mockFitmentDeleteMany).toHaveBeenCalledWith({ where: { catalogItemId: 'item-1' } })
+      expect(mockFitmentCreateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: [expect.objectContaining({ brand: 'Toyota', model: 'Hilux' })],
+        }),
+      )
+    })
+
+    it('clears photo rows and legacy image fields when an empty photo list is sent', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockCatalogItemFindFirst.mockResolvedValueOnce({
+        id: 'item-1', vendorId: 'vendor-1', status: 'PUBLISHED', price: 5000, priceUpdatedAt: null,
+      })
+      mockCatalogItemUpdate.mockResolvedValueOnce({ id: 'item-1' })
+      mockCatalogItemFindUniqueOrThrow.mockResolvedValueOnce({
+        id: 'item-1', photos: [], fitments: [],
+      })
+
+      await updateItem('user-1', 'item-1', { photos: [] })
+
+      expect(mockCatalogItemUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ imageOriginalUrl: null, imageThumbUrl: null }),
+        }),
+      )
+      expect(mockPhotoDeleteMany).toHaveBeenCalledWith({ where: { catalogItemId: 'item-1' } })
+      expect(mockPhotoCreateMany).not.toHaveBeenCalled()
     })
 
     it('detects bait-and-switch price variation >50% in <1h', async () => {

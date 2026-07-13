@@ -21,6 +21,8 @@ export {
   fitmentSchema,
   fitmentParamsSchema,
   replaceFitmentsSchema,
+  catalogPartPhotoSchema,
+  createCatalogItemSchema,
   adminListQuerySchema,
   adminSuggestQuerySchema,
   adminEntitySuggestQuerySchema,

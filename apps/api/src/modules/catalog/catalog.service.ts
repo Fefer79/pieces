@@ -5,7 +5,7 @@ import { enqueue } from '../queue/queueService.js'
 import { AppError } from '../../lib/appError.js'
 import { subcategoryOf } from 'shared/constants'
 import type { CatalogItemStatus } from '@prisma/client'
-import { MAX_PHOTOS_PER_ITEM } from 'shared/validators'
+import { MAX_PHOTOS_PER_ITEM, createCatalogItemSchema } from 'shared/validators'
 
 const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
@@ -119,6 +119,174 @@ export async function uploadPartImage(
   return catalogItem
 }
 
+/**
+ * Upload d'une photo de pièce hors fiche (avant création manuelle) : l'original
+ * + les 4 variantes WebP sont générés en ligne (~200 ms) puis renvoyés pour
+ * être joints au payload de POST /items — même processus que le flux liaison.
+ */
+export async function uploadStandalonePartImage(
+  userId: string,
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true, status: true },
+  })
+
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Profil vendeur introuvable' })
+  }
+  if (vendor.status !== 'ACTIVE') {
+    throw new AppError('VENDOR_NOT_ACTIVE', 403, { message: 'Votre profil vendeur doit être actif pour ajouter des pièces' })
+  }
+
+  if (fileBuffer.length > MAX_FILE_SIZE) {
+    throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
+  }
+  if (!ALLOWED_IMAGE_MIME_TYPES.includes(mimeType)) {
+    throw new AppError('INVALID_FILE_TYPE', 422, { message: 'Format accepté : JPEG, PNG ou WebP' })
+  }
+
+  const ext = mimeType.split('/')[1] ?? 'jpg'
+  const timestamp = Date.now()
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '')
+  const baseKey = `catalog/${vendor.id}/${timestamp}_${safeName}`
+
+  const variants = await processVariants(fileBuffer)
+  const [imageOriginalUrl, imageThumbUrl, imageSmallUrl, imageMediumUrl, imageLargeUrl] =
+    await Promise.all([
+      uploadToR2(`${baseKey}.${ext}`, fileBuffer, mimeType),
+      uploadToR2(`${baseKey}_thumb.webp`, variants.thumb, 'image/webp'),
+      uploadToR2(`${baseKey}_small.webp`, variants.small, 'image/webp'),
+      uploadToR2(`${baseKey}_medium.webp`, variants.medium, 'image/webp'),
+      uploadToR2(`${baseKey}_large.webp`, variants.large, 'image/webp'),
+    ])
+
+  return { imageOriginalUrl, imageThumbUrl, imageSmallUrl, imageMediumUrl, imageLargeUrl }
+}
+
+/**
+ * Les listes (browse, catalogue, admin) lisent encore les champs image* de
+ * CatalogItem : on les dérive de la première photo pour que les fiches
+ * multi-photos restent visibles partout.
+ */
+type PartPhotoInput = {
+  urlOriginal: string
+  urlThumb?: string | null
+  urlSmall?: string | null
+  urlMedium?: string | null
+  urlLarge?: string | null
+}
+
+function legacyImageFields(photo: PartPhotoInput | undefined) {
+  return {
+    imageOriginalUrl: photo?.urlOriginal ?? null,
+    imageThumbUrl: photo?.urlThumb ?? null,
+    imageSmallUrl: photo?.urlSmall ?? null,
+    imageMediumUrl: photo?.urlMedium ?? null,
+    imageLargeUrl: photo?.urlLarge ?? null,
+  }
+}
+
+function photoCreateRows(photos: PartPhotoInput[]) {
+  return photos.map((p, position) => ({
+    position,
+    urlOriginal: p.urlOriginal,
+    urlThumb: p.urlThumb ?? null,
+    urlSmall: p.urlSmall ?? null,
+    urlMedium: p.urlMedium ?? null,
+    urlLarge: p.urlLarge ?? null,
+  }))
+}
+
+/**
+ * Création manuelle d'une annonce par le vendeur, publiée immédiatement —
+ * même processus que la saisie liaison (createPartForVendor), sans les
+ * attributs liaison : pas de createdByLiaisonId, et la commission fixée par
+ * le vendeur lui-même vaut acceptation (commissionAcceptedAt immédiat).
+ */
+export async function createItem(userId: string, body: unknown) {
+  const parsed = createCatalogItemSchema.safeParse(body)
+  if (!parsed.success) {
+    throw new AppError('CATALOG_ITEM_INVALID', 422, {
+      message: parsed.error.issues[0]?.message ?? 'Données invalides',
+    })
+  }
+
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true, status: true },
+  })
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Profil vendeur introuvable' })
+  }
+  if (vendor.status !== 'ACTIVE') {
+    throw new AppError('VENDOR_NOT_ACTIVE', 403, { message: 'Votre profil vendeur doit être actif pour ajouter des pièces' })
+  }
+
+  // Pas de plancher : un vendeur peut publier sans commission (0). On gagne peu
+  // sur la livraison mais la donnée annonce a de la valeur.
+  const commissionAmount = parsed.data.commissionAmount ?? 0
+  const fitments = parsed.data.fitments ?? []
+  const photos = parsed.data.photos ?? []
+
+  return prisma.catalogItem.create({
+    data: {
+      vendorId: vendor.id,
+      name: parsed.data.name,
+      category: parsed.data.category,
+      subcategory: subcategoryOf(parsed.data.category),
+      oemReference: parsed.data.oemReference,
+      vehicleCompatibility: parsed.data.vehicleCompatibility,
+      price: parsed.data.price,
+      condition: parsed.data.condition,
+      partSource: parsed.data.partSource,
+      warrantyValue: parsed.data.warrantyValue,
+      warrantyUnit: parsed.data.warrantyUnit,
+      commissionAmount,
+      commissionAcceptedAt: new Date(),
+      lowStockThreshold: parsed.data.lowStockThreshold,
+      // Quantité fournie : inStock dérivé (>0), sinon toggle manuel du formulaire.
+      stockQuantity: parsed.data.stockQuantity,
+      inStock:
+        parsed.data.stockQuantity != null
+          ? parsed.data.stockQuantity > 0
+          : parsed.data.inStock,
+      ...(photos.length > 0 && {
+        ...legacyImageFields(photos[0]),
+        photos: { create: photoCreateRows(photos) },
+      }),
+      status: 'PUBLISHED',
+      aiGenerated: false,
+      ...(fitments.length > 0 && {
+        fitments: {
+          create: fitments.map((f) => ({
+            brand: f.brand,
+            model: f.model ?? null,
+            yearFrom: f.yearFrom ?? null,
+            yearTo: f.yearTo ?? null,
+            engine: f.engine ?? null,
+          })),
+        },
+      }),
+    },
+    select: {
+      id: true,
+      vendorId: true,
+      name: true,
+      category: true,
+      condition: true,
+      price: true,
+      commissionAmount: true,
+      status: true,
+      inStock: true,
+      createdAt: true,
+    },
+  })
+}
+
 export interface CatalogFilters {
   status?: CatalogItemStatus
   page?: number
@@ -180,7 +348,10 @@ export async function getItem(userId: string, itemId: string) {
       id: itemId,
       vendorId: vendor.id,
     },
-    include: { photos: { orderBy: { position: 'asc' } } },
+    include: {
+      photos: { orderBy: { position: 'asc' } },
+      fitments: { orderBy: [{ brand: 'asc' }, { model: 'asc' }, { yearFrom: 'asc' }] },
+    },
   })
 
   if (!item) {
@@ -243,6 +414,8 @@ export interface UpdateCatalogItemData {
   category?: string
   oemReference?: string | null
   vehicleCompatibility?: string | null
+  photos?: PartPhotoInput[]
+  fitments?: FitmentInput[]
   price?: number
   condition?: 'NEW' | 'USED' | 'REFURBISHED'
   partSource?: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
@@ -250,6 +423,7 @@ export interface UpdateCatalogItemData {
   warrantyUnit?: 'DAY' | 'WEEK' | 'MONTH'
   commissionAmount?: number
   commissionAccepted?: boolean
+  inStock?: boolean
   stockQuantity?: number | null
   lowStockThreshold?: number
 }
@@ -291,6 +465,10 @@ export async function updateItem(
   if (data.warrantyValue !== undefined) updateData.warrantyValue = data.warrantyValue
   if (data.warrantyUnit !== undefined) updateData.warrantyUnit = data.warrantyUnit
   if (data.lowStockThreshold !== undefined) updateData.lowStockThreshold = data.lowStockThreshold
+  if (data.inStock !== undefined) updateData.inStock = data.inStock
+  // La liste de photos remplace l'existant ; les champs image* hérités suivent
+  // la première photo (ou sont vidés si la liste est vide).
+  if (data.photos !== undefined) Object.assign(updateData, legacyImageFields(data.photos[0]))
 
   if (data.stockQuantity !== undefined) {
     updateData.stockQuantity = data.stockQuantity
@@ -319,18 +497,65 @@ export async function updateItem(
   }
 
   // Pas de plancher : la commission est enregistrée telle que fixée (0 accepté).
+  // Contrairement au flux liaison (acceptation différée par le vendeur), c'est
+  // le vendeur lui-même qui fixe sa commission : acceptation immédiate.
   if (data.commissionAmount !== undefined) {
     updateData.commissionAmount = data.commissionAmount
+    updateData.commissionAcceptedAt = new Date()
   }
 
   if (data.commissionAccepted === true) {
     updateData.commissionAcceptedAt = new Date()
   }
 
-  return prisma.catalogItem.update({
-    where: { id: itemId },
-    data: updateData,
-    include: { photos: { orderBy: { position: 'asc' } } },
+  const itemInclude = {
+    photos: { orderBy: { position: 'asc' as const } },
+    fitments: { orderBy: [{ brand: 'asc' as const }, { model: 'asc' as const }, { yearFrom: 'asc' as const }] },
+  }
+
+  // Pas de relation à remplacer : simple update.
+  if (data.photos === undefined && data.fitments === undefined) {
+    return prisma.catalogItem.update({
+      where: { id: itemId },
+      data: updateData,
+      include: itemInclude,
+    })
+  }
+
+  // photos / fitments : la liste envoyée remplace l'existant (même sémantique
+  // que le PATCH liaison).
+  return prisma.$transaction(async (tx) => {
+    await tx.catalogItem.update({ where: { id: itemId }, data: updateData })
+
+    if (data.photos !== undefined) {
+      await tx.catalogItemPhoto.deleteMany({ where: { catalogItemId: itemId } })
+      if (data.photos.length > 0) {
+        await tx.catalogItemPhoto.createMany({
+          data: photoCreateRows(data.photos).map((p) => ({ ...p, catalogItemId: itemId })),
+        })
+      }
+    }
+
+    if (data.fitments !== undefined) {
+      await tx.catalogItemFitment.deleteMany({ where: { catalogItemId: itemId } })
+      if (data.fitments.length > 0) {
+        await tx.catalogItemFitment.createMany({
+          data: data.fitments.map((f) => ({
+            catalogItemId: itemId,
+            brand: f.brand,
+            model: f.model ?? null,
+            yearFrom: f.yearFrom ?? null,
+            yearTo: f.yearTo ?? null,
+            engine: f.engine ?? null,
+          })),
+        })
+      }
+    }
+
+    return tx.catalogItem.findUniqueOrThrow({
+      where: { id: itemId },
+      include: itemInclude,
+    })
   })
 }
 

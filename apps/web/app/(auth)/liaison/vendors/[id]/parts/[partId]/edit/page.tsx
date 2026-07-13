@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { liaisonFetch } from '@/lib/liaison-api'
-import { LiaisonPartForm, type PartFormInitial } from '@/components/LiaisonPartForm'
+import { PartForm, type PartFormInitial } from '@/components/part-form'
 import { CommissionBadge } from '@/components/CommissionBadge'
 
 interface PartDetail extends PartFormInitial {
@@ -107,7 +107,8 @@ export default function EditPartPage() {
             </p>
           </div>
 
-          <LiaisonPartForm
+          <PartForm
+            actor="liaison"
             mode="edit"
             vendorId={vendorId}
             partId={partId}

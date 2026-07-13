@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { liaisonFetch, liaisonUpload } from '@/lib/liaison-api'
+import { catalogFetch, catalogUpload } from '@/lib/catalog-api'
 import {
   WARRANTY_UNITS,
   type WarrantyUnit,
@@ -20,13 +21,19 @@ const CONDITIONS = [
 ] as const
 type Condition = (typeof CONDITIONS)[number]['value']
 
+const PART_SOURCES = [
+  { value: 'OEM', label: 'OEM' },
+  { value: 'AFTERMARKET', label: 'Aftermarket' },
+  { value: 'COMPATIBLE', label: 'Compatible' },
+] as const
+type PartSource = (typeof PART_SOURCES)[number]['value']
+
 const CATEGORY_NAMES = Object.keys(PART_CATALOG)
 
 /**
  * La catégorie est stockée dans un seul champ texte sous la forme
- * « Catégorie / Sous-catégorie » (même convention que le formulaire catalogue
- * vendeur, cf. vendors/catalog/upload). On décompose ici pour piloter la
- * cascade des deux sélecteurs, et on recompose au submit.
+ * « Catégorie / Sous-catégorie ». On décompose ici pour piloter la cascade des
+ * deux sélecteurs, et on recompose au submit.
  */
 function splitCategory(raw?: string | null): { cat: string; sub: string } {
   if (!raw) return { cat: '', sub: '' }
@@ -77,11 +84,13 @@ export interface PartFormInitial {
   photos?: PartPhoto[]
   price?: number | null
   condition?: Condition
+  partSource?: PartSource | null
   warrantyValue?: number | null
   warrantyUnit?: WarrantyUnit | null
   commissionAmount?: number | null
   inStock?: boolean
   stockQuantity?: number | null
+  lowStockThreshold?: number | null
   imageOriginalUrl?: string | null
   imageThumbUrl?: string | null
 }
@@ -95,17 +104,29 @@ interface ImageUrls {
 }
 
 interface Props {
+  /**
+   * 'liaison' : publie au nom d'un vendeur géré (API /liaison).
+   * 'vendor'  : le vendeur publie dans son propre catalogue (API /catalog) —
+   *             même processus, sans les attributs liaison. Mode 'create' seulement.
+   */
+  actor: 'liaison' | 'vendor'
   mode: 'create' | 'edit'
-  /** Vendeur cible (modes 'edit' et 'create' classique). Omis en saisie rapide. */
+  /** Vendeur cible (liaison, modes 'edit' et 'create' classique). Omis en saisie rapide et côté vendeur. */
   vendorId?: string
   partId?: string
   initial?: PartFormInitial
-  /** Saisie rapide : capture le vendeur tiers (nom, contact, location) + publie l'annonce en une étape. */
+  /** Saisie rapide (liaison) : capture le vendeur tiers (nom, contact, location) + publie l'annonce en une étape. */
   quickVendor?: boolean
+  /** Vendeur, mode 'edit' d'un brouillon : publie la fiche juste après l'enregistrement. */
+  publishAfterSave?: boolean
 }
 
-export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }: Props) {
+export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, publishAfterSave }: Props) {
   const router = useRouter()
+  const apiFetch = actor === 'liaison' ? liaisonFetch : catalogFetch
+  const apiUpload = actor === 'liaison' ? liaisonUpload : catalogUpload
+  const imagePath = actor === 'liaison' ? '/parts/image' : '/items/image'
+  const oemScanPath = actor === 'liaison' ? '/parts/oem-scan' : '/items/oem-scan'
   // Champs vendeur (saisie rapide uniquement)
   const [vShopName, setVShopName] = useState('')
   const [vContactName, setVContactName] = useState('')
@@ -122,6 +143,10 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
   )
   const [price, setPrice] = useState(initial?.price != null ? String(initial.price) : '')
   const [condition, setCondition] = useState<Condition>(initial?.condition ?? 'USED')
+  const [partSource, setPartSource] = useState<PartSource | ''>(initial?.partSource ?? '')
+  const [lowStockThreshold, setLowStockThreshold] = useState(
+    initial?.lowStockThreshold != null ? String(initial.lowStockThreshold) : '',
+  )
   const [warrantyValue, setWarrantyValue] = useState(
     initial?.warrantyValue != null ? String(initial.warrantyValue) : '',
   )
@@ -186,7 +211,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       setImgUploading(true)
       const fd = new FormData()
       fd.append('file', file)
-      const r = await liaisonUpload<ImageUrls>('/parts/image', fd)
+      const r = await apiUpload<ImageUrls>(imagePath, fd)
       if (!r.ok) {
         setImgError(r.message)
         continue
@@ -249,7 +274,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
     setFitments((prev) => prev.filter((_, i) => i !== idx))
 
   // Cascade véhicule pour la saisie d'une compatibilité (marque → modèle →
-  // années → moteur), alignée sur le formulaire catalogue vendeur.
+  // années → moteur).
   const fitBrandNames = useMemo(() => Object.keys(VEHICLE_BRANDS).sort(), [])
   const fitModels = useMemo(
     () => (fitBrand ? Object.keys(VEHICLE_BRANDS[fitBrand]?.models ?? {}).sort() : []),
@@ -283,7 +308,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
   }
 
   // Scan d'étiquette OEM : Gemini lit les références (code-barres inclus) et
-  // suggère les compatibilités véhicule, que la liaison relit avant publication.
+  // suggère les compatibilités véhicule, à relire avant publication.
   const [scanning, setScanning] = useState(false)
   const [scanError, setScanError] = useState<string | null>(null)
   const [scanSummary, setScanSummary] = useState<string | null>(null)
@@ -301,7 +326,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
     setScanning(true)
     const fd = new FormData()
     fd.append('file', file)
-    const r = await liaisonUpload<OemScanResult>('/parts/oem-scan', fd)
+    const r = await apiUpload<OemScanResult>(oemScanPath, fd)
     setScanning(false)
     if (!r.ok) {
       setScanError(r.message)
@@ -385,6 +410,13 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       vCommune.length > 0)
   const valid = name.length >= 2 && vendorValid && !imgUploading && !scanning
 
+  const cancelHref =
+    actor === 'vendor'
+      ? '/vendors/catalog'
+      : quickVendor
+        ? '/liaison/parts'
+        : `/liaison/vendors/${vendorId}`
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!valid) return
@@ -412,6 +444,11 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       // La liste remplace l'existant côté API ; les champs image* hérités sont
       // dérivés de la première photo (ou vidés si la liste est vide).
       photos,
+      // Champs propres au flux vendeur (le schéma liaison ne les accepte pas).
+      ...(actor === 'vendor' && {
+        partSource: partSource || null,
+        lowStockThreshold: lowStockThreshold !== '' ? Number(lowStockThreshold) : undefined,
+      }),
       ...(quickVendor && {
         vendor: {
           shopName: vShopName.trim(),
@@ -423,24 +460,45 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
       }),
     }
 
-    const path = quickVendor
-      ? '/parts/quick'
-      : mode === 'create'
-        ? `/vendors/${vendorId}/parts`
-        : `/vendors/${vendorId}/parts/${partId}`
+    const path =
+      actor === 'vendor'
+        ? mode === 'create'
+          ? '/items'
+          : `/items/${partId}`
+        : quickVendor
+          ? '/parts/quick'
+          : mode === 'create'
+            ? `/vendors/${vendorId}/parts`
+            : `/vendors/${vendorId}/parts/${partId}`
     const method = mode === 'create' || quickVendor ? 'POST' : 'PATCH'
 
-    const r = await liaisonFetch<{ id: string; vendorId: string }>(path, {
+    const r = await apiFetch<{ id: string; vendorId: string }>(path, {
       method,
       body: JSON.stringify(payload),
     })
 
-    setSubmitting(false)
     if (!r.ok) {
+      setSubmitting(false)
       setError(r.message)
       return
     }
-    router.push(`/liaison/vendors/${quickVendor ? r.data.vendorId : vendorId}`)
+
+    // Brouillon vendeur (flux ajout par photos) : publier dans la foulée.
+    if (actor === 'vendor' && publishAfterSave && partId) {
+      const pub = await catalogFetch(`/items/${partId}/publish`, { method: 'POST' })
+      if (!pub.ok) {
+        setSubmitting(false)
+        setError(`Modifications enregistrées, mais publication impossible : ${pub.message}`)
+        return
+      }
+    }
+
+    setSubmitting(false)
+    router.push(
+      actor === 'vendor'
+        ? '/vendors/catalog'
+        : `/liaison/vendors/${quickVendor ? r.data.vendorId : vendorId}`,
+    )
   }
 
   return (
@@ -463,7 +521,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             <input
               value={vShopName}
               onChange={(e) => setVShopName(e.target.value)}
-              className="liaison-input"
+              className="part-input"
               placeholder="Ex : Casse Auto Adjamé"
             />
           </Field>
@@ -472,7 +530,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             <input
               value={vContactName}
               onChange={(e) => setVContactName(e.target.value)}
-              className="liaison-input"
+              className="part-input"
               placeholder="Ex : Konan Yao"
             />
           </Field>
@@ -482,7 +540,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
               type="tel"
               value={vPhone}
               onChange={(e) => setVPhone(e.target.value)}
-              className="liaison-input"
+              className="part-input"
               placeholder="+225XXXXXXXXXX"
             />
             {vPhone.length > 4 && !phoneValid && (
@@ -497,7 +555,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
               aria-label="Commune du vendeur"
               value={vCommune}
               onChange={(e) => setVCommune(e.target.value)}
-              className="liaison-input"
+              className="part-input"
             >
               <option value="">Choisir…</option>
               {ABIDJAN_COMMUNES.map((c) => (
@@ -510,7 +568,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             <input
               value={vAddress}
               onChange={(e) => setVAddress(e.target.value)}
-              className="liaison-input"
+              className="part-input"
               placeholder="Ex : Rue des Jardins, près du marché"
             />
           </Field>
@@ -521,7 +579,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="liaison-input"
+          className="part-input"
           placeholder="Ex : Alternateur 90A"
         />
       </Field>
@@ -584,7 +642,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
           aria-label="Catégorie de la pièce"
           value={partCategory}
           onChange={(e) => handleCategoryChange(e.target.value)}
-          className="liaison-input"
+          className="part-input"
         >
           <option value="">Choisir…</option>
           {categoryOptions.map((c) => (
@@ -599,7 +657,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             aria-label="Sous-catégorie de la pièce"
             value={partSubcategory}
             onChange={(e) => setPartSubcategory(e.target.value)}
-            className="liaison-input"
+            className="part-input"
           >
             <option value="">Toutes / non précisé</option>
             {subcategoryOptions.map((s) => (
@@ -628,13 +686,37 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
         </div>
       </Field>
 
+      {actor === 'vendor' && (
+        <Field
+          label="Origine"
+          hint="OEM = pièce d'origine constructeur. Aftermarket = équipementier reconnu (Bosch, Valeo…). Compatible = générique."
+        >
+          <div className="grid grid-cols-3 gap-2">
+            {PART_SOURCES.map((s) => (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => setPartSource((prev) => (prev === s.value ? '' : s.value))}
+                className={`rounded-md px-3 py-2.5 text-sm transition-colors ${
+                  partSource === s.value
+                    ? 'bg-ink-2 text-white'
+                    : 'bg-card text-ink ring-1 ring-border'
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </Field>
+      )}
+
       <Field label="Prix (FCFA)" hint="Laissez vide si à confirmer">
         <input
           type="number"
           inputMode="numeric"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="liaison-input"
+          className="part-input"
           placeholder="Ex : 45000"
           min={0}
         />
@@ -642,14 +724,18 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
 
       <Field
         label="Commission Pièces (FCFA)"
-        hint="Facultatif — laisser vide si le vendeur ne donne pas de commission"
+        hint={
+          actor === 'vendor'
+            ? 'Facultatif — montant reversé à Pièces sur la vente de cette pièce (0 accepté)'
+            : 'Facultatif — laisser vide si le vendeur ne donne pas de commission'
+        }
       >
         <input
           type="number"
           inputMode="numeric"
           value={commission}
           onChange={(e) => setCommission(e.target.value)}
-          className="liaison-input"
+          className="part-input"
           placeholder="Ex : 3000"
           min={0}
         />
@@ -663,7 +749,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
           <input
             value={oemReference ?? ''}
             onChange={(e) => setOemReference(e.target.value)}
-            className="liaison-input min-w-0 flex-1"
+            className="part-input min-w-0 flex-1"
             placeholder="Ex : 27060-0L010"
           />
           <label
@@ -691,7 +777,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
         <input
           value={vehicleCompatibility ?? ''}
           onChange={(e) => setVehicleCompatibility(e.target.value)}
-          className="liaison-input"
+          className="part-input"
           placeholder="Ex : Toyota Hilux 2010-2015"
         />
       </Field>
@@ -731,7 +817,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             aria-label="Marque du véhicule compatible"
             value={fitBrand}
             onChange={(e) => handleFitBrandChange(e.target.value)}
-            className="liaison-input"
+            className="part-input"
           >
             <option value="">Marque *</option>
             {fitBrandNames.map((b) => (
@@ -742,7 +828,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             aria-label="Modèle du véhicule compatible"
             value={fitModel}
             onChange={(e) => handleFitModelChange(e.target.value)}
-            className="liaison-input"
+            className="part-input"
             disabled={!fitBrand}
           >
             <option value="">Modèle</option>
@@ -754,7 +840,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             aria-label="Année min"
             value={fitYearFrom}
             onChange={(e) => setFitYearFrom(e.target.value)}
-            className="liaison-input"
+            className="part-input"
             disabled={fitYears.length === 0}
           >
             <option value="">Année min</option>
@@ -766,7 +852,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             aria-label="Année max"
             value={fitYearTo}
             onChange={(e) => setFitYearTo(e.target.value)}
-            className="liaison-input"
+            className="part-input"
             disabled={fitYears.length === 0}
           >
             <option value="">Année max</option>
@@ -778,7 +864,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             aria-label="Moteur"
             value={fitEngine}
             onChange={(e) => setFitEngine(e.target.value)}
-            className="liaison-input"
+            className="part-input"
             disabled={fitEngines.length === 0}
           >
             <option value="">{fitEngines.length === 0 ? 'Moteur (choisir modèle)' : 'Moteur'}</option>
@@ -804,7 +890,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             inputMode="numeric"
             value={warrantyValue}
             onChange={(e) => setWarrantyValue(e.target.value)}
-            className="liaison-input min-w-0 flex-1"
+            className="part-input min-w-0 flex-1"
             placeholder="Durée"
             min={0}
             max={365}
@@ -813,7 +899,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
             aria-label="Unité de garantie"
             value={warrantyUnit}
             onChange={(e) => setWarrantyUnit(e.target.value as WarrantyUnit)}
-            className="liaison-input flex-1"
+            className="part-input flex-1"
           >
             {WARRANTY_UNITS.map((u) => (
               <option key={u.value} value={u.value}>{u.label}</option>
@@ -824,19 +910,37 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
 
       <Field
         label="Nombre d'articles disponibles"
-        hint="Optionnel — à renseigner par le liaison ou le vendeur. Le stock diminue à chaque commande ; à 0 la pièce passe en rupture."
+        hint="Optionnel — le stock diminue à chaque commande ; à 0 la pièce passe en rupture."
       >
         <input
           type="number"
           inputMode="numeric"
           value={stockQuantity}
           onChange={(e) => setStockQuantity(e.target.value)}
-          className="liaison-input"
+          className="part-input"
           placeholder="Ex : 4 — vide si non suivi"
           min={0}
           max={99999}
         />
       </Field>
+
+      {actor === 'vendor' && stockTracked && (
+        <Field
+          label="Seuil d'alerte stock"
+          hint="Vous recevez une alerte WhatsApp quand la quantité atteint ce seuil."
+        >
+          <input
+            type="number"
+            inputMode="numeric"
+            value={lowStockThreshold}
+            onChange={(e) => setLowStockThreshold(e.target.value)}
+            className="part-input"
+            placeholder="Ex : 1"
+            min={0}
+            max={99999}
+          />
+        </Field>
+      )}
 
       <label className="flex items-center gap-3">
         <input
@@ -854,7 +958,7 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
 
       <div className="flex justify-end gap-2 pt-2">
         <Link
-          href={quickVendor ? '/liaison/parts' : `/liaison/vendors/${vendorId}`}
+          href={cancelHref}
           className="rounded-md bg-card px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-border"
           style={{ minHeight: 44 }}
         >
@@ -867,17 +971,19 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
           style={{ minHeight: 44 }}
         >
           {submitting
-            ? mode === 'create'
-              ? 'Ajout…'
+            ? mode === 'create' || publishAfterSave
+              ? 'Publication…'
               : 'Enregistrement…'
             : mode === 'create'
-            ? 'Ajouter la pièce'
-            : 'Enregistrer'}
+            ? 'Publier la pièce'
+            : publishAfterSave
+              ? 'Enregistrer et publier'
+              : 'Enregistrer'}
         </button>
       </div>
 
       <style jsx>{`
-        :global(.liaison-input) {
+        :global(.part-input) {
           width: 100%;
           max-width: 100%;
           min-width: 0;
@@ -892,11 +998,11 @@ export function LiaisonPartForm({ mode, vendorId, partId, initial, quickVendor }
           min-height: 44px;
         }
         @media (min-width: 1024px) {
-          :global(.liaison-input) {
+          :global(.part-input) {
             font-size: 14px;
           }
         }
-        :global(.liaison-input:focus) {
+        :global(.part-input:focus) {
           outline: 2px solid rgba(0, 35, 102, 0.4);
           outline-offset: 1px;
         }

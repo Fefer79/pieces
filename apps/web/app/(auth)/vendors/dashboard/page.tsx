@@ -135,7 +135,7 @@ export default function VendorDashboardPage() {
               variant="accent"
               size="lg"
               block
-              onClick={() => router.push('/vendors/catalog/upload')}
+              onClick={() => router.push('/vendors/catalog/new')}
             >
               + Publier une nouvelle annonce
             </Button>

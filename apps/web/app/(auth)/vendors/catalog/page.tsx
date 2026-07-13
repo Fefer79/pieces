@@ -115,7 +115,7 @@ export default function VendorCatalogPage() {
           </div>
           <h1 className="mt-1 font-display text-3xl text-ink">Mon catalogue</h1>
         </div>
-        <Button variant="accent" onClick={() => router.push('/vendors/catalog/upload')}>
+        <Button variant="accent" onClick={() => router.push('/vendors/catalog/new')}>
           + Ajouter
         </Button>
       </div>
@@ -151,7 +151,7 @@ export default function VendorCatalogPage() {
             Ajoutez des photos pour démarrer — l&apos;IA identifiera la pièce et remplira la cascade.
           </p>
           <div className="mt-4">
-            <Button variant="accent" onClick={() => router.push('/vendors/catalog/upload')}>
+            <Button variant="accent" onClick={() => router.push('/vendors/catalog/new')}>
               + Publier ma première annonce
             </Button>
           </div>

@@ -58,6 +58,22 @@ vi.mock('../../lib/r2.js', () => ({
   getPublicUrl: vi.fn(),
 }))
 
+vi.mock('../../lib/imageProcessor.js', () => ({
+  MAX_FILE_SIZE: 5 * 1024 * 1024,
+  processVariants: vi.fn(async () => ({
+    thumb: Buffer.from('thumb'),
+    small: Buffer.from('small'),
+    medium: Buffer.from('medium'),
+    large: Buffer.from('large'),
+  })),
+}))
+
+const mockExtractOemLabel = vi.fn()
+vi.mock('../../lib/gemini.js', () => ({
+  extractOemLabel: (...args: unknown[]) => mockExtractOemLabel(...args),
+  identifyPart: vi.fn(),
+}))
+
 const { buildApp } = await import('../../server.js')
 
 function mockAuthUser(overrides?: Record<string, unknown>) {
@@ -78,6 +94,150 @@ function mockAuthUser(overrides?: Record<string, unknown>) {
 describe('Catalog Routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  describe('POST /api/v1/catalog/items', () => {
+    it('returns 201 when part created manually', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+      mockCatalogItemCreate.mockResolvedValueOnce({
+        id: 'item-1',
+        vendorId: 'vendor-1',
+        name: 'Alternateur 90A',
+        status: 'PUBLISHED',
+        inStock: true,
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items',
+        headers: { authorization: 'Bearer valid-token' },
+        payload: {
+          name: 'Alternateur 90A',
+          condition: 'USED',
+          price: 45000,
+          photos: [{ urlOriginal: 'https://r2.dev/catalog/vendor-1/p.jpg' }],
+          fitments: [{ brand: 'Toyota', model: 'Hilux' }],
+        },
+      })
+
+      expect(response.statusCode).toBe(201)
+      const body = response.json()
+      expect(body.data.id).toBe('item-1')
+      expect(body.data.status).toBe('PUBLISHED')
+    })
+
+    it('returns 422 when condition is missing', async () => {
+      mockAuthUser()
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items',
+        headers: { authorization: 'Bearer valid-token' },
+        payload: { name: 'Alternateur 90A' },
+      })
+
+      expect(response.statusCode).toBe(422)
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items',
+        payload: { name: 'Alternateur 90A', condition: 'USED' },
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('POST /api/v1/catalog/items/image', () => {
+    it('returns 201 with image URLs', async () => {
+      mockAuthUser()
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items/image',
+        headers: {
+          authorization: 'Bearer valid-token',
+          'content-type': 'multipart/form-data; boundary=---boundary',
+        },
+        payload:
+          '-----boundary\r\n' +
+          'Content-Disposition: form-data; name="file"; filename="photo.jpg"\r\n' +
+          'Content-Type: image/jpeg\r\n' +
+          '\r\n' +
+          'fake-image-data\r\n' +
+          '-----boundary--\r\n',
+      })
+
+      expect(response.statusCode).toBe(201)
+      const body = response.json()
+      expect(body.data.imageOriginalUrl).toBeTruthy()
+      expect(body.data.imageThumbUrl).toBeTruthy()
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items/image',
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
+  })
+
+  describe('POST /api/v1/catalog/items/oem-scan', () => {
+    it('returns 200 with references and compatibilities', async () => {
+      mockAuthUser()
+      mockExtractOemLabel.mockResolvedValueOnce({
+        oemReferences: ['27060-0L010'],
+        partName: 'Alternateur',
+        partBrand: 'Denso',
+        compatibilities: [
+          { brand: 'Toyota', model: 'Hilux', yearFrom: 2010, yearTo: 2015, engine: null },
+        ],
+        confidence: 0.9,
+      })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items/oem-scan',
+        headers: {
+          authorization: 'Bearer valid-token',
+          'content-type': 'multipart/form-data; boundary=---boundary',
+        },
+        payload:
+          '-----boundary\r\n' +
+          'Content-Disposition: form-data; name="file"; filename="label.jpg"\r\n' +
+          'Content-Type: image/jpeg\r\n' +
+          '\r\n' +
+          'fake-image-data\r\n' +
+          '-----boundary--\r\n',
+      })
+
+      expect(response.statusCode).toBe(200)
+      const body = response.json()
+      expect(body.data.oemReferences).toEqual(['27060-0L010'])
+      expect(body.data.compatibilities).toHaveLength(1)
+    })
+
+    it('returns 401 without auth token', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/catalog/items/oem-scan',
+      })
+
+      expect(response.statusCode).toBe(401)
+    })
   })
 
   describe('POST /api/v1/catalog/items/upload', () => {

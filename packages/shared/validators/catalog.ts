@@ -18,11 +18,36 @@ export const warrantyUnitSchema = z.enum(['DAY', 'WEEK', 'MONTH'])
 
 export const MAX_PHOTOS_PER_ITEM = 3
 
+export const fitmentSchema = z.object({
+  brand: z.string().min(1).max(60),
+  model: z.string().min(1).max(80).nullable().optional(),
+  yearFrom: z.number().int().min(1950).max(2100).nullable().optional(),
+  yearTo: z.number().int().min(1950).max(2100).nullable().optional(),
+  engine: z.string().min(1).max(60).nullable().optional(),
+}).refine(
+  (v) => v.yearFrom == null || v.yearTo == null || v.yearFrom <= v.yearTo,
+  { message: 'yearFrom doit être inférieur ou égal à yearTo', path: ['yearFrom'] },
+)
+
+// Photo déjà uploadée via POST /catalog/items/image : on rattache les URLs
+// renvoyées. Même convention de clés que CatalogItemPhoto (urlOriginal…).
+export const catalogPartPhotoSchema = z.object({
+  urlOriginal: z.string().url(),
+  urlThumb: z.string().url().nullable().optional(),
+  urlSmall: z.string().url().nullable().optional(),
+  urlMedium: z.string().url().nullable().optional(),
+  urlLarge: z.string().url().nullable().optional(),
+})
+
 export const updateCatalogItemSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   category: z.string().min(1).max(100).optional(),
   oemReference: z.string().max(100).nullable().optional(),
   vehicleCompatibility: z.string().max(200).nullable().optional(),
+  // La liste remplace l'existant (même sémantique que le PATCH liaison) ; les
+  // champs image* hérités suivent la première photo.
+  photos: z.array(catalogPartPhotoSchema).max(MAX_PHOTOS_PER_ITEM).optional(),
+  fitments: z.array(fitmentSchema).max(50).optional(),
   price: z.number().int().min(0).optional(),
   condition: partConditionSchema.optional(),
   partSource: partSourceSchema.nullable().optional(),
@@ -30,6 +55,7 @@ export const updateCatalogItemSchema = z.object({
   warrantyUnit: warrantyUnitSchema.optional(),
   commissionAmount: z.number().int().min(0).optional(),
   commissionAccepted: z.boolean().optional(),
+  inStock: z.boolean().optional(),
   // null = désactiver le suivi de quantité (retour au inStock manuel)
   stockQuantity: z.number().int().min(0).max(99999).nullable().optional(),
   lowStockThreshold: z.number().int().min(0).max(99999).optional(),
@@ -67,17 +93,6 @@ export const reorderPhotosSchema = z.object({
   photoIds: z.array(z.string().uuid()).min(1).max(MAX_PHOTOS_PER_ITEM),
 })
 
-export const fitmentSchema = z.object({
-  brand: z.string().min(1).max(60),
-  model: z.string().min(1).max(80).nullable().optional(),
-  yearFrom: z.number().int().min(1950).max(2100).nullable().optional(),
-  yearTo: z.number().int().min(1950).max(2100).nullable().optional(),
-  engine: z.string().min(1).max(60).nullable().optional(),
-}).refine(
-  (v) => v.yearFrom == null || v.yearTo == null || v.yearFrom <= v.yearTo,
-  { message: 'yearFrom doit être inférieur ou égal à yearTo', path: ['yearFrom'] },
-)
-
 export const fitmentParamsSchema = z.object({
   id: z.string().uuid(),
   fitmentId: z.string().uuid(),
@@ -85,6 +100,29 @@ export const fitmentParamsSchema = z.object({
 
 export const replaceFitmentsSchema = z.object({
   fitments: z.array(fitmentSchema).max(50),
+})
+
+// Création manuelle d'une annonce par le vendeur — même processus que la
+// saisie liaison (liaisonCreatePartSchema), sans les attributs liaison
+// (createdByLiaisonId, acceptation de commission différée).
+export const createCatalogItemSchema = z.object({
+  name: z.string().min(2).max(120),
+  category: z.string().min(2).max(120).optional(),
+  oemReference: z.string().max(80).optional(),
+  vehicleCompatibility: z.string().max(255).optional(),
+  fitments: z.array(fitmentSchema).max(50).optional(),
+  photos: z.array(catalogPartPhotoSchema).max(MAX_PHOTOS_PER_ITEM).optional(),
+  price: z.number().int().min(1).optional(),
+  condition: partConditionSchema,
+  partSource: partSourceSchema.nullable().optional(),
+  warrantyValue: z.number().int().min(0).max(365).optional(),
+  warrantyUnit: warrantyUnitSchema.optional(),
+  commissionAmount: z.number().int().min(0).optional(),
+  inStock: z.boolean().default(true),
+  // Optionnel : quantité disponible. Absente = pas de suivi de quantité
+  // (toggle inStock manuel).
+  stockQuantity: z.number().int().min(0).max(99999).optional(),
+  lowStockThreshold: z.number().int().min(0).max(99999).optional(),
 })
 
 export const ingestSourceSchema = z.enum([

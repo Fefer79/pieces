@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { LiaisonPartForm } from '@/components/LiaisonPartForm'
+import { PartForm } from '@/components/part-form'
 
 export default function NewPartPage() {
   const params = useParams()
@@ -20,7 +20,7 @@ export default function NewPartPage() {
       <p className="mb-6 text-sm text-muted">
         La pièce sera publiée immédiatement au catalogue du vendeur.
       </p>
-      <LiaisonPartForm mode="create" vendorId={vendorId} />
+      <PartForm actor="liaison" mode="create" vendorId={vendorId} />
     </div>
   )
 }
