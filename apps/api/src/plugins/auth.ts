@@ -24,6 +24,13 @@ const USER_SELECT = {
   consentedAt: true,
 } as const
 
+// Supabase renvoie le téléphone sans le « + » initial (ex. 2250700000000) ;
+// tout le reste de l'app (WhatsApp, profil) utilise le format +225XXXXXXXXXX.
+function toE164(phone: string | null | undefined): string | null {
+  if (!phone) return null
+  return phone.startsWith('+') ? phone : `+${phone}`
+}
+
 function shapeUser(user: UserRow): FastifyRequest['user'] {
   return {
     id: user.id,
@@ -75,6 +82,14 @@ export async function requireAuth(request: FastifyRequest) {
     if (!waUser) {
       throw new AppError('AUTH_INVALID_TOKEN', 401)
     }
+    // Même auto-set que le chemin Supabase : un seul rôle → contexte posé.
+    if (waUser.roles.length === 1 && !waUser.activeContext) {
+      await prisma.user.update({
+        where: { id: waUser.id },
+        data: { activeContext: waUser.roles[0] },
+      })
+      waUser.activeContext = waUser.roles[0] ?? null
+    }
     request.user = shapeUser(waUser as UserRow)
     return
   }
@@ -84,18 +99,20 @@ export async function requireAuth(request: FastifyRequest) {
     throw new AppError('AUTH_INVALID_TOKEN', 401)
   }
 
+  const phone = toE164(data.user.phone)
+  const email = data.user.email ?? null
+
   let user
   try {
     user = await prisma.user.upsert({
       where: { supabaseId: data.user.id },
-      update: {
-        phone: data.user.phone ?? undefined,
-        email: data.user.email ?? undefined,
-      },
+      // Ne jamais réécrire le profil à la connexion : une fois la ligne créée,
+      // c'est le profil Pièces (modifiable via /profile) qui fait foi.
+      update: {},
       create: {
         supabaseId: data.user.id,
-        phone: data.user.phone ?? null,
-        email: data.user.email ?? null,
+        phone,
+        email,
         roles: ['MECHANIC'],
       },
       select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
@@ -106,8 +123,8 @@ export async function requireAuth(request: FastifyRequest) {
       const existing = await prisma.user.findFirst({
         where: {
           OR: [
-            ...(data.user.email ? [{ email: data.user.email }] : []),
-            ...(data.user.phone ? [{ phone: data.user.phone }] : []),
+            ...(email ? [{ email }] : []),
+            ...(phone ? [{ phone }] : []),
           ],
         },
         select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },

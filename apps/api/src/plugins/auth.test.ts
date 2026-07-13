@@ -70,7 +70,7 @@ describe('requireAuth', () => {
     expect(mockGetUser).toHaveBeenCalledWith('valid-token')
     expect(mockUpsert).toHaveBeenCalledWith({
       where: { supabaseId: 'supabase-123' },
-      update: { phone: '+2250700000000', email: undefined },
+      update: {},
       create: { supabaseId: 'supabase-123', phone: '+2250700000000', email: null, roles: ['MECHANIC'] },
       select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
     })
@@ -78,6 +78,30 @@ describe('requireAuth', () => {
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: 'prisma-user-123' },
       data: { activeContext: 'MECHANIC' },
+    })
+  })
+
+  it('normalizes Supabase phone (no leading +) to E.164 on create and never overwrites profile fields', async () => {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: 'supabase-456', phone: '2250500000000' } },
+      error: null,
+    })
+    mockUpsert.mockResolvedValueOnce({
+      id: 'prisma-user-456',
+      phone: '+2250500000000',
+      roles: ['MECHANIC'],
+      activeContext: 'MECHANIC',
+      consentedAt: null,
+    })
+
+    const request = createMockRequest({ authorization: 'Bearer valid-token' })
+    await requireAuth(request, mockReply)
+
+    expect(mockUpsert).toHaveBeenCalledWith({
+      where: { supabaseId: 'supabase-456' },
+      update: {},
+      create: { supabaseId: 'supabase-456', phone: '+2250500000000', email: null, roles: ['MECHANIC'] },
+      select: { id: true, phone: true, email: true, roles: true, activeContext: true, consentedAt: true },
     })
   })
 
