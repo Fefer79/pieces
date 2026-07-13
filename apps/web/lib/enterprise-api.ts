@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase'
+import { getPiecesSession } from '@/lib/pieces-session'
 
 let supabase: ReturnType<typeof createClient> | null = null
 function getSupabase() {
@@ -10,7 +11,8 @@ function getSupabase() {
 
 async function getToken() {
   const { data: { session } } = await getSupabase().auth.getSession()
-  return session?.access_token ?? null
+  // Fallback session WhatsApp (reverse-OTP) quand il n'y a pas de session Supabase.
+  return session?.access_token ?? getPiecesSession()
 }
 
 type FetchResult<T> = { ok: true; data: T } | { ok: false; message: string }

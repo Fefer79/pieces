@@ -65,7 +65,7 @@ export async function switchContext(userId: string, role: string) {
   return updated
 }
 
-export async function selectRole(userId: string, role: string) {
+export async function selectRole(userId: string, role: string, switchTo = true) {
   const parsed = selectRoleSchema.safeParse({ role })
   if (!parsed.success) {
     throw new AppError('USER_INVALID_ROLE', 400, { message: parsed.error.issues[0]?.message })
@@ -73,22 +73,33 @@ export async function selectRole(userId: string, role: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { roles: true },
+    select: { roles: true, activeContext: true },
   })
 
   if (!user) {
     throw new AppError('USER_NOT_FOUND', 404)
   }
 
-  const newRoles = user.roles.includes(parsed.data.role)
-    ? user.roles
-    : [...user.roles, parsed.data.role]
+  const newRole = parsed.data.role
+  let newRoles = user.roles.includes(newRole) ? user.roles : [...user.roles, newRole]
+
+  // MECHANIC et OWNER sont deux variantes du même espace Achat : choisir
+  // l'une remplace l'autre (préférence, pas cumul).
+  const otherBuyerRole =
+    newRole === 'MECHANIC' ? 'OWNER' : newRole === 'OWNER' ? 'MECHANIC' : null
+  const removedRole = otherBuyerRole && newRoles.includes(otherBuyerRole) ? otherBuyerRole : null
+  if (removedRole) {
+    newRoles = newRoles.filter((r) => r !== removedRole)
+  }
+
+  const mustSwitch =
+    switchTo || !user.activeContext || user.activeContext === removedRole
 
   const updated = await prisma.user.update({
     where: { id: userId },
     data: {
       roles: newRoles,
-      activeContext: parsed.data.role,
+      ...(mustSwitch ? { activeContext: newRole } : {}),
     },
     select: { id: true, phone: true, roles: true, activeContext: true, consentedAt: true },
   })

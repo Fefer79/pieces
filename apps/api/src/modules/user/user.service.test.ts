@@ -23,7 +23,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { getProfile, switchContext, updateRoles } = await import('./user.service.js')
+const { getProfile, switchContext, selectRole, updateRoles } = await import('./user.service.js')
 
 describe('getProfile', () => {
   beforeEach(() => {
@@ -107,6 +107,87 @@ describe('switchContext', () => {
       code: 'USER_NOT_FOUND',
       statusCode: 404,
     })
+  })
+})
+
+describe('selectRole', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('adds the role and switches activeContext by default', async () => {
+    mockFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC'], activeContext: 'MECHANIC' })
+    mockUpdate.mockResolvedValueOnce({
+      id: 'user-1',
+      phone: '+2250700000000',
+      roles: ['MECHANIC', 'SELLER'],
+      activeContext: 'SELLER',
+      consentedAt: null,
+    })
+
+    const result = await selectRole('user-1', 'SELLER')
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { roles: ['MECHANIC', 'SELLER'], activeContext: 'SELLER' },
+      }),
+    )
+    expect(result.activeContext).toBe('SELLER')
+  })
+
+  it('adds the role without switching context when switchTo is false', async () => {
+    mockFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC'], activeContext: 'MECHANIC' })
+    mockUpdate.mockResolvedValueOnce({
+      id: 'user-1',
+      phone: '+2250700000000',
+      roles: ['MECHANIC', 'SELLER'],
+      activeContext: 'MECHANIC',
+      consentedAt: null,
+    })
+
+    const result = await selectRole('user-1', 'SELLER', false)
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { roles: ['MECHANIC', 'SELLER'] },
+      }),
+    )
+    expect(result.activeContext).toBe('MECHANIC')
+  })
+
+  it('swaps MECHANIC for OWNER (buyer variants are exclusive)', async () => {
+    mockFindUnique.mockResolvedValueOnce({ roles: ['MECHANIC', 'SELLER'], activeContext: 'MECHANIC' })
+    mockUpdate.mockResolvedValueOnce({
+      id: 'user-1',
+      phone: '+2250700000000',
+      roles: ['SELLER', 'OWNER'],
+      activeContext: 'OWNER',
+      consentedAt: null,
+    })
+
+    await selectRole('user-1', 'OWNER', false)
+    // switchTo=false mais MECHANIC (le contexte actif) est remplacé → bascule forcée
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { roles: ['SELLER', 'OWNER'], activeContext: 'OWNER' },
+      }),
+    )
+  })
+
+  it('still sets activeContext with switchTo false when the user has none', async () => {
+    mockFindUnique.mockResolvedValueOnce({ roles: [], activeContext: null })
+    mockUpdate.mockResolvedValueOnce({
+      id: 'user-1',
+      phone: '+2250700000000',
+      roles: ['SELLER'],
+      activeContext: 'SELLER',
+      consentedAt: null,
+    })
+
+    await selectRole('user-1', 'SELLER', false)
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { roles: ['SELLER'], activeContext: 'SELLER' },
+      }),
+    )
   })
 })
 

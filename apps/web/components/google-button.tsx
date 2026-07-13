@@ -14,8 +14,8 @@ interface GoogleButtonProps {
 /**
  * Google OAuth sign-in / sign-up button.
  * Delegates to Supabase (`signInWithOAuth`) — the PKCE code is handled by
- * `app/auth/callback/route.ts`, which also performs the role/onboarding check.
- * New users land on /onboarding/role automatically.
+ * `app/auth/callback/route.ts`, which also provisions the User row.
+ * New users land on /browse (espace Achat par défaut).
  */
 export function GoogleButton({ next, label = 'Continuer avec Google', disabled }: GoogleButtonProps) {
   const [loading, setLoading] = useState(false)

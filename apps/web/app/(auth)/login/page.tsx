@@ -31,18 +31,12 @@ function LoginForm() {
   }, [oauthError])
 
   async function redirectAfterLogin(accessToken: string | undefined) {
-    // Check if user has a role; if not, send to onboarding
+    // Provisionne la ligne User côté API (plus de détour par un choix de rôle
+    // — tout le monde démarre dans l'espace Achat).
     try {
-      const profileRes = await fetch('/api/v1/users/me', {
+      await fetch('/api/v1/users/me', {
         headers: { Authorization: `Bearer ${accessToken ?? ''}` },
       })
-      if (profileRes.ok) {
-        const body = await profileRes.json()
-        if (!body.data.activeContext) {
-          window.location.href = '/onboarding/role'
-          return
-        }
-      }
     } catch {
       // ignore
     }

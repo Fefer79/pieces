@@ -33,19 +33,10 @@ function WhatsAppLoginForm() {
     }
   }, [])
 
-  const redirectAfterLogin = useCallback(async (accessToken: string) => {
-    let target = searchParams.get('returnTo') || sessionStorage.getItem('auth_return_to') || '/browse'
-    try {
-      const res = await fetch('/api/v1/users/me', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      if (res.ok) {
-        const body = await res.json()
-        if (!body.data?.activeContext) target = '/onboarding/role'
-      }
-    } catch {
-      // ignore — fall through to default target
-    }
+  const redirectAfterLogin = useCallback((_accessToken: string) => {
+    // Plus de détour par un choix de rôle : tout le monde démarre dans
+    // l'espace Achat, les autres espaces s'activent en contexte.
+    const target = searchParams.get('returnTo') || sessionStorage.getItem('auth_return_to') || '/browse'
     sessionStorage.removeItem('auth_return_to')
     window.location.href = target
   }, [searchParams])

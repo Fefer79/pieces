@@ -58,8 +58,8 @@ export async function userRoutes(fastify: FastifyInstance) {
       preHandler: [requireAuth],
     },
     async (request, reply) => {
-      const { role } = request.body as { role: string }
-      const result = await selectRole(request.user.id, role)
+      const { role, switch: switchTo } = request.body as { role: string; switch?: boolean }
+      const result = await selectRole(request.user.id, role, switchTo ?? true)
       return reply.status(200).send({ data: result })
     },
   )

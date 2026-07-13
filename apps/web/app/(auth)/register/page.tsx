@@ -53,7 +53,7 @@ function RegisterForm() {
       // click the link we just emailed. If already confirmed (config off), a
       // session exists — the callback/onboarding flow takes over on next load.
       if (data.session) {
-        window.location.href = '/onboarding/role'
+        window.location.href = '/browse'
         return
       }
       setSent(true)

@@ -51,29 +51,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=missing_token`)
   }
 
-  // Skip role check for password recovery flows
+  // Skip provisioning for password recovery flows
   if (next === '/reset-password' || type === 'recovery') {
     return response
   }
 
-  // After successful auth, check if user has a role
+  // Provisionne la ligne User côté API (upsert dans requireAuth) dès le
+  // callback. Plus de redirection vers un choix de rôle : tout le monde
+  // démarre dans l'espace Achat, les autres espaces s'activent en contexte.
   const { data: { session } } = await supabase.auth.getSession()
   if (session?.access_token) {
     try {
-      const profileRes = await fetch(`${origin}/api/v1/users/me`, {
+      await fetch(`${origin}/api/v1/users/me`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
-      if (profileRes.ok) {
-        const body = await profileRes.json()
-        if (!body.data?.activeContext) {
-          // We need to preserve the cookies set above, so build a new redirect
-          const onboardingResponse = NextResponse.redirect(`${origin}/onboarding/role`)
-          for (const cookie of response.cookies.getAll()) {
-            onboardingResponse.cookies.set(cookie.name, cookie.value, cookie)
-          }
-          return onboardingResponse
-        }
-      }
     } catch {
       // ignore — fall through to default redirect
     }

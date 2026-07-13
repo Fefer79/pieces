@@ -292,7 +292,16 @@ Géométrie de référence (viewBox `0 0 196 80`) : texte `x=0 y=62`, Gloock `fo
 
 **Back-office (desktop dense).** Shell commun = **sidebar navy contextualisée par rôle** (logo, bloc contexte rôle/entité, nav, user) + topbar (titre + actions) + **cartes-stats DM Mono** + **tables denses** (chips condition/statut inline, prix alignés à droite `tabular` + `nowrap`). Décliné pour vendeur, admin, flotte. Le **rider reste mobile** (terrain : carte course COD, legs retrait→livraison).
 
-**Onboarding (mobile-first PWA).** OTP 6 cellules (filled navy / active halo orange) ; **choix de rôle** en cartes (Mécanicien · Propriétaire · Vendeur · Livreur · Entreprise).
+**Onboarding (mobile-first PWA).** OTP 6 cellules (filled navy / active halo orange). ~~Choix de rôle en cartes~~ → **supprimé 2026-07** : tout le monde démarre dans l'espace Achat ; voir « Espaces » ci-dessous.
+
+## Espaces (2026-07 — implémenté)
+
+Le vocabulaire RBAC (« rôle », « contexte actif », « permission ») ne s'affiche **jamais** dans l'UI. On parle d'**espaces** : Espace Achat (MECHANIC/OWNER fusionnés) · Espace Vendeur · Espace Flotte · Espace Livreur · Espace Chauffeur · Espace Liaison · Administration. Source unique : `apps/web/lib/spaces.ts` (libellés, descriptions, préfixes d'URL, copy d'activation).
+
+- **Bascule automatique** : entrer dans un espace qu'on possède bascule le contexte silencieusement (`SpaceGuard` dans l'AppShell) + toast navy « ● Espace X » (chip `bg-ink`, dot accent, 2,5 s, au-dessus de la bottom nav).
+- **Activation en contexte** : entrer dans un espace non activé affiche un interstitiel (eyebrow mono « Espaces », titre Gloock, 3 bénéfices en puces `→` accent, note rassurante, CTA accent « Activer et continuer », ghost « Pas maintenant »). Espaces attribués (Livreur, Chauffeur, Liaison, Admin) → écran « Espace réservé ».
+- **Onboarding** : plus d'écran de choix de rôle. Bandeau ignorable sur `/browse` (1ʳᵉ visite connectée) : « Vous êtes plutôt ? Mécanicien / Particulier / Passer » — règle la variante acheteur, rien d'autre.
+- **Profil** : hub court (`/profile`) → sous-pages Identité · Mes espaces · Sécurité · Mes données. Le switcher sidebar est un menu « Aller à… » qui navigue vers la racine des espaces (mono-espace : simple lien profil, pas de menu).
 
 **Vitrine flotte.pieces.ci.** Hero + 3 tiers `FLEET_PLANS` (Gratuit / Flotte Pro 5 000 F / Flotte Pro+ 10 000 F par véh./mois, essai 30 j). Aucun langage SLA/pénalité ; livraison = bénéfice service.
 
@@ -311,5 +320,7 @@ Géométrie de référence (viewBox `0 0 196 80`) : texte `x=0 y=62`, Gloock `fo
 | 2026-06-21 | Décompo prix → composant signature « Reçu » | En-tête navy + dotted leaders + total DM Mono + sceau séquestre vert. Répété carrousel / fiche produit / `/choose`. Renforce l'USP transparence partout. _(proposé)_ |
 | 2026-06-21 | Carrousel `/browse` = 1ʳᵉ visite seulement | Masqué après le 1ᵉʳ passage via flag localStorage `hasSeenIntro` ; la recherche/entonnoir prend la tête ensuite. Demande owner. _(proposé)_ |
 | 2026-06-21 | Back-office = shell desktop dense ; rider mobile | Sidebar navy contextualisée par rôle + tables denses pour vendeur/admin/flotte. Rider reste terrain (mobile). Choix owner « desktop dense ». _(proposé)_ |
+| 2026-07-13 | UX « un profil, des espaces » | Validé owner. Rôles/contexte → « espaces » dans toute l'UI ; bascule auto par navigation (SpaceGuard) ; activation en contexte (interstitiel) au lieu du 403/cul-de-sac ; profil découpé en hub + sous-pages ; suppression de l'écran /onboarding/role (remplace le « choix de rôle en cartes » du redesign 2026-06). Source unique `lib/spaces.ts`. |
+| 2026-07-13 | MECHANIC/OWNER = un seul espace Achat | Même nav, même redirect : la distinction devient une préférence (« Vous êtes plutôt ? » sur /browse, toggle dans Profil → Identité). Côté API les deux variantes sont exclusives (`selectRole` remplace l'une par l'autre). |
 </content>
 </invoke>
