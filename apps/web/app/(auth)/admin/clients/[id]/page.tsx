@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { adminFetch, fmtFcfa } from '@/lib/admin-api'
@@ -17,10 +17,36 @@ export default function AdminClientDetailPage() {
   const id = params.id as string
   const [data, setData] = useState<Detail | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [addingRole, setAddingRole] = useState(false)
+  const [roleFeedback, setRoleFeedback] = useState<{ ok: boolean; msg: string } | null>(null)
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     adminFetch<Detail>(`/admin/clients/${id}/detail`).then(setData).catch((e) => setError(e.message))
   }, [id])
+
+  useEffect(() => { refresh() }, [refresh])
+
+  async function addLiaisonRole() {
+    if (!data) return
+    setAddingRole(true)
+    setRoleFeedback(null)
+    try {
+      const newRoles = data.user.roles.includes('LIAISON')
+        ? data.user.roles
+        : [...data.user.roles, 'LIAISON']
+      await adminFetch(`/users/${id}/roles`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roles: newRoles }),
+      })
+      setRoleFeedback({ ok: true, msg: 'Rôle LIAISON ajouté.' })
+      refresh()
+    } catch (e) {
+      setRoleFeedback({ ok: false, msg: e instanceof Error ? e.message : 'Erreur' })
+    } finally {
+      setAddingRole(false)
+    }
+  }
 
   if (error) return <div className="p-6 text-sm text-status-err">{error}</div>
   if (!data) return <div className="p-6 text-sm text-muted">Chargement…</div>
@@ -29,7 +55,23 @@ export default function AdminClientDetailPage() {
     <div className="p-4 lg:p-6">
       <Link href="/admin/clients" className="mb-3 inline-block text-sm text-ink-2 hover:underline">← Clients</Link>
       <h1 className="mb-1 font-display text-2xl text-ink">{data.user.name ?? '(sans nom)'}</h1>
-      <div className="mb-4 text-sm text-muted">Rôles : {data.user.roles.join(', ')} · Actif : {data.user.activeContext ?? '—'}</div>
+      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted">
+        <span>Rôles : {data.user.roles.join(', ')} · Actif : {data.user.activeContext ?? '—'}</span>
+        {!data.user.roles.includes('LIAISON') && (
+          <button
+            onClick={addLiaisonRole}
+            disabled={addingRole}
+            className="rounded-sm border border-accent/50 bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent hover:bg-accent/20 disabled:opacity-40"
+          >
+            {addingRole ? 'Ajout…' : '+ Ajouter rôle LIAISON'}
+          </button>
+        )}
+        {roleFeedback && (
+          <span className={`text-xs ${roleFeedback.ok ? 'text-[#148C50]' : 'text-error-fg'}`}>
+            {roleFeedback.msg}
+          </span>
+        )}
+      </div>
 
       <div className="mb-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div className="rounded-md border border-border bg-card p-4">
