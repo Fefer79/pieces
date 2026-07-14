@@ -13,6 +13,7 @@ export type ActivityAction =
   | 'ENRICHMENT_INSPECTION_REQUESTED'
   | 'ENRICHMENT_BLOCKED'
   | 'ENRICHMENT_APPROVED'
+  | 'ENRICHMENT_MANUAL_REVIEW_NEEDED'
 
 interface RecordParams {
   actorId: string

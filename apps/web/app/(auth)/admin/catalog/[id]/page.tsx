@@ -38,6 +38,7 @@ interface CatalogItem {
   condition: 'NEW' | 'USED' | 'REFURBISHED' | null
   partSource: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
   inStock: boolean
+  isUniversallyCompatible: boolean
   imageOriginalUrl: string | null
   imageThumbUrl: string | null
   externalSource: string | null
@@ -99,6 +100,7 @@ interface FormState {
   partSource: '' | 'OEM' | 'AFTERMARKET' | 'COMPATIBLE'
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
   inStock: boolean
+  isUniversallyCompatible: boolean
 }
 
 interface FitmentRow {
@@ -131,6 +133,7 @@ function toForm(item: CatalogItem): FormState {
     partSource: item.partSource ?? '',
     status: item.status,
     inStock: item.inStock,
+    isUniversallyCompatible: item.isUniversallyCompatible,
   }
 }
 
@@ -185,7 +188,7 @@ export default function AdminCatalogItemPage() {
         partSource: form.partSource || null,
         status: form.status,
         inStock: form.inStock,
-      }
+        isUniversallyCompatible: form.isUniversallyCompatible,      }
       const updated = await adminFetch<CatalogItem>(`/admin/catalog/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -534,6 +537,16 @@ export default function AdminCatalogItemPage() {
                 onChange={(e) => set('inStock', e.target.checked)}
               />
               En stock
+            </label>
+          </Field>
+          <Field label="Compatibilité universelle">
+            <label className="mt-1.5 flex items-center gap-2 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={form.isUniversallyCompatible}
+                onChange={(e) => set('isUniversallyCompatible', e.target.checked)}
+              />
+              Compatible avec tous les véhicules
             </label>
           </Field>
         </div>

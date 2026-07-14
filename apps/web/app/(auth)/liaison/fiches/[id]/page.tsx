@@ -189,14 +189,20 @@ export default function FicheDetailPage() {
 
       {fiche.photoFeedback && (
         <div className="mb-4 rounded-md bg-warn-bg p-4 text-sm text-warn-fg">
-          <p className="font-semibold">Photos à reprendre</p>
+          <p className="font-semibold">Qualité des photos insuffisante</p>
           <p className="mt-1">{fiche.photoFeedback}</p>
-          <Link
-            href="/liaison/fiches/new"
-            className="mt-3 inline-block rounded-md bg-ink-2 px-4 py-2 text-sm font-medium text-white"
-          >
-            Reprendre les photos
-          </Link>
+          <p className="mt-2 text-xs">
+            Vous pouvez reprendre les photos ou continuer la saisie manuelle.
+            La fiche sera transmise à l&apos;équipe Pièces.ci pour un enregistrement manuel.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <Link
+              href="/liaison/fiches/new"
+              className="inline-block rounded-md bg-ink-2 px-4 py-2 text-sm font-medium text-white"
+            >
+              Reprendre les photos
+            </Link>
+          </div>
         </div>
       )}
 
@@ -214,7 +220,7 @@ export default function FicheDetailPage() {
         </div>
       )}
 
-      {idf && (
+      {true && (
         <section className="rounded-md border border-border bg-card p-4">
           <span className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
             Identification
@@ -224,23 +230,23 @@ export default function FicheDetailPage() {
               label="Marque fabricant"
               value={marque}
               onChange={setMarque}
-              champ={idf.marque_fabricant}
+              champ={idf?.marque_fabricant}
               disabled={!editable}
             />
             <Field
               label="Référence fabricant"
               value={reference}
               onChange={setReference}
-              champ={idf.reference_fabricant}
+              champ={idf?.reference_fabricant}
               disabled={!editable}
             />
             <Field
-              label={`Référence OEM${idf.references_oem[0] ? ` (${idf.references_oem[0].constructeur})` : ''}`}
+              label={`Référence OEM${idf?.references_oem[0] ? ` (${idf?.references_oem[0].constructeur})` : ''}`}
               value={refOem}
               onChange={setRefOem}
               champ={
-                idf.references_oem[0]
-                  ? { valeur: idf.references_oem[0].reference, confiance: idf.references_oem[0].confiance }
+                idf?.references_oem[0]
+                  ? { valeur: idf?.references_oem[0].reference, confiance: idf?.references_oem[0].confiance }
                   : { valeur: null, confiance: 0 }
               }
               disabled={!editable}
@@ -269,12 +275,12 @@ export default function FicheDetailPage() {
                 disabled={!editable}
               />
             </div>
-            {Object.entries(idf.caracteristiques ?? {}).length > 0 && (
+            {Object.entries(idf?.caracteristiques ?? {}).length > 0 && (
               <p className="text-xs text-muted">
-                {Object.entries(idf.caracteristiques)
+                {Object.entries(idf?.caracteristiques ?? {})
                   .map(([k, v]) => `${k} : ${v}`)
                   .join(' · ')}
-                {idf.pays_origine.valeur ? ` · Origine : ${idf.pays_origine.valeur}` : ''}
+                {idf?.pays_origine?.valeur ? ` · Origine : ${idf?.pays_origine?.valeur}` : ''}
               </p>
             )}
           </div>

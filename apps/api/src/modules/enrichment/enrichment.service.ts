@@ -6,6 +6,7 @@ import { dHash } from '../../lib/perceptualHash.js'
 import { isAnthropicConfigured } from '../../lib/anthropic.js'
 import { recordActivity } from '../../lib/activityLog.js'
 import { enqueue } from '../queue/queueService.js'
+import { notifyWhatsAppUser } from '../whatsapp/whatsapp.service.js'
 import sharp from 'sharp'
 import { joinCategory, PART_CATEGORIES } from 'shared/constants'
 import {
@@ -508,6 +509,60 @@ export async function moderateEnrichment(actor: EnrichmentActor, id: string, bod
       photoFeedback: null,
     },
   })
+
+  // Notifier l'équipe Pièces.ci pour un enregistrement manuel si l'IA n'a pas pu
+  // identifier la pièce (pas d'identification ou photos insuffisantes à l'origine).
+  const hasNoAiIdentification = e.identification == null
+  const hadPhotoFeedback = e.photoFeedback != null
+  if (hasNoAiIdentification || hadPhotoFeedback) {
+    const adminPhone = process.env.ADMIN_WHATSAPP_PHONE
+    if (adminPhone) {
+      const liaison = await prisma.user.findUnique({
+        where: { id: e.liaisonId ?? actor.userId },
+        select: { name: true },
+      })
+      const fournisseur = e.fournisseurVisite ? ` (${e.fournisseurVisite})` : ''
+      const vendeurId = e.vendeurId
+        ? await prisma.vendor.findUnique({
+            where: { id: e.vendeurId },
+            select: { shopName: true },
+          })
+        : null
+      const msg = [
+        `📋 *Nouvelle fiche à enregistrer manuellement*`,
+        ``,
+        `*Fiche*: ${id}`,
+        `*Liaison*: ${liaison?.name ?? 'Inconnu'}${fournisseur}`,
+        vendeurId ? `*Vendeur*: ${vendeurId.shopName}` : '',
+        hasNoAiIdentification ? `*Motif*: IA n'a pas pu identifier la pièce` : '',
+        hadPhotoFeedback ? `*Note photos*: ${e.photoFeedback}` : '',
+        ``,
+        `Prix: ${e.prix != null ? `${e.prix} FCFA` : 'non renseigné'}`,
+        `Stock: ${e.stockQuantite != null ? e.stockQuantite : 'non renseigné'}`,
+        ``,
+        `Connectez-vous au dashboard admin pour traiter cette fiche.`,
+      ]
+        .filter(Boolean)
+        .join('\n')
+      notifyWhatsAppUser(adminPhone, msg)
+    }
+
+    await recordActivity({
+      actorId: actor.userId,
+      actorRole: actor.role,
+      action: 'ENRICHMENT_MANUAL_REVIEW_NEEDED',
+      targetType: 'PartEnrichment',
+      targetId: updated.id,
+      payload: {
+        hadPhotoFeedback,
+        hasNoAiIdentification,
+        fournisseurVisite: e.fournisseurVisite,
+        prix: e.prix,
+        stock: e.stockQuantite,
+      },
+    })
+  }
+
   return serializeEnrichment(updated, actor.role)
 }
 
