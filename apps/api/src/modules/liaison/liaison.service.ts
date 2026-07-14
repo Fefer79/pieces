@@ -313,6 +313,7 @@ export async function createPartForVendor(
       commissionAmount,
       // Quantité fournie : inStock dérivé (>0), sinon toggle manuel du formulaire.
       stockQuantity: parsed.data.stockQuantity,
+      isUniversallyCompatible: parsed.data.isUniversallyCompatible ?? false,
       inStock:
         parsed.data.stockQuantity != null
           ? parsed.data.stockQuantity > 0
@@ -435,6 +436,7 @@ export async function createPartWithQuickVendor(liaisonId: string, body: unknown
         commissionAmount,
         // Même règle que createPartForVendor : quantité fournie → inStock dérivé.
         stockQuantity: partInput.stockQuantity,
+        isUniversallyCompatible: partInput.isUniversallyCompatible ?? false,
         inStock:
           partInput.stockQuantity != null
             ? partInput.stockQuantity > 0
@@ -502,6 +504,7 @@ export async function getLiaisonPart(liaisonId: string, vendorId: string, partId
       commissionAcceptedAt: true,
       inStock: true,
       stockQuantity: true,
+      isUniversallyCompatible: true,
       status: true,
       imageThumbUrl: true,
       imageOriginalUrl: true,
@@ -582,6 +585,7 @@ export async function updatePartForVendor(
   if (d.warrantyValue !== undefined) updateData.warrantyValue = d.warrantyValue
   if (d.warrantyUnit !== undefined) updateData.warrantyUnit = d.warrantyUnit
   if (d.inStock !== undefined) updateData.inStock = d.inStock
+  if (d.isUniversallyCompatible !== undefined) updateData.isUniversallyCompatible = d.isUniversallyCompatible
   if (d.stockQuantity !== undefined) {
     updateData.stockQuantity = d.stockQuantity
     // Quantité suivie : inStock dérivé. null = retour au toggle manuel.

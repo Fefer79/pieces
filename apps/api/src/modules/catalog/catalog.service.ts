@@ -250,6 +250,7 @@ export async function createItem(userId: string, body: unknown) {
       lowStockThreshold: parsed.data.lowStockThreshold,
       // Quantité fournie : inStock dérivé (>0), sinon toggle manuel du formulaire.
       stockQuantity: parsed.data.stockQuantity,
+      isUniversallyCompatible: parsed.data.isUniversallyCompatible ?? false,
       inStock:
         parsed.data.stockQuantity != null
           ? parsed.data.stockQuantity > 0
@@ -423,6 +424,7 @@ export interface UpdateCatalogItemData {
   warrantyUnit?: 'DAY' | 'WEEK' | 'MONTH'
   commissionAmount?: number
   commissionAccepted?: boolean
+  isUniversallyCompatible?: boolean
   inStock?: boolean
   stockQuantity?: number | null
   lowStockThreshold?: number
@@ -466,6 +468,7 @@ export async function updateItem(
   if (data.warrantyUnit !== undefined) updateData.warrantyUnit = data.warrantyUnit
   if (data.lowStockThreshold !== undefined) updateData.lowStockThreshold = data.lowStockThreshold
   if (data.inStock !== undefined) updateData.inStock = data.inStock
+  if (data.isUniversallyCompatible !== undefined) updateData.isUniversallyCompatible = data.isUniversallyCompatible
   // La liste de photos remplace l'existant ; les champs image* hérités suivent
   // la première photo (ou sont vidés si la liste est vide).
   if (data.photos !== undefined) Object.assign(updateData, legacyImageFields(data.photos[0]))

@@ -55,6 +55,7 @@ export const updateCatalogItemSchema = z.object({
   warrantyUnit: warrantyUnitSchema.optional(),
   commissionAmount: z.number().int().min(0).optional(),
   commissionAccepted: z.boolean().optional(),
+  isUniversallyCompatible: z.boolean().optional(),
   inStock: z.boolean().optional(),
   // null = désactiver le suivi de quantité (retour au inStock manuel)
   stockQuantity: z.number().int().min(0).max(99999).nullable().optional(),
@@ -77,6 +78,7 @@ export const adminUpdateCatalogItemSchema = z
     price: z.number().int().min(0).nullable().optional(),
     condition: partConditionSchema.nullable().optional(),
     partSource: partSourceSchema.nullable().optional(),
+    isUniversallyCompatible: z.boolean().optional(),
     status: catalogItemStatusSchema.optional(),
     inStock: z.boolean().optional(),
     stockQuantity: z.number().int().min(0).max(99999).nullable().optional(),
@@ -118,6 +120,7 @@ export const createCatalogItemSchema = z.object({
   warrantyValue: z.number().int().min(0).max(365).optional(),
   warrantyUnit: warrantyUnitSchema.optional(),
   commissionAmount: z.number().int().min(0).optional(),
+  isUniversallyCompatible: z.boolean().optional(),
   inStock: z.boolean().default(true),
   // Optionnel : quantité disponible. Absente = pas de suivi de quantité
   // (toggle inStock manuel).

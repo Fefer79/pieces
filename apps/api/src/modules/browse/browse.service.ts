@@ -131,6 +131,7 @@ function buildVehicleCompatibilityClause(filters: VehicleCompatibilityFilters): 
     OR: [
       { fitments: { some: fitmentWhere } },
       { category: { in: [...UNIVERSAL_CATEGORIES] } },
+      { isUniversallyCompatible: true },
     ],
   }
 }
@@ -533,6 +534,7 @@ export async function getPublicItemDetail(id: string) {
       warrantyValue: true,
       warrantyUnit: true,
       inStock: true,
+      isUniversallyCompatible: true,
       imageOriginalUrl: true,
       imageThumbUrl: true,
       imageSmallUrl: true,

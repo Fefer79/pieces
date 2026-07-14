@@ -155,6 +155,7 @@ interface AdminCatalogItemPatch {
   condition?: 'NEW' | 'USED' | 'REFURBISHED' | null
   partSource?: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+  isUniversallyCompatible?: boolean
   inStock?: boolean
 }
 
@@ -174,6 +175,7 @@ export async function updateAdminCatalogItem(id: string, patch: AdminCatalogItem
   if (patch.condition !== undefined) data.condition = patch.condition
   if (patch.partSource !== undefined) data.partSource = patch.partSource
   if (patch.status !== undefined) data.status = patch.status
+  if (patch.isUniversallyCompatible !== undefined) data.isUniversallyCompatible = patch.isUniversallyCompatible
   if (patch.inStock !== undefined) data.inStock = patch.inStock
   if (patch.price !== undefined) {
     data.price = patch.price

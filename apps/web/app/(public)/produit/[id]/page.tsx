@@ -55,6 +55,7 @@ type ProductDetail = {
   warrantyValue: number | null
   warrantyUnit: WarrantyUnit | null
   inStock: boolean
+  isUniversallyCompatible: boolean
   imageOriginalUrl: string | null
   imageThumbUrl: string | null
   imageSmallUrl: string | null
@@ -372,15 +373,25 @@ export default function ProductPage() {
                   className={`mb-4 flex items-start gap-2 rounded-md px-3.5 py-2.5 text-[13px] font-medium ${
                     compatibility
                       ? 'bg-success-bg text-success-fg'
-                      : 'bg-warning-bg text-warning-fg'
+                      : item.isUniversallyCompatible
+                        ? 'bg-card ring-1 ring-border'
+                        : 'bg-warning-bg text-warning-fg'
                   }`}
                 >
-                  <span aria-hidden>{compatibility ? '✅' : '⚠️'}</span>
+                  <span aria-hidden>{compatibility ? '✅' : item.isUniversallyCompatible ? '🌐' : '⚠️'}</span>
                   <span>
                     {compatibility
                       ? `Compatible avec votre ${vehicle!.brand} ${vehicle!.model} ${vehicle!.year}`
-                      : `Compatibilité non confirmée avec votre ${vehicle!.brand} ${vehicle!.model} ${vehicle!.year}`}
+                      : item.isUniversallyCompatible
+                        ? 'Pièce compatible universelle — s\'adapte à tous les véhicules'
+                        : `Compatibilité non confirmée avec votre ${vehicle!.brand} ${vehicle!.model} ${vehicle!.year}`}
                   </span>
+                </div>
+              )}
+              {compatibility === null && item.isUniversallyCompatible && item.fitments.length === 0 && (
+                <div className="mb-4 flex items-start gap-2 rounded-md bg-card px-3.5 py-2.5 text-[13px] font-medium ring-1 ring-border">
+                  <span aria-hidden>🌐</span>
+                  <span>Pièce compatible universelle — s'adapte à tous les véhicules</span>
                 </div>
               )}
 

@@ -88,6 +88,7 @@ export interface PartFormInitial {
   warrantyValue?: number | null
   warrantyUnit?: WarrantyUnit | null
   commissionAmount?: number | null
+  isUniversallyCompatible?: boolean
   inStock?: boolean
   stockQuantity?: number | null
   lowStockThreshold?: number | null
@@ -158,6 +159,9 @@ export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, 
     initial?.commissionAmount != null ? String(initial.commissionAmount) : '',
   )
   const [inStock, setInStock] = useState(initial?.inStock ?? true)
+  const [isUniversallyCompatible, setIsUniversallyCompatible] = useState(
+    initial?.isUniversallyCompatible ?? false,
+  )
   const [stockQuantity, setStockQuantity] = useState(
     initial?.stockQuantity != null ? String(initial.stockQuantity) : '',
   )
@@ -434,6 +438,7 @@ export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, 
       warrantyUnit: warrantyValue ? warrantyUnit : undefined,
       commissionAmount: commission ? Number(commission) : undefined,
       inStock,
+      isUniversallyCompatible,
       // Vide en édition = null (désactive le suivi) ; vide en création = non suivi.
       stockQuantity: stockTracked
         ? Number(stockQuantity)
@@ -941,6 +946,24 @@ export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, 
           />
         </Field>
       )}
+
+      <label className="flex items-center gap-3">
+        <input
+          type="checkbox"
+          checked={isUniversallyCompatible}
+          onChange={(e) => setIsUniversallyCompatible(e.target.checked)}
+          className="h-4 w-4"
+        />
+        <span className="text-sm text-ink">
+          Compatible avec tous les véhicules
+        </span>
+      </label>
+
+      <p className="text-xs text-muted -mt-1 mb-1">
+        À activer pour les pièces non spécifiques à une marque ou un modèle (ex.
+        ampoules standard, chargeurs batterie, housses universelles…). La pièce
+        restera visible quelle que soit la recherche par véhicule.
+      </p>
 
       <label className="flex items-center gap-3">
         <input
