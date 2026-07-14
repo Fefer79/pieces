@@ -983,21 +983,63 @@ export async function getAdminLiaisonsList() {
     if (row.createdByLiaisonId) pendingMap.set(row.createdByLiaisonId, row._count._all)
   }
 
-  return liaisons.map((l) => ({
-    id: l.id,
-    name: l.name,
-    phone: l.phone,
-    email: l.email,
-    roles: l.roles,
-    activeContext: l.activeContext,
-    createdAt: l.createdAt,
-    stats: {
-      vendors: l._count.managedVendors,
-      parts: l._count.liaisonCatalogItems,
-      activities: l._count.activityLogs,
-      pendingAcceptance: pendingMap.get(l.id) ?? 0,
-    },
-  }))
+  // Fetch last activity per liaison using DISTINCT ON
+  const liaisonIds = liaisons.map((l) => l.id)
+  const lastActivities = await prisma.$queryRawUnsafe<
+    Array<{ actorId: string; action: string; createdAt: Date }>
+  >(
+    `SELECT DISTINCT ON (actor_id) actor_id AS "actorId", action, created_at AS "createdAt"
+     FROM activity_logs
+     WHERE actor_id = ANY($1::text[])
+     ORDER BY actor_id, created_at DESC`,
+    liaisonIds,
+  )
+
+  const lastActivityMap = new Map<string, { action: string; createdAt: Date }>()
+  for (const row of lastActivities) {
+    lastActivityMap.set(row.actorId, { action: row.action, createdAt: row.createdAt })
+  }
+
+  // Fetch activity breakdown per liaison (count by action type)
+  const activityBreakdown = await prisma.activityLog.groupBy({
+    by: ['actorId', 'action'],
+    where: { actorId: { in: liaisonIds } },
+    _count: { _all: true },
+    orderBy: { actorId: 'asc' },
+  })
+
+  const activityBreakdownMap = new Map<
+    string,
+    Array<{ action: string; count: number }>
+  >()
+  for (const row of activityBreakdown) {
+    const existing = activityBreakdownMap.get(row.actorId) ?? []
+    existing.push({ action: row.action, count: row._count._all })
+    activityBreakdownMap.set(row.actorId, existing)
+  }
+
+  return liaisons.map((l) => {
+    const last = lastActivityMap.get(l.id)
+    return {
+      id: l.id,
+      name: l.name,
+      phone: l.phone,
+      email: l.email,
+      roles: l.roles,
+      activeContext: l.activeContext,
+      createdAt: l.createdAt,
+      lastActivity: last
+        ? { action: last.action, createdAt: last.createdAt.toISOString() }
+        : null,
+      activityBreakdown: activityBreakdownMap.get(l.id) ?? [],
+      stats: {
+        vendors: l._count.managedVendors,
+        parts: l._count.liaisonCatalogItems,
+        activities: l._count.activityLogs,
+        pendingAcceptance: pendingMap.get(l.id) ?? 0,
+      },
+    }
+  })
 }
 
 export async function getAdminLiaisonDetail(liaisonId: string) {

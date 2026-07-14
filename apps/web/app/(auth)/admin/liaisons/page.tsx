@@ -5,6 +5,16 @@ import Link from 'next/link'
 import { adminFetch } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
+interface ActivityBreakdownItem {
+  action: string
+  count: number
+}
+
+interface LastActivity {
+  action: string
+  createdAt: string
+}
+
 interface LiaisonRow {
   id: string
   name: string | null
@@ -13,12 +23,23 @@ interface LiaisonRow {
   roles: string[]
   activeContext: string | null
   createdAt: string
+  lastActivity: LastActivity | null
+  activityBreakdown: ActivityBreakdownItem[]
   stats: {
     vendors: number
     parts: number
     activities: number
     pendingAcceptance: number
   }
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  LIAISON_VENDOR_CREATED: 'Vendeur créé',
+  LIAISON_VENDOR_UPDATED: 'Vendeur modifié',
+  LIAISON_PART_CREATED: 'Pièce ajoutée',
+  LIAISON_QUICK_PART_CREATED: 'Pièce rapide',
+  LIAISON_PART_UPDATED: 'Pièce modifiée',
+  LIAISON_COMMISSION_ACCEPTED: 'Commission agréée',
 }
 
 export default function AdminLiaisonsPage() {
@@ -51,11 +72,12 @@ export default function AdminLiaisonsPage() {
               <Tr hover={false}>
                 <Th>Nom</Th>
                 <Th>Contact</Th>
-                <Th>Rôles</Th>
                 <Th align="right">Vendeurs</Th>
                 <Th align="right">Pièces</Th>
                 <Th align="right">À agréer</Th>
-                <Th align="right">Actions log</Th>
+                <Th align="right">Actions</Th>
+                <Th>Dernière activité</Th>
+                <Th>Répartition des actions</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -70,7 +92,6 @@ export default function AdminLiaisonsPage() {
                     {l.phone ?? '—'}
                     {l.email ? ` · ${l.email}` : ''}
                   </Td>
-                  <Td className="text-xs">{l.roles.join(', ')}</Td>
                   <Td num>{l.stats.vendors}</Td>
                   <Td num>{l.stats.parts}</Td>
                   <Td
@@ -80,11 +101,39 @@ export default function AdminLiaisonsPage() {
                     {l.stats.pendingAcceptance}
                   </Td>
                   <Td num>{l.stats.activities}</Td>
+                  <Td className="text-xs whitespace-nowrap">
+                    {l.lastActivity ? (
+                      <>
+                        <span className="text-ink-2">{ACTION_LABELS[l.lastActivity.action] ?? l.lastActivity.action}</span>
+                        <br />
+                        <span className="text-muted-2">{new Date(l.lastActivity.createdAt).toLocaleDateString('fr-FR')}</span>
+                      </>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
+                  </Td>
+                  <Td className="text-xs">
+                    {l.activityBreakdown.length > 0 ? (
+                      <div className="flex flex-wrap gap-x-3 gap-y-1">
+                        {l.activityBreakdown.slice(0, 4).map((b) => (
+                          <span key={b.action}>
+                            <span className="font-medium text-ink-2">{b.count}</span>{' '}
+                            <span className="text-muted-2">{ACTION_LABELS[b.action] ?? b.action}</span>
+                          </span>
+                        ))}
+                        {l.activityBreakdown.length > 4 && (
+                          <span className="text-muted-2">+{l.activityBreakdown.length - 4}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
+                  </Td>
                 </Tr>
               ))}
               {data.length === 0 && (
                 <Tr hover={false}>
-                  <Td colSpan={7} align="center" className="py-6 text-muted">
+                  <Td colSpan={8} align="center" className="py-6 text-muted">
                     Aucun Liaison.
                   </Td>
                 </Tr>
