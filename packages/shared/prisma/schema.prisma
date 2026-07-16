@@ -45,6 +45,7 @@ model User {
   activityLogs         ActivityLog[]
   driverProfiles       Driver[]      @relation("UserDriverProfile")
   partEnrichments      PartEnrichment[] @relation("EnrichmentLiaison")
+  contacts             VendorContact[] @relation("ContactCreatedBy")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -223,6 +224,7 @@ model Vendor {
   catalogItems        CatalogItem[]
   contracts           VendorContract[]
   partEnrichments     PartEnrichment[] @relation("EnrichmentVendeur")
+  contacts            VendorContact[]
 
   @@map("vendors")
   @@unique([externalSource, externalSellerId], name: "uq_vendors_external_seller")
@@ -1402,4 +1404,70 @@ model ManufacturerContact {
   @@map("manufacturer_contacts")
   @@unique([marque, entite, role], name: "uq_manufacturer_contact")
   @@index([marque], name: "idx_manufacturer_contacts_marque")
+}
+
+enum ContactStatus {
+  A_CONTACTER
+  APPELE
+  VISITE
+  RELANCE
+  CONCLU
+  INJOIGNABLE
+  A_REVOIR
+  REJETE
+}
+
+model VendorContact {
+  id           String        @id @default(cuid())
+  name         String
+  shopName     String?       @map("shop_name")
+  phone        String
+  phone2       String?
+  whatsapp     String?
+  email        String?
+  commune      String?
+  address      String?
+  lat          Float?
+  lng          Float?
+  pieces       String[]
+  piecesLibre  String?       @map("pieces_libre")
+  remarques    String?
+  statut       ContactStatus @default(A_CONTACTER)
+  relanceLe    DateTime?     @map("relance_le")
+  derniereVisite DateTime?   @map("derniere_visite")
+  derniereCommande DateTime? @map("derniere_commande")
+  notesAppel   String?       @map("notes_appel")
+  photos       String[]
+  liens        VendorContactLink[]
+
+  createdById String?  @map("created_by_id")
+  createdBy   User?    @relation("ContactCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  liaisonId   String?  @map("liaison_id")
+  vendorId    String?  @map("vendor_id")
+  vendor      Vendor?  @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("vendor_contacts")
+  @@index([phone], name: "idx_vendor_contacts_phone")
+  @@index([liaisonId], name: "idx_vendor_contacts_liaison")
+  @@index([statut], name: "idx_vendor_contacts_statut")
+  @@index([relanceLe], name: "idx_vendor_contacts_relance")
+  @@index([createdById], name: "idx_vendor_contacts_created_by")
+}
+
+model VendorContactLink {
+  id         String  @id @default(cuid())
+  contactId  String  @map("contact_id")
+  contact    VendorContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  url        String
+  type       String
+  label      String?
+  scrapedAt  DateTime? @map("scraped_at")
+  rawData    Json?     @map("raw_data")
+
+  @@map("vendor_contact_links")
+  @@index([contactId], name: "idx_vendor_contact_links_contact")
+  @@unique([contactId, url], name: "uq_vendor_contact_link_url")
 }

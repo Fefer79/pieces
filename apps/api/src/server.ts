@@ -27,6 +27,7 @@ import { driverRoutes } from './modules/driver/driver.routes.js'
 import { returnRoutes } from './modules/returns/return.routes.js'
 import { vendorContractRoutes } from './modules/vendorContract/vendorContract.routes.js'
 import { enrichmentRoutes } from './modules/enrichment/enrichment.routes.js'
+import { contactsRoutes } from './modules/contacts/contacts.routes.js'
 import multipart from '@fastify/multipart'
 import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled, ensureEnrichmentSourcingScheduled } from './modules/queue/worker.js'
 
@@ -78,6 +79,7 @@ export function buildApp() {
   fastify.register(returnRoutes, { prefix: '/api/v1' })
   fastify.register(vendorContractRoutes, { prefix: '/api/v1/vendor-contracts' })
   fastify.register(enrichmentRoutes, { prefix: '/api/v1/enrichments' })
+  fastify.register(contactsRoutes, { prefix: '/api/v1/contacts' })
 
   return fastify
 }

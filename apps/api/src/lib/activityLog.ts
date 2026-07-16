@@ -14,12 +14,14 @@ export type ActivityAction =
   | 'ENRICHMENT_BLOCKED'
   | 'ENRICHMENT_APPROVED'
   | 'ENRICHMENT_MANUAL_REVIEW_NEEDED'
+  | 'CONTACT_CREATED'
+  | 'CONTACT_UPDATED'
 
 interface RecordParams {
   actorId: string
   actorRole: Role
   action: ActivityAction
-  targetType: 'Vendor' | 'CatalogItem' | 'PartEnrichment'
+  targetType: 'Vendor' | 'CatalogItem' | 'PartEnrichment' | 'VendorContact'
   targetId?: string | null
   payload?: Record<string, unknown>
 }

@@ -98,3 +98,18 @@ export type {
   EnrichmentModerateInput,
   EnrichmentArbitrateInput,
 } from './enrichment'
+export {
+  contactStatusSchema,
+  contactLinkTypeSchema,
+  createVendorContactSchema,
+  updateVendorContactSchema,
+  linkVendorContactSchema,
+  vendorContactParamsSchema,
+  vendorContactListQuerySchema,
+} from './vendorContact'
+export type {
+  CreateVendorContactInput,
+  UpdateVendorContactInput,
+  LinkVendorContactInput,
+  VendorContactListQuery,
+} from './vendorContact'
