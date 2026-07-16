@@ -36,6 +36,24 @@ describe('zodToFastify', () => {
     expect(result.properties.phone.pattern).toBeDefined()
   })
 
+  it('converts nullable fields to Fastify-compatible schemas', () => {
+    const schema = z.object({
+      email: z.string().email().optional().nullable(),
+      phone: z.string().optional().nullable(),
+    })
+    const result = zodToFastify(schema) as {
+      properties: Record<string, { anyOf?: unknown[]; nullable?: boolean }>
+    }
+
+    expect(result.properties.email).toHaveProperty('anyOf')
+    expect(result.properties.email.anyOf?.[1]).toEqual({ type: 'null' })
+    expect(result.properties.email).not.toHaveProperty('nullable')
+
+    expect(result.properties.phone).toHaveProperty('anyOf')
+    expect(result.properties.phone.anyOf?.[1]).toEqual({ type: 'null' })
+    expect(result.properties.phone).not.toHaveProperty('nullable')
+  })
+
   it('strips $schema key for Fastify compatibility', () => {
     const schema = z.object({ id: z.string() })
     const result = zodToFastify(schema)
