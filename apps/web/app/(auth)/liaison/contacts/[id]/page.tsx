@@ -74,11 +74,7 @@ export default function ContactDetailPage() {
   const [linkInput, setLinkInput] = useState({ url: '', type: 'FACEBOOK', label: '' })
 
   useEffect(() => {
-    contactsFetch<Contact>(`/${id}`).then((r) => {
-      if (r.ok) setContact(r.data)
-      else setError(r.message)
-      setLoading(false)
-    })
+    loadContact()
   }, [id])
 
   async function updateStatut(statut: string) {
@@ -103,6 +99,13 @@ export default function ContactDetailPage() {
     else setError(r.message)
   }
 
+  async function loadContact() {
+    const r = await contactsFetch<Contact>(`/${id}`)
+    if (r.ok) setContact(r.data)
+    else setError(r.message)
+    setLoading(false)
+  }
+
   async function addLink() {
     if (!linkInput.url) return
     const r = await contactsFetch(`/${id}/links`, {
@@ -111,7 +114,7 @@ export default function ContactDetailPage() {
     })
     if (r.ok) {
       setLinkInput({ url: '', type: 'FACEBOOK', label: '' })
-      load()
+      loadContact()
     } else {
       setError(r.message)
     }
@@ -119,7 +122,7 @@ export default function ContactDetailPage() {
 
   async function deleteLink(lienId: string) {
     const r = await contactsFetch(`/${id}/links/${lienId}`, { method: 'DELETE' })
-    if (r.ok) load()
+    if (r.ok) loadContact()
     else setError(r.message)
   }
 

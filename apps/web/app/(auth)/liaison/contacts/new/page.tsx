@@ -64,7 +64,7 @@ export default function NewContactPage() {
     setSaving(true)
     setError(null)
 
-    const r = await contactsFetch('/contacts/', {
+    const r = await contactsFetch('/', {
       method: 'POST',
       body: JSON.stringify({
         name: form.name,
