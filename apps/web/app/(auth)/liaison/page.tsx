@@ -88,6 +88,13 @@ export default function LiaisonDashboardPage() {
             >
               Mes vendeurs
             </Link>
+            <Link
+              href="/liaison/contacts"
+              className="rounded-md bg-card px-4 py-3 text-center text-sm font-medium text-ink ring-1 ring-border transition-colors hover:bg-surface"
+              style={{ minHeight: 48 }}
+            >
+              Contacts
+            </Link>
           </section>
 
           <section className="mt-6 flex justify-end">
