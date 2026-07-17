@@ -24,7 +24,7 @@ export default function ModelYearsPage() {
   }, [brand, model])
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    <div className="mx-auto w-full max-w-[1280px] px-4 py-6 lg:px-8">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-1 text-xl font-bold text-[#1A1A1A]">{brand} {model}</h1>
       <p className="mb-4 text-sm text-gray-500">Sélectionnez une année</p>
@@ -33,7 +33,7 @@ export default function ModelYearsPage() {
       {loading && <p className="text-sm text-gray-500">Chargement...</p>}
 
       {!loading && !error && (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
           {years.map((year) => (
             <button
               key={year}

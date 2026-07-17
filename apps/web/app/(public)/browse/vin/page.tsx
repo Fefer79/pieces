@@ -43,7 +43,7 @@ export default function VinDecodePage() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    <div className="mx-auto w-full max-w-2xl px-4 py-6">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-2 text-xl font-bold text-[#1A1A1A]">Décodage VIN</h1>
       <p className="mb-4 text-sm text-gray-500">Saisissez le VIN à 17 caractères de la carte grise.</p>

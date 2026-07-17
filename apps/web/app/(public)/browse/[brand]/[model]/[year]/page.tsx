@@ -6,6 +6,7 @@ import { DEFAULT_VEHICLE_TYPE } from 'shared/constants'
 import { createClient } from '@/lib/supabase'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { PartThumb } from '@/components/ui/part-thumb'
+import Link from 'next/link'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
@@ -17,6 +18,31 @@ interface PartResult {
   imageThumbUrl: string | null
   oemReference: string | null
   vendor: { id: string; shopName: string }
+}
+
+function PartCard({ part }: { part: PartResult }) {
+  return (
+    <Link
+      href={`/produit/${part.id}`}
+      className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-colors hover:border-gray-300"
+    >
+      <div className="aspect-square w-full overflow-hidden bg-surface">
+        <PartThumb src={part.imageThumbUrl} alt={part.name} />
+      </div>
+      <div className="flex flex-1 flex-col p-3">
+        <p className="line-clamp-2 text-sm font-medium text-[#1A1A1A]">
+          {part.name ?? 'Pièce'}
+        </p>
+        <p className="mt-0.5 text-xs text-gray-500">{part.category ?? '—'}</p>
+        <p className="mt-auto truncate pt-2 text-xs text-gray-400">{part.vendor.shopName}</p>
+        {part.price != null && (
+          <p className="mt-1 text-sm font-bold text-[#1A1A1A]">
+            {part.price.toLocaleString('fr-FR')} F
+          </p>
+        )}
+      </div>
+    </Link>
+  )
 }
 
 export default function YearPartsPage() {
@@ -145,7 +171,7 @@ export default function YearPartsPage() {
   }, [fetchParts])
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    <div className="mx-auto w-full max-w-[1280px] px-4 py-6 lg:px-8">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-1 text-xl font-bold text-[#1A1A1A]">{brand} {model} {year}</h1>
       <p className="mb-3 text-sm text-gray-500">{total} pièce{total > 1 ? 's' : ''} disponible{total > 1 ? 's' : ''}</p>
@@ -212,21 +238,9 @@ export default function YearPartsPage() {
       )}
 
       {!loading && parts.length > 0 && (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {parts.map((part) => (
-            <div key={part.id} className="flex gap-3 rounded-lg border border-gray-200 p-3">
-              <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-surface">
-                <PartThumb src={part.imageThumbUrl} alt={part.name} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-[#1A1A1A]">{part.name ?? 'Pièce'}</p>
-                <p className="text-xs text-gray-500">{part.category ?? '—'}</p>
-                <p className="text-xs text-gray-400">{part.vendor.shopName}</p>
-              </div>
-              {part.price && (
-                <p className="text-sm font-bold text-[#1A1A1A]">{part.price.toLocaleString('fr-FR')} F</p>
-              )}
-            </div>
+            <PartCard key={part.id} part={part} />
           ))}
         </div>
       )}
