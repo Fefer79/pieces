@@ -27,6 +27,26 @@ const STATUT_CLASSES: Record<string, string> = {
   REJETE: 'bg-gray-100 text-gray-500 border-gray-200',
 }
 
+const ACTIVITY_LABELS: Record<string, string> = {
+  APPEL: 'Appel',
+  WHATSAPP: 'WhatsApp',
+  VISITE: 'Visite',
+  NOTE: 'Note',
+  STATUT: 'Statut',
+  ASSIGNATION: 'Assignation',
+  CONVERSION: 'Conversion',
+}
+
+interface Activity {
+  id: string
+  type: string
+  note: string | null
+  statutAvant: string | null
+  statutApres: string | null
+  createdAt: string
+  author: { id: string; name: string | null; phone: string | null } | null
+}
+
 interface Lien {
   id: string
   url: string
@@ -57,6 +77,7 @@ interface Contact {
   notesAppel: string | null
   photos: string[]
   vendorId: string | null
+  source: string
   createdAt: string
   updatedAt: string
   liens: Lien[]
@@ -72,24 +93,60 @@ export default function ContactDetailPage() {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
   const [linkInput, setLinkInput] = useState({ url: '', type: 'FACEBOOK', label: '' })
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [activityForm, setActivityForm] = useState({ type: 'APPEL', note: '', statut: '', relanceLe: '' })
+  const [savingActivity, setSavingActivity] = useState(false)
+  const [converting, setConverting] = useState(false)
 
-  useEffect(() => {
-    loadContact()
-  }, [id])
+  async function loadActivities() {
+    const r = await contactsFetch<Activity[]>(`/${id}/activities`)
+    if (r.ok) setActivities(r.data)
+  }
 
   async function updateStatut(statut: string) {
     setUpdating(true)
-    const r = await contactsFetch<Contact>(`/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        statut,
-        ...(statut === 'APPELE' ? { derniereVisite: new Date().toISOString() } : {}),
-        ...(statut === 'VISITE' ? { derniereVisite: new Date().toISOString() } : {}),
-      }),
+    const r = await contactsFetch<{ activity: Activity; contact: Contact }>(`/${id}/activities`, {
+      method: 'POST',
+      body: JSON.stringify({ type: 'STATUT', statut }),
     })
-    if (r.ok) setContact(r.data)
-    else setError(r.message)
+    if (r.ok) {
+      setContact(r.data.contact)
+      setActivities((prev) => [r.data.activity, ...prev])
+    } else setError(r.message)
     setUpdating(false)
+  }
+
+  async function logActivity() {
+    setSavingActivity(true)
+    const payload: Record<string, unknown> = { type: activityForm.type }
+    if (activityForm.note.trim()) payload.note = activityForm.note.trim()
+    if (activityForm.statut) payload.statut = activityForm.statut
+    if (activityForm.relanceLe) payload.relanceLe = new Date(activityForm.relanceLe).toISOString()
+
+    const r = await contactsFetch<{ activity: Activity; contact: Contact }>(`/${id}/activities`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    if (r.ok) {
+      setContact(r.data.contact)
+      setActivities((prev) => [r.data.activity, ...prev])
+      setActivityForm({ type: 'APPEL', note: '', statut: '', relanceLe: '' })
+    } else setError(r.message)
+    setSavingActivity(false)
+  }
+
+  async function convertToVendor() {
+    if (!confirm('Convertir ce contact en vendeur ? Un compte vendeur sera créé avec ces coordonnées.')) return
+    setConverting(true)
+    const r = await contactsFetch<Contact>(`/${id}/convert`, {
+      method: 'POST',
+      body: JSON.stringify({ vendorType: 'INFORMAL' }),
+    })
+    if (r.ok) {
+      setContact(r.data)
+      loadActivities()
+    } else setError(r.message)
+    setConverting(false)
   }
 
   async function deleteContact() {
@@ -105,6 +162,12 @@ export default function ContactDetailPage() {
     else setError(r.message)
     setLoading(false)
   }
+
+  useEffect(() => {
+    loadContact()
+    loadActivities()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
 
   async function addLink() {
     if (!linkInput.url) return
@@ -135,7 +198,10 @@ export default function ContactDetailPage() {
   if (!contact) return null
 
   const displayPhone = contact.whatsapp || contact.phone
-  const waLink = displayPhone ? `https://wa.me/${displayPhone.replace(/[^0-9]/g, '')}` : null
+  const waMessage = `Bonjour${contact.name ? ` ${contact.name}` : ''}, je vous contacte de la part de Pièces (pieces.ci), la plateforme de vente de pièces auto à Abidjan. Nous aidons les vendeurs comme vous à toucher plus de clients. Puis-je vous en dire plus ?`
+  const waLink = displayPhone
+    ? `https://wa.me/${displayPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(waMessage)}`
+    : null
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6 lg:px-6">
@@ -154,6 +220,11 @@ export default function ContactDetailPage() {
           <div>
             <h1 className="font-display text-xl text-ink">{contact.name}</h1>
             {contact.shopName && <p className="text-sm text-muted">{contact.shopName}</p>}
+            {contact.source && contact.source !== 'MANUEL' && (
+              <span className="mt-1 inline-block rounded border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted">
+                Lead {contact.source === 'OSM' ? 'OSM' : contact.source.replace(/_CI$/i, '').replace(/_/g, ' ').toLowerCase()}
+              </span>
+            )}
           </div>
           <span className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium ${STATUT_CLASSES[contact.statut] ?? ''}`}>
             {STATUT_LABELS[contact.statut] ?? contact.statut}
@@ -236,6 +307,23 @@ export default function ContactDetailPage() {
             Prochaine relance : {new Date(contact.relanceLe).toLocaleDateString('fr-FR')}
           </div>
         )}
+
+        <div className="mt-4 border-t border-border pt-4">
+          {contact.vendorId ? (
+            <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+              ✓ Lié à un compte vendeur
+            </p>
+          ) : (
+            <button
+              onClick={convertToVendor}
+              disabled={converting}
+              className="rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+              style={{ minHeight: 44 }}
+            >
+              {converting ? 'Conversion…' : 'Convertir en vendeur'}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="mt-4 rounded-md border border-border bg-card p-5">
@@ -257,6 +345,89 @@ export default function ContactDetailPage() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="mt-4 rounded-md border border-border bg-card p-5">
+        <h2 className="mb-3 font-display text-lg text-ink">Journal d&apos;actions</h2>
+
+        <div className="space-y-2 rounded-md border border-border bg-ink/[0.02] p-3">
+          <div className="flex gap-2">
+            <select
+              value={activityForm.type}
+              onChange={(e) => setActivityForm((p) => ({ ...p, type: e.target.value }))}
+              className="rounded-md border border-border bg-card px-2 py-2 text-xs text-ink"
+              style={{ minHeight: 44 }}
+            >
+              <option value="APPEL">Appel</option>
+              <option value="WHATSAPP">WhatsApp</option>
+              <option value="VISITE">Visite</option>
+              <option value="NOTE">Note</option>
+            </select>
+            <select
+              value={activityForm.statut}
+              onChange={(e) => setActivityForm((p) => ({ ...p, statut: e.target.value }))}
+              className="flex-1 rounded-md border border-border bg-card px-2 py-2 text-xs text-ink"
+              style={{ minHeight: 44 }}
+            >
+              <option value="">Statut inchangé</option>
+              {Object.entries(STATUT_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>→ {v}</option>
+              ))}
+            </select>
+          </div>
+          <textarea
+            placeholder="Compte-rendu (optionnel) : ce qui a été dit, à faire ensuite…"
+            value={activityForm.note}
+            onChange={(e) => setActivityForm((p) => ({ ...p, note: e.target.value }))}
+            rows={2}
+            className="w-full rounded-md border border-border bg-card px-3 py-2 text-xs text-ink placeholder-muted"
+          />
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted">Relance :</label>
+            <input
+              type="date"
+              value={activityForm.relanceLe}
+              onChange={(e) => setActivityForm((p) => ({ ...p, relanceLe: e.target.value }))}
+              className="rounded-md border border-border bg-card px-2 py-1.5 text-xs text-ink"
+              style={{ minHeight: 44 }}
+            />
+            <button
+              onClick={logActivity}
+              disabled={savingActivity}
+              className="ml-auto rounded-md bg-accent px-4 py-2.5 text-xs font-medium text-white disabled:opacity-50"
+              style={{ minHeight: 44 }}
+            >
+              {savingActivity ? 'Enregistrement…' : 'Enregistrer l’action'}
+            </button>
+          </div>
+        </div>
+
+        {activities.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">Aucune action enregistrée pour l&apos;instant.</p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {activities.map((a) => (
+              <li key={a.id} className="border-l-2 border-border pl-3">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="rounded-full border border-border px-2 py-0.5 font-medium text-ink">
+                    {ACTIVITY_LABELS[a.type] ?? a.type}
+                  </span>
+                  {a.statutApres && (
+                    <span className={`rounded-full border px-2 py-0.5 ${STATUT_CLASSES[a.statutApres] ?? ''}`}>
+                      {STATUT_LABELS[a.statutApres] ?? a.statutApres}
+                    </span>
+                  )}
+                  <span className="text-muted">
+                    {new Date(a.createdAt).toLocaleDateString('fr-FR')}{' '}
+                    {new Date(a.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  {a.author?.name && <span className="text-muted">· {a.author.name}</span>}
+                </div>
+                {a.note && <p className="mt-1 text-sm text-ink whitespace-pre-wrap">{a.note}</p>}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="mt-4 rounded-md border border-border bg-card p-5">

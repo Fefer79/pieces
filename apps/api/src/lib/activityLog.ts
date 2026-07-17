@@ -16,6 +16,9 @@ export type ActivityAction =
   | 'ENRICHMENT_MANUAL_REVIEW_NEEDED'
   | 'CONTACT_CREATED'
   | 'CONTACT_UPDATED'
+  | 'CONTACT_ACTIVITY_LOGGED'
+  | 'CONTACT_ASSIGNED'
+  | 'CONTACT_CONVERTED'
 
 interface RecordParams {
   actorId: string

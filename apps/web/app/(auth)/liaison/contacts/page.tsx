@@ -52,10 +52,17 @@ const STATUT_CLASSES: Record<string, string> = {
 
 export default function ContactsListPage() {
   const [result, setResult] = useState<ListResult | null>(null)
+  const [relances, setRelances] = useState<Contact[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statutFilter, setStatutFilter] = useState('')
+
+  useEffect(() => {
+    contactsFetch<Contact[]>('/relances').then((r) => {
+      if (r.ok) setRelances(r.data)
+    })
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -87,6 +94,38 @@ export default function ContactsListPage() {
           + Nouveau
         </Link>
       </header>
+
+      {relances.length > 0 && (
+        <section className="mb-5 rounded-md border border-amber-200 bg-amber-50 p-4">
+          <h2 className="mb-2 text-sm font-semibold text-amber-900">
+            À relancer aujourd&apos;hui ({relances.length})
+          </h2>
+          <ul className="space-y-1.5">
+            {relances.map((c) => {
+              const overdue = c.relanceLe && new Date(c.relanceLe).getTime() < new Date().setHours(0, 0, 0, 0)
+              return (
+                <li key={c.id}>
+                  <Link
+                    href={`/liaison/contacts/${c.id}`}
+                    className="flex items-center gap-2 rounded px-2 py-1.5 text-sm text-amber-950 hover:bg-amber-100"
+                  >
+                    <span className="min-w-0 flex-1 truncate font-medium">
+                      {c.name}
+                      {c.shopName && <span className="font-normal text-amber-800"> · {c.shopName}</span>}
+                    </span>
+                    {overdue && (
+                      <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
+                        En retard
+                      </span>
+                    )}
+                    <span className="shrink-0 font-mono text-xs text-amber-800">{c.phone}</span>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <input
@@ -161,14 +200,6 @@ export default function ContactsListPage() {
         </ul>
       ) : null}
 
-      {result && result.total > 0 && (
-        <Link
-          href="/liaison/contacts?tab=relances"
-          className="mt-3 block rounded-md border border-border bg-card px-4 py-3 text-sm text-ink hover:bg-ink/[0.02]"
-        >
-          Aujourd&apos;hui : relances programmées →
-        </Link>
-      )}
     </div>
   )
 }

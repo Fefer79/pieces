@@ -46,6 +46,7 @@ model User {
   driverProfiles       Driver[]      @relation("UserDriverProfile")
   partEnrichments      PartEnrichment[] @relation("EnrichmentLiaison")
   contacts             VendorContact[] @relation("ContactCreatedBy")
+  contactActivities    ContactActivity[] @relation("ContactActivityAuthor")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -1439,6 +1440,13 @@ model VendorContact {
   notesAppel   String?       @map("notes_appel")
   photos       String[]
   liens        VendorContactLink[]
+  activites    ContactActivity[]
+
+  // Provenance du lead : MANUEL (saisie terrain), OSM (radar boutiques
+  // CompetitorVendor) ou slug de source externe (COINAFRIQUE_CI, …).
+  // sourceRef = identifiant côté source (osmId, vendor.id) → import idempotent.
+  source    String  @default("MANUEL")
+  sourceRef String? @map("source_ref")
 
   createdById String?  @map("created_by_id")
   createdBy   User?    @relation("ContactCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
@@ -1455,6 +1463,35 @@ model VendorContact {
   @@index([statut], name: "idx_vendor_contacts_statut")
   @@index([relanceLe], name: "idx_vendor_contacts_relance")
   @@index([createdById], name: "idx_vendor_contacts_created_by")
+  @@index([source], name: "idx_vendor_contacts_source")
+  @@unique([source, sourceRef], name: "uq_vendor_contacts_source_ref")
+}
+
+enum ContactActivityType {
+  APPEL
+  WHATSAPP
+  VISITE
+  NOTE
+  STATUT
+  ASSIGNATION
+  CONVERSION
+}
+
+model ContactActivity {
+  id        String              @id @default(cuid())
+  contactId String              @map("contact_id")
+  contact   VendorContact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  authorId  String?             @map("author_id")
+  author    User?               @relation("ContactActivityAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  type      ContactActivityType
+  note      String?
+  statutAvant ContactStatus?    @map("statut_avant")
+  statutApres ContactStatus?    @map("statut_apres")
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  @@map("contact_activities")
+  @@index([contactId, createdAt], name: "idx_contact_activities_contact")
+  @@index([authorId], name: "idx_contact_activities_author")
 }
 
 model VendorContactLink {

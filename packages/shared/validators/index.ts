@@ -106,10 +106,17 @@ export {
   linkVendorContactSchema,
   vendorContactParamsSchema,
   vendorContactListQuerySchema,
+  contactActivityTypeSchema,
+  createContactActivitySchema,
+  assignContactSchema,
+  convertContactSchema,
 } from './vendorContact'
 export type {
   CreateVendorContactInput,
   UpdateVendorContactInput,
   LinkVendorContactInput,
   VendorContactListQuery,
+  CreateContactActivityInput,
+  AssignContactInput,
+  ConvertContactInput,
 } from './vendorContact'

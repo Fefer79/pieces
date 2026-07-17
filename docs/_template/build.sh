@@ -77,6 +77,7 @@ DOCS=(
   "CTO_BIBLE|Document interne|Handover CTO · v1.1 · 29 mai 2026"
   "CEO_BIBLE|Document interne|Handover CEO · v1.1 · 29 mai 2026"
   "CRO_BIBLE|Document interne|Handover CRO · v1.1 · 29 mai 2026"
+  "manuel-prospection-vendeurs-2026-07|Manuel utilisateur|Prospection vendeurs — Liaisons & Admin · v1.0 · 17 juillet 2026"
 )
 
 # Filter to the slugs given on the command line, if any

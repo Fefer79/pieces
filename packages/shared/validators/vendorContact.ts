@@ -82,9 +82,37 @@ export const vendorContactParamsSchema = z.object({
   id: z.string().min(1),
 })
 
+export const contactActivityTypeSchema = z.enum([
+  'APPEL',
+  'WHATSAPP',
+  'VISITE',
+  'NOTE',
+  'STATUT',
+  'ASSIGNATION',
+  'CONVERSION',
+])
+
+export const createContactActivitySchema = z.object({
+  type: contactActivityTypeSchema,
+  note: z.string().max(2000).optional().nullable(),
+  statut: contactStatusSchema.optional(),
+  relanceLe: z.string().datetime().optional().nullable(),
+})
+
+export const assignContactSchema = z.object({
+  liaisonId: z.string().min(1).nullable(),
+})
+
+export const convertContactSchema = z.object({
+  vendorType: z.enum(['FORMAL', 'INFORMAL']).default('INFORMAL'),
+  shopName: z.string().min(2).max(100).optional(),
+  deliveryZones: z.array(z.string()).default([]),
+})
+
 export const vendorContactListQuerySchema = z.object({
   statut: contactStatusSchema.optional(),
   commune: z.enum(ABIDJAN_COMMUNES).optional(),
+  source: z.string().max(50).optional(),
   search: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).default(0),
@@ -94,3 +122,6 @@ export type CreateVendorContactInput = z.infer<typeof createVendorContactSchema>
 export type UpdateVendorContactInput = z.infer<typeof updateVendorContactSchema>
 export type LinkVendorContactInput = z.infer<typeof linkVendorContactSchema>
 export type VendorContactListQuery = z.infer<typeof vendorContactListQuerySchema>
+export type CreateContactActivityInput = z.infer<typeof createContactActivitySchema>
+export type AssignContactInput = z.infer<typeof assignContactSchema>
+export type ConvertContactInput = z.infer<typeof convertContactSchema>
