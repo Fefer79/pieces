@@ -170,7 +170,7 @@ export default function OwnerChoicePage() {
       ? [{ label: "Main d'œuvre", amount: order.laborCost }]
       : []),
     {
-      label: order.deliveryMode === 'EXPRESS' ? 'Livraison express (6 h)' : 'Livraison',
+      label: order.deliveryMode === 'EXPRESS' ? 'Livraison express prioritaire' : 'Livraison',
       amount: order.deliveryFee,
     },
   ]
