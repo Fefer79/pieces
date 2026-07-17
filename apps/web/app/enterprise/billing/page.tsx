@@ -47,7 +47,7 @@ const TIER_TAGLINE: Record<Tier, string> = {
 }
 
 const STATUS_LABEL: Record<Status, string> = {
-  TRIALING: 'Essai en cours',
+  TRIALING: 'En cours',
   ACTIVE: 'Actif',
   SUSPENDED: 'Suspendu',
   CANCELLED: 'Annulé',
@@ -128,14 +128,14 @@ export default function EnterpriseBillingPage() {
 
         {sub?.status === 'TRIALING' && !sub.trialExpired && daysLeft !== null && (
           <div className="mt-5 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-            <strong>Essai gratuit</strong> — il vous reste <strong>{daysLeft} jour{daysLeft > 1 ? 's' : ''}</strong>.
-            Toutes les fonctionnalités sont activées sans engagement.
+            <strong>Formule active</strong> — il vous reste <strong>{daysLeft} jour{daysLeft > 1 ? 's' : ''}</strong>.
+            Toutes les fonctionnalités sont disponibles.
           </div>
         )}
 
         {sub?.trialExpired && (
           <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Votre essai gratuit est terminé. Vous êtes basculé sur le niveau Gratuit. Contactez Pièces pour activer votre abonnement.
+            Votre formule est repassée sur le niveau Gratuit. Contactez Pièces pour activer un palier payant.
           </div>
         )}
 
@@ -150,7 +150,7 @@ export default function EnterpriseBillingPage() {
           <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-muted lg:grid-cols-3">
             <div>Démarré le : {sub.startedAt.slice(0, 10)}</div>
             <div>Cycle : {sub.billingCycle === 'MONTHLY' ? 'Mensuel' : 'Annuel (2 mois offerts)'}</div>
-            {sub.trialEndsAt && <div>Essai expire le : {sub.trialEndsAt.slice(0, 10)}</div>}
+            {sub.trialEndsAt && <div>Formule en cours jusqu&apos;au : {sub.trialEndsAt.slice(0, 10)}</div>}
           </div>
         )}
       </section>

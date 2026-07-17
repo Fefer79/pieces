@@ -28,8 +28,8 @@ Autrement dit : la santé mécanique de la flotte partenaire est **un détermina
 
 ## Ce que Pièces apporte au réseau
 
-- **Disponibilité 24 h garantie** sur les références critiques (filtres, plaquettes, courroies, pneus, huile) via stock tampon dédié — la rupture qui cloue le véhicule disparaît.
-- **Livraison 3 h chrono à Abidjan** sur pièce en stock : le véhicule repart le jour même, pas le surlendemain.
+- **Disponibilité prioritaire garantie** sur les références critiques (filtres, plaquettes, courroies, pneus, huile) via stock tampon dédié — la rupture qui cloue le véhicule disparaît.
+- **Livraison express prioritaire à Abidjan** : notre équipe dédiée livre le plus rapidement possible sur pièce en stock : le véhicule repart le jour même, pas le surlendemain.
 - **Lutte anti-contrefaçon et garantie intermédiée** : des pièces qui durent, donc moins de re-pannes et de réimmobilisations.
 - **Détection des véhicules « gouffres »** : on aide vos partenaires à garder leurs flottes rentables — donc actives sur Yango plus longtemps.
 - **Prix transparents, −20 à −30 % sur le poste pièces** : des partenaires plus rentables sont des partenaires fidèles.
@@ -48,7 +48,7 @@ Pour lever toute ambiguïté : **Pièces n'est pas un concurrent de Yango**, ni 
 
 ## Ce que nous proposons comme prochaine étape
 
-- Un **pilote sur 2 à 3 partenaires** de votre réseau (flottes de 10–50 véhicules), sur 60 jours.
+- Un **déploiement initial sur 2 à 3 partenaires** de votre réseau (flottes de 10–50 véhicules), sur 60 jours.
 - Mesure de l'**indicateur clé : jours-véhicule d'immobilisation évités**, traduits en courses additionnelles.
 - Restitution chiffrée conjointe — et décision d'élargir si la mécanique fonctionne.
 

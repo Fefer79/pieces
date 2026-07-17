@@ -15,7 +15,7 @@ Pièces.ci propose à [Nom de l'entreprise BTP] **un contrat d'abonnement platef
 | **Flotte Pro** | 5 000 FCFA / véhicule / mois | 4 000 000 FCFA | 48 000 000 FCFA | **40 000 000 FCFA** (10 mois facturés, 2 mois offerts) |
 | **Flotte Pro +** | 10 000 FCFA / véhicule / mois | 8 000 000 FCFA | 96 000 000 FCFA | **80 000 000 FCFA** (10 mois facturés, 2 mois offerts) |
 
-**Flotte Pro +** inclut intégralement Flotte Pro et y ajoute la couche urgence (livraison express 3 h / 6 h max à Abidjan, livraison prioritaire hors Abidjan, ligne WhatsApp dédiée, concierge dépannage avec sourcing engins lourds).
+**Flotte Pro +** inclut intégralement Flotte Pro et y ajoute la couche urgence (livraison express prioritaire à Abidjan : notre équipe dédiée livre le plus rapidement possible, livraison prioritaire hors Abidjan, ligne WhatsApp dédiée, concierge dépannage avec sourcing engins lourds).
 
 Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'objet d'aucune publication sur pieces.ci.
 
@@ -47,10 +47,10 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 ### Flotte Pro + (80 M FCFA / an en paiement annuel) — inclut tout Flotte Pro plus
 
-- **Livraison express à Abidjan : 3 heures, 6 heures maximum** quand la pièce est en stock chez un partenaire
+- **Livraison express prioritaire à Abidjan** : notre équipe dédiée livre le plus rapidement possible quand la pièce est en stock chez un partenaire
 - **Livraison prioritaire hors Abidjan** sur les 4 villes pilotes (San-Pédro, Bouaké, Yamoussoukro, Korhogo)
 - **Extension trimestrielle vers sites miniers et chantiers isolés** à la demande (Tongon, Ity, Bonikro, Anguédédou…)
-- Pickup prioritaire chez le vendeur en 30 min
+- Pickup prioritaire chez le vendeur le plus rapidement possible
 - **Ligne WhatsApp dédiée**, 6 h – 22 h, 7 j / 7
 - **Concierge dépannage** : Pièces sourcing + livraison sur demande, même hors catalogue, **import express engins lourds** (France, Émirats) pour références rares
 - **Liaison senior dédié** au compte
@@ -94,11 +94,11 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 | Engagement | Niveau |
 |---|---|
-| Livraison express Abidjan | **3 h, 6 h maximum** sur stock partenaire |
+| Livraison express Abidjan | **Le plus rapidement possible** sur stock partenaire |
 | Livraison hors Abidjan | Prioritaire sur 4 villes pilotes, extension trimestrielle vers sites miniers et chantiers isolés |
 | Disponibilité ligne WhatsApp dédiée | 6 h – 22 h, 7 j / 7 |
 | Réponse concierge dépannage | < 30 minutes |
-| Sourcing engins lourds (références rares) | Réponse sous 24 h, délai annoncé avant engagement |
+| Sourcing engins lourds (références rares) | Réponse prioritaire, délai annoncé avant engagement |
 
 ---
 
@@ -115,11 +115,11 @@ Conditions d'application :
 
 ## 6. Mise en service
 
-### Phase pilote (T0 + 30 jours)
+### Phase de déploiement initial (premier mois de mesure)
 
-- Pilote sur **1 ou 2 chantiers** sélectionnés par [Nom de l'entreprise BTP] (typiquement 50 à 100 véhicules/engins)
+- Déploiement initial sur **1 ou 2 chantiers** sélectionnés par [Nom de l'entreprise BTP] (typiquement 50 à 100 véhicules/engins)
 - Toutes les fonctionnalités Flotte Pro (ou Flotte Pro +) activées
-- **Gratuit pendant 30 jours, sans engagement, sans carte bancaire**
+- **Tarif mensuel sans engagement, vous voyez la valeur dès le premier mois : économies sur les pièces, administration DGI allégée, moins d'immobilisation chantier**
 - Accompagnement par un Liaison senior + un membre de l'équipe produit Pièces, présence terrain au démarrage
 
 ### Phase roll-out (T0 + 30 à T0 + 120 jours)
@@ -157,15 +157,15 @@ Configuration cible :
 - 400 véh en Flotte Pro : 20 M FCFA/an (annuel)
 - **Total : 60 M FCFA/an** pour un ROI projeté de 165 à 200 M FCFA/an (ratio ×2,7 à ×3,3).
 
-Cette approche permet de concentrer la valeur de la livraison express 3 h (6 h max) là où elle paie réellement (engins lourds en chantier critique) sans gonfler le coût sur le parc non-prioritaire.
+Cette approche permet de concentrer la valeur de la livraison express prioritaire là où elle paie réellement (engins lourds en chantier critique) sans gonfler le coût sur le parc non-prioritaire.
 
 ---
 
 ## 9. Conditions de signature
 
 - Offre valable **60 jours** à compter du 27 mai 2026.
-- L'offre est soumise à une **clause de confidentialité réciproque** (NDA signé en amont de la phase pilote).
-- Un contrat-cadre détaillé sera produit à l'issue de la phase pilote (T0 + 30 jours), reprenant les conditions de cette offre et les ajustements opérationnels constatés (sites miniers, intégration GMAO, fréquences de livraison hebdomadaire).
+- L'offre est soumise à une **clause de confidentialité réciproque** (NDA signé en amont de la phase de déploiement initial).
+- Un contrat-cadre détaillé sera produit à l'issue de la phase de déploiement initial, reprenant les conditions de cette offre et les ajustements opérationnels constatés (sites miniers, intégration GMAO, fréquences de livraison hebdomadaire).
 
 ---
 

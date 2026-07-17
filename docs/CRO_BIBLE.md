@@ -23,7 +23,7 @@ Pièces a trois moteurs de revenu, pas un :
 
 **Les trois erreurs qui tuent un CRO ici** :
 - Acheter du GMV non rentable pour gonfler un chiffre de vanité.
-- Vendre du Flotte Pro + sans que l'ops puisse tenir le SLA 4h (churn explosif).
+- Vendre du Flotte Pro + sans que l'ops puisse tenir la livraison prioritaire (churn explosif).
 - Brader la facture FNE-CI ou les abonnements en early-stage et ne jamais réussir à remonter les prix.
 
 ---
@@ -36,7 +36,7 @@ Pièces a trois moteurs de revenu, pas un :
 |---|---|---|---|---|
 | **Commission marketplace** | Release de l'escrow à la livraison confirmée | Le vendeur (prélevée sur le montant reversé) | À chaque transaction `CONFIRMED → COMPLETED` | 80–90% |
 | **Abonnement Flotte Pro** | Prélèvement Mobile Money / virement mensuel | La flotte (entreprise) | Mensuel, terme à échoir | 70–80% |
-| **Abonnement Flotte Pro +** | Idem + premium SLA | La flotte (entreprise) | Mensuel, terme à échoir | 60–70% |
+| **Abonnement Flotte Pro +** | Prélèvement Mobile Money / virement mensuel | La flotte (entreprise) | Mensuel, terme à échoir | 60–70% |
 | **Service FNE-CI / data / prestations** | Forfait ou à l'usage | Flotte hors abonnement, corporate, tiers (assureurs) | Mensuel ou ponctuel | 50–70% |
 
 **À connaître par cœur** : le revenu marketplace n'est **reconnu** qu'au release escrow (état `COMPLETED` de la state machine — voir CTO Bible, `order.stateMachine.ts`). Une commande `PAID` mais non livrée n'est **pas** du revenu : c'est du GMV en transit. Ne jamais forecaster sur du GMV non livré.
@@ -75,10 +75,10 @@ Le revenu ne se perd pas qu'en haut du funnel. Audit mensuel obligatoire sur :
 
 ### 3.1 Principe directeur : capter la valeur là où elle est ressentie
 
-Le CEO Bible le dit (§2.3) : **les flottes paient pour l'intelligence (savoir où part l'argent) et le SLA (ne pas perdre une journée), pas pour des notifications.** Le pricing doit suivre la valeur perçue, jamais le coût de la feature.
+Le CEO Bible le dit (§2.3) : **les flottes paient pour l'intelligence (savoir où part l'argent) et l'urgence opérationnelle (ne pas perdre une journée), pas pour des notifications.** Le pricing doit suivre la valeur perçue, jamais le coût de la feature.
 
 - **Mécanicien / propriétaire** : sensibles au prix et à la confiance. On monétise par **commission invisible** (intégrée, jamais un surcoût affiché au-dessus du prix vendeur) + breakdown transparent qui justifie la valeur (cf. DESIGN.md, breakdown obligatoire). On ne facture **jamais** d'abonnement au mécanicien en phase d'acquisition.
-- **Flotte** : sensible au coût total et à l'immobilisation. On monétise par **abonnement par véhicule** indexé sur la valeur du pilotage et du SLA, pas sur l'usage marketplace.
+- **Flotte** : sensible au coût total et à l'immobilisation. On monétise par **abonnement par véhicule** indexé sur la valeur du pilotage et de l'urgence opérationnelle, pas sur l'usage marketplace.
 - **Corporate / BTP** : sensible à la conformité fiscale et à la disponibilité. On monétise par **abonnement premium + service FNE-CI** vendu comme récupération de TVA, donc **ROI-positif côté client** dès le premier mois.
 
 ### 3.2 La règle de monétisation segmentée
@@ -109,7 +109,7 @@ Chaque trimestre, la part de récurrent doit monter. C'est ce qui transforme un 
 
 - **Commission marketplace** : 5 à 10% côté vendeur, prélevée à l'escrow release. Le floor de commission Liaison reste **server-side**, jamais affiché comme recommandation UI (voir `memory/feedback-liaison-commission.md` — règle load-bearing : on observe ce que les vendeurs acceptent, on ne suggère pas de prix).
 - **Flotte Pro** : 5 000 F / véhicule / mois.
-- **Flotte Pro +** : 10 000 F / véhicule / mois (SLA 4h, urgence, support dédié).
+- **Flotte Pro +** : 10 000 F / véhicule / mois (express prioritaire, urgence, support dédié).
 - **Pricing grand compte** : dégressif par volume (voir `pricing-flotte-2026-05-27.md`, `offre-vtc-6000-vehicules-2026-05.md`, `offre-btp-800-vehicules-2026-05.md`).
 
 ### 4.1bis La donnée prix concurrent (nouveau, 2026-05-29)
@@ -128,7 +128,7 @@ Depuis le 2026-05-29, le catalogue intègre **3 780 références prix de global-
 3. **Dégressivité abonnement par paliers de flotte** : 1–9 véhicules plein tarif, 10–49 / 50–199 / 200+ dégressifs. Optimiser le point de bascule pour maximiser le revenu total, pas le prix unitaire.
 4. **Engagement vs flexibilité** : remise pour engagement 12 mois (−15%) vs mensuel sans engagement (plein tarif). Vendre la prévisibilité.
 5. **Bundling Pro + FNE-CI** : packager la conformité dans le Pro + plutôt que la facturer à part → augmente l'ARPU et la stickiness.
-6. **Frais d'urgence à l'acte** : pour les non-abonnés, livraison express SLA 4h facturée à l'unité (porte d'entrée vers Pro +).
+6. **Frais d'urgence à l'acte** : pour les non-abonnés, livraison express prioritaire facturée à l'unité (porte d'entrée vers Pro +).
 7. **Floor de panier** : commission minimale en valeur absolue sur les petits paniers (sinon les pièces à 3 000 F coûtent plus cher à servir qu'elles ne rapportent).
 
 ### 4.3 Gouvernance des remises (discount governance)
@@ -143,7 +143,7 @@ La remise est le levier le plus dilutif et le plus mal gouverné de toute organi
 | > 30% | CRO + CEO | Décision stratégique documentée (logo, référence marché) |
 
 - **Toute remise a une contrepartie.** Jamais de remise « pour signer ». Une remise sans contrepartie est une fuite de revenu permanente.
-- **Les remises pilote sont temporaires et datées.** Un pilote « 3 mois gratuits » a une date de fin écrite dans le contrat et une bascule automatique au tarif plein. Le CRO traque la conversion pilote→payant comme un KPI dédié.
+- **Les remises pilote sont temporaires et datées.** Un pilote avec tarif préférentiel daté a une date de fin écrite dans le contrat et une bascule automatique au tarif plein. Le CRO traque la conversion pilote→payant comme un KPI dédié.
 - **Pas de remise sur la commission marketplace en early-stage.** La take rate est l'actif le plus dur à remonter une fois baissé.
 
 ### 4.4 Méthode de test prix
@@ -160,19 +160,19 @@ La remise est le levier le plus dilutif et le plus mal gouverné de toute organi
 
 **ICP prioritaire** (mois 3–9, aligné CEO Bible) : sociétés VTC 20 à 200 véhicules, gérant joignable, douleur cash-flow/immobilisation forte.
 
-**Cycle de vente cible** : 21 jours signature → pilote 30 jours → déploiement 60 jours.
+**Cycle de vente cible** : 21 jours signature → déploiement initial de 30 jours → déploiement 60 jours.
 
 **Les 5 étapes du playbook** :
 1. **Qualification (BANT adapté)** : Budget (paie déjà des pièces, oui), Authority (le gérant décide), Need (combien de véhicules immobilisés/mois ?), Timeline (douleur actuelle ?). Disqualifier vite les < 10 véhicules sans douleur.
 2. **Démo douleur** : ne pas démontrer des features. Montrer **leur** coût pièces actuel non piloté vs le dashboard Pièces. « Tu sais combien tu as dépensé en plaquettes ce trimestre ? Non. Nous oui. »
-3. **Pilote instrumenté** : 30 jours, 100% des véhicules ou un sous-parc représentatif. Objectif : produire **la preuve chiffrée** (−18 à −25% budget pièces, X jours d'immobilisation évités).
-4. **Business case de conversion** : à J+30, présenter le ROI réel mesuré. Le prix de l'abonnement doit être < 1/5 de l'économie démontrée.
-5. **Signature + déploiement** : engagement 12 mois, onboarding ops cadré, premier prélèvement à J+30 de la signature.
+3. **Déploiement initial instrumenté** : 30 jours, 100% des véhicules ou un sous-parc représentatif. Objectif : produire **la preuve chiffrée** (−18 à −25% budget pièces, X jours d'immobilisation évités).
+4. **Business case de conversion** : après le premier mois de mesure, présenter le ROI réel mesuré. Le prix de l'abonnement doit être < 1/5 de l'économie démontrée.
+5. **Signature + déploiement** : engagement 12 mois, onboarding ops cadré, premier prélèvement à 30 jours de la signature.
 
 **Objection killers** :
 - « C'est cher » → « C'est 5 000 F/mois contre 30 000 à 50 000 F par jour de véhicule immobilisé. Un seul véhicule sauvé par mois, c'est rentabilisé 6 fois. »
 - « J'ai déjà mon mécanicien » → « On ne remplace pas ton mécanicien, on lui trouve la pièce moins chère et plus vite, et tu vois enfin où part ton argent. »
-- « Je verrai plus tard » → pilote gratuit 30 jours, ROI mesuré, zéro engagement avant la preuve.
+- « Je verrai plus tard » → déploiement initial instrumenté, ROI mesuré, zéro engagement avant la preuve.
 
 ### 5.2 Vente grand compte (VTC plateformes, BTP, corporate)
 
@@ -181,7 +181,7 @@ La remise est le levier le plus dilutif et le plus mal gouverné de toute organi
 - **Le DAF est ton allié, pas ton obstacle.** L'argument FNE-CI / récupération TVA parle directement à lui : « Vos chauffeurs achètent en cash → vous perdez 18% de TVA non récupérable. Avec Pièces, vous la récupérez. » (CEO Bible §5, mouvement 3).
 - **Documents existants** : `brochure-vtc-grand-compte-2026-05`, `brochure-btp-grand-compte-2026-05`, `offre-vtc-6000-vehicules-2026-05`, `offre-btp-800-vehicules-2026-05`. Les utiliser, ne pas réinventer.
 - **Pricing** : Pro + par défaut sur BTP (disponibilité critique). Dégressif documenté. Toute dérogation passe la gouvernance remise (§4.3).
-- **Closing** : pilote sur un sous-parc (50–100 véhicules), preuve, puis déploiement masse contractualisé par paliers.
+- **Closing** : déploiement initial sur un sous-parc (50–100 véhicules), preuve, puis déploiement masse contractualisé par paliers.
 
 ### 5.3 Partenariats plateformes VTC (Yango, Heetch, Treepz)
 
@@ -203,13 +203,13 @@ Les Liaisons sourcent l'offre (vendeurs) mais sont aussi un **canal de demande**
 Instrumenter et suivre chaque étape, par segment :
 
 ```
-Lead → Qualifié (SQL) → Démo → Pilote → Signé → Déployé → Payant récurrent
+Lead → Qualifié (SQL) → Démo → Déploiement initial → Signé → Déployé → Payant récurrent
 ```
 
 - Taux de conversion à chaque étape, en tendance.
 - Vélocité (jours par étape).
 - Valeur moyenne du contrat (ACV) par segment.
-- **Pilote→Payant** : le KPI le plus important du B2B. Sous 60% = problème de qualification ou de preuve.
+- **Déploiement initial→Payant** : le KPI le plus important du B2B. Sous 60% = problème de qualification ou de preuve.
 
 ### 6.2 Forecasting — la discipline
 
@@ -255,7 +255,7 @@ NRR = (MRR début + expansion − contraction − churn) / MRR début
 
 - **Onboarding = rétention.** Un client qui ne voit pas la valeur dans les 30 premiers jours churne. Le succès client commence à la signature, pas à la première réclamation.
 - **Health score par compte** : usage du dashboard, nombre de commandes via plateforme, tickets support, paiements à l'heure. Un score qui baisse = intervention avant le churn, pas après.
-- **Le SLA est le contrat moral.** Sur Pro +, un SLA 4h raté répété = churn garanti. Ne **jamais** vendre du Pro + là où l'ops ne suit pas (cf. les 10 erreurs CEO Bible).
+- **L'engagement de livraison prioritaire est le contrat moral.** Sur Pro +, un engagement de livraison prioritaire raté répété = churn garanti. Ne **jamais** vendre du Pro + là où l'ops ne suit pas (cf. les 10 erreurs CEO Bible).
 - **QBR (Quarterly Business Review)** pour les comptes > 50 véhicules : présenter les économies réalisées, c'est la justification du renouvellement et l'ouverture de l'upsell.
 
 ### 7.4 Expansion marketplace
@@ -333,7 +333,7 @@ Le comp plan est le levier de management le plus puissant du CRO. Principes :
 
 - Pipeline par étape et par AE, vélocité, Commit du trimestre.
 - MRR/ARR, net new MRR (new + expansion − contraction − churn).
-- Conversion pilote→payant en cours.
+- Conversion déploiement initial→payant en cours.
 - Health scores flotte en zone rouge → plan d'action.
 - Take rate effective vs affichée (détection de leakage remise).
 
@@ -398,13 +398,13 @@ Le comp plan est le levier de management le plus puissant du CRO. Principes :
 
 1. **Forecaster sur du GMV non livré.** Le revenu, c'est l'escrow released, pas la commande passée.
 2. **Brader la take rate ou les abonnements en early-stage.** Le prix le plus dur à remonter est celui qu'on a baissé.
-3. **Vendre du Pro + sans capacité SLA prouvée.** Churn garanti, marque abîmée.
+3. **Vendre du Pro + sans capacité de livraison prioritaire prouvée.** Churn garanti, marque abîmée.
 4. **Laisser les remises sans gouvernance.** La fuite la plus silencieuse et la plus durable.
 5. **Payer les AE sur le signé sans clawback.** Tu achètes du churn et de la vente forcée.
 6. **Ignorer le leakage hors-plateforme.** C'est la mort lente de toute marketplace.
 7. **Confondre acquisition et revenu.** L'expansion et la rétention sont le revenu le moins cher — les négliger, c'est laisser l'argent facile.
 8. **Surfacturer la FNE-CI au début.** C'est un cheval de Troie d'acquisition fiscale, pas un centre de profit immédiat.
-9. **Empiler des pilotes gratuits sans date de fin ni mesure de conversion.** Un pilote sans bascule contractuelle est une remise déguisée infinie.
+9. **Empiler des pilotes non tarifés sans date de fin ni mesure de conversion.** Un pilote sans bascule contractuelle est une remise déguisée infinie.
 10. **Piloter un seul flux.** Optimiser la commission en cassant le récurrent (ou l'inverse) détruit la valeur. Le CRO arbitre les trois ensemble.
 
 ---

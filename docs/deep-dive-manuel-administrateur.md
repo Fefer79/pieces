@@ -872,7 +872,7 @@ Trois niveaux, prix flat par véhicule, sans paliers dégressifs.
 |---|---|---|---|
 | Gratuit | `FREE` | 0 F | Marketplace, comparateur prix, garantie pièce |
 | Flotte Pro | `PRO_FLOTTE` | 5 000 F / véhicule / mois | Pilotage, alertes prédictives, facturation normalisée |
-| Flotte Pro + | `PRO_FLOTTE_PLUS` | 10 000 F / véhicule / mois | Tout Flotte Pro + livraison 3 h chrono + SLA monétisé |
+| Flotte Pro + | `PRO_FLOTTE_PLUS` | 10 000 F / véhicule / mois | Tout Flotte Pro + livraison express prioritaire |
 
 **Hiérarchie d'inclusion** : `PRO_FLOTTE_PLUS` > `PRO_FLOTTE` > `FREE`. Flotte Pro + inclut systématiquement toutes les fonctionnalités de Flotte Pro. On ne peut pas prendre Flotte Pro + sans Flotte Pro (un seul abonnement remplace l'autre).
 
@@ -891,14 +891,14 @@ Accès : bouton **Gérer l'abonnement** sur la fiche `/admin/enterprises/:id`.
 **Panneau « Abonnement actuel »** affiche, si abonnement actif :
 - Le tier (Flotte Pro / Flotte Pro +) avec badge statut coloré
 - Prix par véhicule + total mensuel + total annuel calculés depuis le nombre de véhicules réel de l'entreprise
-- Date de démarrage, date d'expiration d'essai, cycle de facturation
+- Date de démarrage, date de fin de période d'essai (si activée), cycle de facturation
 - Notes commerciales
-- **Actions rapides** : Activer (sortir d'essai), Suspendre, Réactiver, Annuler
+- **Actions rapides** : Activer définitivement, Suspendre, Réactiver, Annuler
 
 **Panneau « Créer / changer d'abonnement »** :
 - Sélecteur tier (FREE / PRO_FLOTTE / PRO_FLOTTE_PLUS)
 - Sélecteur cycle (mensuel / annuel)
-- Case **essai 30 jours** (paramétrable de 1 à 90 jours, activé par défaut sauf FREE)
+- Case **période d'essai optionnelle** (paramétrable de 1 à 90 jours, désactivée par défaut sauf activation explicite)
 - Champ notes libre (contexte commercial, contact, conditions)
 - **Important** : créer un nouvel abonnement annule automatiquement l'abonnement actif précédent (transition propre).
 
@@ -910,12 +910,12 @@ Accès : bouton **Gérer l'abonnement** sur la fiche `/admin/enterprises/:id`.
 
 | Statut | Sens | Conséquence côté features |
 |---|---|---|
-| `TRIALING` | Essai 30 j en cours | Toutes les features du tier activées |
-| `ACTIVE` | Abonnement payant actif | Toutes les features du tier activées |
+| `TRIALING` | Période d'essai en cours | Toutes les features du tier activées |
+| `ACTIVE` | Abonnement actif | Toutes les features du tier activées |
 | `SUSPENDED` | Suspendu (impayé, litige…) | Features désactivées tant que pas réactivé |
 | `CANCELLED` | Définitivement résilié | Features désactivées, entreprise repasse en FREE |
 
-L'expiration automatique d'un essai (`trialEndsAt` < now) bascule lazy le tier effectif à `FREE` même si le statut DB reste `TRIALING` (à durcir par un cron en phase 2).
+L'expiration automatique d'une période d'essai (`trialEndsAt` < now) bascule lazy le tier effectif à `FREE` même si le statut DB reste `TRIALING` (à durcir par un cron en phase 2).
 
 ### Modèle `EnterpriseSubscription`
 

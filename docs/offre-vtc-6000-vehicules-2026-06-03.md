@@ -15,7 +15,7 @@ Pièces.ci propose à [Nom de l'entreprise VTC] **un contrat d'abonnement platef
 | **Flotte Pro** | 5 000 FCFA / véhicule / mois | 30 000 000 FCFA | 360 000 000 FCFA | **300 000 000 FCFA** (10 mois facturés, 2 mois offerts) |
 | **Flotte Pro +** | 10 000 FCFA / véhicule / mois | 60 000 000 FCFA | 720 000 000 FCFA | **600 000 000 FCFA** (10 mois facturés, 2 mois offerts) |
 
-**Flotte Pro +** inclut intégralement Flotte Pro et y ajoute la couche urgence (livraison express 3 h / 6 h max à Abidjan, livraison prioritaire hors Abidjan, ligne WhatsApp dédiée, concierge dépannage).
+**Flotte Pro +** inclut intégralement Flotte Pro et y ajoute la couche urgence (livraison express prioritaire à Abidjan : notre équipe dédiée livre le plus rapidement possible, livraison prioritaire hors Abidjan, ligne WhatsApp dédiée, concierge dépannage).
 
 Le périmètre Flotte Pro inclut désormais la **gestion complète des chauffeurs** (enrôlement, affectation, recette quotidienne, incidents, KPIs et espace self-service) — voir §2.
 
@@ -56,9 +56,9 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 ### Flotte Pro + (600 M FCFA / an) — inclut tout Flotte Pro plus
 
-- **Livraison express à Abidjan : 3 heures, 6 heures maximum** quand la pièce est en stock chez un partenaire
+- **Livraison express prioritaire à Abidjan** : notre équipe dédiée livre le plus rapidement possible quand la pièce est en stock chez un partenaire
 - **Livraison prioritaire hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo), plus rapide que le standard
-- Pickup prioritaire chez le vendeur en 30 min
+- Pickup prioritaire chez le vendeur le plus rapidement possible
 - **Ligne WhatsApp dédiée**, 6 h – 22 h, 7 j / 7
 - **Concierge dépannage** : Pièces sourcing + livraison sur demande, même hors catalogue
 - **Liaison senior dédié** au compte (1 nom unique, 1 numéro direct)
@@ -101,7 +101,7 @@ Ces prix sont les tarifs catalogue. **L'offre n'est pas publique** et ne fait l'
 
 | Engagement | Niveau |
 |---|---|
-| Livraison express Abidjan | **3 h, 6 h maximum** sur stock partenaire |
+| Livraison express Abidjan | **Le plus rapidement possible** sur stock partenaire |
 | Livraison hors Abidjan | Prioritaire sur 4 villes pilotes, extension trimestrielle |
 | Disponibilité ligne WhatsApp dédiée | 6 h – 22 h, 7 j / 7 |
 | Réponse concierge dépannage | < 30 minutes |
@@ -121,11 +121,11 @@ Conditions d'application :
 
 ## 6. Mise en service
 
-### Phase pilote (T0 + 30 jours)
+### Phase de déploiement initial (premier mois de mesure)
 
-- Pilote sur **100 à 300 véhicules** sélectionnés par [Nom de l'entreprise VTC]
+- Déploiement initial sur **100 à 300 véhicules** sélectionnés par [Nom de l'entreprise VTC]
 - Toutes les fonctionnalités Flotte Pro (ou Flotte Pro +) activées, gestion des chauffeurs comprise
-- **Gratuit pendant 30 jours, sans engagement, sans carte bancaire**
+- **Tarif mensuel sans engagement, vous voyez la valeur dès le premier mois : économies sur les pièces, recettes mieux suivies, facturation DGI allégée**
 - Accompagnement par un Liaison senior + un membre de l'équipe produit Pièces
 
 ### Phase roll-out (T0 + 30 à T0 + 90 jours)
@@ -157,7 +157,7 @@ Conditions d'application :
 
 Pour une flotte VTC de 6 000 véhicules en Côte d'Ivoire, Pièces recommande :
 
-**Démarrer en Flotte Pro pour 12 mois**, payé annuellement (300 M FCFA, économie 60 M FCFA vs mensuel). La gestion des chauffeurs étant incluse dès Flotte Pro, le ROI se joue sur deux dimensions simultanées dès le premier mois : économie pièces **et** recette mieux suivie. À 12 mois, basculer 1 000 à 2 000 véhicules les plus exposés à l'immobilisation (zones intenses, véhicules récents à forte rentabilité au quotidien) en **Flotte Pro +** pour bénéficier de la livraison express 3 h (6 h max) — soit un mix à environ 350–400 M FCFA/an, avec un ROI confortable sur les trois dimensions (économie pièces + recette + économie immobilisation).
+**Démarrer en Flotte Pro pour 12 mois**, payé annuellement (300 M FCFA, économie 60 M FCFA vs mensuel). La gestion des chauffeurs étant incluse dès Flotte Pro, le ROI se joue sur deux dimensions simultanées dès le premier mois : économie pièces **et** recette mieux suivie. À 12 mois, basculer 1 000 à 2 000 véhicules les plus exposés à l'immobilisation (zones intenses, véhicules récents à forte rentabilité au quotidien) en **Flotte Pro +** pour bénéficier de la livraison express prioritaire — soit un mix à environ 350–400 M FCFA/an, avec un ROI confortable sur les trois dimensions (économie pièces + recette + économie immobilisation).
 
 Cette approche progressive permet de valider l'économie réelle avant d'engager le tier supérieur sur tout le parc.
 
@@ -166,8 +166,8 @@ Cette approche progressive permet de valider l'économie réelle avant d'engager
 ## 9. Conditions de signature
 
 - Offre valable **60 jours** à compter du 3 juin 2026.
-- L'offre est soumise à une **clause de confidentialité réciproque** (NDA signé en amont de la phase pilote).
-- Un contrat-cadre détaillé sera produit à l'issue de la phase pilote (T0 + 30 jours), reprenant les conditions de cette offre et les ajustements opérationnels constatés.
+- L'offre est soumise à une **clause de confidentialité réciproque** (NDA signé en amont de la phase de déploiement initial).
+- Un contrat-cadre détaillé sera produit à l'issue de la phase de déploiement initial, reprenant les conditions de cette offre et les ajustements opérationnels constatés.
 
 ---
 

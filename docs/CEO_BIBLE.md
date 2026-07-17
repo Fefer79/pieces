@@ -105,7 +105,7 @@ Ajoute San Pedro, Bouaké, Yamoussoukro, Korhogo → **marché national ~210 Mds
 
 Trois mots à graver dans toute communication :
 - **Transparence** (prix affiché, condition de la pièce affichée — chip neuf/occasion/ré-usinée/aftermarket/OEM **non négociable**, breakdown des frais explicite avant paiement).
-- **Vitesse** (SLA 4h Flotte Pro +, livraison standard J+1 à Abidjan).
+- **Vitesse** (livraison express prioritaire Flotte Pro +, livraison standard le jour ouvré suivant à Abidjan).
 - **Conformité** (escrow, garantie, facture normalisée DGI).
 
 ### 4.3 Les non-négociables produit (DESIGN.md)
@@ -185,7 +185,7 @@ Tout ce qui s'éloigne de ces règles trahit la promesse et doit être bloqué e
 |---|---|---|
 | Commission marketplace | 5 à 10% côté vendeur, prélevée à l'escrow release | 45% du revenu |
 | Abonnement Flotte Pro | 5 000 F / véhicule / mois | 35% du revenu |
-| Abonnement Flotte Pro + | 10 000 F / véhicule / mois (SLA 4h, urgence) | 15% du revenu |
+| Abonnement Flotte Pro + | 10 000 F / véhicule / mois (livraison prioritaire, urgence) | 15% du revenu |
 | Service facturation / conformité | Forfait FNE-CI pour flottes hors abonnement, prestations sur-mesure | 5% du revenu |
 
 ### 6.2 Unit economics — les chiffres à connaître par cœur
@@ -239,7 +239,7 @@ Tout ce qui s'éloigne de ces règles trahit la promesse et doit être bloqué e
 **Canal #1 — Vente directe (account executive senior)**.
 - 1 AE senior à M3, 3 AE à M9.
 - ICP prioritaire (mois 3-9) : sociétés VTC indépendantes 20 à 200 véhicules, gérants joignables, douleur cash flow / immobilisation forte.
-- Cycle de vente cible : 21 jours signature, pilote 30 jours, déploiement 60 jours.
+- Cycle de vente cible : 21 jours signature, déploiement initial 30 jours, scaling 60 jours.
 
 **Canal #2 — Partenariats plateformes VTC**.
 - Yango, Heetch, Treepz : offre intégrée pour les conducteurs partenaires. Modèle revenue share si nécessaire.
@@ -314,7 +314,7 @@ Ajouts clés :
 |---|---|---|---|
 | **Réplication du modèle Liaison par un acteur capitalisé** (Jumia auto, Yango Garage) | Moyenne | Élevé | Verrouillage 12 mois : exclusivité contractuelle avec 80% des vendeurs top Adjamé, données fitments propriétaires |
 | **Régulation DGI hostile à un acteur privé sur la FNE-CI** | Faible | Élevé | Briefing institutionnel pré-lancement, posture partenariat, transparence totale, employer un ancien DGI comme conseiller |
-| **Échec du SLA 4h Flotte Pro +** (livraison non tenable) | Élevée si non préparé | Élevé | Investissement réseau livreurs dédié, stock tampon partenaires, sandbagging du SLA promis vs SLA opérationnel |
+| **Échec de la livraison prioritaire Flotte Pro +** (livraison non tenable) | Élevée si non préparé | Élevé | Investissement réseau livreurs dédiés, stock tampon partenaires, engagement de moyens sans promesse de délai contractuel |
 | **Fraude vendeur / fausse pièce vendue OEM** | Élevée | Critique pour la marque | Garantie Pièces couvrant 100% du remplacement, fonds de garantie provisionné, ban vendeur immédiat sur 1 fraude avérée |
 | **Risque change FCFA / euro** sur pièces importées | Moyenne | Moyen | Hedge naturel (revenus en FCFA, achats vendeurs en FCFA), monitoring trimestriel |
 | **Dépendance Mobile Money** (panne CinetPay, panne Orange Money) | Faible mais ponctuelle | Élevé temporaire | Multi-PSP (Wave + CinetPay + Mobile Money direct), fallback COD documenté |
@@ -440,7 +440,7 @@ Voir `DESIGN.md`. Règles d'or : transparence (chips condition), clarté (breakd
 ### 15.2 P1 (M6–M12) — monétisation flotte
 
 - Flotte Pro complet (intelligence flotte, automatisation, FNE-CI).
-- Flotte Pro + (SLA 4h, urgence, support dédié).
+- Flotte Pro + (livraison prioritaire, urgence, support dédié).
 - Module facturation consolidée mensuelle, export FEC.
 - API publique flotte (Yango, Heetch, Treepz).
 
@@ -463,7 +463,7 @@ Voir `DESIGN.md`. Règles d'or : transparence (chips condition), clarté (breakd
 
 1. **Diluer la promesse en couvrant pneus, lubrifiants, accessoires trop tôt**. Pièces de rechange uniquement jusqu'à M18.
 2. **Acheter du GMV via coupons agressifs**. Marge brute négative qui ne paie jamais.
-3. **Lancer Flotte Pro + sans capacité opérationnelle SLA 4h prouvée**. Promesse non tenue tue le segment B2B en 3 mois.
+3. **Lancer Flotte Pro + sans capacité opérationnelle de livraison prioritaire prouvée**. Promesse non tenue tue le segment B2B en 3 mois.
 4. **Surfacturer la facture FNE-CI** au début. C'est un levier d'acquisition, pas un centre de profit immédiat.
 5. **Salarier les Liaison trop vite**. Le modèle commission terrain doit faire ses preuves à 20+ Liaisons avant de salarier.
 6. **Confondre marketplace e-commerce et marketplace B2B**. Les besoins UI, support, vente, SLA sont différents — équipes distinctes dès M9.

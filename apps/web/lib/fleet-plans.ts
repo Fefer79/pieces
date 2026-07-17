@@ -5,8 +5,8 @@
 // Aucune mention de SLA contractuel / pénalité / remboursement : la livraison
 // rapide est présentée comme un bénéfice de service.
 // Même règle pour l'immobilisation : jamais « zéro immobilisation » — on promet
-// « les temps d'immobilisation les plus courts possibles » grâce à une équipe
-// dédiée (engagement de moyens, pas de résultat).
+// une équipe dédiée qui livre les pièces le plus rapidement possible pour
+// minimiser les temps d'immobilisation (engagement de moyens, pas de résultat).
 // Gestion déléguée des achats de pièces : service optionnel SANS SURCOÛT inclus
 // dans Flotte Pro + (voir DELEGATED_PROCUREMENT).
 // Les fourchettes de livraison affichées ici doivent rester cohérentes avec la
@@ -35,7 +35,7 @@ export interface FleetPlan {
 
 /** La promesse de livraison rapide du palier Pro + (sans SLA ni pénalité). */
 export const DELIVERY_PROMISE =
-  'Livraison express à Abidjan : 6 heures, 12 heures maximum. Offerte avec Flotte Pro + ; en option sinon (5 000 – 19 900 F en Gratuit, 5 000 – 9 900 F en Flotte Pro). Livraison standard 48–72 h : 1 500 – 9 000 F en Gratuit, 1 000 – 5 000 F en Flotte Pro.'
+  'Livraison express prioritaire : notre équipe dédiée livre les pièces le plus rapidement possible pour minimiser votre temps d\'immobilisation. Offerte avec Flotte Pro + ; en option sinon (5 000 – 19 900 F en Gratuit, 5 000 – 9 900 F en Flotte Pro). Livraison standard 48–72 h : 1 500 – 9 000 F en Gratuit, 1 000 – 5 000 F en Flotte Pro.'
 
 export const FLEET_PLANS: FleetPlan[] = [
   {
@@ -53,7 +53,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     ],
     delivery: [
       { label: 'Standard 48–72 h', value: '1 500 – 9 000 F' },
-      { label: 'Express 6 h (12 h max)', value: '+ 5 000 – 19 900 F' },
+      { label: 'Express prioritaire', value: '+ 5 000 – 19 900 F' },
     ],
   },
   {
@@ -62,7 +62,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     tagline: 'Pilotez vos coûts.',
     price: '4 900 F',
     priceNote: 'par véhicule / mois',
-    cta: 'Demander un essai 30 jours',
+    cta: 'Choisir Flotte Pro',
     highlights: [
       'Véhicules et utilisateurs illimités',
       'Tableau de bord et analytique des coûts (coût/km, par catégorie)',
@@ -73,7 +73,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     ],
     delivery: [
       { label: 'Standard 48–72 h', value: '1 000 – 5 000 F' },
-      { label: 'Express 6 h (12 h max)', value: '+ 5 000 – 9 900 F' },
+      { label: 'Express prioritaire', value: '+ 5 000 – 9 900 F' },
     ],
   },
   {
@@ -82,7 +82,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     tagline: 'Vos achats de pièces, gérés pour vous.',
     price: '9 900 F',
     priceNote: 'par véhicule / mois — tout inclus',
-    cta: 'Demander un essai 30 jours',
+    cta: 'Choisir Flotte Pro +',
     highlight: true,
     badge: 'Recommandé — meilleur rapport',
     highlights: [
@@ -97,7 +97,7 @@ export const FLEET_PLANS: FleetPlan[] = [
     ],
     delivery: [
       { label: 'Standard 48–72 h', value: 'Offerte' },
-      { label: 'Express 6 h (12 h max)', value: 'Offerte' },
+      { label: 'Express prioritaire', value: 'Offerte' },
     ],
   },
 ]
@@ -155,7 +155,7 @@ export const FLEET_COMPARISON: ComparisonGroup[] = [
     group: 'Logistique',
     rows: [
       { label: 'Livraison standard (48–72 h)', free: '1 500 – 9 000 F', pro: '1 000 – 5 000 F', plus: 'Offerte' },
-      { label: 'Livraison express 6 h (12 h max) à Abidjan', free: '+ 5 000 – 19 900 F', pro: '+ 5 000 – 9 900 F', plus: 'Offerte' },
+      { label: 'Livraison express prioritaire à Abidjan', free: '+ 5 000 – 19 900 F', pro: '+ 5 000 – 9 900 F', plus: 'Offerte' },
       { label: 'Livraison prioritaire hors Abidjan', free: '—', pro: '—', plus: '✓' },
       { label: 'Concierge sourcing (hors catalogue)', free: '—', pro: '—', plus: '✓' },
     ],
@@ -218,7 +218,7 @@ export const COST_LEVERS: Array<{ line: string; title: string; body: string }> =
   {
     line: 'Immobilisation',
     title: 'Les temps d’immobilisation les plus courts possibles',
-    body: 'Les alertes d’entretien préviennent la casse avant qu’elle arrive, et Flotte Pro + livre la pièce en 6 h (12 h max) à Abidjan, livraison offerte. Avec la gestion déléguée, une équipe Pièces dédiée anticipe même vos besoins : vos véhicules attendent la pièce le moins longtemps possible.',
+    body: 'Les alertes d’entretien préviennent la casse avant qu’elle arrive, et Flotte Pro + livre la pièce le plus rapidement possible à Abidjan, livraison offerte. Avec la gestion déléguée, une équipe Pièces dédiée anticipe même vos besoins : vos véhicules attendent la pièce le moins longtemps possible.',
   },
   {
     line: 'Administration',

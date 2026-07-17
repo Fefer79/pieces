@@ -60,9 +60,9 @@ Plus de 200 fournisseurs pièces auto + un sourcing dédié sur les **pièces en
 
 Pour les engins sur lesquels une journée d'immobilisation coûte 200 à 500 000 FCFA :
 
-- **Livraison express à Abidjan : 3 heures, 6 heures maximum** quand la pièce est en stock chez un partenaire.
+- **Livraison express prioritaire à Abidjan** : notre équipe dédiée livre le plus rapidement possible quand la pièce est en stock chez un partenaire.
 - **Livraison prioritaire hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo, **+ extension trimestrielle vers les sites miniers** : Tongon, Ity, Bonikro à la demande).
-- **Pickup prioritaire** chez le vendeur en 30 min.
+- **Pickup prioritaire** chez le vendeur le plus rapidement possible.
 - **Ligne WhatsApp dédiée 6 h – 22 h, 7 j / 7** avec un Liaison senior affecté à votre compte.
 - **Concierge dépannage** : appel direct, Pièces source la pièce (même hors catalogue, même import express depuis la France ou Dubaï pour les références rares engins lourds) et l'achemine au chantier.
 
@@ -99,19 +99,19 @@ ROI net projeté :
 - **Flotte Pro** : +165 à +199 M FCFA/an (ROI ×5,1 à ×6,0)
 - **Flotte Pro +** : +125 à +159 M FCFA/an (ROI ×2,6 à ×3,0) — le surcoût du tier +  est largement couvert par l'économie d'immobilisation chantier (les pénalités contractuelles évitées ne sont pas comptabilisées dans le tableau, elles s'ajoutent).
 
-À l'échelle BTP, **Flotte Pro + est généralement le bon choix** : la valeur d'un jour d'immobilisation d'engin lourd justifie 10 fois le surcoût de la livraison express 3 h (6 h max).
+À l'échelle BTP, **Flotte Pro + est généralement le bon choix** : la valeur d'un jour d'immobilisation d'engin lourd justifie 10 fois le surcoût de la livraison express prioritaire.
 
 ## Pourquoi maintenant
 
-- Pièces lance le packaging entreprise au S1 2026. Vous bénéficiez du **statut de pilote grand compte BTP** — accès direct à l'équipe produit, priorisation des features engins lourds que vous demanderez, conditions de lancement préférentielles sur le contrat-cadre.
+- Pièces lance le packaging entreprise au S1 2026. Vous bénéficiez du **statut de partenaire grand compte BTP** — accès direct à l'équipe produit, priorisation des features engins lourds que vous demanderez, conditions de lancement préférentielles sur le contrat-cadre.
 - La **garantie ROI 3 mois** s'applique : si à 3 mois Flotte Pro n'a pas fait économiser au moins l'équivalent de l'abonnement, Pièces rembourse la dernière mensualité et le contrat est résiliable sans pénalité.
 - Le marché BTP ivoirien reste tendu — chaque journée gagnée sur un chantier maintient votre marge dans un environnement de pression sur les prix.
 
 ## Prochaines étapes
 
-1. **Réunion de cadrage** (1 h) — audit rapide de votre parc, identification des chantiers prioritaires pour le pilote.
-2. **Pilote 30 jours** sur 1 à 2 chantiers (50 à 100 véhicules/engins) — toutes les fonctionnalités activées, sans engagement, sans carte bancaire.
-3. **Bilan pilote + offre commerciale détaillée** — projection chiffrée sur votre parc complet, ajustements opérationnels, gouvernance contrat-cadre.
+1. **Réunion de cadrage** (1 h) — audit rapide de votre parc, identification des chantiers prioritaires pour le déploiement initial.
+2. **Déploiement initial** sur 1 à 2 chantiers (50 à 100 véhicules/engins) — toutes les fonctionnalités activées, avec mesure des gains dès le premier mois.
+3. **Bilan du déploiement initial + offre commerciale détaillée** — projection chiffrée sur votre parc complet, ajustements opérationnels, gouvernance contrat-cadre.
 4. **Roll-out progressif** sur l'ensemble du parc — un Liaison senior dédié, intégration GMAO, formation des chefs de chantier, mise en place stock tampon SKU critiques.
 
 ## Contact

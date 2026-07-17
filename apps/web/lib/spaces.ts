@@ -84,7 +84,7 @@ export const SPACES: Space[] = [
       bullets: [
         'Suivez les dépenses pièces de tous vos véhicules',
         'Gérez chauffeurs, commandes et factures au même endroit',
-        'Essai gratuit 30 jours, sans engagement',
+        'Gestion déléguée et livraison prioritaire pour réduire l’immobilisation',
       ],
       note: 'Vous pourrez toujours revenir à votre espace Achat.',
     },
