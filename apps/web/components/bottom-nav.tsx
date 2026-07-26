@@ -24,6 +24,7 @@ function getNavItems(
     return [
       { href: '/enterprise/dashboard', label: 'Dashboard', icon: DashboardIcon },
       { href: '/enterprise/vehicles', label: 'Véhicules', icon: CarIcon },
+      { href: '/enterprise/requests', label: 'Demandes', icon: OrdersIcon },
       { href: '/enterprise/orders', label: 'Commandes', icon: OrdersIcon },
     ]
   }

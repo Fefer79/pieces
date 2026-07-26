@@ -12,6 +12,7 @@ const PROTECTED_PATHS = [
   '/onboarding',
   '/enterprise',
   '/liaison',
+  '/driver',
 ]
 
 export async function middleware(request: NextRequest) {

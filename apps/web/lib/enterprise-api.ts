@@ -174,3 +174,110 @@ export type EnterpriseMember = {
   joinedAt: string | null
   user: { id: string; name: string | null; phone: string | null; email: string | null }
 }
+
+export type PartRequest = {
+  id: string
+  enterpriseId: string
+  vehicleId: string
+  driverId: string | null
+  createdByUserId: string
+  status: 'DRAFT' | 'SUBMITTED' | 'REVIEWING' | 'APPROVED' | 'REJECTED' | 'CONVERTED' | 'CANCELLED'
+  description: string | null
+  partName: string
+  category: string | null
+  oemReference: string | null
+  urgency: 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL'
+  preferredSource: 'LOCAL' | 'AIR' | 'CARGO' | 'ANY'
+  maxBudget: number | null
+  approvedByUserId: string | null
+  approvedAt: string | null
+  rejectionReason: string | null
+  orderId: string | null
+  createdAt: string
+  updatedAt: string
+  vehicle: {
+    id: string
+    brand: string
+    model: string
+    year: number
+    plate: string | null
+    vin: string | null
+    engine: string | null
+    mileage: number | null
+  }
+  driver: { id: string; name: string; phone: string } | null
+  createdByUser: { id: string; name: string | null; phone: string | null }
+  approvedByUser: { id: string; name: string | null; phone: string | null } | null
+  order: { id: string; status: string; totalAmount: number; shareToken: string } | null
+  photos: { id: string; url: string; position: number; createdAt: string }[]
+  events: {
+    id: string
+    fromStatus: string | null
+    toStatus: string
+    actorUserId: string | null
+    note: string | null
+    createdAt: string
+    actorUser: { id: string; name: string | null; phone: string | null } | null
+  }[]
+}
+
+export type SourcingOption = {
+  source: 'LOCAL' | 'AIR' | 'CARGO'
+  label: string
+  delay: string
+  priceNote: string
+  deliveryMode: 'STANDARD' | 'EXPRESS'
+}
+
+export const SOURCING_OPTIONS: SourcingOption[] = [
+  { source: 'LOCAL', label: 'Stock local', delay: '24–48 h', priceNote: 'Prix catalogue', deliveryMode: 'STANDARD' },
+  { source: 'AIR', label: 'Avion', delay: '3–5 jours', priceNote: '+30 à +50 % vs catalogue', deliveryMode: 'EXPRESS' },
+  { source: 'CARGO', label: 'Cargo', delay: '45 jours', priceNote: 'Prix catalogue, commande groupée', deliveryMode: 'STANDARD' },
+]
+
+export type LogisticsMode =
+  | 'PRE_POSITIONED'
+  | 'LOCAL'
+  | 'AIR_NOW'
+  | 'AIR_STANDARD'
+  | 'AIR_ECONOMY'
+  | 'SEA_LCL'
+
+export type ArbitrageOption = {
+  mode: LogisticsMode
+  label: string
+  detail: string
+  transitDays: number
+  chargeableWeightKg: number
+  partPrice: number
+  freightCost: number
+  customsCost: number
+  lastMileCost: number
+  downtimeCost: number
+  totalCost: number
+  available: boolean
+  extraCostVsBest: number
+  recommended: boolean
+  warnings: string[]
+}
+
+export type LogisticsMatrix = {
+  weightKg: number
+  volumeDm3: number
+  familyId: string
+  familyLabel: string
+  confidence: 'MEASURED' | 'CATALOG' | 'FAMILY'
+  downtimeCostPerDay: number
+  options: ArbitrageOption[]
+  vehicle: {
+    id: string
+    brand: string
+    model: string
+    year: number
+    plate: string | null
+    energyType: string | null
+    category: 'ECONOMY_ICE' | 'PREMIUM_ICE' | 'PREMIUM_EV'
+  }
+  annualPartsSpend: number
+  downtimeCostOverridden: boolean
+}

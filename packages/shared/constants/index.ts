@@ -24,3 +24,28 @@ export {
 export type { MaintenanceKindKey, MaintenancePartHint } from './maintenance-parts'
 export { WARRANTY_UNITS, warrantyToDays, formatWarranty, isWarrantyUnit } from './warranty'
 export type { WarrantyUnit } from './warranty'
+export {
+  DOWNTIME_COST_PER_DAY,
+  ANNUAL_PARTS_SPEND,
+  resolveEconomyCategory,
+  PART_LOGISTICS_FAMILIES,
+  DEFAULT_FAMILY,
+  matchLogisticsFamily,
+  chargeableWeightKg,
+  LOGISTICS_MODES,
+  CUSTOMS_DUTY_RATE,
+  LAST_MILE_FEE,
+  computeArbitrageMatrix,
+} from './logistics'
+export type {
+  VehicleEnergyType,
+  VehicleEconomyCategory,
+  LogisticsConfidence,
+  PartLogisticsFamily,
+  LogisticsMode,
+  LogisticsModeSpec,
+  ArbitrageInput,
+  ArbitrageOptionInput,
+  ArbitrageOption,
+  ArbitrageResult,
+} from './logistics'

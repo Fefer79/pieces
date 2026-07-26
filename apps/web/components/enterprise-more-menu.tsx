@@ -13,6 +13,7 @@ const ENTERPRISE_LINKS = [
   { href: '/enterprise/drivers', label: 'Chauffeurs' },
   { href: '/enterprise/members', label: 'Membres' },
   { href: '/enterprise/orders', label: 'Commandes' },
+  { href: '/enterprise/requests', label: 'Demandes de pièces' },
   { href: '/enterprise/search', label: 'Recherche' },
   { href: '/enterprise/centers', label: 'Centres' },
   { href: '/enterprise/returns', label: 'Retours' },
@@ -23,7 +24,7 @@ const ENTERPRISE_LINKS = [
 
 // Pages atteignables uniquement via le tiroir (hors raccourcis de la barre) :
 // le bouton « Plus » s'allume quand on est sur l'une d'elles.
-const BAR_HREFS = new Set(['/enterprise/dashboard', '/enterprise/vehicles', '/enterprise/orders'])
+const BAR_HREFS = new Set(['/enterprise/dashboard', '/enterprise/vehicles', '/enterprise/requests', '/enterprise/orders'])
 
 export function EnterpriseMoreMenu() {
   const pathname = usePathname()
