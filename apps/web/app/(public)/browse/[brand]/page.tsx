@@ -23,16 +23,16 @@ export default function BrandModelsPage() {
   }, [brand])
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    <div className="mx-auto max-w-md px-4 py-6 sm:max-w-3xl lg:py-8">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
-      <h1 className="mb-4 text-xl font-bold text-[#1A1A1A]">{brand}</h1>
+      <h1 className="mb-4 text-xl font-bold text-[#1A1A1A] lg:text-2xl">{brand}</h1>
       <p className="mb-4 text-sm text-gray-500">Sélectionnez un modèle</p>
 
       {error && <p className="text-sm text-[#D32F2F]">{error}</p>}
       {loading && <p className="text-sm text-gray-500">Chargement...</p>}
 
       {!loading && !error && (
-        <div className="space-y-2">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {models.map((model) => (
             <button
               key={model}

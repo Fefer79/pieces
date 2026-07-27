@@ -5,16 +5,15 @@ import { useRouter, useParams } from 'next/navigation'
 import { DEFAULT_VEHICLE_TYPE } from 'shared/constants'
 import { createClient } from '@/lib/supabase'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
-import { PartThumb } from '@/components/ui/part-thumb'
+import {
+  ProductGridCard,
+  ProductGridCardSkeleton,
+  type ProductGridItem,
+} from '@/components/ui/product-grid-card'
 
 type SupabaseClient = ReturnType<typeof createClient>
 
-interface PartResult {
-  id: string
-  name: string | null
-  category: string | null
-  price: number | null
-  imageThumbUrl: string | null
+type PartResult = ProductGridItem & {
   oemReference: string | null
   vendor: { id: string; shopName: string }
 }
@@ -145,16 +144,16 @@ export default function YearPartsPage() {
   }, [fetchParts])
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    <div className="mx-auto max-w-[1280px] px-4 py-6 lg:px-6 lg:py-8">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
-      <h1 className="mb-1 text-xl font-bold text-[#1A1A1A]">{brand} {model} {year}</h1>
+      <h1 className="mb-1 text-xl font-bold text-[#1A1A1A] lg:text-2xl">{brand} {model} {year}</h1>
       <p className="mb-3 text-sm text-gray-500">{total} pièce{total > 1 ? 's' : ''} disponible{total > 1 ? 's' : ''}</p>
 
       {isAuth && (
         <button
           onClick={handleSaveVehicle}
           disabled={savingVehicle || alreadySaved}
-          className={`mb-4 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+          className={`mb-4 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors sm:w-auto ${
             alreadySaved
               ? 'border border-green-200 bg-green-50 text-green-700'
               : 'border border-[#002366] text-[#002366] hover:bg-[#002366] hover:text-white disabled:opacity-50'
@@ -202,7 +201,13 @@ export default function YearPartsPage() {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-gray-500">Chargement...</p>}
+      {loading && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <ProductGridCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
 
       {!loading && parts.length === 0 && (
         <div className="rounded-lg border border-gray-200 p-8 text-center">
@@ -212,21 +217,9 @@ export default function YearPartsPage() {
       )}
 
       {!loading && parts.length > 0 && (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
           {parts.map((part) => (
-            <div key={part.id} className="flex gap-3 rounded-lg border border-gray-200 p-3">
-              <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-surface">
-                <PartThumb src={part.imageThumbUrl} alt={part.name} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-[#1A1A1A]">{part.name ?? 'Pièce'}</p>
-                <p className="text-xs text-gray-500">{part.category ?? '—'}</p>
-                <p className="text-xs text-gray-400">{part.vendor.shopName}</p>
-              </div>
-              {part.price && (
-                <p className="text-sm font-bold text-[#1A1A1A]">{part.price.toLocaleString('fr-FR')} F</p>
-              )}
-            </div>
+            <ProductGridCard key={part.id} item={part} />
           ))}
         </div>
       )}
