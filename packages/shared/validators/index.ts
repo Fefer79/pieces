@@ -133,3 +133,24 @@ export type {
   AssignContactInput,
   ConvertContactInput,
 } from './vendorContact'
+export {
+  LOGISTICS_VIN_REGEX,
+  IVORIAN_PHONE_INPUT_REGEX,
+  logisticsLeadStatusSchema,
+  logisticsLeadSurfaceSchema,
+  logisticsCustomerTypeSchema,
+  logisticsPhotoKindSchema,
+  leadCertaintyLevelSchema,
+  createLogisticsQuoteRequestSchema,
+  logisticsPhotoUploadSchema,
+  logisticsPublicLookupSchema,
+  adminLogisticsListQuerySchema,
+  adminUpdateLogisticsQuoteRequestSchema,
+  enterpriseLogisticsListQuerySchema,
+} from './logistics'
+export type {
+  CreateLogisticsQuoteRequestInput,
+  AdminLogisticsListQuery,
+  AdminUpdateLogisticsQuoteRequestInput,
+  EnterpriseLogisticsListQuery,
+} from './logistics'

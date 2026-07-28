@@ -14,6 +14,7 @@ const ENTERPRISE_LINKS = [
   { href: '/enterprise/members', label: 'Membres' },
   { href: '/enterprise/orders', label: 'Commandes' },
   { href: '/enterprise/requests', label: 'Demandes de pièces' },
+  { href: '/enterprise/logistics/quotes', label: 'Cotations import' },
   { href: '/enterprise/search', label: 'Recherche' },
   { href: '/enterprise/centers', label: 'Centres' },
   { href: '/enterprise/returns', label: 'Retours' },

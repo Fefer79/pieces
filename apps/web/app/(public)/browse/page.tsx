@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { LandingPage } from '@/components/landing-page'
 import { BrowseContent } from '@/components/browse-content'
@@ -155,6 +156,22 @@ export default function BrowsePage() {
 
         {/* Browse content (sélection véhicule + recherche + catégories) */}
         <BrowseContent variant="mobile" />
+
+        {/* Entrée discrète vers le service d'import (cf. plan logistique) */}
+        <div className="mx-4 mt-4 rounded-md border border-border bg-card p-4">
+          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+            Logistique d&apos;import
+          </div>
+          <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink">
+            Pièce introuvable à Abidjan ? Estimation immédiate pour la faire venir.
+          </p>
+          <Link
+            href="/logistique/devis"
+            className="mt-2 inline-block text-[13.5px] font-semibold text-ink-2 underline underline-offset-2 hover:text-ink"
+          >
+            Demander une cotation d&apos;import →
+          </Link>
+        </div>
 
         {/* Bottom nav */}
         <BottomNav />

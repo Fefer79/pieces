@@ -138,6 +138,27 @@ export default function EnterpriseRequestDetailPage() {
           </div>
 
           {enterpriseId && (
+            <div className="rounded-md border border-accent/30 bg-accent/5 p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-lg text-ink">Faire importer cette pièce</h2>
+                  <p className="mt-1 text-[13px] text-muted">
+                    Pièce introuvable en stock ? Passez la demande en cotation d&apos;import — la
+                    matrice compare aérien / maritime / local avec le coût d&apos;immobilisation du
+                    véhicule.
+                  </p>
+                </div>
+                <Link
+                  href={`/enterprise/logistics/quotes/new?fromRequest=${requestId}`}
+                  className="rounded-md bg-accent px-4 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-accent-hover"
+                >
+                  Demander une cotation import →
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {enterpriseId && (
             <LogisticsMatrixCard enterpriseId={enterpriseId} requestId={requestId} />
           )}
 

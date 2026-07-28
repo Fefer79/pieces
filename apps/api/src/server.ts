@@ -28,6 +28,11 @@ import { returnRoutes } from './modules/returns/return.routes.js'
 import { vendorContractRoutes } from './modules/vendorContract/vendorContract.routes.js'
 import { enrichmentRoutes } from './modules/enrichment/enrichment.routes.js'
 import { contactsRoutes } from './modules/contacts/contacts.routes.js'
+import {
+  logisticsRoutes,
+  enterpriseLogisticsRoutes,
+  adminLogisticsRoutes,
+} from './modules/logistics/logistics.routes.js'
 import multipart from '@fastify/multipart'
 import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled, ensureEnrichmentSourcingScheduled } from './modules/queue/worker.js'
 
@@ -36,6 +41,11 @@ const env = apiEnvSchema.parse(process.env)
 
 export function buildApp() {
   const fastify = Fastify({
+    // Sans ceci, `request.ip` est l'IP du proxy (Render / Cloudflare) et non
+    // celle du visiteur : le rate limit devient un seau unique partagé par tout
+    // le trafic, et tout anti-abus par IP sur un formulaire public est
+    // inopérant — un seul bot bloquerait alors tous les utilisateurs réels.
+    trustProxy: true,
     logger: {
       level: env.PINO_LOG_LEVEL,
       redact: {
@@ -80,6 +90,11 @@ export function buildApp() {
   fastify.register(vendorContractRoutes, { prefix: '/api/v1/vendor-contracts' })
   fastify.register(enrichmentRoutes, { prefix: '/api/v1/enrichments' })
   fastify.register(contactsRoutes, { prefix: '/api/v1/contacts' })
+  fastify.register(logisticsRoutes, { prefix: '/api/v1/logistics' })
+  // Cotations logistique scopées flotte — servies par le module logistics mais
+  // montées sous le préfixe entreprise pour rester cohérentes avec le reste.
+  fastify.register(enterpriseLogisticsRoutes, { prefix: '/api/v1/enterprises' })
+  fastify.register(adminLogisticsRoutes, { prefix: '/api/v1/admin/logistics' })
 
   return fastify
 }

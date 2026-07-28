@@ -3,6 +3,7 @@ import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
 import { normalizeHeader, extractSheetRows } from './xlsxImport.js'
 import { parseCsv } from './vehicle.service.js'
+import { normalizeIvorianPhone as normalizePhone } from '../../lib/phone.js'
 import type { DriverStatus, DriverIncidentType, DriverIncidentSeverity } from '@prisma/client'
 
 const MANAGE_ROLES = ['OWNER', 'MANAGER'] as const
@@ -399,23 +400,6 @@ export async function importDriversFromXlsx(
 ): Promise<DriverImportResult> {
   const rows = await extractSheetRows(buffer, (name) => name.startsWith('chauffeur'))
   return importDriverRows(enterpriseId, userId, rows, 'Feuille « Chauffeurs » vide')
-}
-
-/** Met le numéro au format +225XXXXXXXXXX, en récupérant un éventuel 0 perdu par Excel. */
-function normalizePhone(raw: string): string | null {
-  let digits = raw.replace(/[^\d+]/g, '')
-  if (digits.startsWith('+')) {
-    digits = '+' + digits.slice(1).replace(/\D/g, '')
-  } else if (digits.startsWith('225')) {
-    digits = '+' + digits
-  } else if (digits.length === 10) {
-    digits = '+225' + digits // numéro local 0X……
-  } else if (digits.length === 9) {
-    digits = '+2250' + digits // Excel a mangé le 0 initial
-  } else {
-    digits = '+225' + digits
-  }
-  return /^\+225\d{10}$/.test(digits) ? digits : null
 }
 
 /** Parse une date JJ/MM/AAAA ou AAAA-MM-JJ ; null si invalide/vide. */

@@ -1,5 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
-import { authCookieDomain } from './cookie-domain'
+import { authCookieDomain, isPrimaryAuthHost } from './cookie-domain'
 
 // Instance navigateur unique. Sans ce singleton, chaque appel à createClient()
 // (31 sites) crée un GoTrueClient distinct avec son propre auto-refresh. Comme les
@@ -18,15 +18,15 @@ function buildClient() {
     cookieOptions: { domain: authCookieDomain(host) },
   })
 
-  // Le cookie de session est partagé entre pieces.ci et flotte.pieces.ci, mais
-  // les Web Locks qui sérialisent les refresh sont scopés par origine : deux
-  // onglets sur les deux domaines rafraîchissent le même token (à usage unique)
-  // en parallèle et se le volent → boucle 400/429. Une seule origine
-  // (pieces.ci) garde le ticker de refresh en arrière-plan ; sur flotte.* le
-  // refresh reste possible à la demande (getSession() rafraîchit un token
-  // expiré), seul le ticker est coupé. NB : @supabase/ssr force
-  // autoRefreshToken:true côté navigateur, d'où la coupure après création.
-  if (host?.startsWith('flotte.')) {
+  // Le cookie de session est partagé entre pieces.ci et ses sous-domaines
+  // (flotte., logistique., …), mais les Web Locks qui sérialisent les refresh
+  // sont scopés par origine : deux onglets sur deux domaines rafraîchissent le
+  // même token (à usage unique) en parallèle et se le volent → boucle 400/429.
+  // Une seule origine (pieces.ci) garde le ticker de refresh en arrière-plan ;
+  // sur les sous-domaines le refresh reste possible à la demande (getSession()
+  // rafraîchit un token expiré), seul le ticker est coupé. NB : @supabase/ssr
+  // force autoRefreshToken:true côté navigateur, d'où la coupure après création.
+  if (!isPrimaryAuthHost(host)) {
     ;(client.auth as unknown as { autoRefreshToken: boolean }).autoRefreshToken = false
     void client.auth.stopAutoRefresh()
   }

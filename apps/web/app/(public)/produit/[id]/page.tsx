@@ -411,6 +411,23 @@ export default function ProductPage() {
                 )}
               </div>
 
+              {!item.inStock && (
+                <div className="mt-3 rounded-md border border-accent/30 bg-accent/5 p-4">
+                  <p className="text-[13.5px] leading-relaxed text-ink">
+                    Cette pièce n&apos;est pas en stock actuellement. Vous pouvez la faire
+                    importer — estimation immédiate, sans compte, en deux minutes.
+                  </p>
+                  <Link
+                    href={`/logistique/devis?piece=${encodeURIComponent(item.name ?? '')}${
+                      item.oemReference ? `&oem=${encodeURIComponent(item.oemReference)}` : ''
+                    }`}
+                    className="mt-2 inline-block rounded-md bg-accent px-4 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-accent-hover"
+                  >
+                    Demander une cotation d&apos;import →
+                  </Link>
+                </div>
+              )}
+
               {/* 3. Bloc vendeur — note d'abord (façon Amazon), nom discret */}
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card px-4 py-3">
                 <div>

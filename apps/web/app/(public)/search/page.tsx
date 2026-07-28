@@ -334,15 +334,23 @@ function SearchPageContent() {
             )}
 
             {!loading && items.length === 0 && (
-              <div className="mt-5 rounded-md border border-border bg-card p-8 text-center">
-                <p className="text-sm text-muted">
-                  {hasVehicle
-                    ? `Aucune pièce compatible trouvée pour votre ${brand} ${model}${year ? ` ${year}` : ''}.`
-                    : 'Aucun résultat pour ces filtres.'}
-                </p>
-                <p className="mt-1 text-xs text-muted-2">
-                  Essayez de changer la catégorie, élargir la fourchette de prix, ou contactez-nous via WhatsApp.
-                </p>
+              <div className="mt-5 space-y-3">
+                <div className="rounded-md border border-border bg-card p-8 text-center">
+                  <p className="text-sm text-muted">
+                    {hasVehicle
+                      ? `Aucune pièce compatible trouvée pour votre ${brand} ${model}${year ? ` ${year}` : ''}.`
+                      : 'Aucun résultat pour ces filtres.'}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-2">
+                    Essayez de changer la catégorie, élargir la fourchette de prix, ou contactez-nous via WhatsApp.
+                  </p>
+                </div>
+                <ImportCallout
+                  piece={q ?? undefined}
+                  brand={brand ?? undefined}
+                  model={model ?? undefined}
+                  year={year ?? undefined}
+                />
               </div>
             )}
 
@@ -370,5 +378,43 @@ export default function SearchPage() {
     <Suspense fallback={<div className="min-h-dvh bg-surface" />}>
       <SearchPageContent />
     </Suspense>
+  )
+}
+
+function ImportCallout({
+  piece,
+  brand,
+  model,
+  year,
+}: {
+  piece?: string
+  brand?: string
+  model?: string
+  year?: string
+}) {
+  const params = new URLSearchParams()
+  if (piece) params.set('piece', piece)
+  if (brand) params.set('brand', brand)
+  if (model) params.set('model', model)
+  if (year) params.set('year', year)
+  return (
+    <div className="rounded-md border border-accent/30 bg-accent/5 p-5">
+      <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-accent">
+        Logistique d&apos;import
+      </div>
+      <h3 className="mt-1.5 text-[16px] font-semibold text-ink">
+        Pièce introuvable en Côte d&apos;Ivoire ? Faites-la importer.
+      </h3>
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">
+        Estimation immédiate, sans compte, en deux minutes. Devis confirmé par WhatsApp sous deux
+        heures ouvrées.
+      </p>
+      <Link
+        href={`/logistique/devis?${params.toString()}`}
+        className="mt-3 inline-block rounded-md bg-accent px-4 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-accent-hover"
+      >
+        Demander une cotation d&apos;import →
+      </Link>
+    </div>
   )
 }

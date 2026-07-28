@@ -18,42 +18,44 @@ enum Role {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  supabaseId    String   @unique @map("supabase_id")
-  phone         String?  @unique
+  id            String    @id @default(uuid())
+  supabaseId    String    @unique @map("supabase_id")
+  phone         String?   @unique
   name          String?
-  email         String?  @unique
+  email         String?   @unique
   roles         Role[]
-  activeContext  Role?    @map("active_context")
+  activeContext Role?     @map("active_context")
   consentedAt   DateTime? @map("consented_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  dataDeletionRequests DataDeletionRequest[]
-  vendor               Vendor?
-  vehicles             Vehicle[]
-  enterpriseMemberships EnterpriseMember[]
-  initiatedOrders      Order[]  @relation("OrderInitiator")
-  riderDeliveries      Delivery[] @relation("DeliveryRider")
-  sellerReviews        SellerReview[] @relation("SellerReviewer")
-  deliveryReviews      DeliveryReview[] @relation("DeliveryReviewer")
-  disputes             Dispute[] @relation("DisputeOpener")
-  returnRequests       ReturnOrder[] @relation("ReturnOrderRequester")
+  dataDeletionRequests   DataDeletionRequest[]
+  vendor                 Vendor?
+  vehicles               Vehicle[]
+  enterpriseMemberships  EnterpriseMember[]
+  initiatedOrders        Order[]                 @relation("OrderInitiator")
+  riderDeliveries        Delivery[]              @relation("DeliveryRider")
+  sellerReviews          SellerReview[]          @relation("SellerReviewer")
+  deliveryReviews        DeliveryReview[]        @relation("DeliveryReviewer")
+  disputes               Dispute[]               @relation("DisputeOpener")
+  returnRequests         ReturnOrder[]           @relation("ReturnOrderRequester")
   notificationPreference NotificationPreference?
-  managedVendors       Vendor[]      @relation("VendorManagedByLiaison")
-  liaisonCatalogItems  CatalogItem[] @relation("CatalogItemCreatedByLiaison")
-  activityLogs         ActivityLog[]
-  driverProfiles       Driver[]      @relation("UserDriverProfile")
-  partEnrichments      PartEnrichment[] @relation("EnrichmentLiaison")
-  contacts             VendorContact[] @relation("ContactCreatedBy")
-  contactActivities    ContactActivity[] @relation("ContactActivityAuthor")
-  createdPartRequests  PartRequest[] @relation("PartRequestCreator")
-  approvedPartRequests PartRequest[] @relation("PartRequestApprover")
-  partRequestEvents    PartRequestEvent[] @relation("PartRequestEventActor")
+  managedVendors         Vendor[]                @relation("VendorManagedByLiaison")
+  liaisonCatalogItems    CatalogItem[]           @relation("CatalogItemCreatedByLiaison")
+  activityLogs           ActivityLog[]
+  driverProfiles         Driver[]                @relation("UserDriverProfile")
+  partEnrichments        PartEnrichment[]        @relation("EnrichmentLiaison")
+  contacts               VendorContact[]         @relation("ContactCreatedBy")
+  contactActivities      ContactActivity[]       @relation("ContactActivityAuthor")
+  createdPartRequests    PartRequest[]           @relation("PartRequestCreator")
+  approvedPartRequests   PartRequest[]           @relation("PartRequestApprover")
+  partRequestEvents      PartRequestEvent[]      @relation("PartRequestEventActor")
+  logisticsQuoteRequests LogisticsQuoteRequest[] @relation("LogisticsLeadOwner")
+  assignedLogisticsLeads LogisticsQuoteRequest[] @relation("LogisticsLeadAssignee")
 
-  @@map("users")
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
+  @@map("users")
 }
 
 model ActivityLog {
@@ -68,11 +70,11 @@ model ActivityLog {
 
   actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
 
-  @@map("activity_logs")
   @@index([actorId, createdAt(sort: Desc)], name: "idx_activity_logs_actor")
   @@index([action, createdAt(sort: Desc)], name: "idx_activity_logs_action")
   @@index([targetType, targetId], name: "idx_activity_logs_target")
   @@index([createdAt(sort: Desc)], name: "idx_activity_logs_created_at")
+  @@map("activity_logs")
 }
 
 enum DeletionRequestStatus {
@@ -186,37 +188,37 @@ enum JobStatus {
 }
 
 model Vendor {
-  id          String       @id @default(uuid())
-  userId      String?      @unique @map("user_id")
-  user        User?        @relation(fields: [userId], references: [id])
-  managedByLiaisonId String? @map("managed_by_liaison_id")
-  managedByLiaison   User?  @relation("VendorManagedByLiaison", fields: [managedByLiaisonId], references: [id])
-  shopName    String       @map("shop_name")
-  contactName String       @map("contact_name")
-  phone       String
-  vendorType  VendorType   @map("vendor_type")
-  status      VendorStatus @default(PENDING_ACTIVATION)
-  commune     String?
-  address     String?
-  lat         Float?
-  lng         Float?
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  id                 String       @id @default(uuid())
+  userId             String?      @unique @map("user_id")
+  user               User?        @relation(fields: [userId], references: [id])
+  managedByLiaisonId String?      @map("managed_by_liaison_id")
+  managedByLiaison   User?        @relation("VendorManagedByLiaison", fields: [managedByLiaisonId], references: [id])
+  shopName           String       @map("shop_name")
+  contactName        String       @map("contact_name")
+  phone              String
+  vendorType         VendorType   @map("vendor_type")
+  status             VendorStatus @default(PENDING_ACTIVATION)
+  commune            String?
+  address            String?
+  lat                Float?
+  lng                Float?
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
 
-  deliveryZones String[]         @default([]) @map("delivery_zones")
+  deliveryZones String[] @default([]) @map("delivery_zones")
 
-  isExternal     Boolean @default(false) @map("is_external")
-  externalSource String? @map("external_source")
+  isExternal       Boolean @default(false) @map("is_external")
+  externalSource   String? @map("external_source")
   // Identité stable du vendeur côté source externe (ex. UUID `data-user-id` CoinAfrique).
   // Permet un Vendor par vendeur réel : la dédup se fait sur (source, sellerId), pas sur
   // le téléphone (qui peut manquer). Le vendeur fantôme/fallback utilise '__shadow__'.
   externalSellerId String? @map("external_seller_id")
 
-  ordersDelivered  Int       @default(0) @map("orders_delivered")
-  disputesOpened   Int       @default(0) @map("disputes_opened")
-  avgReviewRating  Float?    @map("avg_review_rating")
-  aggregateRating  Float?    @map("aggregate_rating")
-  scoreUpdatedAt   DateTime? @map("score_updated_at")
+  ordersDelivered Int       @default(0) @map("orders_delivered")
+  disputesOpened  Int       @default(0) @map("disputes_opened")
+  avgReviewRating Float?    @map("avg_review_rating")
+  aggregateRating Float?    @map("aggregate_rating")
+  scoreUpdatedAt  DateTime? @map("score_updated_at")
 
   // Relance des fiches incomplètes (KYC / localisation manquants). Dédoublonnage :
   // on ne renotifie qu'après un délai, et au plus relanceCount fois.
@@ -227,13 +229,13 @@ model Vendor {
   guaranteeSignatures VendorGuaranteeSignature[]
   catalogItems        CatalogItem[]
   contracts           VendorContract[]
-  partEnrichments     PartEnrichment[] @relation("EnrichmentVendeur")
+  partEnrichments     PartEnrichment[]           @relation("EnrichmentVendeur")
   contacts            VendorContact[]
 
-  @@map("vendors")
   @@unique([externalSource, externalSellerId], name: "uq_vendors_external_seller")
   @@index([phone], name: "idx_vendors_phone")
   @@index([managedByLiaisonId], name: "idx_vendors_managed_by_liaison")
+  @@map("vendors")
 }
 
 model VendorGuaranteeSignature {
@@ -243,8 +245,8 @@ model VendorGuaranteeSignature {
   guaranteeType GuaranteeType @map("guarantee_type")
   signedAt      DateTime      @default(now()) @map("signed_at")
 
-  @@map("vendor_guarantee_signatures")
   @@unique([vendorId, guaranteeType], name: "uq_vendor_guarantee_type")
+  @@map("vendor_guarantee_signatures")
 }
 
 model VendorKyc {
@@ -294,9 +296,9 @@ model VendorContract {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("vendor_contracts")
   @@index([vendorId], name: "idx_vendor_contracts_vendor")
   @@index([status], name: "idx_vendor_contracts_status")
+  @@map("vendor_contracts")
 }
 
 model DataDeletionRequest {
@@ -307,63 +309,63 @@ model DataDeletionRequest {
   requestedAt DateTime              @default(now()) @map("requested_at")
   processedAt DateTime?             @map("processed_at")
 
-  @@map("data_deletion_requests")
   @@index([userId], name: "idx_data_deletion_requests_user")
+  @@map("data_deletion_requests")
 }
 
 model CatalogItem {
-  id                   String            @id @default(uuid())
-  vendorId             String            @map("vendor_id")
-  vendor               Vendor            @relation(fields: [vendorId], references: [id])
-  createdByLiaisonId   String?           @map("created_by_liaison_id")
-  createdByLiaison     User?             @relation("CatalogItemCreatedByLiaison", fields: [createdByLiaisonId], references: [id])
-  name                 String?
-  category             String?
-  subcategory          String?
-  oemReference         String?           @map("oem_reference")
-  vehicleCompatibility String?           @map("vehicle_compatibility")
-  suggestedPrice       Int?              @map("suggested_price")
-  price                Int?
-  status               CatalogItemStatus @default(DRAFT)
-  imageOriginalUrl     String?           @map("image_original_url")
-  imageThumbUrl        String?           @map("image_thumb_url")
-  imageSmallUrl        String?           @map("image_small_url")
-  imageMediumUrl       String?           @map("image_medium_url")
-  imageLargeUrl        String?           @map("image_large_url")
-  serialPhotoUrl       String?           @map("serial_photo_url")
-  aiConfidence         Float?            @map("ai_confidence")
-  aiGenerated          Boolean           @default(true) @map("ai_generated")
-  qualityScore         Float?            @map("quality_score")
-  qualityIssue         String?           @map("quality_issue")
-  inStock              Boolean           @default(true) @map("in_stock")
+  id                      String                  @id @default(uuid())
+  vendorId                String                  @map("vendor_id")
+  vendor                  Vendor                  @relation(fields: [vendorId], references: [id])
+  createdByLiaisonId      String?                 @map("created_by_liaison_id")
+  createdByLiaison        User?                   @relation("CatalogItemCreatedByLiaison", fields: [createdByLiaisonId], references: [id])
+  name                    String?
+  category                String?
+  subcategory             String?
+  oemReference            String?                 @map("oem_reference")
+  vehicleCompatibility    String?                 @map("vehicle_compatibility")
+  suggestedPrice          Int?                    @map("suggested_price")
+  price                   Int?
+  status                  CatalogItemStatus       @default(DRAFT)
+  imageOriginalUrl        String?                 @map("image_original_url")
+  imageThumbUrl           String?                 @map("image_thumb_url")
+  imageSmallUrl           String?                 @map("image_small_url")
+  imageMediumUrl          String?                 @map("image_medium_url")
+  imageLargeUrl           String?                 @map("image_large_url")
+  serialPhotoUrl          String?                 @map("serial_photo_url")
+  aiConfidence            Float?                  @map("ai_confidence")
+  aiGenerated             Boolean                 @default(true) @map("ai_generated")
+  qualityScore            Float?                  @map("quality_score")
+  qualityIssue            String?                 @map("quality_issue")
+  inStock                 Boolean                 @default(true) @map("in_stock")
   // null = quantité non suivie (le vendeur gère inStock à la main, comportement historique).
   // Renseignée : décrémentée à chaque commande payée, inStock dérivé (quantité > 0).
-  stockQuantity        Int?              @map("stock_quantity")
-  lowStockThreshold    Int               @default(1) @map("low_stock_threshold")
-  condition            PartCondition?
-  partSource           PartSource?       @map("part_source")
-  warrantyValue        Int?              @map("warranty_value")
-  warrantyUnit         WarrantyUnit?     @map("warranty_unit")
-  priceUpdatedAt       DateTime?         @map("price_updated_at")
-  priceAlertFlag           Boolean           @default(false) @map("price_alert_flag")
-  isUniversallyCompatible  Boolean           @default(false) @map("is_universally_compatible")
-  commissionAmount         Int?              @map("commission_amount")
-  commissionAcceptedAt DateTime?         @map("commission_accepted_at")
-  externalSource       String?           @map("external_source")
-  externalSourceId     String?           @map("external_source_id")
-  externalSourceUrl    String?           @map("external_source_url")
-  photos               CatalogItemPhoto[]
-  fitments             CatalogItemFitment[]
-  bufferStockEntries   EnterpriseBufferStock[]
-  createdAt            DateTime          @default(now()) @map("created_at")
-  updatedAt            DateTime          @updatedAt @map("updated_at")
+  stockQuantity           Int?                    @map("stock_quantity")
+  lowStockThreshold       Int                     @default(1) @map("low_stock_threshold")
+  condition               PartCondition?
+  partSource              PartSource?             @map("part_source")
+  warrantyValue           Int?                    @map("warranty_value")
+  warrantyUnit            WarrantyUnit?           @map("warranty_unit")
+  priceUpdatedAt          DateTime?               @map("price_updated_at")
+  priceAlertFlag          Boolean                 @default(false) @map("price_alert_flag")
+  isUniversallyCompatible Boolean                 @default(false) @map("is_universally_compatible")
+  commissionAmount        Int?                    @map("commission_amount")
+  commissionAcceptedAt    DateTime?               @map("commission_accepted_at")
+  externalSource          String?                 @map("external_source")
+  externalSourceId        String?                 @map("external_source_id")
+  externalSourceUrl       String?                 @map("external_source_url")
+  photos                  CatalogItemPhoto[]
+  fitments                CatalogItemFitment[]
+  bufferStockEntries      EnterpriseBufferStock[]
+  createdAt               DateTime                @default(now()) @map("created_at")
+  updatedAt               DateTime                @updatedAt @map("updated_at")
 
-  @@map("catalog_items")
+  @@unique([externalSource, externalSourceId], name: "uq_catalog_items_external")
   @@index([vendorId, status], name: "idx_catalog_items_vendor_status")
   @@index([createdByLiaisonId], name: "idx_catalog_items_created_by_liaison")
   @@index([oemReference, partSource, condition], name: "idx_catalog_items_oem_group")
   @@index([category, subcategory], name: "idx_catalog_items_category")
-  @@unique([externalSource, externalSourceId], name: "uq_catalog_items_external")
+  @@map("catalog_items")
 }
 
 model CatalogItemFitment {
@@ -377,26 +379,26 @@ model CatalogItemFitment {
   engine        String?
   createdAt     DateTime    @default(now()) @map("created_at")
 
-  @@map("catalog_item_fitments")
   @@index([brand, model], name: "idx_fitments_brand_model")
   @@index([catalogItemId], name: "idx_fitments_item")
+  @@map("catalog_item_fitments")
 }
 
 model CatalogItemPhoto {
-  id              String      @id @default(uuid())
-  catalogItemId   String      @map("catalog_item_id")
-  catalogItem     CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
-  position        Int
-  urlOriginal     String      @map("url_original")
-  urlThumb        String?     @map("url_thumb")
-  urlSmall        String?     @map("url_small")
-  urlMedium       String?     @map("url_medium")
-  urlLarge        String?     @map("url_large")
-  createdAt       DateTime    @default(now()) @map("created_at")
+  id            String      @id @default(uuid())
+  catalogItemId String      @map("catalog_item_id")
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  position      Int
+  urlOriginal   String      @map("url_original")
+  urlThumb      String?     @map("url_thumb")
+  urlSmall      String?     @map("url_small")
+  urlMedium     String?     @map("url_medium")
+  urlLarge      String?     @map("url_large")
+  createdAt     DateTime    @default(now()) @map("created_at")
 
-  @@map("catalog_item_photos")
   @@unique([catalogItemId, position], name: "uq_catalog_photo_position")
   @@index([catalogItemId], name: "idx_catalog_photos_item")
+  @@map("catalog_item_photos")
 }
 
 model Job {
@@ -411,8 +413,8 @@ model Job {
   completedAt DateTime? @map("completed_at")
   createdAt   DateTime  @default(now()) @map("created_at")
 
-  @@map("jobs")
   @@index([status, type], name: "idx_jobs_status_type")
+  @@map("jobs")
 }
 
 enum VehicleUsageType {
@@ -450,19 +452,20 @@ model Enterprise {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  members             EnterpriseMember[]
-  vehicles            Vehicle[]
-  orders              Order[]
-  partRequests        PartRequest[]
-  maintenanceCenters  MaintenanceCenter[]
-  bufferStock         EnterpriseBufferStock[]
-  subscriptions       EnterpriseSubscription[]
-  invoices            Invoice[]
-  monthlyInvoices     EnterpriseMonthlyInvoice[]
-  drivers             Driver[]
+  members                EnterpriseMember[]
+  vehicles               Vehicle[]
+  orders                 Order[]
+  partRequests           PartRequest[]
+  maintenanceCenters     MaintenanceCenter[]
+  bufferStock            EnterpriseBufferStock[]
+  subscriptions          EnterpriseSubscription[]
+  invoices               Invoice[]
+  monthlyInvoices        EnterpriseMonthlyInvoice[]
+  drivers                Driver[]
+  logisticsQuoteRequests LogisticsQuoteRequest[]
 
-  @@map("enterprises")
   @@index([slug], name: "idx_enterprises_slug")
+  @@map("enterprises")
 }
 
 enum SubscriptionTier {
@@ -498,68 +501,68 @@ enum SubscriptionEventKind {
 }
 
 model Invoice {
-  id                   String   @id @default(uuid())
-  orderId              String   @unique @map("order_id")
-  order                Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  enterpriseId         String?  @map("enterprise_id")
-  enterprise           Enterprise? @relation(fields: [enterpriseId], references: [id])
-  invoiceNumber        String   @unique @map("invoice_number")
-  issuedAt             DateTime @default(now()) @map("issued_at")
+  id                  String      @id @default(uuid())
+  orderId             String      @unique @map("order_id")
+  order               Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  enterpriseId        String?     @map("enterprise_id")
+  enterprise          Enterprise? @relation(fields: [enterpriseId], references: [id])
+  invoiceNumber       String      @unique @map("invoice_number")
+  issuedAt            DateTime    @default(now()) @map("issued_at")
   // Amounts en FCFA
-  subtotalHt           Int      @map("subtotal_ht")
-  tvaRate              Int      @default(18) @map("tva_rate") // pourcentage
-  tvaAmount            Int      @map("tva_amount")
-  totalTtc             Int      @map("total_ttc")
+  subtotalHt          Int         @map("subtotal_ht")
+  tvaRate             Int         @default(18) @map("tva_rate") // pourcentage
+  tvaAmount           Int         @map("tva_amount")
+  totalTtc            Int         @map("total_ttc")
   // FNE / DGI compliance — nullable jusqu'à intégration FNE-CI officielle
-  fneValidationNumber  String?  @map("fne_validation_number")
-  fneQrPayload         String?  @map("fne_qr_payload")
-  fneSubmittedAt       DateTime? @map("fne_submitted_at")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
+  fneValidationNumber String?     @map("fne_validation_number")
+  fneQrPayload        String?     @map("fne_qr_payload")
+  fneSubmittedAt      DateTime?   @map("fne_submitted_at")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
 
-  @@map("invoices")
   @@index([enterpriseId], name: "idx_invoices_enterprise")
   @@index([issuedAt], name: "idx_invoices_issued_at")
+  @@map("invoices")
 }
 
 model EnterpriseMonthlyInvoice {
-  id            String   @id @default(uuid())
-  enterpriseId  String   @map("enterprise_id")
-  enterprise    Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-  year          Int
-  month         Int      // 1-12
-  invoiceCount  Int      @default(0) @map("invoice_count")
-  totalHt       Int      @default(0) @map("total_ht")
-  tvaAmount     Int      @default(0) @map("tva_amount")
-  totalTtc      Int      @default(0) @map("total_ttc")
-  generatedAt   DateTime @default(now()) @map("generated_at")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id           String     @id @default(uuid())
+  enterpriseId String     @map("enterprise_id")
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  year         Int
+  month        Int // 1-12
+  invoiceCount Int        @default(0) @map("invoice_count")
+  totalHt      Int        @default(0) @map("total_ht")
+  tvaAmount    Int        @default(0) @map("tva_amount")
+  totalTtc     Int        @default(0) @map("total_ttc")
+  generatedAt  DateTime   @default(now()) @map("generated_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
 
-  @@map("enterprise_monthly_invoices")
   @@unique([enterpriseId, year, month], name: "uq_enterprise_monthly")
   @@index([enterpriseId], name: "idx_monthly_invoices_enterprise")
+  @@map("enterprise_monthly_invoices")
 }
 
 model EnterpriseSubscription {
-  id                String             @id @default(uuid())
-  enterpriseId      String             @map("enterprise_id")
-  enterprise        Enterprise         @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-  tier              SubscriptionTier
-  status            SubscriptionStatus @default(TRIALING)
-  billingCycle      BillingCycle       @default(MONTHLY) @map("billing_cycle")
-  trialEndsAt       DateTime?          @map("trial_ends_at")
-  startedAt         DateTime           @default(now()) @map("started_at")
-  currentPeriodEnd  DateTime?          @map("current_period_end")
-  cancelledAt       DateTime?          @map("cancelled_at")
-  notes             String?
-  createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
+  id               String             @id @default(uuid())
+  enterpriseId     String             @map("enterprise_id")
+  enterprise       Enterprise         @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  tier             SubscriptionTier
+  status           SubscriptionStatus @default(TRIALING)
+  billingCycle     BillingCycle       @default(MONTHLY) @map("billing_cycle")
+  trialEndsAt      DateTime?          @map("trial_ends_at")
+  startedAt        DateTime           @default(now()) @map("started_at")
+  currentPeriodEnd DateTime?          @map("current_period_end")
+  cancelledAt      DateTime?          @map("cancelled_at")
+  notes            String?
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
 
   events EnterpriseSubscriptionEvent[]
 
-  @@map("enterprise_subscriptions")
   @@index([enterpriseId], name: "idx_enterprise_subs_enterprise")
   @@index([status], name: "idx_enterprise_subs_status")
+  @@map("enterprise_subscriptions")
 }
 
 model EnterpriseSubscriptionEvent {
@@ -571,31 +574,31 @@ model EnterpriseSubscriptionEvent {
   actorUserId    String?                @map("actor_user_id")
   createdAt      DateTime               @default(now()) @map("created_at")
 
-  @@map("enterprise_subscription_events")
   @@index([subscriptionId], name: "idx_subscription_events_sub")
   @@index([kind], name: "idx_subscription_events_kind")
+  @@map("enterprise_subscription_events")
 }
 
 model EnterpriseBufferStock {
-  id              String      @id @default(uuid())
-  enterpriseId    String      @map("enterprise_id")
-  enterprise      Enterprise  @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-  catalogItemId   String      @map("catalog_item_id")
-  catalogItem     CatalogItem @relation(fields: [catalogItemId], references: [id])
-  targetQty       Int         @map("target_qty")
-  currentQty      Int         @default(0) @map("current_qty")
-  autoReplenish   Boolean     @default(false) @map("auto_replenish")
+  id                   String      @id @default(uuid())
+  enterpriseId         String      @map("enterprise_id")
+  enterprise           Enterprise  @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  catalogItemId        String      @map("catalog_item_id")
+  catalogItem          CatalogItem @relation(fields: [catalogItemId], references: [id])
+  targetQty            Int         @map("target_qty")
+  currentQty           Int         @default(0) @map("current_qty")
+  autoReplenish        Boolean     @default(false) @map("auto_replenish")
   // Anti-spam du job de réappro : on ne régénère pas un bon tant que le dernier
   // est récent ou non résolu. lastReplenishOrderId pointe le dernier bon créé.
-  lastReplenishedAt   DateTime? @map("last_replenished_at")
-  lastReplenishOrderId String?  @map("last_replenish_order_id")
-  notes           String?
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  lastReplenishedAt    DateTime?   @map("last_replenished_at")
+  lastReplenishOrderId String?     @map("last_replenish_order_id")
+  notes                String?
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
 
-  @@map("enterprise_buffer_stock")
   @@unique([enterpriseId, catalogItemId], name: "uq_enterprise_buffer_item")
   @@index([enterpriseId], name: "idx_buffer_stock_enterprise")
+  @@map("enterprise_buffer_stock")
 }
 
 // ---------------------------------------------------------------------------
@@ -627,39 +630,40 @@ enum PartRequestSource {
 }
 
 model PartRequest {
-  id                String             @id @default(uuid())
-  enterpriseId      String             @map("enterprise_id")
-  enterprise        Enterprise         @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-  vehicleId         String             @map("vehicle_id")
-  vehicle           Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  driverId          String?            @map("driver_id")
-  driver            Driver?            @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  createdByUserId   String             @map("created_by_user_id")
-  createdByUser     User               @relation("PartRequestCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  status            PartRequestStatus  @default(DRAFT)
-  description       String?
-  partName          String?            @map("part_name")
-  category          String?
-  oemReference      String?            @map("oem_reference")
-  urgency           PartRequestUrgency  @default(NORMAL)
-  preferredSource   PartRequestSource   @default(ANY) @map("preferred_source")
-  maxBudget         Int?               @map("max_budget")
-  approvedByUserId  String?            @map("approved_by_user_id")
-  approvedByUser    User?              @relation("PartRequestApprover", fields: [approvedByUserId], references: [id], onDelete: SetNull)
-  approvedAt        DateTime?          @map("approved_at")
-  rejectionReason   String?            @map("rejection_reason")
-  orderId           String?            @unique @map("order_id")
-  order             Order?             @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  photos            PartRequestPhoto[]
-  events            PartRequestEvent[]
-  createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
+  id                     String                  @id @default(uuid())
+  enterpriseId           String                  @map("enterprise_id")
+  enterprise             Enterprise              @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  vehicleId              String                  @map("vehicle_id")
+  vehicle                Vehicle                 @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId               String?                 @map("driver_id")
+  driver                 Driver?                 @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  createdByUserId        String                  @map("created_by_user_id")
+  createdByUser          User                    @relation("PartRequestCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  status                 PartRequestStatus       @default(DRAFT)
+  description            String?
+  partName               String?                 @map("part_name")
+  category               String?
+  oemReference           String?                 @map("oem_reference")
+  urgency                PartRequestUrgency      @default(NORMAL)
+  preferredSource        PartRequestSource       @default(ANY) @map("preferred_source")
+  maxBudget              Int?                    @map("max_budget")
+  approvedByUserId       String?                 @map("approved_by_user_id")
+  approvedByUser         User?                   @relation("PartRequestApprover", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  approvedAt             DateTime?               @map("approved_at")
+  rejectionReason        String?                 @map("rejection_reason")
+  orderId                String?                 @unique @map("order_id")
+  order                  Order?                  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  photos                 PartRequestPhoto[]
+  events                 PartRequestEvent[]
+  logisticsQuoteRequests LogisticsQuoteRequest[]
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
 
-  @@map("part_requests")
   @@index([enterpriseId, status], name: "idx_part_requests_enterprise_status")
   @@index([vehicleId], name: "idx_part_requests_vehicle")
   @@index([createdByUserId], name: "idx_part_requests_created_by")
   @@index([status], name: "idx_part_requests_status")
+  @@map("part_requests")
 }
 
 model PartRequestPhoto {
@@ -671,47 +675,47 @@ model PartRequestPhoto {
   position      Int         @default(0)
   createdAt     DateTime    @default(now()) @map("created_at")
 
-  @@map("part_request_photos")
   @@index([partRequestId], name: "idx_part_request_photos_request")
+  @@map("part_request_photos")
 }
 
 model PartRequestEvent {
-  id            String            @id @default(uuid())
-  partRequestId String            @map("part_request_id")
-  partRequest   PartRequest       @relation(fields: [partRequestId], references: [id], onDelete: Cascade)
+  id            String             @id @default(uuid())
+  partRequestId String             @map("part_request_id")
+  partRequest   PartRequest        @relation(fields: [partRequestId], references: [id], onDelete: Cascade)
   fromStatus    PartRequestStatus? @map("from_status")
   toStatus      PartRequestStatus  @map("to_status")
-  actorUserId   String?           @map("actor_user_id")
-  actorUser     User?             @relation("PartRequestEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorUserId   String?            @map("actor_user_id")
+  actorUser     User?              @relation("PartRequestEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
   note          String?
-  createdAt     DateTime          @default(now()) @map("created_at")
+  createdAt     DateTime           @default(now()) @map("created_at")
 
-  @@map("part_request_events")
   @@index([partRequestId], name: "idx_part_request_events_request")
   @@index([createdAt], name: "idx_part_request_events_created_at")
+  @@map("part_request_events")
 }
 
 model MaintenanceCenter {
-  id              String     @id @default(uuid())
-  enterpriseId    String     @map("enterprise_id")
-  enterprise      Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-  name            String
-  commune         String?
-  address         String?
-  lat             Float?
-  lng             Float?
-  contactName     String?    @map("contact_name")
-  contactPhone    String?    @map("contact_phone")
-  deliveryDayOfWeek Int?     @map("delivery_day_of_week")
-  active          Boolean    @default(true)
-  notes           String?
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
+  id                String     @id @default(uuid())
+  enterpriseId      String     @map("enterprise_id")
+  enterprise        Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  name              String
+  commune           String?
+  address           String?
+  lat               Float?
+  lng               Float?
+  contactName       String?    @map("contact_name")
+  contactPhone      String?    @map("contact_phone")
+  deliveryDayOfWeek Int?       @map("delivery_day_of_week")
+  active            Boolean    @default(true)
+  notes             String?
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
 
   vehicles Vehicle[] @relation("VehicleHomeCenter")
 
-  @@map("maintenance_centers")
   @@index([enterpriseId], name: "idx_maintenance_centers_enterprise")
+  @@map("maintenance_centers")
 }
 
 model EnterpriseMember {
@@ -725,9 +729,9 @@ model EnterpriseMember {
   joinedAt     DateTime?            @map("joined_at")
   createdAt    DateTime             @default(now()) @map("created_at")
 
-  @@map("enterprise_members")
   @@unique([enterpriseId, userId], name: "uq_enterprise_member")
   @@index([userId], name: "idx_enterprise_members_user")
+  @@map("enterprise_members")
 }
 
 enum MaintenanceKind {
@@ -746,25 +750,25 @@ enum MaintenanceKind {
 }
 
 model MaintenanceSchedule {
-  id              String          @id @default(uuid())
-  vehicleId       String          @map("vehicle_id")
-  vehicle         Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  kind            MaintenanceKind
-  label           String?
-  intervalKm      Int             @map("interval_km")
-  warningKm       Int             @default(500) @map("warning_km")
-  lastDoneAtKm    Int?            @map("last_done_at_km")
-  lastDoneAt      DateTime?       @map("last_done_at")
-  enabled         Boolean         @default(true)
-  notes           String?
-  lastNotifiedAt     DateTime?    @map("last_notified_at")
-  lastNotifiedStatus String?      @map("last_notified_status")
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+  id                 String          @id @default(uuid())
+  vehicleId          String          @map("vehicle_id")
+  vehicle            Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  kind               MaintenanceKind
+  label              String?
+  intervalKm         Int             @map("interval_km")
+  warningKm          Int             @default(500) @map("warning_km")
+  lastDoneAtKm       Int?            @map("last_done_at_km")
+  lastDoneAt         DateTime?       @map("last_done_at")
+  enabled            Boolean         @default(true)
+  notes              String?
+  lastNotifiedAt     DateTime?       @map("last_notified_at")
+  lastNotifiedStatus String?         @map("last_notified_status")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
 
-  @@map("maintenance_schedules")
   @@index([vehicleId], name: "idx_maintenance_schedules_vehicle")
   @@index([vehicleId, kind], name: "idx_maintenance_schedules_vehicle_kind")
+  @@map("maintenance_schedules")
 }
 
 model Vehicle {
@@ -782,26 +786,27 @@ model Vehicle {
   plate            String?
   engine           String?
   mileage          Int?
-  mileageUpdatedAt DateTime?         @map("mileage_updated_at")
+  mileageUpdatedAt DateTime?          @map("mileage_updated_at")
   usageType        VehicleUsageType?  @map("usage_type")
   energyType       VehicleEnergyType? @map("energy_type")
-  groupName        String?           @map("group_name")
-  photoUrl         String?           @map("photo_url")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
+  groupName        String?            @map("group_name")
+  photoUrl         String?            @map("photo_url")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
 
-  orders               Order[]
-  maintenanceSchedules MaintenanceSchedule[]
-  driverAssignments    DriverAssignment[]
-  driverDailyRecords   DriverDailyRecord[]
-  driverIncidents      DriverIncident[]
-  partRequests         PartRequest[]
+  orders                 Order[]
+  maintenanceSchedules   MaintenanceSchedule[]
+  driverAssignments      DriverAssignment[]
+  driverDailyRecords     DriverDailyRecord[]
+  driverIncidents        DriverIncident[]
+  partRequests           PartRequest[]
+  logisticsQuoteRequests LogisticsQuoteRequest[]
 
-  @@map("vehicles")
   @@index([userId], name: "idx_vehicles_user")
   @@index([enterpriseId], name: "idx_vehicles_enterprise")
   @@index([plate], name: "idx_vehicles_plate")
   @@index([homeCenterId], name: "idx_vehicles_home_center")
+  @@map("vehicles")
 }
 
 enum DisputeStatus {
@@ -831,51 +836,51 @@ enum ReturnStatus {
 }
 
 model ReturnOrder {
-  id              String       @id @default(uuid())
-  orderId         String       @map("order_id")
-  order           Order        @relation(fields: [orderId], references: [id])
-  orderItemId     String?      @map("order_item_id")
-  enterpriseId    String?      @map("enterprise_id")
-  requestedById   String       @map("requested_by_id")
-  requestedBy     User         @relation("ReturnOrderRequester", fields: [requestedById], references: [id])
-  reason          ReturnReason
-  description     String?
-  pickupAddress   String?      @map("pickup_address")
-  pickupContactName  String?   @map("pickup_contact_name")
-  pickupContactPhone String?   @map("pickup_contact_phone")
-  status          ReturnStatus @default(REQUESTED)
-  refundAmount    Int?         @map("refund_amount")
-  evidence        String[]     @default([])
-  requestedAt     DateTime     @default(now()) @map("requested_at")
-  acceptedAt      DateTime?    @map("accepted_at")
-  pickedUpAt      DateTime?    @map("picked_up_at")
-  inspectedAt     DateTime?    @map("inspected_at")
-  refundedAt      DateTime?    @map("refunded_at")
-  rejectedAt      DateTime?    @map("rejected_at")
-  cancelledAt     DateTime?    @map("cancelled_at")
-  resolutionNote  String?      @map("resolution_note")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+  id                 String       @id @default(uuid())
+  orderId            String       @map("order_id")
+  order              Order        @relation(fields: [orderId], references: [id])
+  orderItemId        String?      @map("order_item_id")
+  enterpriseId       String?      @map("enterprise_id")
+  requestedById      String       @map("requested_by_id")
+  requestedBy        User         @relation("ReturnOrderRequester", fields: [requestedById], references: [id])
+  reason             ReturnReason
+  description        String?
+  pickupAddress      String?      @map("pickup_address")
+  pickupContactName  String?      @map("pickup_contact_name")
+  pickupContactPhone String?      @map("pickup_contact_phone")
+  status             ReturnStatus @default(REQUESTED)
+  refundAmount       Int?         @map("refund_amount")
+  evidence           String[]     @default([])
+  requestedAt        DateTime     @default(now()) @map("requested_at")
+  acceptedAt         DateTime?    @map("accepted_at")
+  pickedUpAt         DateTime?    @map("picked_up_at")
+  inspectedAt        DateTime?    @map("inspected_at")
+  refundedAt         DateTime?    @map("refunded_at")
+  rejectedAt         DateTime?    @map("rejected_at")
+  cancelledAt        DateTime?    @map("cancelled_at")
+  resolutionNote     String?      @map("resolution_note")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
 
-  @@map("return_orders")
   @@index([orderId], name: "idx_return_orders_order")
   @@index([enterpriseId, status], name: "idx_return_orders_enterprise_status")
   @@index([status], name: "idx_return_orders_status")
+  @@map("return_orders")
 }
 
 model SellerReview {
-  id        String   @id @default(uuid())
-  orderId   String   @map("order_id")
-  order     Order    @relation(fields: [orderId], references: [id])
-  vendorId  String   @map("vendor_id")
-  reviewerId String  @map("reviewer_id")
-  reviewer  User     @relation("SellerReviewer", fields: [reviewerId], references: [id])
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid())
+  orderId    String   @map("order_id")
+  order      Order    @relation(fields: [orderId], references: [id])
+  vendorId   String   @map("vendor_id")
+  reviewerId String   @map("reviewer_id")
+  reviewer   User     @relation("SellerReviewer", fields: [reviewerId], references: [id])
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  @@map("seller_reviews")
   @@unique([orderId, reviewerId], name: "uq_seller_review_order_user")
   @@index([vendorId], name: "idx_seller_reviews_vendor")
+  @@map("seller_reviews")
 }
 
 model DeliveryReview {
@@ -889,27 +894,27 @@ model DeliveryReview {
   comment    String?
   createdAt  DateTime @default(now()) @map("created_at")
 
-  @@map("delivery_reviews")
   @@unique([deliveryId, reviewerId], name: "uq_delivery_review_delivery_user")
   @@index([riderId], name: "idx_delivery_reviews_rider")
+  @@map("delivery_reviews")
 }
 
 model Dispute {
-  id          String        @id @default(uuid())
-  orderId     String        @map("order_id")
-  order       Order         @relation(fields: [orderId], references: [id])
-  openedBy    String        @map("opened_by")
-  opener      User          @relation("DisputeOpener", fields: [openedBy], references: [id])
-  status      DisputeStatus @default(OPEN)
-  reason      String
-  evidence    String[]      @default([])
-  resolution  String?
-  resolvedAt  DateTime?     @map("resolved_at")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
+  id         String        @id @default(uuid())
+  orderId    String        @map("order_id")
+  order      Order         @relation(fields: [orderId], references: [id])
+  openedBy   String        @map("opened_by")
+  opener     User          @relation("DisputeOpener", fields: [openedBy], references: [id])
+  status     DisputeStatus @default(OPEN)
+  reason     String
+  evidence   String[]      @default([])
+  resolution String?
+  resolvedAt DateTime?     @map("resolved_at")
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
 
-  @@map("disputes")
   @@index([orderId], name: "idx_disputes_order")
+  @@map("disputes")
 }
 
 model SearchSynonym {
@@ -921,79 +926,79 @@ model SearchSynonym {
 }
 
 model Order {
-  id              String        @id @default(uuid())
-  initiatorId     String        @map("initiator_id")
-  initiator       User          @relation("OrderInitiator", fields: [initiatorId], references: [id])
-  vehicleId       String?       @map("vehicle_id")
-  vehicle         Vehicle?      @relation(fields: [vehicleId], references: [id])
-  enterpriseId    String?       @map("enterprise_id")
-  enterprise      Enterprise?   @relation(fields: [enterpriseId], references: [id])
-  ownerPhone      String?       @map("owner_phone")
-  status          OrderStatus   @default(DRAFT)
-  paymentMethod   PaymentMethod? @map("payment_method")
-  shareToken      String        @unique @map("share_token")
-  totalAmount     Int           @default(0) @map("total_amount")
-  deliveryFee     Int           @default(0) @map("delivery_fee")
-  deliveryCommune String?       @map("delivery_commune")
-  deliveryMode    DeliveryMode  @default(STANDARD) @map("delivery_mode")
-  laborCost       Int?          @map("labor_cost")
-  vendorConfirmedAt DateTime?   @map("vendor_confirmed_at")
-  paidAt          DateTime?     @map("paid_at")
-  cancelledAt     DateTime?     @map("cancelled_at")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  id                String         @id @default(uuid())
+  initiatorId       String         @map("initiator_id")
+  initiator         User           @relation("OrderInitiator", fields: [initiatorId], references: [id])
+  vehicleId         String?        @map("vehicle_id")
+  vehicle           Vehicle?       @relation(fields: [vehicleId], references: [id])
+  enterpriseId      String?        @map("enterprise_id")
+  enterprise        Enterprise?    @relation(fields: [enterpriseId], references: [id])
+  ownerPhone        String?        @map("owner_phone")
+  status            OrderStatus    @default(DRAFT)
+  paymentMethod     PaymentMethod? @map("payment_method")
+  shareToken        String         @unique @map("share_token")
+  totalAmount       Int            @default(0) @map("total_amount")
+  deliveryFee       Int            @default(0) @map("delivery_fee")
+  deliveryCommune   String?        @map("delivery_commune")
+  deliveryMode      DeliveryMode   @default(STANDARD) @map("delivery_mode")
+  laborCost         Int?           @map("labor_cost")
+  vendorConfirmedAt DateTime?      @map("vendor_confirmed_at")
+  paidAt            DateTime?      @map("paid_at")
+  cancelledAt       DateTime?      @map("cancelled_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
 
-  items           OrderItem[]
-  events          OrderEvent[]
-  escrow          EscrowTransaction?
-  delivery        Delivery?
-  sellerReviews   SellerReview[]
-  disputes        Dispute[]
-  returns         ReturnOrder[]
-  invoice         Invoice?
-  partRequest     PartRequest?
+  items         OrderItem[]
+  events        OrderEvent[]
+  escrow        EscrowTransaction?
+  delivery      Delivery?
+  sellerReviews SellerReview[]
+  disputes      Dispute[]
+  returns       ReturnOrder[]
+  invoice       Invoice?
+  partRequest   PartRequest?
 
-  @@map("orders")
   @@index([initiatorId], name: "idx_orders_initiator")
   @@index([status], name: "idx_orders_status")
   @@index([vehicleId], name: "idx_orders_vehicle")
   @@index([enterpriseId], name: "idx_orders_enterprise")
+  @@map("orders")
 }
 
 model OrderItem {
-  id              String   @id @default(uuid())
-  orderId         String   @map("order_id")
-  order           Order    @relation(fields: [orderId], references: [id])
-  catalogItemId   String   @map("catalog_item_id")
-  vendorId        String   @map("vendor_id")
-  vendorShopName  String   @map("vendor_shop_name")
-  name            String
-  category        String?
-  subcategory     String?
-  priceSnapshot   Int      @map("price_snapshot")
-  quantity        Int      @default(1)
-  imageThumbUrl   String?  @map("image_thumb_url")
-  condition       PartCondition? // snapshot de la condition à la commande
-  partSource      PartSource?    @map("part_source")
-  commissionAmount Int?    @map("commission_amount")
-  createdAt       DateTime @default(now()) @map("created_at")
+  id               String         @id @default(uuid())
+  orderId          String         @map("order_id")
+  order            Order          @relation(fields: [orderId], references: [id])
+  catalogItemId    String         @map("catalog_item_id")
+  vendorId         String         @map("vendor_id")
+  vendorShopName   String         @map("vendor_shop_name")
+  name             String
+  category         String?
+  subcategory      String?
+  priceSnapshot    Int            @map("price_snapshot")
+  quantity         Int            @default(1)
+  imageThumbUrl    String?        @map("image_thumb_url")
+  condition        PartCondition? // snapshot de la condition à la commande
+  partSource       PartSource?    @map("part_source")
+  commissionAmount Int?           @map("commission_amount")
+  createdAt        DateTime       @default(now()) @map("created_at")
 
-  @@map("order_items")
   @@index([orderId], name: "idx_order_items_order")
+  @@map("order_items")
 }
 
 model OrderEvent {
-  id        String      @id @default(uuid())
-  orderId   String      @map("order_id")
-  order     Order       @relation(fields: [orderId], references: [id])
+  id         String       @id @default(uuid())
+  orderId    String       @map("order_id")
+  order      Order        @relation(fields: [orderId], references: [id])
   fromStatus OrderStatus? @map("from_status")
-  toStatus  OrderStatus @map("to_status")
-  actor     String?
-  note      String?
-  createdAt DateTime    @default(now()) @map("created_at")
+  toStatus   OrderStatus  @map("to_status")
+  actor      String?
+  note       String?
+  createdAt  DateTime     @default(now()) @map("created_at")
 
-  @@map("order_events")
   @@index([orderId], name: "idx_order_events_order")
+  @@map("order_events")
 }
 
 model Delivery {
@@ -1024,31 +1029,31 @@ model Delivery {
 
   deliveryReviews DeliveryReview[]
 
-  @@map("deliveries")
   @@index([riderId], name: "idx_deliveries_rider")
   @@index([status], name: "idx_deliveries_status")
+  @@map("deliveries")
 }
 
 model EscrowTransaction {
-  id        String       @id @default(uuid())
-  orderId   String       @unique @map("order_id")
-  order     Order        @relation(fields: [orderId], references: [id])
-  amount    Int
-  status    EscrowStatus @default(HELD)
-  heldAt    DateTime     @default(now()) @map("held_at")
-  releasedAt DateTime?   @map("released_at")
-  refundedAt DateTime?   @map("refunded_at")
+  id         String       @id @default(uuid())
+  orderId    String       @unique @map("order_id")
+  order      Order        @relation(fields: [orderId], references: [id])
+  amount     Int
+  status     EscrowStatus @default(HELD)
+  heldAt     DateTime     @default(now()) @map("held_at")
+  releasedAt DateTime?    @map("released_at")
+  refundedAt DateTime?    @map("refunded_at")
 
   @@map("escrow_transactions")
 }
 
 model NotificationPreference {
-  id        String  @id @default(uuid())
-  userId    String  @unique @map("user_id")
-  user      User    @relation(fields: [userId], references: [id])
-  whatsapp  Boolean @default(true)
-  sms       Boolean @default(false)
-  push      Boolean @default(false)
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  whatsapp  Boolean  @default(true)
+  sms       Boolean  @default(false)
+  push      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -1084,83 +1089,83 @@ enum BodyType {
 }
 
 model VehicleMake {
-  id           String   @id @default(uuid())
-  name         String
-  slug         String   @unique
-  country      String?
-  popularityCi Int      @default(0) @map("popularity_ci")
-  externalSource   String? @map("external_source")
-  externalSourceId String? @map("external_source_id")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(uuid())
+  name             String
+  slug             String   @unique
+  country          String?
+  popularityCi     Int      @default(0) @map("popularity_ci")
+  externalSource   String?  @map("external_source")
+  externalSourceId String?  @map("external_source_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   models VehicleModel[]
 
-  @@map("vehicle_makes")
-  @@index([slug], name: "idx_vehicle_makes_slug")
   @@unique([externalSource, externalSourceId], name: "uq_vehicle_makes_external")
+  @@index([slug], name: "idx_vehicle_makes_slug")
+  @@map("vehicle_makes")
 }
 
 model VehicleModel {
-  id        String   @id @default(uuid())
-  makeId    String   @map("make_id")
-  make      VehicleMake @relation(fields: [makeId], references: [id], onDelete: Cascade)
-  name      String
-  slug      String
-  yearStart Int?     @map("year_start")
-  yearEnd   Int?     @map("year_end")
-  bodyType  BodyType? @map("body_type")
-  externalSource   String? @map("external_source")
-  externalSourceId String? @map("external_source_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id               String      @id @default(uuid())
+  makeId           String      @map("make_id")
+  make             VehicleMake @relation(fields: [makeId], references: [id], onDelete: Cascade)
+  name             String
+  slug             String
+  yearStart        Int?        @map("year_start")
+  yearEnd          Int?        @map("year_end")
+  bodyType         BodyType?   @map("body_type")
+  externalSource   String?     @map("external_source")
+  externalSourceId String?     @map("external_source_id")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
 
   generations VehicleGeneration[]
 
-  @@map("vehicle_models")
   @@unique([makeId, slug], name: "uq_vehicle_model_make_slug")
   @@unique([externalSource, externalSourceId], name: "uq_vehicle_models_external")
   @@index([makeId], name: "idx_vehicle_models_make")
+  @@map("vehicle_models")
 }
 
 model VehicleGeneration {
-  id        String   @id @default(uuid())
-  modelId   String   @map("model_id")
-  model     VehicleModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
-  code      String?
-  yearStart Int      @map("year_start")
-  yearEnd   Int?     @map("year_end")
-  bodyType  BodyType? @map("body_type")
-  externalSource   String? @map("external_source")
-  externalSourceId String? @map("external_source_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  id               String       @id @default(uuid())
+  modelId          String       @map("model_id")
+  model            VehicleModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  code             String?
+  yearStart        Int          @map("year_start")
+  yearEnd          Int?         @map("year_end")
+  bodyType         BodyType?    @map("body_type")
+  externalSource   String?      @map("external_source")
+  externalSourceId String?      @map("external_source_id")
+  createdAt        DateTime     @default(now()) @map("created_at")
 
   engines VehicleEngine[]
 
-  @@map("vehicle_generations")
   @@unique([externalSource, externalSourceId], name: "uq_vehicle_generations_external")
   @@index([modelId, yearStart], name: "idx_vehicle_generations_model_year")
+  @@map("vehicle_generations")
 }
 
 model VehicleEngine {
-  id            String   @id @default(uuid())
-  generationId  String   @map("generation_id")
-  generation    VehicleGeneration @relation(fields: [generationId], references: [id], onDelete: Cascade)
-  code          String?
-  displacementCc Int?    @map("displacement_cc")
-  fuelType      FuelType? @map("fuel_type")
-  powerKw       Int?     @map("power_kw")
-  oemRefs       String[] @default([]) @map("oem_refs")
-  externalSource   String? @map("external_source")
-  externalSourceId String? @map("external_source_id")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id               String            @id @default(uuid())
+  generationId     String            @map("generation_id")
+  generation       VehicleGeneration @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  code             String?
+  displacementCc   Int?              @map("displacement_cc")
+  fuelType         FuelType?         @map("fuel_type")
+  powerKw          Int?              @map("power_kw")
+  oemRefs          String[]          @default([]) @map("oem_refs")
+  externalSource   String?           @map("external_source")
+  externalSourceId String?           @map("external_source_id")
+  createdAt        DateTime          @default(now()) @map("created_at")
 
   partFitments PartReferenceFitment[]
 
-  @@map("vehicle_engines")
   @@unique([externalSource, externalSourceId], name: "uq_vehicle_engines_external")
   @@index([generationId], name: "idx_vehicle_engines_generation")
   @@index([code], name: "idx_vehicle_engines_code")
+  @@map("vehicle_engines")
 }
 
 // ============================================================================
@@ -1168,53 +1173,53 @@ model VehicleEngine {
 // ============================================================================
 
 model PartCategory {
-  id        String   @id @default(uuid())
-  parentId  String?  @map("parent_id")
-  parent    PartCategory? @relation("PartCategoryTree", fields: [parentId], references: [id])
+  id        String         @id @default(uuid())
+  parentId  String?        @map("parent_id")
+  parent    PartCategory?  @relation("PartCategoryTree", fields: [parentId], references: [id])
   children  PartCategory[] @relation("PartCategoryTree")
   name      String
-  slug      String   @unique
-  oemGroup  String?  @map("oem_group")
-  createdAt DateTime @default(now()) @map("created_at")
+  slug      String         @unique
+  oemGroup  String?        @map("oem_group")
+  createdAt DateTime       @default(now()) @map("created_at")
 
   references PartReference[]
 
-  @@map("part_categories")
   @@index([parentId], name: "idx_part_categories_parent")
+  @@map("part_categories")
 }
 
 model PartReference {
-  id         String   @id @default(uuid())
-  oemNumber  String?  @map("oem_number")
-  categoryId String?  @map("category_id")
-  category   PartCategory? @relation(fields: [categoryId], references: [id])
-  name       String
-  brand      String?
-  externalSource   String? @map("external_source")
-  externalSourceId String? @map("external_source_id")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id               String        @id @default(uuid())
+  oemNumber        String?       @map("oem_number")
+  categoryId       String?       @map("category_id")
+  category         PartCategory? @relation(fields: [categoryId], references: [id])
+  name             String
+  brand            String?
+  externalSource   String?       @map("external_source")
+  externalSourceId String?       @map("external_source_id")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
 
   fitments     PartReferenceFitment[]
   observations MarketPriceObservation[]
 
-  @@map("part_references")
   @@unique([oemNumber, brand], name: "uq_part_ref_oem_brand")
   @@unique([externalSource, externalSourceId], name: "uq_part_references_external")
   @@index([categoryId], name: "idx_part_references_category")
   @@index([oemNumber], name: "idx_part_references_oem")
+  @@map("part_references")
 }
 
 model PartReferenceFitment {
-  id              String   @id @default(uuid())
-  partReferenceId String   @map("part_reference_id")
+  id              String        @id @default(uuid())
+  partReferenceId String        @map("part_reference_id")
   partReference   PartReference @relation(fields: [partReferenceId], references: [id], onDelete: Cascade)
-  vehicleEngineId String   @map("vehicle_engine_id")
+  vehicleEngineId String        @map("vehicle_engine_id")
   vehicleEngine   VehicleEngine @relation(fields: [vehicleEngineId], references: [id], onDelete: Cascade)
 
-  @@map("part_reference_fitments")
   @@unique([partReferenceId, vehicleEngineId], name: "uq_part_ref_fitment")
   @@index([vehicleEngineId], name: "idx_part_ref_fitments_engine")
+  @@map("part_reference_fitments")
 }
 
 enum IngestSource {
@@ -1233,24 +1238,24 @@ enum IngestSource {
 }
 
 model MarketPriceObservation {
-  id              String   @id @default(uuid())
-  partReferenceId String?  @map("part_reference_id")
+  id              String         @id @default(uuid())
+  partReferenceId String?        @map("part_reference_id")
   partReference   PartReference? @relation(fields: [partReferenceId], references: [id])
-  rawTitle        String   @map("raw_title")
+  rawTitle        String         @map("raw_title")
   source          IngestSource
-  sourceUrl       String?  @map("source_url")
-  sourceItemId    String?  @map("source_item_id")
-  vendorName      String?  @map("vendor_name")
-  priceFcfa       Int?     @map("price_fcfa")
-  currency        String   @default("XOF")
+  sourceUrl       String?        @map("source_url")
+  sourceItemId    String?        @map("source_item_id")
+  vendorName      String?        @map("vendor_name")
+  priceFcfa       Int?           @map("price_fcfa")
+  currency        String         @default("XOF")
   condition       PartCondition?
-  partSource      PartSource? @map("part_source")
-  observedAt      DateTime @default(now()) @map("observed_at")
+  partSource      PartSource?    @map("part_source")
+  observedAt      DateTime       @default(now()) @map("observed_at")
 
-  @@map("market_price_observations")
   @@unique([source, sourceItemId], name: "uq_market_price_source_item")
   @@index([partReferenceId], name: "idx_market_price_part_ref")
   @@index([source, observedAt], name: "idx_market_price_source_time")
+  @@map("market_price_observations")
 }
 
 // ============================================================================
@@ -1270,31 +1275,31 @@ enum CompetitorSize {
 }
 
 model CompetitorVendor {
-  id             String   @id @default(uuid())
-  name           String
-  type           CompetitorType
-  websiteUrl     String?  @map("website_url")
-  phone          String?
-  whatsapp       String?
-  email          String?
-  address        String?
-  zone           String?
-  commune        String?
-  lat            Float?
-  lng            Float?
-  osmId          String?  @unique @map("osm_id")
-  gmapsPlaceId   String?  @unique @map("gmaps_place_id")
-  specialties    String[] @default([])
-  estimatedSize  CompetitorSize? @map("estimated_size")
-  rating         Float?
-  reviewsCount   Int?     @map("reviews_count")
-  notes          String?
-  observedAt     DateTime @default(now()) @map("observed_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id            String          @id @default(uuid())
+  name          String
+  type          CompetitorType
+  websiteUrl    String?         @map("website_url")
+  phone         String?
+  whatsapp      String?
+  email         String?
+  address       String?
+  zone          String?
+  commune       String?
+  lat           Float?
+  lng           Float?
+  osmId         String?         @unique @map("osm_id")
+  gmapsPlaceId  String?         @unique @map("gmaps_place_id")
+  specialties   String[]        @default([])
+  estimatedSize CompetitorSize? @map("estimated_size")
+  rating        Float?
+  reviewsCount  Int?            @map("reviews_count")
+  notes         String?
+  observedAt    DateTime        @default(now()) @map("observed_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
 
-  @@map("competitor_vendors")
   @@index([type, zone], name: "idx_competitor_vendors_type_zone")
   @@index([commune], name: "idx_competitor_vendors_commune")
+  @@map("competitor_vendors")
 }
 
 // ===========================================================================
@@ -1317,7 +1322,7 @@ model Driver {
   userId          String?      @map("user_id")
   user            User?        @relation("UserDriverProfile", fields: [userId], references: [id], onDelete: SetNull)
   name            String
-  phone           String       // format +225XXXXXXXXXX
+  phone           String // format +225XXXXXXXXXX
   licenseNumber   String?      @map("license_number")
   licenseCategory String?      @map("license_category")
   photoUrl        String?      @map("photo_url")
@@ -1332,10 +1337,10 @@ model Driver {
   incidents    DriverIncident[]
   partRequests PartRequest[]
 
-  @@map("drivers")
   @@unique([enterpriseId, phone], name: "uq_driver_phone")
   @@index([enterpriseId], name: "idx_drivers_enterprise")
   @@index([userId], name: "idx_drivers_user")
+  @@map("drivers")
 }
 
 // Historique d'affectation chauffeur ↔ véhicule (endedAt = null → affectation active).
@@ -1349,9 +1354,9 @@ model DriverAssignment {
   endedAt   DateTime? @map("ended_at")
   createdAt DateTime  @default(now()) @map("created_at")
 
-  @@map("driver_assignments")
   @@index([driverId], name: "idx_driver_assignments_driver")
   @@index([vehicleId], name: "idx_driver_assignments_vehicle")
+  @@map("driver_assignments")
 }
 
 // Relevé quotidien saisi par le chauffeur : CA, carburant, dépenses, km.
@@ -1370,10 +1375,10 @@ model DriverDailyRecord {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  @@map("driver_daily_records")
   @@unique([driverId, date], name: "uq_driver_day")
   @@index([driverId], name: "idx_driver_daily_driver")
   @@index([vehicleId], name: "idx_driver_daily_vehicle")
+  @@map("driver_daily_records")
 }
 
 enum DriverIncidentType {
@@ -1404,9 +1409,9 @@ model DriverIncident {
   costEstimate Int?                   @map("cost_estimate")
   createdAt    DateTime               @default(now()) @map("created_at")
 
-  @@map("driver_incidents")
   @@index([driverId], name: "idx_driver_incidents_driver")
   @@index([vehicleId], name: "idx_driver_incidents_vehicle")
+  @@map("driver_incidents")
 }
 
 // ---------------------------------------------------------------------------
@@ -1436,30 +1441,30 @@ model PartEnrichment {
   origine EnrichmentOrigin
   statut  EnrichmentStatus @default(BROUILLON)
 
-  identification Json?
-  classification Json?
-  photoFeedback  String? @map("photo_feedback")
+  identification  Json?
+  classification  Json?
+  photoFeedback   String? @map("photo_feedback")
   // score, signaux, justification — accès administrateur exclusif : le champ
   // est ABSENT des réponses API pour les autres rôles (pas null).
-  authenticite   Json?
-  fitments       Json?
+  authenticite    Json?
+  fitments        Json?
   // Phase 2 (batch nocturne) : cross-références, fournisseurs, contacts
   // producteurs. Réservé au tableau de bord administrateur.
-  sourcing       Json?
+  sourcing        Json?
   sourcingBatchId String? @map("sourcing_batch_id")
 
   // Livrables clients flottes, publiés après approbation admin.
-  noteQualite             Int?    @map("note_qualite")
-  descriptionIndependante String? @map("description_independante")
+  noteQualite             Int?      @map("note_qualite")
+  descriptionIndependante String?   @map("description_independante")
   livrablesApprouvesAt    DateTime? @map("livrables_approuves_at")
 
   confianceGlobale Float? @map("confiance_globale")
 
-  photos      String[] // URLs stockage R2 (originaux, EXIF conservés)
-  photoHashes String[] @map("photo_hashes") // hash perceptuel anti-réutilisation
+  photos         String[] // URLs stockage R2 (originaux, EXIF conservés)
+  photoHashes    String[] @map("photo_hashes") // hash perceptuel anti-réutilisation
   // Variantes WebP par photo (thumb/small/medium/large) pour la publication
   // catalogue : [{ urlOriginal, urlThumb, urlSmall, urlMedium, urlLarge }]
-  photosVariants Json? @map("photos_variants")
+  photosVariants Json?    @map("photos_variants")
 
   // Saisie humaine (prix/stock/garantie déclarés avec le vendeur)
   prix          Int?
@@ -1481,10 +1486,10 @@ model PartEnrichment {
   updatedAt          DateTime  @updatedAt @map("updated_at")
   validatedAt        DateTime? @map("validated_at")
 
-  @@map("part_enrichments")
   @@index([liaisonId], name: "idx_part_enrichments_liaison")
   @@index([vendeurId, createdAt], name: "idx_part_enrichments_vendeur_date")
   @@index([statut], name: "idx_part_enrichments_statut")
+  @@map("part_enrichments")
 }
 
 model CrossReference {
@@ -1496,9 +1501,9 @@ model CrossReference {
   sourceUrl   String   @map("source_url")
   verifieLe   DateTime @map("verifie_le")
 
-  @@map("cross_references")
   @@unique([refSource, refCible, marqueCible], name: "uq_cross_reference")
   @@index([refSource], name: "idx_cross_references_source")
+  @@map("cross_references")
 }
 
 model ManufacturerContact {
@@ -1511,9 +1516,9 @@ model ManufacturerContact {
   url       String
   verifieLe DateTime @map("verifie_le")
 
-  @@map("manufacturer_contacts")
   @@unique([marque, entite, role], name: "uq_manufacturer_contact")
   @@index([marque], name: "idx_manufacturer_contacts_marque")
+  @@map("manufacturer_contacts")
 }
 
 enum ContactStatus {
@@ -1528,28 +1533,28 @@ enum ContactStatus {
 }
 
 model VendorContact {
-  id           String        @id @default(cuid())
-  name         String
-  shopName     String?       @map("shop_name")
-  phone        String
-  phone2       String?
-  whatsapp     String?
-  email        String?
-  commune      String?
-  address      String?
-  lat          Float?
-  lng          Float?
-  pieces       String[]
-  piecesLibre  String?       @map("pieces_libre")
-  remarques    String?
-  statut       ContactStatus @default(A_CONTACTER)
-  relanceLe    DateTime?     @map("relance_le")
-  derniereVisite DateTime?   @map("derniere_visite")
-  derniereCommande DateTime? @map("derniere_commande")
-  notesAppel   String?       @map("notes_appel")
-  photos       String[]
-  liens        VendorContactLink[]
-  activites    ContactActivity[]
+  id               String              @id @default(cuid())
+  name             String
+  shopName         String?             @map("shop_name")
+  phone            String
+  phone2           String?
+  whatsapp         String?
+  email            String?
+  commune          String?
+  address          String?
+  lat              Float?
+  lng              Float?
+  pieces           String[]
+  piecesLibre      String?             @map("pieces_libre")
+  remarques        String?
+  statut           ContactStatus       @default(A_CONTACTER)
+  relanceLe        DateTime?           @map("relance_le")
+  derniereVisite   DateTime?           @map("derniere_visite")
+  derniereCommande DateTime?           @map("derniere_commande")
+  notesAppel       String?             @map("notes_appel")
+  photos           String[]
+  liens            VendorContactLink[]
+  activites        ContactActivity[]
 
   // Provenance du lead : MANUEL (saisie terrain), OSM (radar boutiques
   // CompetitorVendor) ou slug de source externe (COINAFRIQUE_CI, …).
@@ -1557,23 +1562,23 @@ model VendorContact {
   source    String  @default("MANUEL")
   sourceRef String? @map("source_ref")
 
-  createdById String?  @map("created_by_id")
-  createdBy   User?    @relation("ContactCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  liaisonId   String?  @map("liaison_id")
-  vendorId    String?  @map("vendor_id")
-  vendor      Vendor?  @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  createdById String? @map("created_by_id")
+  createdBy   User?   @relation("ContactCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  liaisonId   String? @map("liaison_id")
+  vendorId    String? @map("vendor_id")
+  vendor      Vendor? @relation(fields: [vendorId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("vendor_contacts")
+  @@unique([source, sourceRef], name: "uq_vendor_contacts_source_ref")
   @@index([phone], name: "idx_vendor_contacts_phone")
   @@index([liaisonId], name: "idx_vendor_contacts_liaison")
   @@index([statut], name: "idx_vendor_contacts_statut")
   @@index([relanceLe], name: "idx_vendor_contacts_relance")
   @@index([createdById], name: "idx_vendor_contacts_created_by")
   @@index([source], name: "idx_vendor_contacts_source")
-  @@unique([source, sourceRef], name: "uq_vendor_contacts_source_ref")
+  @@map("vendor_contacts")
 }
 
 enum ContactActivityType {
@@ -1587,33 +1592,208 @@ enum ContactActivityType {
 }
 
 model ContactActivity {
-  id        String              @id @default(cuid())
-  contactId String              @map("contact_id")
-  contact   VendorContact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  authorId  String?             @map("author_id")
-  author    User?               @relation("ContactActivityAuthor", fields: [authorId], references: [id], onDelete: SetNull)
-  type      ContactActivityType
-  note      String?
-  statutAvant ContactStatus?    @map("statut_avant")
-  statutApres ContactStatus?    @map("statut_apres")
-  createdAt DateTime            @default(now()) @map("created_at")
+  id          String              @id @default(cuid())
+  contactId   String              @map("contact_id")
+  contact     VendorContact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  authorId    String?             @map("author_id")
+  author      User?               @relation("ContactActivityAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  type        ContactActivityType
+  note        String?
+  statutAvant ContactStatus?      @map("statut_avant")
+  statutApres ContactStatus?      @map("statut_apres")
+  createdAt   DateTime            @default(now()) @map("created_at")
 
-  @@map("contact_activities")
   @@index([contactId, createdAt], name: "idx_contact_activities_contact")
   @@index([authorId], name: "idx_contact_activities_author")
+  @@map("contact_activities")
 }
 
 model VendorContactLink {
-  id         String  @id @default(cuid())
-  contactId  String  @map("contact_id")
-  contact    VendorContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  url        String
-  type       String
-  label      String?
-  scrapedAt  DateTime? @map("scraped_at")
-  rawData    Json?     @map("raw_data")
+  id        String        @id @default(cuid())
+  contactId String        @map("contact_id")
+  contact   VendorContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  url       String
+  type      String
+  label     String?
+  scrapedAt DateTime?     @map("scraped_at")
+  rawData   Json?         @map("raw_data")
 
-  @@map("vendor_contact_links")
-  @@index([contactId], name: "idx_vendor_contact_links_contact")
   @@unique([contactId, url], name: "uq_vendor_contact_link_url")
+  @@index([contactId], name: "idx_vendor_contact_links_contact")
+  @@map("vendor_contact_links")
+}
+
+// ---------------------------------------------------------------------------
+// Logistique — demandes de cotation (logistique.pieces.ci)
+//
+// Un seul modèle sert les trois parcours : visiteur sans compte, compte simple
+// et flotte. Ce sont les rattachements nullables (userId / enterpriseId /
+// vehicleId / partRequestId) qui font la différence — un visiteur les laisse
+// tous vides, une flotte les remplit tous.
+// ---------------------------------------------------------------------------
+
+enum LogisticsLeadStatus {
+  NEW
+  CONTACTED
+  QUOTING
+  QUOTED
+  WON
+  LOST
+  SPAM
+}
+
+enum LogisticsLeadSurface {
+  LANDING
+  CALCULATEUR
+  CAMPAIGN
+  WHATSAPP
+  REFERRAL
+  APP
+  FLEET
+}
+
+enum LogisticsLeadPhotoKind {
+  PART
+  REGISTRATION_CARD
+  OTHER
+}
+
+enum LogisticsCustomerType {
+  GARAGE
+  FLEET
+  DEALER
+  IMPORTER
+  INDIVIDUAL
+  OTHER
+}
+
+/**
+ * Niveau d'identification de la pièce et du véhicule — à ne pas confondre avec
+ * LogisticsConfidence (fiabilité du poids/volume), qui vit côté TS seulement.
+ */
+enum LeadCertaintyLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum VehicleEconomyCategory {
+  ECONOMY_ICE
+  PREMIUM_ICE
+  PREMIUM_EV
+}
+
+model LogisticsQuoteRequest {
+  id        String              @id @default(cuid())
+  reference String              @unique
+  status    LogisticsLeadStatus @default(NEW)
+
+  // Rattachements — tous nullables (cf. en-tête de section)
+  userId        String?      @map("user_id")
+  user          User?        @relation("LogisticsLeadOwner", fields: [userId], references: [id], onDelete: SetNull)
+  enterpriseId  String?      @map("enterprise_id")
+  enterprise    Enterprise?  @relation(fields: [enterpriseId], references: [id], onDelete: SetNull)
+  vehicleId     String?      @map("vehicle_id")
+  vehicle       Vehicle?     @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  partRequestId String?      @map("part_request_id")
+  partRequest   PartRequest? @relation(fields: [partRequestId], references: [id], onDelete: SetNull)
+
+  // Contact
+  contactName  String                @map("contact_name")
+  companyName  String?               @map("company_name")
+  phone        String
+  whatsapp     String?
+  email        String?
+  commune      String?
+  customerType LogisticsCustomerType @default(OTHER) @map("customer_type")
+  fleetSize    Int?                  @map("fleet_size")
+
+  // Pièce
+  partName      String  @map("part_name")
+  partCategory  String? @map("part_category")
+  oemReference  String? @map("oem_reference")
+  quantity      Int     @default(1)
+  partPriceHint Int?    @map("part_price_hint")
+  familyId      String? @map("family_id")
+
+  // Véhicule
+  vin                String?
+  vinDecoded         Boolean                 @default(false) @map("vin_decoded")
+  vehicleBrand       String?                 @map("vehicle_brand")
+  vehicleModel       String?                 @map("vehicle_model")
+  vehicleYear        Int?                    @map("vehicle_year")
+  energyType         VehicleEnergyType?      @map("energy_type")
+  economyCategory    VehicleEconomyCategory? @map("economy_category")
+  vehicleImmobilized Boolean                 @default(false) @map("vehicle_immobilized")
+
+  // Estimation (recalculée côté serveur — jamais la valeur du client)
+  certaintyScore     Int                @default(0) @map("certainty_score")
+  certaintyLevel     LeadCertaintyLevel @default(LOW) @map("certainty_level")
+  downtimeCostPerDay Int?               @map("downtime_cost_per_day")
+  estimateJson       Json?              @map("estimate_json")
+
+  // Provenance / anti-abus (jamais l'IP en clair)
+  surface   LogisticsLeadSurface @default(LANDING)
+  campaign  String?
+  referer   String?
+  ipHash    String?              @map("ip_hash")
+  userAgent String?              @map("user_agent")
+  consentAt DateTime?            @map("consent_at")
+
+  // Jeton d'upload des photos (haché, TTL court)
+  uploadTokenHash      String?   @map("upload_token_hash")
+  uploadTokenExpiresAt DateTime? @map("upload_token_expires_at")
+
+  // Traitement ops
+  assignedToUserId      String?   @map("assigned_to_user_id")
+  assignedTo            User?     @relation("LogisticsLeadAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  opsNote               String?   @map("ops_note")
+  contactedAt           DateTime? @map("contacted_at")
+  quotedAt              DateTime? @map("quoted_at")
+  closedAt              DateTime? @map("closed_at")
+  lostReason            String?   @map("lost_reason")
+  convertedEnterpriseId String?   @map("converted_enterprise_id")
+
+  photos LogisticsQuoteRequestPhoto[]
+  events LogisticsQuoteRequestEvent[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt], name: "idx_logistics_leads_status")
+  @@index([phone], name: "idx_logistics_leads_phone")
+  @@index([ipHash, createdAt], name: "idx_logistics_leads_ip")
+  @@index([assignedToUserId], name: "idx_logistics_leads_assignee")
+  @@index([certaintyLevel], name: "idx_logistics_leads_certainty")
+  @@index([userId, createdAt], name: "idx_logistics_leads_user")
+  @@index([enterpriseId, status], name: "idx_logistics_leads_enterprise")
+  @@map("logistics_quote_requests")
+}
+
+model LogisticsQuoteRequestPhoto {
+  id             String                 @id @default(cuid())
+  quoteRequestId String                 @map("quote_request_id")
+  quoteRequest   LogisticsQuoteRequest  @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  kind           LogisticsLeadPhotoKind
+  url            String
+  thumbUrl       String?                @map("thumb_url")
+  position       Int                    @default(0)
+  createdAt      DateTime               @default(now()) @map("created_at")
+
+  @@index([quoteRequestId], name: "idx_logistics_lead_photos_request")
+  @@map("logistics_quote_request_photos")
+}
+
+model LogisticsQuoteRequestEvent {
+  id             String                @id @default(cuid())
+  quoteRequestId String                @map("quote_request_id")
+  quoteRequest   LogisticsQuoteRequest @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  fromStatus     LogisticsLeadStatus?  @map("from_status")
+  toStatus       LogisticsLeadStatus?  @map("to_status")
+  actorUserId    String?               @map("actor_user_id")
+  note           String?
+  createdAt      DateTime              @default(now()) @map("created_at")
+
+  @@index([quoteRequestId, createdAt], name: "idx_logistics_lead_events_request")
+  @@map("logistics_quote_request_events")
 }

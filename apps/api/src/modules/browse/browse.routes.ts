@@ -176,6 +176,9 @@ export async function browseRoutes(fastify: FastifyInstance) {
         description: 'Décoder un VIN pour identifier le véhicule (NHTSA VPIC)',
         body: zodToFastify(vinDecodeSchema),
       },
+      // Appelée par le formulaire public de cotation à la saisie du 17ᵉ
+      // caractère, et proxie un service tiers : on borne.
+      config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
     },
     async (request, reply) => {
       const { vin } = request.body as { vin: string }

@@ -3,8 +3,13 @@ main = ".open-next/worker.js"
 compatibility_date = "2026-03-31"
 compatibility_flags = ["nodejs_compat"]
 
-# Custom domains gérés côté dashboard Cloudflare (pieces.ci + flotte.pieces.ci).
-# Le routing par hostname pour flotte.pieces.ci est dans middleware.ts.
+# Custom domains gérés côté dashboard Cloudflare
+# (pieces.ci + flotte.pieces.ci + logistique.pieces.ci).
+# Le routing par hostname est dans middleware.ts : flotte.* réécrit la racine
+# vers /entreprises, logistique.* réécrit la liste de slugs de
+# lib/logistique-routes.ts vers /logistique/*.
+# Ajout d'un domaine : Workers & Pages → pieces → Domains & Routes →
+# Add custom domain (le CNAME proxifié est créé automatiquement).
 
 [assets]
 directory = ".open-next/assets"

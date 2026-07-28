@@ -1,5 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createSupabaseMiddlewareClient } from './lib/supabase-middleware'
+import {
+  isLogistiqueHost,
+  isLogistiqueSlug,
+  toLogistiqueInternalPath,
+} from './lib/logistique-routes'
 
 const PROTECTED_PATHS = [
   '/dashboard',
@@ -50,8 +55,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  const host = (request.headers.get('host') ?? '').split(':')[0] ?? ''
+
+  // Sous-domaine logistique.pieces.ci : vitrine + parcours de cotation.
+  //
+  // ⚠ ORDRE : cette réécriture passe AVANT la redirection racine → dashboard.
+  // Le cookie d'auth est scopé `.pieces.ci` (lib/cookie-domain.ts), donc tout
+  // utilisateur Pièces déjà connecté serait sinon renvoyé vers /dashboard et ne
+  // verrait jamais la page marketing. Contrairement à flotte.*, la vitrine
+  // logistique est identique connecté ou non.
+  if (isLogistiqueHost(host) && isLogistiqueSlug(request.nextUrl.pathname)) {
+    return NextResponse.rewrite(
+      new URL(toLogistiqueInternalPath(request.nextUrl.pathname), request.url),
+    )
+  }
+
   // Sous-domaine flotte.pieces.ci : portail entreprise dédié.
-  const isFlotte = ((request.headers.get('host') ?? '').split(':')[0] ?? '').startsWith('flotte.')
+  const isFlotte = host.startsWith('flotte.')
 
   // Connecté : la racine renvoie au tableau de bord, pas à la landing marketing.
   // Sur flotte.*, c'est le tableau de bord entreprise.

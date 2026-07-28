@@ -49,3 +49,17 @@ export type {
   ArbitrageOption,
   ArbitrageResult,
 } from './logistics'
+export {
+  CERTAINTY_WEIGHTS,
+  CERTAINTY_LEVELS,
+  CERTAINTY_SIGNAL_LABEL,
+  computeCertainty,
+  certaintyLevelSpec,
+  nextBestSignal,
+} from './logistics-lead'
+export type {
+  LeadCertaintySignal,
+  LeadCertaintyLevel,
+  LeadCertaintySignals,
+  CertaintyLevelSpec,
+} from './logistics-lead'
