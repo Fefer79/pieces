@@ -19,6 +19,7 @@ import {
   MODE_COPY,
   PUBLIC_MODES,
   LOGISTIQUE_LEVERS,
+  STORAGE_FLEET_BULLETS,
   WEIGHT_VOLUME_PROMISE,
   LOGISTIQUE_STEPS,
   CONFIDENCE_LEVELS,
@@ -228,7 +229,7 @@ export default function LogistiquePage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
           <div className={`${EYEBROW} text-muted`}>Périmètre</div>
           <h2 className="mt-3 text-3xl text-ink lg:text-[38px]">Un seul interlocuteur, bout en bout.</h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {LOGISTIQUE_LEVERS.map((l) => (
               <div key={l.title} className="border-t-2 border-ink pt-4">
                 <div className={`${EYEBROW} text-accent`}>{l.line}</div>
@@ -237,6 +238,44 @@ export default function LogistiquePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ===== Stockage & dispatch pour flottes ===== */}
+      <section className="bg-ink text-white">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-20">
+          <div>
+            <div className={`${EYEBROW} text-accent`}>Stockage & dispatch</div>
+            <h2 className="mt-3 text-3xl text-white lg:text-[38px]">
+              Vos pièces importées, gardées à Abidjan, prêtes à être dispatchées.
+            </h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-white/65">
+              Pour les gestionnaires de flotte, importer en gros par maritime ne suffit pas — il
+              faut ensuite stocker, suivre par référence et par véhicule, et dispatcher au fil des
+              besoins. C&apos;est ce que nous faisons.
+            </p>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
+              Le coût d&apos;immobilisation n&apos;a plus de raison d&apos;être : la pièce attendue
+              est déjà à Abidjan, le délai se compte en heures, pas en semaines. La mise à
+              disposition est facturée à la pièce servie — pas au mètre carré.
+            </p>
+            <Link
+              href="/entreprises"
+              className="mt-6 inline-block rounded-md bg-accent px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-accent-hover"
+            >
+              Voir l&apos;offre flotte →
+            </Link>
+          </div>
+          <ul className="space-y-3.5 self-center">
+            {STORAGE_FLEET_BULLETS.map((b) => (
+              <li key={b} className="flex gap-3 text-[15px] leading-relaxed text-white/80">
+                <span aria-hidden="true" className="mt-0.5 text-accent">
+                  →
+                </span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

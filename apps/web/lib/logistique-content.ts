@@ -67,7 +67,7 @@ export const LOGISTIQUE_HERO = {
   lead: 'Une pièce introuvable à Abidjan, c\'est un véhicule à l\'arrêt. Nous comparons chaque option d\'approvisionnement — local, aérien, maritime — en y ajoutant le seul poste que personne ne calcule : le revenu perdu pendant l\'immobilisation.',
   ctaPrimary: { label: 'Demander une cotation', href: '/logistique/devis' },
   ctaSecondary: { label: 'Combien coûte un véhicule à l\'arrêt ?', href: '/logistique/calculateur' },
-  audiences: ['Garages', 'Flottes VTC', 'BTP & mines', 'Concessions', 'Importateurs'],
+  audiences: ['Garages', 'Flottes VTC', 'BTP & mines', 'Concessions', 'Importateurs', 'Stockage à Abidjan'],
 }
 
 export interface ReceiptLine {
@@ -227,9 +227,14 @@ export const LOGISTIQUE_LEVERS: Array<{ line: string; title: string; body: strin
     body: 'Enlèvement chez le fournisseur, fret, formalités douanières ivoiriennes et livraison au garage ou au centre de maintenance. Un seul interlocuteur.',
   },
   {
+    line: 'Entreposage',
+    title: 'Stocker, dispatcher, livrer à la demande',
+    body: 'Pour les gestionnaires de flotte, nous gardons vos pièces importées en stock à Abidjan, suivies par référence et par véhicule. La mise à disposition est facturée à l\'enlèvement ou à la livraison, selon votre cadence — pas de facturation au m² inutile.',
+  },
+  {
     line: 'Anticipation',
     title: 'Éviter l\'urgence',
-    body: 'Sur un parc homogène, nous construisons un plan d\'approvisionnement trimestriel : les pièces d\'usure arrivent par maritime avant la panne, pas par aérien après.',
+    body: 'Sur un parc homogène, nous construisons un plan d\'approvisionnement trimestriel : les pièces d\'usure arrivent par maritime avant la panne, sont stockées, puis dispatchées au fil des besoins. Pas par aérien après.',
   },
 ]
 
@@ -243,6 +248,15 @@ export const WEIGHT_VOLUME_PROMISE = {
     'Chaque envoi réel affine le référentiel : la marge d\'erreur se resserre avec le volume.',
   ],
 }
+
+export const STORAGE_FLEET_BULLETS: string[] = [
+  'Stockage à Abidjan, suivi par référence OEM et par véhicule de la flotte.',
+  'Mise à disposition à l\'enlèvement (votre coursier) ou à la livraison (notre coursier).',
+  'Pièces réservées à votre parc : jamais livrées à un tiers par erreur.',
+  'Inventaire exportable (CSV) à chaque fin de mois, pour rapprochement avec votre maintenance.',
+  'Idéal pour les pièces d\'usure importées par maritime en une fois et servies au fil des mois.',
+  'Compatible avec le plan d\'anticipation trimestriel : un seul interlocuteur, du fournisseur au véhicule.',
+]
 
 export const LOGISTIQUE_STEPS: Array<{ title: string; body: string }> = [
   {
