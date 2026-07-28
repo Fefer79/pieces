@@ -112,16 +112,16 @@ export async function createSubscription(enterpriseId: string, input: CreateSubs
     data: { status: 'CANCELLED', cancelledAt: new Date() },
   })
 
-  const useTrial = input.startTrial ?? input.tier !== 'FREE'
+  const useTrial = input.startTrial === true && input.tier !== 'FREE'
   const trialDays = input.trialDays ?? DEFAULT_TRIAL_DAYS
   const now = new Date()
-  const trialEndsAt = useTrial && input.tier !== 'FREE' ? new Date(now.getTime() + trialDays * 86_400_000) : null
+  const trialEndsAt = useTrial ? new Date(now.getTime() + trialDays * 86_400_000) : null
 
   const sub = await prisma.enterpriseSubscription.create({
     data: {
       enterpriseId,
       tier: input.tier,
-      status: useTrial && input.tier !== 'FREE' ? 'TRIALING' : 'ACTIVE',
+      status: useTrial ? 'TRIALING' : 'ACTIVE',
       billingCycle: input.billingCycle ?? 'MONTHLY',
       trialEndsAt,
       notes: input.notes ?? null,
@@ -136,7 +136,7 @@ export async function createSubscription(enterpriseId: string, input: CreateSubs
       actorUserId: input.actorUserId ?? null,
     },
   })
-  if (useTrial && input.tier !== 'FREE') {
+  if (useTrial) {
     await prisma.enterpriseSubscriptionEvent.create({
       data: {
         subscriptionId: sub.id,

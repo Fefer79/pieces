@@ -18,6 +18,13 @@ import {
   assignVehicleSchema,
   driverDailyRecordSchema,
   createIncidentSchema,
+  createPartRequestSchema,
+  updatePartRequestSchema,
+  submitPartRequestSchema,
+  approvePartRequestSchema,
+  rejectPartRequestSchema,
+  convertPartRequestSchema,
+  partRequestMatrixSchema,
 } from 'shared/validators'
 import {
   listBufferStock,
@@ -93,6 +100,19 @@ import {
   exportFecCsv,
 } from './invoice.service.js'
 import type { VehicleUsageType, EnterpriseMemberRole } from '@prisma/client'
+import {
+  createPartRequest,
+  listPartRequestsForEnterprise,
+  getPartRequestById,
+  updatePartRequest,
+  submitPartRequest,
+  approvePartRequest,
+  rejectPartRequest,
+  cancelPartRequest,
+  convertToOrder,
+  addPartRequestPhoto,
+} from './partRequest.service.js'
+import { computePartRequestMatrix } from './logistics.service.js'
 
 export async function enterpriseRoutes(fastify: FastifyInstance) {
   // ---- Enterprise CRUD --------------------------------------------------
@@ -1057,4 +1077,245 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
       return reply.send({ data })
     },
   )
+
+  // ---------------------------------------------------------------------------
+  // Part requests (GoCab / flotte)
+  // ---------------------------------------------------------------------------
+
+  fastify.get(
+    '/:enterpriseId/part-requests',
+    { preHandler: [requireAuth], schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] } },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const q = request.query as { status?: string; urgency?: string; vehicleId?: string }
+      const data = await listPartRequestsForEnterprise(enterpriseId, request.user.id, {
+        status: q.status as NonNullable<Parameters<typeof listPartRequestsForEnterprise>[2]>['status'],
+        urgency: q.urgency as NonNullable<Parameters<typeof listPartRequestsForEnterprise>[2]>['urgency'],
+        vehicleId: q.vehicleId,
+      })
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/part-requests',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(createPartRequestSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await createPartRequest(
+        enterpriseId,
+        request.user.id,
+        request.body as Parameters<typeof createPartRequest>[2],
+      )
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/part-requests/:requestId',
+    { preHandler: [requireAuth], schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] } },
+    async (request, reply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const data = await getPartRequestById(enterpriseId, request.user.id, requestId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/:enterpriseId/part-requests/:requestId',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(updatePartRequestSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const data = await updatePartRequest(
+        enterpriseId,
+        request.user.id,
+        requestId,
+        request.body as Parameters<typeof updatePartRequest>[3],
+      )
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/part-requests/:requestId/submit',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(submitPartRequestSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const data = await submitPartRequest(enterpriseId, request.user.id, requestId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/part-requests/:requestId/approve',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(approvePartRequestSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const body = request.body as { note?: string }
+      const data = await approvePartRequest(enterpriseId, request.user.id, requestId, body.note)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/part-requests/:requestId/reject',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(rejectPartRequestSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const body = request.body as { reason: string }
+      const data = await rejectPartRequest(enterpriseId, request.user.id, requestId, body.reason)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/part-requests/:requestId/cancel',
+    { preHandler: [requireAuth], schema: { tags: ['Enterprise'], security: [{ BearerAuth: [] }] } },
+    async (request, reply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const data = await cancelPartRequest(enterpriseId, request.user.id, requestId)
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/part-requests/:requestId/convert-to-order',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(convertPartRequestSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const data = await convertToOrder(
+        enterpriseId,
+        request.user.id,
+        requestId,
+        request.body as Parameters<typeof convertToOrder>[3],
+      )
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/part-requests/:requestId/photos',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        description: 'Ajoute une photo à une demande de pièce (multipart/form-data, champ "file")',
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const file = await request.file()
+      if (!file) {
+        return reply.status(400).send({
+          error: { code: 'FILE_REQUIRED', message: 'Image requise', statusCode: 400 },
+        })
+      }
+      const buffer = await file.toBuffer()
+      const data = await addPartRequestPhoto(enterpriseId, request.user.id, requestId, {
+        buffer,
+        fileName: file.filename,
+        mimeType: file.mimetype,
+      })
+      return reply.status(201).send({ data })
+    },
+  )
+
+  // Matrice d'arbitrage : coût total de chaque option d'approvisionnement, immobilisation
+  // du véhicule comprise. Lecture seule, ouverte à tout membre de l'entreprise.
+  fastify.post(
+    '/:enterpriseId/part-requests/:requestId/logistics-matrix',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(partRequestMatrixSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, requestId } = request.params as {
+        enterpriseId: string
+        requestId: string
+      }
+      const data = await computePartRequestMatrix(
+        enterpriseId,
+        request.user.id,
+        requestId,
+        request.body as Parameters<typeof computePartRequestMatrix>[3],
+      )
+      return reply.send({ data })
+    },
+  )
+
 }
+
+// Re-export for convenience
+export { createPartRequest, listPartRequestsForEnterprise } from './partRequest.service.js'

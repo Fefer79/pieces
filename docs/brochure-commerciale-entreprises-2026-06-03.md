@@ -10,7 +10,7 @@ Une plateforme, trois offres.
 |---|---|---|
 | Pièces.ci | Pièces Flotte Pro | Pièces Flotte Pro + |
 | 0 F | 5 000 F / véhicule / mois | 10 000 F / véhicule / mois |
-| Achetez mieux. La marketplace de référence pour vos pièces auto avec confiance intermédiée. | Pilotez votre flotte et vos chauffeurs. L'analytique qui révèle où part votre budget, qui gagne de l'argent et qui en perd, l'automatisation qui anticipe les pannes, et la facturation normalisée DGI. | Tout Flotte Pro + ne perdez plus une journée. Livraison express en 3 h (6 h maximum) et assistance dédiée. |
+| Achetez mieux. La marketplace de référence pour vos pièces auto avec confiance intermédiée. | Pilotez votre flotte et vos chauffeurs. L'analytique qui révèle où part votre budget, qui gagne de l'argent et qui en perd, l'automatisation qui anticipe les pannes, et la facturation normalisée DGI. | Tout Flotte Pro + ne perdez plus une journée. Livraison express prioritaire : notre équipe dédiée livre le plus rapidement possible pour minimiser votre temps d'immobilisation. |
 
 Flotte Pro et Flotte Pro + se choisissent selon votre besoin. **Flotte Pro + inclut intégralement Flotte Pro** : c'est un abonnement unique à 10 000 F/véhicule/mois qui ajoute la couche urgence.
 
@@ -115,7 +115,7 @@ Flotte Pro + **inclut intégralement Flotte Pro** (toute l'intelligence flotte, 
 
 **Tarification** : un abonnement unique à **10 000 F / véhicule / mois**, prix unique. Flotte Pro + remplace Flotte Pro — vous ne cumulez pas les deux. Exemple flotte 20 véhicules : **200 000 F/mois tout compris**, vs 100 000 F en Flotte Pro seul.
 ## À Abidjan
-- Livraison express : 3 heures, 6 heures maximum, quand la pièce est en stock chez un vendeur partenaire
+- Livraison express prioritaire : notre équipe dédiée livre le plus rapidement possible, quand la pièce est en stock chez un vendeur partenaire
 - 5 livraisons express incluses par mois : au-delà, 1 500 F par livraison supplémentaire
 
 ## Hors Abidjan (San-Pédro, Bouaké, Yamoussoukro, Korhogo…)
@@ -123,7 +123,7 @@ Flotte Pro + **inclut intégralement Flotte Pro** (toute l'intelligence flotte, 
 - 2 livraisons prioritaires incluses par mois
 
 ## Assistance
-- Pickup prioritaire : le livreur Pièces récupère la pièce chez le vendeur en 30 min
+- Pickup prioritaire : le livreur Pièces récupère la pièce chez le vendeur le plus rapidement possible
 - Numéro WhatsApp dédié, ouvert 6 h – 22 h, 7 j / 7
 - Concierge dépannage : un appel, Pièces trouve la pièce et l'achemine : même si elle n'est pas dans le catalogue
 
@@ -174,7 +174,7 @@ Rappel : **Flotte Pro + = Flotte Pro + couche urgence**, donc toute fonctionnali
 | Module optimisation fiscale + export FEC | — | ✓ | ✓ |
 | **Logistique premium** |  |  |  |
 | Livraison standard (J+2 / J+3) | ✓ | ✓ | ✓ |
-| Livraison express 3 h (6 h max) à Abidjan | — | — | ✓ |
+| Livraison express prioritaire à Abidjan | — | — | ✓ |
 | Livraison prioritaire hors Abidjan | — | — | ✓ |
 | Pickup prioritaire + WhatsApp dédiée + concierge | — | — | ✓ |
 | **Service** |  |  |  |
@@ -183,8 +183,8 @@ Rappel : **Flotte Pro + = Flotte Pro + couche urgence**, donc toute fonctionnali
 | Revue trimestrielle avec un Liaison Pièces | — | ✓ | ✓ |
 
 Nos engagements commerciaux
-## Essai 30 jours sur Flotte Pro
-À l'inscription, toutes les fonctionnalités Flotte Pro sont activées 30 jours gratuitement et sans engagement. Vous voyez la valeur avant de décider. À J+30, vous choisissez : continuer avec Flotte Pro, ou repasser sur le niveau gratuit.
+## Démarrage avec Flotte Pro
+Dès l'inscription, toutes les fonctionnalités Flotte Pro sont activées. Vous voyez la valeur dès le premier mois : économies sur les pièces (20-30 % du budget), administration allégée par la facturation DGI consolidée, et moins d'immobilisation grâce aux alertes prédictives. Le tarif est mensuel sans engagement : vous restez maître de votre niveau d'abonnement.
 ## Paiement annuel = 2 mois offerts
 Payer Flotte Pro annuellement d'avance vous fait gagner l'équivalent de 2 mois (16,7 % de remise effective). Cash up-front pour vous, prévisibilité pour nous. Idéal pour les flottes structurées.
 ## Calculateur ROI à l'inscription
@@ -218,12 +218,12 @@ Sur 300 M FCFA de budget annuel, l'économie cible est de 60 à 90 M FCFA par an
 ## Comment démarrer
 - Créez votre compte entreprise sur pieces.ci (signature en ligne, RCCM facultatif).
 - Importez votre flotte avec notre modèle Excel (onglets Véhicules et Chauffeurs) ou un CSV — la colonne « Chauffeur attitré » affecte chaque véhicule à son chauffeur automatiquement.
-- Activation automatique de l'essai Flotte Pro 30 jours — toutes les fonctionnalités, sans carte bancaire.
+- Activation immédiate de Flotte Pro — toutes les fonctionnalités, avec facturation mensuelle sans engagement.
 - Déclarez vos centres de maintenance et rattachez vos véhicules.
 - Invitez vos membres (gestionnaires, mécaniciens, comptables) avec rôles distincts.
 - Enrôlez vos chauffeurs (téléphone + permis), affectez-les à un véhicule, et laissez-les saisir leur recette quotidienne dès le premier jour.
 - Mettez en place le stock tampon sur 5 à 10 références critiques.
-- À J+30, choisissez : continuer en Flotte Pro, revenir au gratuit, ou passer en Flotte Pro +. Délai moyen de mise en route : 48 h ouvrées.
+- Vous choisissez chaque mois : continuer en Flotte Pro, revenir au gratuit, ou passer en Flotte Pro +. Délai moyen de mise en route : 48 h ouvrées.
 
 ## Contact
 Pièces.ci — Marketplace pièces auto et solutions flotte Abidjan, Côte d'Ivoire

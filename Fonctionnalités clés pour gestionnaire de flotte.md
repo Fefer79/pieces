@@ -185,7 +185,7 @@ Les fonctionnalités qui construisent un avantage concurrentiel durable.
 
 ### 14. Logistique intégrée
 
-- **Livraison dernier kilomètre** : réseau de livreurs partenaires (moto, fourgon) pour livrer les pièces en 2-4h dans Abidjan
+- **Livraison prioritaire** : réseau de livreurs partenaires (moto, fourgon) pour livrer les pièces le plus rapidement possible dans Abidjan
 - **Livraison sur chantier/mine** : expédition vers les sites distants avec suivi GPS
 - **Retour simplifié** : processus de retour digitalisé si la pièce ne correspond pas
 - **Micro-hubs de stock** : points de stockage décentralisés dans les zones à forte demande (Yopougon, Treichville, Adjamé) pour les pièces à forte rotation
@@ -236,9 +236,9 @@ GESTIONNAIRE DE FLOTTE (Entreprise de transport, 25 véhicules)
 3. Son mécanicien signale : "le Toyota Hilux AB-1234 a besoin de plaquettes de frein"
 4. Le gestionnaire ouvre Pièces → sélectionne le véhicule AB-1234 dans son garage
 5. Le système connaît déjà le modèle exact → affiche les plaquettes compatibles
-   - OEM Toyota : 45 000 FCFA — En stock — Livraison 24h
-   - Bosch aftermarket : 28 000 FCFA — En stock — Livraison 24h
-   - Compatible générique : 15 000 FCFA — En stock — Livraison 48h
+   - OEM Toyota : 45 000 FCFA — En stock — Livraison prioritaire
+   - Bosch aftermarket : 28 000 FCFA — En stock — Livraison prioritaire
+   - Compatible générique : 15 000 FCFA — En stock — Livraison rapide
 6. Le gestionnaire choisit Bosch, ajoute aussi un filtre à huile
 7. Génère un devis PDF → l'envoie à son directeur pour validation
 8. Commande confirmée → paiement Orange Money

@@ -16,7 +16,7 @@ export const DELIVERY_MODES: Array<{
   detail: string
 }> = [
   { mode: 'STANDARD', label: 'Standard', detail: '48–72 h' },
-  { mode: 'EXPRESS', label: 'Express', detail: '6 h (12 h max) à Abidjan' },
+  { mode: 'EXPRESS', label: 'Express', detail: 'prioritaire à Abidjan' },
 ]
 
 // Zone tarifaire dérivée du forfait commune historique :

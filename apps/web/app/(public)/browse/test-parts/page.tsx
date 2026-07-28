@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 const MOCK_CATEGORIES = ['Filtration', 'Freinage', 'Moteur', 'Suspension', 'Électrique']
 
@@ -25,7 +27,7 @@ export default function TestPartsPage() {
     : MOCK_PARTS
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    <div className="mx-auto w-full max-w-[1280px] px-4 py-6 lg:px-8">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-1 text-xl font-bold text-[#1A1A1A]">Toyota Hilux 2012</h1>
       <p className="mb-4 text-sm text-gray-500">{filtered.length} pièce{filtered.length > 1 ? 's' : ''} disponible{filtered.length > 1 ? 's' : ''}</p>
@@ -48,19 +50,23 @@ export default function TestPartsPage() {
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {filtered.map((part) => (
-          <div key={part.id} className="flex gap-3 rounded-lg border border-gray-200 p-3">
-            <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
-              <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">—</div>
+          <Link
+            key={part.id}
+            href={`/produit/${part.id}`}
+            className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-colors hover:border-gray-300"
+          >
+            <div className="aspect-square w-full overflow-hidden bg-surface">
+              <PartThumb src={part.imageThumbUrl} alt={part.name} />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-[#1A1A1A]">{part.name}</p>
-              <p className="text-xs text-gray-500">{part.category}</p>
-              <p className="text-xs text-gray-400">{part.vendor.shopName}</p>
+            <div className="flex flex-1 flex-col p-3">
+              <p className="line-clamp-2 text-sm font-medium text-[#1A1A1A]">{part.name}</p>
+              <p className="mt-0.5 text-xs text-gray-500">{part.category}</p>
+              <p className="mt-auto truncate pt-2 text-xs text-gray-400">{part.vendor.shopName}</p>
+              <p className="mt-1 text-sm font-bold text-[#1A1A1A]">{part.price.toLocaleString('fr-FR')} F</p>
             </div>
-            <p className="text-sm font-bold text-[#1A1A1A]">{part.price.toLocaleString('fr-FR')} F</p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

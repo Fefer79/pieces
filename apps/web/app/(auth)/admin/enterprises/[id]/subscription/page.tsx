@@ -48,7 +48,7 @@ const TIER_LABEL: Record<Tier, string> = {
 }
 
 const STATUS_LABEL: Record<Status, string> = {
-  TRIALING: 'Essai en cours',
+  TRIALING: 'En cours',
   ACTIVE: 'Actif',
   SUSPENDED: 'Suspendu',
   CANCELLED: 'Annulé',
@@ -73,7 +73,7 @@ export default function AdminSubscriptionPage() {
 
   const [tier, setTier] = useState<Tier>('PRO_FLOTTE')
   const [cycle, setCycle] = useState<Cycle>('MONTHLY')
-  const [startTrial, setStartTrial] = useState(true)
+  const [startTrial, setStartTrial] = useState(false)
   const [trialDays, setTrialDays] = useState(30)
   const [notes, setNotes] = useState('')
 
@@ -171,7 +171,7 @@ export default function AdminSubscriptionPage() {
               </span>
               {current.subscription.trialExpired && (
                 <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
-                  Essai expiré
+                  Formule expirée
                 </span>
               )}
               <span className="text-xs text-muted">
@@ -189,7 +189,7 @@ export default function AdminSubscriptionPage() {
             <div className="grid grid-cols-2 gap-3 text-xs text-muted lg:grid-cols-3">
               <div>Démarré le : {current.subscription.startedAt.slice(0, 10)}</div>
               {current.subscription.trialEndsAt && (
-                <div>Essai expire le : {current.subscription.trialEndsAt.slice(0, 10)}</div>
+                <div>Formule en cours jusqu&apos;au : {current.subscription.trialEndsAt.slice(0, 10)}</div>
               )}
               {current.subscription.cancelledAt && (
                 <div>Annulé le : {current.subscription.cancelledAt.slice(0, 10)}</div>
@@ -210,7 +210,7 @@ export default function AdminSubscriptionPage() {
                   disabled={submitting}
                   className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
                 >
-                  Activer (sortir d&apos;essai)
+                  Activer définitivement
                 </button>
               )}
               {current.subscription.status === 'ACTIVE' && (
@@ -286,7 +286,7 @@ export default function AdminSubscriptionPage() {
               </select>
             </Field>
             {tier !== 'FREE' && (
-              <Field label={`Essai ${trialDays} j`}>
+              <Field label={`Période d’essai optionnelle (${trialDays} j)`}>
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"

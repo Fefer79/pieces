@@ -14,7 +14,7 @@
 **Pièces optimise les dépenses automobiles de tout le monde en Côte d'Ivoire**, du propriétaire d'un seul véhicule au gestionnaire d'une flotte de mille. La plateforme réunit trois produits sur une seule infrastructure :
 
 - **Marketplace tripartite** : le mécanicien identifie la pièce (recherche, photo IA, VIN), le vendeur livre, le propriétaire **paie à la livraison**. Prix affiché, condition de la pièce affichée (chip Neuf / Occasion / Ré-usiné / Aftermarket / OEM), garantie, facture.
-- **Suite Flotte (B2B)** : `Flotte Pro` (5 000 F/véh/mois) et `Flotte Pro +` (10 000 F/véh/mois) assurent le pilotage du coût total de possession, la détection des véhicules « gouffres », les alertes d'entretien, la livraison express, la facturation consolidée et la conformité fiscale.
+- **Suite Flotte (B2B)** : `Flotte Pro` (5 000 F/véh/mois) et `Flotte Pro +` (10 000 F/véh/mois) assurent le pilotage du coût total de possession, la détection des véhicules « gouffres », les alertes d'entretien, la livraison express prioritaire, la facturation consolidée et la conformité fiscale.
 - **Programme Liaison** : les agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au vendeur de détail. Notre douve, c'est la **cartographie des acteurs de la chaîne** et la **digitalisation de leurs produits, même quand ils ne sont pas sur internet**.
 
 La plateforme est **construite et déployée** : marketplace, paiement à la livraison, dashboard flotte, calculateur ROI, bot WhatsApp, et un catalogue de **7 137 annonces** déjà ingérées. Le portail entreprise est en ligne sur `flotte.pieces.ci`.
@@ -114,7 +114,7 @@ Quatre flux de revenus :
 |---|---|---|
 | **Commission marketplace** | 7-15 %, prélevée au moment du paiement par l'acheteur | 45 % du revenu |
 | **Abonnement Flotte Pro** | 5 000 F / véh / mois | 35 % du revenu |
-| **Abonnement Flotte Pro +** | 10 000 F / véh / mois (livraison express) | 15 % du revenu |
+| **Abonnement Flotte Pro +** | 10 000 F / véh / mois (livraison express prioritaire) | 15 % du revenu |
 | **Conformité / facturation** | Forfait FNE-CI, prestations | 5 % du revenu |
 
 **Unit economics cibles :**
@@ -129,7 +129,7 @@ Quatre flux de revenus :
 Stratégie en 5 mouvements sur 24 mois :
 
 - **M0-6, verrouiller les principaux vendeurs** : 85 à 90 % des pièces du marché enregistrées, 20 Liaisons, 300 vendeurs onboardés, 350 commandes/jour à M6.
-- **M3-12, prendre le VTC** : partenariat Yango (pilote 200 conducteurs gratuits 3 mois, puis déploiement de masse), Heetch en parallèle, démarchage des flottes indépendantes (5 à 200 véhicules), 3 cas clients chiffrés (-20 % budget pièces).
+- **M3-12, prendre le VTC** : partenariat Yango (déploiement initial sur 200 conducteurs, puis déploiement de masse), Heetch en parallèle, démarchage des flottes indépendantes (5 à 200 véhicules), 3 cas clients chiffrés (-20 % budget pièces).
 - **M6-15, devenir le standard FNE-CI** : intégration DGI, vente directe aux DAF (« nous vous aidons à récupérer la TVA que vous perdez aujourd'hui »).
 - **M12-18, étendre BTP / transport collectif / corporate** : +2 500 véhicules au-delà du VTC.
 - **M18-24, sortir d'Abidjan** : Bouaké, San Pedro, puis un pilote sous-régional (Dakar/Cotonou).
@@ -168,7 +168,7 @@ Pour « bien commencer » vers ces objectifs, il faut financer **18 à 20 mois**
 | Revenu net (compensation) | ~0 | ~25 M (croissant) | ~50 M (≈ break-even) |
 | **Burn net mensuel** | ~22 M | ~15 M | ~0-5 M |
 
-Burn net opérationnel cumulé M0-18 ≈ **300-350 M FCFA**, auquel s'ajoutent le **fonds de roulement** (stock tampon SLA, ~100-150 M F), un **coussin de sécurité / contingence** (~150-200 M F) et une réserve de préparation du tour Seed.
+Burn net opérationnel cumulé M0-18 ≈ **300-350 M FCFA**, auquel s'ajoutent le **fonds de roulement** (stock tampon prioritaire, ~100-150 M F), un **coussin de sécurité / contingence** (~150-200 M F) et une réserve de préparation du tour Seed.
 
 ### 9.2 Recommandation
 
@@ -213,7 +213,7 @@ Recrutements prioritaires M0-M3 : **Head of Liaison** (l'arme stratégique), **H
 | Risque | Impact | Mitigation |
 |---|---|---|
 | Réplication du modèle Liaison par un acteur capitalisé | Élevé | Verrouillage 12 mois, exclusivité partielle top vendeurs, compatibilité des données propriétaire |
-| SLA livraison express non tenu | Élevé | Réseau livreurs dédié, stock tampon, SLA opérationnel < SLA promis |
+| Engagement de livraison express prioritaire non tenu | Élevé | Réseau livreurs dédié, stock tampon, process opérationnel plus prudent que l'engagement client |
 | Fraude vendeur / fausse pièce OEM | Critique (marque) | Garantie 100 % remplacement, fonds de garantie, ban immédiat |
 | Régulation DGI hostile à un acteur privé FNE-CI | Élevé | Briefing institutionnel pré-lancement, posture partenaire de la formalisation |
 | Encaissement à la livraison (impayé, client absent) | Moyen | Confirmation de commande avant départ du livreur, acompte sur grosses pièces, encaissement cash ou Mobile Money à la remise |

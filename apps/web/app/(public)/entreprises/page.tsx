@@ -28,9 +28,9 @@ const RECU_LINES = [
 
 const STATS = [
   { num: '20–30 %', cap: 'd\'économie cible sur le budget pièces' },
-  { num: '6 h', cap: 'livraison express à Abidjan (12 h max)' },
+  { num: 'Prioritaire', cap: 'livraison express dédiée à votre flotte' },
   { num: '× 2,6', cap: 'ROI minimum avec Flotte Pro +' },
-  { num: '30 j', cap: 'd\'essai gratuit, d\'office, sans carte' },
+  { num: 'Dès J+1', cap: 'gains directs et indirects mesurables' },
 ]
 
 const DOMAINS = ['Transport', 'VTC', 'BTP', 'Mines', 'Location', 'Services']
@@ -46,10 +46,10 @@ const DASH_ROWS: Array<{ veh: string; cost: string; vs: string; chip: ChipVarian
 const STEPS = [
   { title: 'Créez votre compte entreprise', body: 'Signature en ligne sur pieces.ci — RCCM facultatif.' },
   { title: 'Importez votre flotte', body: 'Un CSV suffit : marque, modèle, année, plaque, kilométrage.' },
-  { title: 'Essai 30 jours activé', body: 'Toutes les fonctionnalités Flotte Pro +, automatiquement, sans carte bancaire.' },
+  { title: 'Choisissez votre palier', body: 'Gratuit, Flotte Pro ou Flotte Pro + selon vos besoins. Vous voyez la valeur dès le premier mois, sans période d’essai imposée.' },
   { title: 'Déclarez vos centres', body: 'Rattachez vos véhicules à vos centres de maintenance.' },
   { title: 'Invitez votre équipe', body: 'Rôles distincts : gestionnaire, mécanicien, comptable.' },
-  { title: 'Choisissez à J+30', body: 'Gratuit, Flotte Pro, ou Flotte Pro +.' },
+  { title: 'Mesurez vos gains', body: 'Économies sur pièces, immobilisations évitées et temps administratif récupéré, chiffrés dans votre tableau de bord.' },
 ]
 
 function CompareCell({ value, plus = false }: { value: string; plus?: boolean }) {
@@ -84,7 +84,7 @@ export default function EntreprisesPage() {
                 pieces.ci
               </a>
               , pilotage des coûts véhicule par véhicule, entretien préventif et
-              livraison express en 6 h à Abidjan — une seule plateforme.{' '}
+              livraison express prioritaire à Abidjan — une seule plateforme.{' '}
               <strong className="font-semibold text-white">
                 Moins de surcoûts, moins de pannes, moins d&apos;immobilisation.
               </strong>
@@ -94,7 +94,7 @@ export default function EntreprisesPage() {
                 href="/enterprise/dashboard"
                 className="rounded-md bg-accent px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-accent-hover"
               >
-                Démarrer l&apos;essai 30 jours
+                Créer mon compte entreprise
               </Link>
               <Link
                 href="/entreprises/calculateur-roi"
@@ -149,7 +149,7 @@ export default function EntreprisesPage() {
                   <path d="M8 1.5l5.5 2v4c0 3.2-2.3 5.6-5.5 7-3.2-1.4-5.5-3.8-5.5-7v-4l5.5-2z" stroke="currentColor" strokeWidth="1.4" />
                   <path d="M5.5 8l1.8 1.8L10.8 6.4" stroke="currentColor" strokeWidth="1.4" />
                 </svg>
-                Essayez 30 jours gratuits, sans engagements.
+                L&apos;abonnement se rentabilise par les économies réalisées sur les pièces et l&apos;administration.
               </div>
             </div>
           </div>
@@ -299,8 +299,8 @@ export default function EntreprisesPage() {
           <h2 className="mt-3 text-3xl lg:text-4xl">Trois formules, zéro engagement caché.</h2>
           <p className="mt-4 text-base leading-relaxed text-muted">
             Prix flat par véhicule, mensuel d&apos;avance. Paiement annuel = 2 mois
-            offerts. Toutes les entreprises démarrent avec 30 jours d&apos;essai
-            gratuit, d&apos;office.
+            offerts. Vous voyez la valeur dès le premier mois : gains directs
+            (économies sur pièces et admin) et gains indirects (moins d&apos;immobilisation, moins de pannes).
           </p>
         </div>
 
@@ -398,8 +398,7 @@ export default function EntreprisesPage() {
           ))}
         </div>
         <p className="mt-6 text-center text-xs text-muted">
-          À J+30, vous choisissez votre formule — ou restez sur le niveau gratuit.
-          Aucune carte bancaire demandée.
+          Vous pouvez changer de formule ou arrêter à tout moment. Aucune carte bancaire demandée.
         </p>
 
         {/* Tableau comparatif */}
@@ -471,10 +470,11 @@ export default function EntreprisesPage() {
             véhicule), économie projetée 20 % minimum via comparateur, scoring
             qualité fournisseur, détection des véhicules « gouffres » et stock
             tampon automatique — soit 13 M F d&apos;économie pour 5 M F
-            d&apos;abonnement (ROI ×2,6, hors gains d&apos;immobilisation évitée).{' '}
+            d&apos;abonnement (ROI ×2,6, hors gains indirects d&apos;immobilisation évitée et de
+            productivité retrouvée).{' '}
             <strong className="font-semibold text-white">
-              Testez-le pendant 30 jours gratuits : vous mesurez les gains sur votre
-              propre flotte avant tout engagement.
+              Vous mesurez les gains directs et indirects sur votre propre flotte dès
+              le premier mois.
             </strong>
           </p>
         </div>
@@ -505,8 +505,9 @@ export default function EntreprisesPage() {
           Mesurez vos économies sur votre propre flotte.
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-base text-muted">
-          30 jours d&apos;essai gratuit, toutes fonctionnalités Flotte Pro + incluses.
-          Vous décidez ensuite, chiffres en main.
+          Créez votre compte entreprise et accédez aux fonctionnalités Flotte Pro +
+          dès le premier mois. Vous mesurez les gains directs et indirects avant de
+          choisir la formule qui vous convient.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link

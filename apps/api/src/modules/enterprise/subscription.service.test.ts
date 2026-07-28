@@ -181,10 +181,10 @@ describe('createSubscription', () => {
     })
   })
 
-  it('cancels prior active sub, creates TRIALING, emits CREATED + TRIAL_STARTED', async () => {
+  it('cancels prior active sub, creates ACTIVE without trial, emits CREATED', async () => {
     enterpriseFindUnique.mockResolvedValue({ id: 'ent-1' })
     subUpdateMany.mockResolvedValue({ count: 1 })
-    subCreate.mockResolvedValue({ id: 'sub-1', tier: 'PRO_FLOTTE', status: 'TRIALING' })
+    subCreate.mockResolvedValue({ id: 'sub-1', tier: 'PRO_FLOTTE', status: 'ACTIVE' })
     eventCreate.mockResolvedValue({})
 
     await createSubscription('ent-1', { tier: 'PRO_FLOTTE' })
@@ -196,7 +196,27 @@ describe('createSubscription', () => {
       }),
     )
     expect(subCreate).toHaveBeenCalled()
-    expect(eventCreate).toHaveBeenCalledTimes(2) // CREATED + TRIAL_STARTED
+    const createArg = subCreate.mock.calls[0]![0] as { data: { status: string; trialEndsAt: Date | null } }
+    expect(createArg.data.status).toBe('ACTIVE')
+    expect(createArg.data.trialEndsAt).toBeNull()
+    expect(eventCreate).toHaveBeenCalledTimes(1) // CREATED only
+    const kinds = eventCreate.mock.calls.map((c) => (c[0] as { data: { kind: string } }).data.kind)
+    expect(kinds).toContain('CREATED')
+    expect(kinds).not.toContain('TRIAL_STARTED')
+  })
+
+  it('creates TRIALING when startTrial is true explicitly', async () => {
+    enterpriseFindUnique.mockResolvedValue({ id: 'ent-1' })
+    subUpdateMany.mockResolvedValue({ count: 0 })
+    subCreate.mockResolvedValue({ id: 'sub-1', tier: 'PRO_FLOTTE', status: 'TRIALING' })
+    eventCreate.mockResolvedValue({})
+
+    await createSubscription('ent-1', { tier: 'PRO_FLOTTE', startTrial: true, trialDays: 14 })
+
+    const createArg = subCreate.mock.calls[0]![0] as { data: { status: string; trialEndsAt: Date | null } }
+    expect(createArg.data.status).toBe('TRIALING')
+    expect(createArg.data.trialEndsAt).toBeInstanceOf(Date)
+    expect(eventCreate).toHaveBeenCalledTimes(2)
     const kinds = eventCreate.mock.calls.map((c) => (c[0] as { data: { kind: string } }).data.kind)
     expect(kinds).toContain('CREATED')
     expect(kinds).toContain('TRIAL_STARTED')

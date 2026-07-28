@@ -29,7 +29,7 @@ const TIER_BENEFITS: Record<Tier, string[]> = {
   ],
   PRO_FLOTTE_PLUS: [
     'Tout Flotte Pro inclus',
-    'Livraison express offerte : 6 h (12 h max) à Abidjan',
+    'Livraison express prioritaire offerte à Abidjan',
     'Livraison prioritaire hors Abidjan',
     'Pickup prioritaire, WhatsApp dédiée 6 h–22 h',
     'Concierge dépannage : un appel, c\'est réglé',
@@ -63,7 +63,7 @@ function computeTier(
   const annualCostBilledAnnual = monthlyCost * 10 // 2 mois offerts
 
   const partsSaving = budget * savingRate
-  // Le downtime ne s'applique qu'à Pro+ (express 6 h / prioritaire / concierge)
+  // Le downtime ne s'applique qu'à Pro+ (express prioritaire / concierge)
   const downtimeSaving = tier === 'PRO_FLOTTE_PLUS' ? vehicles * downtimeDays * revenuePerOffRoadDay : 0
   const grossSaving = partsSaving + downtimeSaving
   const netAnnual = grossSaving - annualCost
@@ -181,7 +181,7 @@ export default function CalculateurRoiPage() {
             <Hint>
               Moyenne observée chez les flottes ivoiriennes : <strong>3 à 5 jours / véhicule / an</strong>.
               VTC fortement sollicités ou flottes BTP : jusqu&apos;à 8 jours. Flotte Pro + supprime ces
-              jours grâce à la livraison express 6 h à Abidjan, la livraison prioritaire hors Abidjan
+              jours grâce à la livraison express prioritaire à Abidjan, la livraison prioritaire hors Abidjan
               et le concierge.
             </Hint>
           </Field>
@@ -217,7 +217,7 @@ export default function CalculateurRoiPage() {
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-muted">
               {winner === 'PRO_FLOTTE_PLUS'
-                ? 'La couche urgence (express 6 h, livraison prioritaire, concierge) couvre largement l\'écart de prix.'
+                ? 'La couche urgence (express prioritaire, livraison prioritaire, concierge) couvre largement l\'écart de prix.'
                 : 'À ce niveau d\'usage, la couche urgence Pro + ne se justifie pas encore. Démarrez en Flotte Pro.'}
             </p>
           </div>
@@ -225,7 +225,7 @@ export default function CalculateurRoiPage() {
             href="/enterprise/dashboard"
             className="inline-flex items-center justify-center rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
           >
-            Démarrer l&apos;essai 30 jours
+            Choisir ce palier
           </Link>
         </div>
       </section>
@@ -282,7 +282,7 @@ export default function CalculateurRoiPage() {
               <Row label="Abonnement annuel (paiement annuel, −2 mois)" pro={fmtFcfa(pro.annualCostBilledAnnual)} plus={fmtFcfa(plus.annualCostBilledAnnual)} diff={fmtFcfa(plus.annualCostBilledAnnual - pro.annualCostBilledAnnual)} />
               <SectionRow label="Économies projetées / an" />
               <Row label="• Économie pièces" pro={fmtFcfa(pro.partsSaving)} plus={fmtFcfa(plus.partsSaving)} diff="—" />
-              <Row label="• Économie downtime (express 6 h / prioritaire)" pro="—" plus={fmtFcfa(plus.downtimeSaving)} diff={fmtFcfa(plus.downtimeSaving)} highlight={plus.downtimeSaving > 0} />
+              <Row label="• Économie downtime (express prioritaire / concierge)" pro="—" plus={fmtFcfa(plus.downtimeSaving)} diff={fmtFcfa(plus.downtimeSaving)} highlight={plus.downtimeSaving > 0} />
               <Row label="Total économies brutes" pro={fmtFcfa(pro.grossSaving)} plus={fmtFcfa(plus.grossSaving)} diff={fmtFcfa(plus.grossSaving - pro.grossSaving)} />
               <SectionRow label="Résultat" />
               <Row label="Net annuel après abonnement" pro={fmtFcfa(pro.netAnnual)} plus={fmtFcfa(plus.netAnnual)} diff={fmtFcfa(plus.netAnnual - pro.netAnnual)} bold tone={plus.netAnnual - pro.netAnnual >= 0 ? 'pos' : 'neg'} />
@@ -308,7 +308,7 @@ export default function CalculateurRoiPage() {
         Hypothèses : abonnement Flotte Pro 4 900 F/véh/mois, Flotte Pro + 9 900 F/véh/mois.
         Économie pièces appliquée au budget pièces annuel (s&apos;applique aux deux tiers).
         Économie downtime = véhicules × jours d&apos;immobilisation × manque à gagner / jour,
-        comptée uniquement pour Flotte Pro + (express 6 h Abidjan, prioritaire hors Abidjan, concierge).
+        comptée uniquement pour Flotte Pro + (express prioritaire Abidjan, prioritaire hors Abidjan, concierge).
         Payback = 365 × abonnement annuel / économie annuelle brute.
         Paiement annuel = 10 mois facturés (2 mois offerts).
       </p>
@@ -392,7 +392,7 @@ function TierCard({
       <div className="mt-4">
         {result.downtimeSaving > 0 && (
           <div className="rounded-md border border-success-fg/20 bg-success-bg px-3 py-2 text-xs text-success-fg">
-            <strong>+ {fmtFcfa(result.downtimeSaving)}/an</strong> grâce à la couche urgence (express 6 h, livraison prioritaire).
+            <strong>+ {fmtFcfa(result.downtimeSaving)}/an</strong> grâce à la couche urgence (express prioritaire, livraison prioritaire).
           </div>
         )}
       </div>

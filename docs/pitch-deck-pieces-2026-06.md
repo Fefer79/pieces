@@ -29,7 +29,7 @@ Acheter une pièce auto à Abidjan = un parcours du combattant. Le marché est *
 Trois produits, une seule infrastructure :
 
 - **Marketplace tripartite** — le mécanicien identifie, le vendeur livre, le propriétaire **paie à la livraison**. Prix et condition affichés, garantie, facture.
-- **Suite Flotte (B2B)** — pilotage du coût total de possession, détection des véhicules « gouffres », livraison express, conformité fiscale.
+- **Suite Flotte (B2B)** — pilotage du coût total de possession, détection des véhicules « gouffres », livraison express prioritaire, conformité fiscale.
 - **Réseau Liaison** — des agents terrain digitalisent les vendeurs **formels et informels**, de l'importateur en gros au détaillant — même hors ligne.
 
 <div class="callout">

@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { PartThumb } from '@/components/ui/part-thumb'
 
 interface PartIdentification {
   name: string
@@ -89,7 +91,7 @@ export default function PhotoIdentifyPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    <div className="mx-auto w-full max-w-[1280px] px-4 py-6 lg:px-8">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">
         &larr; Retour
       </button>
@@ -100,18 +102,20 @@ export default function PhotoIdentifyPage() {
 
       {!result && !loading && (
         <>
-          <div className="mb-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center">
+          <div className="mx-auto max-w-2xl rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center">
             <p className="mb-1 text-3xl">📷</p>
             <p className="mb-2 text-sm font-semibold text-[#1A1A1A]">Placez la pièce entière dans le cadre</p>
             <p className="text-xs text-gray-400">Bonne lumière — Pièce entière — Fond uni</p>
           </div>
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="w-full rounded-lg bg-[#002366] py-4 text-lg font-semibold text-white transition-colors hover:bg-[#1565C0]"
-            style={{ minHeight: '40vh' }}
-          >
-            Prendre une photo
-          </button>
+          <div className="mx-auto mt-4 max-w-2xl">
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="w-full rounded-lg bg-[#002366] py-4 text-lg font-semibold text-white transition-colors hover:bg-[#1565C0]"
+              style={{ minHeight: '40vh' }}
+            >
+              Prendre une photo
+            </button>
+          </div>
           <input
             ref={fileRef}
             type="file"
@@ -139,7 +143,7 @@ export default function PhotoIdentifyPage() {
       )}
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
+        <div className="mx-auto mt-4 max-w-2xl rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-[#D32F2F]">{error}</p>
           <button onClick={reset} className="mt-2 text-sm text-[#002366] hover:underline">
             Réessayer
@@ -149,7 +153,7 @@ export default function PhotoIdentifyPage() {
 
       {result?.status === 'identified' && result.identification && (
         <div className="mt-4">
-          <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4">
+          <div className="mx-auto max-w-2xl rounded-lg border border-green-200 bg-green-50 p-4">
             <p className="text-sm font-semibold text-green-700">
               Pièce identifiée : {result.identification.name}
             </p>
@@ -163,35 +167,46 @@ export default function PhotoIdentifyPage() {
 
           {result.matchingParts.length > 0 ? (
             <>
-              <h2 className="mb-2 text-sm font-semibold text-[#1A1A1A]">Pièces disponibles ({result.matchingParts.length})</h2>
-              {result.matchingParts.map((part) => (
-                <div key={part.id} className="mb-2 flex items-center gap-3 rounded-lg border border-gray-200 p-3">
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-[#1A1A1A]">{part.name}</p>
-                    <p className="text-xs text-gray-500">{part.vendor.shopName}</p>
-                  </div>
-                  {part.price && (
-                    <p className="text-sm font-bold text-[#002366]">{part.price.toLocaleString()} F</p>
-                  )}
-                </div>
-              ))}
+              <h2 className="mb-2 mt-4 text-sm font-semibold text-[#1A1A1A]">Pièces disponibles ({result.matchingParts.length})</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {result.matchingParts.map((part) => (
+                  <Link
+                    key={part.id}
+                    href={`/produit/${part.id}`}
+                    className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-colors hover:border-gray-300"
+                  >
+                    <div className="aspect-square w-full overflow-hidden bg-surface">
+                      <PartThumb src={part.imageThumbUrl} alt={part.name} />
+                    </div>
+                    <div className="flex flex-1 flex-col p-3">
+                      <p className="line-clamp-2 text-sm font-medium text-[#1A1A1A]">{part.name ?? 'Pièce'}</p>
+                      <p className="mt-auto truncate pt-2 text-xs text-gray-400">{part.vendor.shopName}</p>
+                      {part.price && (
+                        <p className="mt-1 text-sm font-bold text-[#1A1A1A]">{part.price.toLocaleString()} F</p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </>
           ) : (
             <p className="text-sm text-gray-500">Aucune pièce correspondante en stock actuellement.</p>
           )}
-          <button onClick={reset} className="mt-4 w-full rounded-lg border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50">
-            Nouvelle recherche
-          </button>
+          <div className="mx-auto mt-4 max-w-2xl">
+            <button onClick={reset} className="w-full rounded-lg border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50">
+              Nouvelle recherche
+            </button>
+          </div>
         </div>
       )}
 
       {result?.status === 'disambiguation' && (
         <div className="mt-4">
-          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <div className="mx-auto max-w-2xl rounded-lg border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm font-semibold text-amber-700">Plusieurs possibilités détectées</p>
             <p className="text-xs text-amber-600">Sélectionnez la pièce qui correspond le mieux.</p>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="mx-auto mt-4 grid max-w-3xl grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {result.candidates.map((c) => (
               <button
                 key={c.id}
@@ -203,14 +218,16 @@ export default function PhotoIdentifyPage() {
               </button>
             ))}
           </div>
-          <button onClick={reset} className="mt-4 w-full rounded-lg border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50">
-            Réessayer avec une autre photo
-          </button>
+          <div className="mx-auto mt-4 max-w-2xl">
+            <button onClick={reset} className="w-full rounded-lg border border-gray-300 py-2 text-sm text-gray-600 hover:bg-gray-50">
+              Réessayer avec une autre photo
+            </button>
+          </div>
         </div>
       )}
 
       {result?.status === 'failed' && (
-        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <div className="mx-auto mt-4 max-w-2xl rounded-lg border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm text-amber-700">Identification impossible — essayez la recherche par texte ou navigation par marque.</p>
           <div className="mt-2 flex gap-2">
             <button onClick={() => router.push('/browse')} className="text-sm text-[#002366] hover:underline">

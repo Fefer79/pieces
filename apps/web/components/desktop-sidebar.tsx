@@ -43,6 +43,7 @@ function getSections(
         { href: '/enterprise/drivers', label: 'Chauffeurs', icon: WheelIcon },
         { href: '/enterprise/members', label: 'Membres', icon: UsersIcon },
         { href: '/enterprise/orders', label: 'Commandes', icon: OrdersIcon },
+        { href: '/enterprise/requests', label: 'Demandes', icon: OrdersIcon },
         { href: '/enterprise/search', label: 'Recherche', icon: SearchIcon },
         { href: '/enterprise/centers', label: 'Centres', icon: BuildingIcon },
         { href: '/enterprise/returns', label: 'Retours', icon: ReturnIcon },

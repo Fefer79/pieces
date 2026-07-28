@@ -31,7 +31,7 @@ export default function EntreprisesLayout({ children }: { children: React.ReactN
               href="/enterprise/dashboard"
               className="rounded-md bg-accent px-4 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-accent-hover"
             >
-              Essai 30 jours
+              Créer mon compte
             </Link>
           </nav>
         </div>

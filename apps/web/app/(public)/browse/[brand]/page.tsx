@@ -23,7 +23,7 @@ export default function BrandModelsPage() {
   }, [brand])
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6 sm:max-w-3xl lg:py-8">
+    <div className="mx-auto w-full max-w-[1280px] px-4 py-6 lg:px-8 lg:py-8">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
       <h1 className="mb-4 text-xl font-bold text-[#1A1A1A] lg:text-2xl">{brand}</h1>
       <p className="mb-4 text-sm text-gray-500">Sélectionnez un modèle</p>
@@ -32,12 +32,12 @@ export default function BrandModelsPage() {
       {loading && <p className="text-sm text-gray-500">Chargement...</p>}
 
       {!loading && !error && (
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {models.map((model) => (
             <button
               key={model}
               onClick={() => router.push(`/browse/${encodeURIComponent(brand)}/${encodeURIComponent(model)}`)}
-              className="w-full rounded-lg border border-gray-200 p-3 text-left text-sm font-medium text-[#1A1A1A] transition-colors hover:bg-gray-50"
+              className="rounded-lg border border-gray-200 p-3 text-left text-sm font-medium text-[#1A1A1A] transition-colors hover:bg-gray-50"
             >
               {model}
             </button>

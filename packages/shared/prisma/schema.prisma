@@ -47,6 +47,9 @@ model User {
   partEnrichments      PartEnrichment[] @relation("EnrichmentLiaison")
   contacts             VendorContact[] @relation("ContactCreatedBy")
   contactActivities    ContactActivity[] @relation("ContactActivityAuthor")
+  createdPartRequests  PartRequest[] @relation("PartRequestCreator")
+  approvedPartRequests PartRequest[] @relation("PartRequestApprover")
+  partRequestEvents    PartRequestEvent[] @relation("PartRequestEventActor")
 
   @@map("users")
   @@index([phone], name: "idx_users_phone")
@@ -420,6 +423,14 @@ enum VehicleUsageType {
   AUTRE
 }
 
+// Motorisation — pilote le coût d'immobilisation et le panier de pièces
+// (l'électrique consomme ~45 % de moins : pas de vidange ni de pièces moteur).
+enum VehicleEnergyType {
+  ICE
+  EV
+  HYBRID
+}
+
 enum EnterpriseMemberRole {
   OWNER
   MANAGER
@@ -442,6 +453,7 @@ model Enterprise {
   members             EnterpriseMember[]
   vehicles            Vehicle[]
   orders              Order[]
+  partRequests        PartRequest[]
   maintenanceCenters  MaintenanceCenter[]
   bufferStock         EnterpriseBufferStock[]
   subscriptions       EnterpriseSubscription[]
@@ -586,6 +598,99 @@ model EnterpriseBufferStock {
   @@index([enterpriseId], name: "idx_buffer_stock_enterprise")
 }
 
+// ---------------------------------------------------------------------------
+// Demandes de pièces GoCab — workflow terrain → manager → sourcing → commande
+// ---------------------------------------------------------------------------
+
+enum PartRequestStatus {
+  DRAFT
+  SUBMITTED
+  REVIEWING
+  APPROVED
+  REJECTED
+  CONVERTED
+  CANCELLED
+}
+
+enum PartRequestUrgency {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum PartRequestSource {
+  LOCAL
+  AIR
+  CARGO
+  ANY
+}
+
+model PartRequest {
+  id                String             @id @default(uuid())
+  enterpriseId      String             @map("enterprise_id")
+  enterprise        Enterprise         @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  vehicleId         String             @map("vehicle_id")
+  vehicle           Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driverId          String?            @map("driver_id")
+  driver            Driver?            @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  createdByUserId   String             @map("created_by_user_id")
+  createdByUser     User               @relation("PartRequestCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  status            PartRequestStatus  @default(DRAFT)
+  description       String?
+  partName          String?            @map("part_name")
+  category          String?
+  oemReference      String?            @map("oem_reference")
+  urgency           PartRequestUrgency  @default(NORMAL)
+  preferredSource   PartRequestSource   @default(ANY) @map("preferred_source")
+  maxBudget         Int?               @map("max_budget")
+  approvedByUserId  String?            @map("approved_by_user_id")
+  approvedByUser    User?              @relation("PartRequestApprover", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  approvedAt        DateTime?          @map("approved_at")
+  rejectionReason   String?            @map("rejection_reason")
+  orderId           String?            @unique @map("order_id")
+  order             Order?             @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  photos            PartRequestPhoto[]
+  events            PartRequestEvent[]
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@map("part_requests")
+  @@index([enterpriseId, status], name: "idx_part_requests_enterprise_status")
+  @@index([vehicleId], name: "idx_part_requests_vehicle")
+  @@index([createdByUserId], name: "idx_part_requests_created_by")
+  @@index([status], name: "idx_part_requests_status")
+}
+
+model PartRequestPhoto {
+  id            String      @id @default(uuid())
+  partRequestId String      @map("part_request_id")
+  partRequest   PartRequest @relation(fields: [partRequestId], references: [id], onDelete: Cascade)
+  url           String
+  thumbUrl      String?     @map("thumb_url")
+  position      Int         @default(0)
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@map("part_request_photos")
+  @@index([partRequestId], name: "idx_part_request_photos_request")
+}
+
+model PartRequestEvent {
+  id            String            @id @default(uuid())
+  partRequestId String            @map("part_request_id")
+  partRequest   PartRequest       @relation(fields: [partRequestId], references: [id], onDelete: Cascade)
+  fromStatus    PartRequestStatus? @map("from_status")
+  toStatus      PartRequestStatus  @map("to_status")
+  actorUserId   String?           @map("actor_user_id")
+  actorUser     User?             @relation("PartRequestEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  note          String?
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  @@map("part_request_events")
+  @@index([partRequestId], name: "idx_part_request_events_request")
+  @@index([createdAt], name: "idx_part_request_events_created_at")
+}
+
 model MaintenanceCenter {
   id              String     @id @default(uuid())
   enterpriseId    String     @map("enterprise_id")
@@ -678,7 +783,8 @@ model Vehicle {
   engine           String?
   mileage          Int?
   mileageUpdatedAt DateTime?         @map("mileage_updated_at")
-  usageType        VehicleUsageType? @map("usage_type")
+  usageType        VehicleUsageType?  @map("usage_type")
+  energyType       VehicleEnergyType? @map("energy_type")
   groupName        String?           @map("group_name")
   photoUrl         String?           @map("photo_url")
   createdAt        DateTime          @default(now()) @map("created_at")
@@ -689,6 +795,7 @@ model Vehicle {
   driverAssignments    DriverAssignment[]
   driverDailyRecords   DriverDailyRecord[]
   driverIncidents      DriverIncident[]
+  partRequests         PartRequest[]
 
   @@map("vehicles")
   @@index([userId], name: "idx_vehicles_user")
@@ -844,6 +951,7 @@ model Order {
   disputes        Dispute[]
   returns         ReturnOrder[]
   invoice         Invoice?
+  partRequest     PartRequest?
 
   @@map("orders")
   @@index([initiatorId], name: "idx_orders_initiator")
@@ -1222,6 +1330,7 @@ model Driver {
   assignments  DriverAssignment[]
   dailyRecords DriverDailyRecord[]
   incidents    DriverIncident[]
+  partRequests PartRequest[]
 
   @@map("drivers")
   @@unique([enterpriseId, phone], name: "uq_driver_phone")

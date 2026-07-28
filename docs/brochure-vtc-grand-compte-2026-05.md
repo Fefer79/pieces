@@ -46,7 +46,7 @@ Plus de 200 fournisseurs Abidjan + intérieur, comparateur multi-fournisseurs su
 
 Pour les véhicules sur lesquels une journée d'immobilisation coûte cher :
 
-- **Livraison express à Abidjan : 3 heures, 6 heures maximum** quand la pièce est en stock chez un vendeur partenaire.
+- **Livraison express prioritaire à Abidjan** : notre équipe dédiée livre le plus rapidement possible quand la pièce est en stock chez un vendeur partenaire.
 - **Livraison prioritaire hors Abidjan** (San-Pédro, Bouaké, Yamoussoukro, Korhogo), plus rapide que le standard.
 - **Ligne WhatsApp dédiée 6 h – 22 h, 7 j / 7** avec un Liaison Pièces affecté à votre compte.
 - **Concierge dépannage** : un appel, Pièces trouve la pièce et l'achemine — même si elle n'est pas au catalogue.
@@ -77,15 +77,15 @@ ROI net projeté :
 
 ## Pourquoi maintenant
 
-- Pièces lance le **packaging entreprise** au S1 2026. Vous bénéficiez du **statut de pilote grand compte** — accès direct à l'équipe produit, priorisation des features que vous demanderez, conditions de lancement.
+- Pièces lance le **packaging entreprise** au S1 2026. Vous bénéficiez du **statut de partenaire grand compte** — accès direct à l'équipe produit, priorisation des features que vous demanderez, conditions de lancement.
 - La **garantie ROI 3 mois** s'applique : si à 3 mois l'économie pièces n'est pas au rendez-vous, Pièces rembourse la dernière mensualité et vous repassez en gratuit. Aucun risque pour tester.
 - Le marché VTC croît de 25 %/an en Côte d'Ivoire. **Votre coût pièces ne peut pas croître au même rythme.**
 
 ## Prochaines étapes
 
 1. **Réunion de cadrage** (1 h) — nous présentons l'outil sur 5 véhicules de votre parc, en conditions réelles.
-2. **Pilote 30 jours** sur 50 à 100 véhicules — toutes les fonctionnalités activées, sans engagement, sans carte bancaire.
-3. **Bilan pilote + offre commerciale détaillée** — projection chiffrée sur votre parc complet, conditions de contrat, gouvernance opérationnelle.
+2. **Déploiement initial** sur 50 à 100 véhicules — toutes les fonctionnalités activées, avec mesure des gains dès le premier mois.
+3. **Bilan du déploiement initial + offre commerciale détaillée** — projection chiffrée sur votre parc complet, conditions de contrat, gouvernance opérationnelle.
 4. **Roll-out progressif** sur les 6 000 véhicules — accompagnement Pièces (un Liaison senior dédié), import CSV de la flotte, formation des centres de maintenance, intégration aux outils existants.
 
 ## Contact
