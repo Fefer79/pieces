@@ -20,6 +20,7 @@ import {
   PUBLIC_MODES,
   LOGISTIQUE_LEVERS,
   STORAGE_FLEET_BULLETS,
+  AUDIT_BIGDATA,
   WEIGHT_VOLUME_PROMISE,
   LOGISTIQUE_STEPS,
   CONFIDENCE_LEVELS,
@@ -347,6 +348,68 @@ export default function LogistiquePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ===== Audit big data ===== */}
+      <section className="border-y border-border bg-card">
+        <div className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+          <div className={`${EYEBROW} text-muted`}>{AUDIT_BIGDATA.eyebrow}</div>
+          <h2 className="mt-3 max-w-3xl text-3xl text-ink lg:text-[38px]">
+            {AUDIT_BIGDATA.title}
+          </h2>
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
+            {AUDIT_BIGDATA.lead}
+          </p>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            {AUDIT_BIGDATA.sources.map((s) => (
+              <div key={s.title} className="rounded-md border border-border bg-surface p-5">
+                <div className={`${EYEBROW} text-accent`}>{s.title}</div>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-ink">{s.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <div className={`${EYEBROW} text-muted`}>Ce que vous recevez</div>
+              <ul className="mt-3 space-y-2.5">
+                {AUDIT_BIGDATA.outputs.map((line) => (
+                  <li
+                    key={line}
+                    className="flex gap-3 border-t border-border pt-2.5 text-[14.5px] leading-relaxed text-ink first:border-t-0 first:pt-0"
+                  >
+                    <span aria-hidden="true" className="mt-0.5 text-accent">→</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <aside className="rounded-md border border-ink bg-ink p-5 text-white">
+              <div className={`${EYEBROW} text-accent`}>Tarification</div>
+              <p className="mt-2 text-[15px] font-semibold leading-snug">
+                {AUDIT_BIGDATA.pricing.included}
+              </p>
+              <p className="mt-3 text-[15px] font-semibold leading-snug text-white/95">
+                {AUDIT_BIGDATA.pricing.onDemand}
+              </p>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-white/65">
+                {AUDIT_BIGDATA.pricing.onDemandNote}
+              </p>
+              <Link
+                href={AUDIT_BIGDATA.ctaFleetHref}
+                className="mt-5 inline-block rounded-md bg-accent px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-accent-hover"
+              >
+                {AUDIT_BIGDATA.ctaFleetLabel} →
+              </Link>
+            </aside>
+          </div>
+
+          <p className="mt-7 max-w-3xl text-[13px] leading-relaxed text-muted-2">
+            {AUDIT_BIGDATA.principle}
+          </p>
         </div>
       </section>
 

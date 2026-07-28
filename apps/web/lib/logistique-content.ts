@@ -258,6 +258,42 @@ export const STORAGE_FLEET_BULLETS: string[] = [
   'Compatible avec le plan d\'anticipation trimestriel : un seul interlocuteur, du fournisseur au véhicule.',
 ]
 
+// Audit big data des dépenses de pièces détachées — service additionnel pour
+// gestionnaires de flotte. Source des données : commandes et réparations
+// déclarées par la flotte + données propriétaires Pièces (connaissance
+// accumulée sur les pièces, familles, prix marché, durées d'immobilisation).
+// Plus le parc alimente la base, plus l'audit est précis.
+export const AUDIT_BIGDATA = {
+  eyebrow: 'Audit big data',
+  title: 'Optimisez vos dépenses pièces détachées sur la durée.',
+  lead: 'Un audit annuel de vos dépenses pièces détachées — ce que vous dépensez, où, et ce que vous pourriez ré-allouer — bâti sur deux sources de données :',
+  sources: [
+    {
+      title: 'Vos données',
+      body: 'Les commandes et réparations de pièces détachées déclarées par votre flotte sur Pièces.',
+    },
+    {
+      title: 'Nos données propriétaires',
+      body: 'La connaissance accumulée par Pièces : prix marché, durées d\'immobilisation par famille, calendriers d\'usure par modèle de véhicule, écarts de prix entre fournisseurs.',
+    },
+  ],
+  outputs: [
+    'Ce que vous avez dépensé, par véhicule, par famille, par fournisseur.',
+    'Les pièces qui reviennent trop souvent — signe d\'usure avancée ou de fournisseur à changer.',
+    'Les écarts de prix vs le marché Pièces, par référence.',
+    'Les optimisations possibles : regrouper les achats, basculer une pièce d\'usure en stock tampon, abandonner un fournisseur récurrent en surcoût.',
+  ],
+  ctaFleetLabel: 'Demander un audit',
+  ctaFleetHref: '/entreprises',
+  pricing: {
+    included: 'Inclus dans les abonnements Flotte Pro et Flotte Pro +.',
+    onDemand: '19 900 FCFA par véhicule de flotte, pour les gestionnaires non abonnés.',
+    onDemandNote: 'Audit livré en 10 jours ouvrés, avec session de restitution d\'une heure.',
+  },
+  principle:
+    'Le plus de données nous avons sur votre parc, le plus l\'audit est précis — c\'est pourquoi il est inclus dans l\'abonnement : chaque mois passé sur Pièces affine la recommandation suivante.',
+}
+
 export const LOGISTIQUE_STEPS: Array<{ title: string; body: string }> = [
   {
     title: 'Vous décrivez la pièce',
