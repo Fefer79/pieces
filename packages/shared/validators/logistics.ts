@@ -38,11 +38,13 @@ export const logisticsLeadSurfaceSchema = z.enum([
 ])
 
 export const logisticsCustomerTypeSchema = z.enum([
+  'FLEET_VTC',
+  'FLEET_COMPANY',
+  'MINING_BTP',
+  'INDIVIDUAL',
   'GARAGE',
-  'FLEET',
   'DEALER',
   'IMPORTER',
-  'INDIVIDUAL',
   'OTHER',
 ])
 

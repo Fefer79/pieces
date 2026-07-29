@@ -2,11 +2,10 @@ import Link from 'next/link'
 import {
   computeArbitrageMatrix,
   matchLogisticsFamily,
-  LOGISTICS_MODES,
   PART_LOGISTICS_FAMILIES,
 } from 'shared/constants'
 import { Chip } from '@/components/ui/chip'
-import { ArbitrageTable, formatDelay } from '@/components/logistique/arbitrage-table'
+import { ArbitrageTable } from '@/components/logistique/arbitrage-table'
 import {
   LOGISTIQUE_HERO,
   LOGISTIQUE_RECEIPT,
@@ -28,7 +27,7 @@ import {
 } from '@/lib/logistique-content'
 
 export const metadata = {
-  title: 'Pièces Logistique — Import de pièces détachées auto en Côte d\'Ivoire',
+  title: 'Pièces Logistique | Le logisticien des pièces détachées auto en Côte d\'Ivoire',
   description:
     'Nous chiffrons l\'attente. Cotation immédiate pour importer une pièce détachée automobile à Abidjan : aérien 3 à 7 jours, maritime groupé, achat local. Chaque option comparée coût total, immobilisation du véhicule comprise.',
   alternates: { canonical: canonicalFor('/') },
@@ -163,7 +162,7 @@ export default function LogistiquePage() {
           </div>
 
           <p className="mt-4 text-xs text-muted-2">
-            {demo.familyLabel} · {demo.weightKg} kg · {demo.volumeDm3} dm³ — estimation par famille,
+            {demo.familyLabel} · {demo.weightKg} kg · {demo.volumeDm3} dm³ · estimation par famille,
             ± 20 %. Le poids réel est confirmé auprès du fournisseur avant le devis.
           </p>
 
@@ -188,8 +187,8 @@ export default function LogistiquePage() {
         <div className={`${EYEBROW} text-muted`}>Acheminement</div>
         <h2 className="mt-3 text-3xl text-ink lg:text-[38px]">Cinq façons de faire venir la pièce.</h2>
         <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
-          Chaque mode est chiffré sur la même grille. Nous ne vendons pas du transport, nous vendons
-          la décision.
+          Chaque mode est chiffré sur la même grille : prix de la pièce, acheminement, douane,
+          livraison et coût d&apos;immobilisation sur la durée du transit.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PUBLIC_MODES.map((mode) => {
@@ -215,9 +214,9 @@ export default function LogistiquePage() {
               {MODE_COPY.PRE_POSITIONED.useCase}
             </p>
             <p className="mt-3 border-t border-border pt-3 text-[12.5px] leading-relaxed text-muted-2">
-              Réservé aux flottes sous plan d&apos;anticipation —{' '}
+              Réservé aux flottes sous plan d&apos;anticipation.{' '}
               <Link href="/entreprises" className="underline underline-offset-2 hover:text-ink">
-                voir l&apos;offre flotte
+                Voir l&apos;offre flotte
               </Link>
               .
             </p>
@@ -251,14 +250,14 @@ export default function LogistiquePage() {
               Vos pièces importées, gardées à Abidjan, prêtes à être dispatchées.
             </h2>
             <p className="mt-4 text-[15px] leading-relaxed text-white/65">
-              Pour les gestionnaires de flotte, importer en gros par maritime ne suffit pas — il
-              faut ensuite stocker, suivre par référence et par véhicule, et dispatcher au fil des
-              besoins. C&apos;est ce que nous faisons.
+              Pour les gestionnaires de flotte, importer en gros par maritime ne suffit pas : il
+              faut ensuite stocker, suivre par référence et par véhicule, puis dispatcher au fil des
+              besoins.
             </p>
             <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              Le coût d&apos;immobilisation n&apos;a plus de raison d&apos;être : la pièce attendue
-              est déjà à Abidjan, le délai se compte en heures, pas en semaines. La mise à
-              disposition est facturée à la pièce servie — pas au mètre carré.
+              Quand la pièce attendue est déjà à Abidjan, le délai se compte en heures et non en
+              semaines : le coût d&apos;immobilisation tombe. La mise à disposition est facturée à
+              la pièce servie, pas au mètre carré.
             </p>
             <Link
               href="/entreprises"
@@ -421,8 +420,7 @@ export default function LogistiquePage() {
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-white/65">
             Estimation immédiate, sans compte, en deux minutes. Le devis confirmé suit, généralement
-            sous deux heures ouvrées — le maritime met {formatDelay(LOGISTICS_MODES.SEA_LCL.transitDays)},
-            votre décision n&apos;a pas à attendre autant.
+            sous deux heures ouvrées.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link

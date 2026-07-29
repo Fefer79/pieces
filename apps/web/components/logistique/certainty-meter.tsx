@@ -62,7 +62,7 @@ export function CertaintyMeter({ signals }: { signals: LeadCertaintySignals }) {
 
       {next && (
         <p className="mt-3 border-t border-border pt-3 text-[13px] leading-relaxed text-ink">
-          <span className="tabular font-mono text-accent">+ {next.gain} points</span> — {next.label}.
+          <span className="tabular font-mono text-accent">+ {next.gain} points</span> : {next.label}.
         </p>
       )}
     </div>

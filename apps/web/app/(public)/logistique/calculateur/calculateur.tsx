@@ -71,7 +71,7 @@ export function Calculateur() {
           label="Recette nette perdue par jour d'arrêt"
           hint={
             !useOverride
-              ? `${fmt(DOWNTIME_COST_PER_DAY[category])} F/j — par défaut, modifiable`
+              ? `${fmt(DOWNTIME_COST_PER_DAY[category])} F/j par défaut, modifiable`
               : 'Valeur personnalisée'
           }
         >

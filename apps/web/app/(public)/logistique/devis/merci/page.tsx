@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { canonicalFor, MERCI_COPY } from '@/lib/logistique-content'
 
 export const metadata: Metadata = {
-  title: 'Demande enregistrée — Logistique Pièces',
+  title: 'Demande enregistrée | Logistique Pièces',
   description: 'Votre demande de cotation logistique a été reçue.',
   robots: { index: false, follow: false },
   alternates: { canonical: canonicalFor('/devis/merci') },

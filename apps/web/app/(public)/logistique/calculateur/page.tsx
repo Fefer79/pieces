@@ -3,7 +3,7 @@ import { canonicalFor } from '@/lib/logistique-content'
 import { Calculateur } from './calculateur'
 
 export const metadata: Metadata = {
-  title: 'Calculateur d\'immobilisation — Combien vous coûte un véhicule à l\'arrêt ?',
+  title: 'Calculateur d\'immobilisation | Combien vous coûte un véhicule à l\'arrêt ?',
   description:
     'Calculez le coût d\'arrêt d\'un véhicule de flotte : journée perdue, durée d\'immobilisation, options d\'acheminement. Estimation en FCFA, sans compte.',
   alternates: { canonical: canonicalFor('/calculateur') },
@@ -20,7 +20,7 @@ export default function LogistiqueCalculateurPage() {
       </h1>
       <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
         Le chiffre que personne ne met dans la balance au moment d&apos;arbitrer entre « attendre »
-        et « payer plus vite ». Ajustez les paramètres à votre exploitation — le résultat n&apos;a de
+        et « payer plus vite ». Ajustez les paramètres à votre exploitation : le résultat n&apos;a de
         valeur que si le paramètre est le vôtre.
       </p>
       <Calculateur />

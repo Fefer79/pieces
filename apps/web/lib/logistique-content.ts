@@ -62,12 +62,12 @@ export const LOGISTIQUE_FOOTER_NOTE =
 // ---------------------------------------------------------------------------
 
 export const LOGISTIQUE_HERO = {
-  eyebrow: 'Import de pièces détachées auto — Côte d\'Ivoire',
+  eyebrow: 'Le logisticien des pièces détachées auto en Côte d\'Ivoire',
   title: 'Nous chiffrons l\'attente.',
-  lead: 'Une pièce introuvable à Abidjan, c\'est un véhicule à l\'arrêt. Nous comparons chaque option d\'approvisionnement — local, aérien, maritime — en y ajoutant le seul poste que personne ne calcule : le revenu perdu pendant l\'immobilisation.',
+  lead: 'Une pièce introuvable à Abidjan, c\'est un véhicule à l\'arrêt. Nous comparons les options d\'approvisionnement (achat local, aérien, maritime) et nous y ajoutons le revenu perdu chaque jour d\'immobilisation.',
   ctaPrimary: { label: 'Demander une cotation', href: '/logistique/devis' },
   ctaSecondary: { label: 'Combien coûte un véhicule à l\'arrêt ?', href: '/logistique/calculateur' },
-  audiences: ['Garages', 'Flottes VTC', 'BTP & mines', 'Concessions', 'Importateurs', 'Stockage à Abidjan'],
+  audiences: ['Flottes VTC', 'Flottes d\'entreprise', 'Mines & BTP', 'Particuliers VTC'],
 }
 
 export interface ReceiptLine {
@@ -84,7 +84,7 @@ export interface ReceiptLine {
  */
 export const LOGISTIQUE_RECEIPT = {
   header: 'Amortisseur avant · Bestune B70 2024',
-  subheader: 'Aérien standard — 5 jours',
+  subheader: 'Aérien standard, 5 jours',
   lines: [
     { label: 'Prix pièce (usine)', value: '32 000' },
     { label: 'Fret aérien (poids taxable 4,5 kg)', value: '46 500' },
@@ -93,25 +93,24 @@ export const LOGISTIQUE_RECEIPT = {
     { label: 'Immobilisation 5 j × 30 000 F', value: '150 000', dominant: true },
   ] as ReceiptLine[],
   total: { label: 'Coût total réel', value: '246 200 FCFA' },
-  note: 'Estimation de cadrage, ± 20 %. L\'immobilisation représente 61 % du coût — c\'est elle qui décide, pas le prix de la pièce.',
+  note: 'Estimation de cadrage, ± 20 %. L\'immobilisation représente 61 % du coût total réel. C\'est beaucoup plus que le prix de la pièce.',
 }
 
 export const LOGISTIQUE_STATS: Array<{ num: string; cap: string }> = [
   { num: '4 h → 45 j', cap: 'six modes d\'acheminement comparés sur la même grille' },
   { num: '30 000 F', cap: 'ce que coûte une journée d\'arrêt d\'un véhicule premium' },
   { num: '× 42', cap: 'écart entre la pièce la moins chère et le coût total le plus élevé' },
-  { num: '17 familles', cap: 'de pièces déjà codées en poids et volume — vous ne pesez rien' },
+  { num: '17 familles', cap: 'de pièces déjà codées en poids et en volume : vous n\'avez rien à peser' },
 ]
 
 export const TOTAL_COST_FORMULA = [
   'Coût total = prix pièce',
   '           + frais logistique (fret + douane + livraison locale)',
   '           + délai en jours × coût d\'immobilisation journalier',
-  '           + risque × pénalité (mission rompue, contrat perdu)',
 ]
 
 export const TOTAL_COST_INTRO =
-  'Aujourd\'hui, un gestionnaire arbitre à l\'aveugle entre « attendre la pièce » et « payer plus vite ». Personne ne chiffre le troisième terme — qui est presque toujours le plus gros.'
+  'Un gestionnaire de parc arbitre entre « attendre la pièce » et « payer plus vite » sans jamais chiffrer le troisième terme, qui est pourtant le plus lourd dans la plupart des cas.'
 
 // ---------------------------------------------------------------------------
 // Matrice de démonstration — passée telle quelle à computeArbitrageMatrix()
@@ -128,10 +127,10 @@ export const DEMO_MATRIX: {
   note: string
   input: ArbitrageInput
 } = {
-  vehicle: 'Bestune B70 2024 — amortisseur avant',
+  vehicle: 'Bestune B70 2024, amortisseur avant',
   caption:
     'Immobilisation 30 000 F/jour (catégorie premium thermique). Prix pièce : 45 000 F chez un vendeur d\'Abidjan, 32 000 F à l\'usine.',
-  note: 'La pièce la moins chère du tableau (32 000 F par maritime) produit le coût total le plus élevé. C\'est toute la démonstration en une ligne.',
+  note: 'La pièce la moins chère du tableau (32 000 F par maritime) produit le coût total le plus élevé.',
   input: {
     downtimeCostPerDay: 30_000,
     // Famille résolue au rendu depuis « amortisseur » — cf. matchLogisticsFamily.
@@ -149,7 +148,7 @@ export const DEMO_MATRIX_PART_QUERY = 'amortisseur avant'
 
 /** Règle à retenir en sortant de la démonstration. */
 export const SWITCH_RULE =
-  'À 30 000 F par jour d\'arrêt, un jour gagné vaut 30 000 F de transport. Toute option qui raccourcit le délai d\'un jour pour moins que ça est rentable — quel que soit le prix de la pièce.'
+  'À 30 000 F par jour d\'arrêt, un jour gagné vaut 30 000 F de transport. Toute option qui raccourcit le délai d\'un jour pour moins de 30 000 F est rentable, quel que soit le prix de la pièce.'
 
 // ---------------------------------------------------------------------------
 // Modes d'acheminement (copy public — jamais les tarifs internes)
@@ -167,7 +166,7 @@ export const MODE_COPY: Record<
   },
   LOCAL: {
     publicLabel: 'Achat local',
-    delay: '24 – 48 h',
+    delay: '24 à 48 h',
     useCase: 'La pièce existe chez un vendeur d\'Abidjan et sa qualité est vérifiée.',
     basis: 'Grille de livraison Abidjan',
   },
@@ -179,20 +178,20 @@ export const MODE_COPY: Record<
   },
   AIR_STANDARD: {
     publicLabel: 'Aérien standard',
-    delay: '4 – 5 jours',
-    useCase: 'L\'arbitrage courant : bon compromis délai / coût sur une pièce d\'usure.',
+    delay: '4 à 5 jours',
+    useCase: 'Le cas courant : bon compromis délai / coût sur une pièce d\'usure.',
     basis: 'Poids taxable, tarif dégressif',
   },
   AIR_ECONOMY: {
     publicLabel: 'Aérien économique',
     delay: '7 jours',
-    useCase: 'Pièce chère et arrêt tolérable — véhicule de réserve, entretien planifié.',
+    useCase: 'Pièce chère et arrêt tolérable : véhicule de réserve, entretien planifié.',
     basis: 'Poids taxable, tarif éco',
   },
   SEA_LCL: {
     publicLabel: 'Maritime groupé',
     delay: '45 jours',
-    useCase: 'Anticipation et pièces volumineuses. Jamais rentable sur un véhicule en service.',
+    useCase: 'Anticipation et pièces volumineuses. Rarement rentable sur un véhicule en service.',
     basis: 'Volume (m³) ou tonne + manutention + douane',
   },
 }
@@ -214,12 +213,12 @@ export const LOGISTIQUE_LEVERS: Array<{ line: string; title: string; body: strin
   {
     line: 'Sourcing',
     title: 'Trouver la bonne référence',
-    body: 'À partir d\'une photo, d\'une référence OEM ou d\'un VIN, nous identifions la pièce exacte et remontons les fournisseurs — usine, équipementier, marché local.',
+    body: 'À partir d\'une photo, d\'une référence OEM ou d\'un VIN, nous identifions la pièce exacte et nous remontons les fournisseurs : usine, équipementier, marché local.',
   },
   {
     line: 'Arbitrage',
     title: 'Chiffrer chaque option',
-    body: 'Une seule grille pour comparer : prix pièce, fret, douane, livraison, et le revenu perdu pendant l\'attente. Aucun poste agrégé sans être montré.',
+    body: 'Une seule grille pour comparer : prix pièce, fret, douane, livraison, et le revenu perdu pendant l\'attente. Chaque poste est détaillé.',
   },
   {
     line: 'Exécution',
@@ -229,12 +228,12 @@ export const LOGISTIQUE_LEVERS: Array<{ line: string; title: string; body: strin
   {
     line: 'Entreposage',
     title: 'Stocker, dispatcher, livrer à la demande',
-    body: 'Pour les gestionnaires de flotte, nous gardons vos pièces importées en stock à Abidjan, suivies par référence et par véhicule. La mise à disposition est facturée à l\'enlèvement ou à la livraison, selon votre cadence — pas de facturation au m² inutile.',
+    body: 'Pour les gestionnaires de flotte, nous gardons vos pièces importées en stock à Abidjan, suivies par référence et par véhicule. La mise à disposition est facturée à l\'enlèvement ou à la livraison, selon votre cadence, sans facturation au mètre carré.',
   },
   {
     line: 'Anticipation',
     title: 'Éviter l\'urgence',
-    body: 'Sur un parc homogène, nous construisons un plan d\'approvisionnement trimestriel : les pièces d\'usure arrivent par maritime avant la panne, sont stockées, puis dispatchées au fil des besoins. Pas par aérien après.',
+    body: 'Sur un parc homogène, nous construisons un plan d\'approvisionnement trimestriel : les pièces d\'usure arrivent par maritime avant la panne, sont stockées, puis dispatchées au fil des besoins.',
   },
 ]
 
@@ -243,7 +242,7 @@ export const WEIGHT_VOLUME_PROMISE = {
   body: 'Un transitaire vous demande le poids et les dimensions avant de coter. Nous avons codé 17 familles de pièces avec leurs fourchettes de poids et de volume : vous nommez la pièce, nous calculons le poids taxable.',
   bullets: [
     'Aérien : le poids facturé est le maximum entre le poids réel et le volume ÷ 6 000.',
-    'Maritime groupé : 1 m³ compte pour 1 tonne — un pare-chocs coûte son volume, pas sa masse.',
+    'Maritime groupé : 1 m³ compte pour 1 tonne, donc un pare-chocs coûte son volume, pas sa masse.',
     'Batteries, airbags et amortisseurs à gaz sont signalés comme restreints en fret aérien.',
     'Chaque envoi réel affine le référentiel : la marge d\'erreur se resserre avec le volume.',
   ],
@@ -265,8 +264,8 @@ export const STORAGE_FLEET_BULLETS: string[] = [
 // Plus le parc alimente la base, plus l'audit est précis.
 export const AUDIT_BIGDATA = {
   eyebrow: 'Audit big data',
-  title: 'Optimisez vos dépenses pièces détachées sur la durée.',
-  lead: 'Un audit annuel de vos dépenses pièces détachées — ce que vous dépensez, où, et ce que vous pourriez ré-allouer — bâti sur deux sources de données :',
+  title: 'Optimisez vos dépenses en pièces détachées sur la durée.',
+  lead: 'Un audit annuel de vos dépenses en pièces détachées : ce que vous dépensez, où, et ce que vous pourriez ré-allouer. Il est bâti sur deux sources de données.',
   sources: [
     {
       title: 'Vos données',
@@ -279,7 +278,7 @@ export const AUDIT_BIGDATA = {
   ],
   outputs: [
     'Ce que vous avez dépensé, par véhicule, par famille, par fournisseur.',
-    'Les pièces qui reviennent trop souvent — signe d\'usure avancée ou de fournisseur à changer.',
+    'Les pièces qui reviennent trop souvent, signe d\'usure avancée ou de fournisseur à changer.',
     'Les écarts de prix vs le marché Pièces, par référence.',
     'Les optimisations possibles : regrouper les achats, basculer une pièce d\'usure en stock tampon, abandonner un fournisseur récurrent en surcoût.',
   ],
@@ -291,13 +290,13 @@ export const AUDIT_BIGDATA = {
     onDemandNote: 'Audit livré en 10 jours ouvrés, avec session de restitution d\'une heure.',
   },
   principle:
-    'Le plus de données nous avons sur votre parc, le plus l\'audit est précis — c\'est pourquoi il est inclus dans l\'abonnement : chaque mois passé sur Pièces affine la recommandation suivante.',
+    'Plus nous avons de données sur votre parc, plus l\'audit est précis. C\'est pourquoi il est inclus dans l\'abonnement : chaque mois passé sur Pièces affine la recommandation suivante.',
 }
 
 export const LOGISTIQUE_STEPS: Array<{ title: string; body: string }> = [
   {
     title: 'Vous décrivez la pièce',
-    body: 'Nom, référence OEM si vous l\'avez, photo, et le véhicule — VIN, carte grise ou saisie manuelle. Deux minutes, sans compte.',
+    body: 'Nom, référence OEM si vous l\'avez, photo, et le véhicule : VIN, carte grise ou saisie manuelle. Deux minutes, sans compte.',
   },
   {
     title: 'Estimation immédiate',
@@ -384,7 +383,7 @@ export const LOGISTIQUE_FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Que couvre le montant affiché ?',
-    a: 'Le prix de la pièce quand vous nous l\'indiquez, le fret, les droits de douane, la livraison à Abidjan, et le revenu perdu pendant l\'immobilisation du véhicule. Chaque poste est détaillé — nous n\'agrégeons jamais un coût sans le montrer.',
+    a: 'Le prix de la pièce quand vous nous l\'indiquez, le fret, les droits de douane, la livraison à Abidjan, et le revenu perdu pendant l\'immobilisation du véhicule. Chaque poste est détaillé : nous n\'agrégeons jamais un coût sans le montrer.',
   },
   {
     q: 'Qui porte les droits de douane ?',
@@ -396,7 +395,7 @@ export const LOGISTIQUE_FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Pourquoi le maritime apparaît-il presque toujours comme le plus coûteux ?',
-    a: 'Parce qu\'il immobilise le véhicule 45 jours. À 30 000 F par jour, cela représente 1 350 000 F de recette perdue — aucune économie de fret ne compense. Le maritime n\'a de sens qu\'en anticipé, c\'est-à-dire avant la panne.',
+    a: 'Parce qu\'il immobilise le véhicule 45 jours. À 30 000 F par jour, cela représente 1 350 000 F de recette perdue, et aucune économie de fret ne compense. Le maritime n\'a de sens qu\'en anticipé, c\'est-à-dire avant la panne.',
   },
   {
     q: 'Livrez-vous en dehors d\'Abidjan ?',
@@ -439,11 +438,11 @@ export const LEAD_FORM_COPY = {
   indicativeBanner:
     'Sans VIN ni carte grise, cette estimation reste indicative : nous ne pouvons pas confirmer la référence exacte de la pièce pour votre véhicule.',
   vinNotDecoded:
-    'VIN enregistré. Il n\'est pas reconnu par la base publique d\'immatriculation — c\'est fréquent pour les marques chinoises et les imports japonais, et cela ne pose aucun problème : notre équipe le décode auprès du constructeur.',
+    'VIN enregistré. Il n\'est pas reconnu par la base publique d\'immatriculation. C\'est fréquent pour les marques chinoises et les imports japonais, et cela ne pose aucun problème : notre équipe le décode auprès du constructeur.',
   estimateTitleWithPrice: 'Coût total estimé',
   estimateTitleWithoutPrice: 'Coût d\'acheminement + immobilisation',
   estimateNoteWithoutPrice:
-    'Hors prix de la pièce et hors droits de douane sur sa valeur — indiquez un prix estimé pour obtenir le coût complet.',
+    'Hors prix de la pièce et hors droits de douane sur sa valeur. Indiquez un prix estimé pour obtenir le coût complet.',
   estimateFootnote: 'Estimation de cadrage, ± 20 %. Un devis confirmé précède toute commande.',
   downtimeAssumption:
     'Hypothèse : véhicule premium thermique, 30 000 F de recette perdue par jour. Précisez la motorisation pour affiner.',
@@ -451,17 +450,30 @@ export const LEAD_FORM_COPY = {
     'J\'accepte que Pièces utilise ces informations pour établir ma cotation et me recontacter.',
   submit: 'Envoyer ma demande',
   submitting: 'Envoi…',
-  photoRetry: 'Photo non envoyée — Réessayer',
+  photoRetry: 'Photo non envoyée. Réessayer',
 }
 
+/**
+ * Segments de demandeurs. Les cibles de la vitrine (flottes VTC, flottes
+ * d'entreprise, mines & BTP, particuliers) sont en tête, mais la liste reste
+ * ouverte : le service logistique s'adresse à tout le monde.
+ */
 export const CUSTOMER_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: 'FLEET_VTC', label: 'Flotte VTC' },
+  { value: 'FLEET_COMPANY', label: 'Flotte d\'entreprise' },
+  { value: 'MINING_BTP', label: 'Mines & BTP' },
+  { value: 'INDIVIDUAL', label: 'Particulier (dont chauffeur VTC)' },
   { value: 'GARAGE', label: 'Garage / atelier' },
-  { value: 'FLEET', label: 'Flotte de véhicules' },
   { value: 'DEALER', label: 'Concession' },
   { value: 'IMPORTER', label: 'Importateur / revendeur' },
-  { value: 'INDIVIDUAL', label: 'Particulier' },
   { value: 'OTHER', label: 'Autre' },
 ]
+
+/** Segments pour lesquels la taille du parc est une question pertinente. */
+export const FLEET_CUSTOMER_TYPES = ['FLEET_VTC', 'FLEET_COMPANY', 'MINING_BTP']
+
+export const customerTypeLabel = (value: string) =>
+  CUSTOMER_TYPE_OPTIONS.find((o) => o.value === value)?.label ?? value
 
 export const MERCI_COPY = {
   title: 'Demande enregistrée.',
@@ -469,6 +481,6 @@ export const MERCI_COPY = {
   next: [
     'Notre équipe vérifie le poids réel de la pièce auprès du fournisseur.',
     'Vous recevez les options fermes par WhatsApp, généralement sous deux heures ouvrées.',
-    'Vous choisissez une ligne du tableau — rien n\'est engagé avant votre accord.',
+    'Vous choisissez une ligne du tableau, rien n\'est engagé avant votre accord.',
   ],
 }

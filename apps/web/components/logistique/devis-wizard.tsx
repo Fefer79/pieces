@@ -14,6 +14,7 @@ import {
 import {
   LEAD_FORM_COPY,
   CUSTOMER_TYPE_OPTIONS,
+  FLEET_CUSTOMER_TYPES,
   computeCertainty,
   type LeadCertaintySignals,
   type LeadCertaintyLevel,
@@ -288,7 +289,7 @@ export function DevisWizard({ context }: { context: DevisContext }) {
 
         {created && (photoResults.part === 'fail' || photoResults.registration === 'fail') && (
           <div className="rounded-md border border-warn-fg/30 bg-warn-bg px-4 py-3 text-[13px] text-warn-fg">
-            {LEAD_FORM_COPY.photoRetry} — votre demande (réf. {created.reference}) est bien
+            {LEAD_FORM_COPY.photoRetry} Votre demande (réf. {created.reference}) est bien
             enregistrée.
           </div>
         )}
@@ -339,7 +340,7 @@ function Stepper({ step }: { step: 0 | 1 | 2 | 3 }) {
               {done ? '✓' : i + 1}
             </span>
             <span className={active || done ? 'text-ink' : ''}>{l}</span>
-            {i < labels.length - 1 && <span className="mx-1 text-muted-2">—</span>}
+            {i < labels.length - 1 && <span className="mx-1 text-muted-2">·</span>}
           </li>
         )
       })}
@@ -371,7 +372,7 @@ function Step1Part({ state, update }: { state: FormState; update: <K extends key
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Catégorie" hint="Optionnel — aide à mieux classer la pièce">
+          <Field label="Catégorie" hint="Optionnel, aide à mieux classer la pièce">
             <input
               type="text"
               value={state.partCategory}
@@ -401,7 +402,7 @@ function Step1Part({ state, update }: { state: FormState; update: <K extends key
               className="tabular w-32 rounded-md border border-border-strong bg-card px-3 py-2.5 font-mono text-sm text-ink outline-none focus:border-accent"
             />
           </Field>
-          <Field label="Prix de la pièce" hint="Optionnel — permet le coût total">
+          <Field label="Prix de la pièce" hint="Optionnel, permet le coût total">
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -422,7 +423,7 @@ function Step1Part({ state, update }: { state: FormState; update: <K extends key
         <PhotoField
           id="part-photo"
           label="Photo de la pièce"
-          hint="La photo vaut 15 points de certitude — elle nous évite de demander la pièce pour rien."
+          hint="La photo vaut 15 points de certitude et nous évite de demander la pièce pour rien."
           value={state.partPhoto}
           onChange={(p) => update('partPhoto', p)}
         />
@@ -540,7 +541,7 @@ function Step2Vehicle({
                 }
                 className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-accent"
               >
-                <option value="">—</option>
+                <option value="">Non précisée</option>
                 {VEHICLE_YEARS.map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
@@ -554,7 +555,7 @@ function Step2Vehicle({
                 }
                 className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-accent"
               >
-                <option value="">—</option>
+                <option value="">Non précisée</option>
                 <option value="ICE">Thermique (essence / diesel)</option>
                 <option value="HYBRID">Hybride</option>
                 <option value="EV">Électrique</option>
@@ -677,7 +678,7 @@ function Step3Contact({
               onChange={(e) => update('commune', e.target.value)}
               className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm text-ink outline-none focus:border-accent"
             >
-              <option value="">—</option>
+              <option value="">Non précisée</option>
               {COMMUNE_LIST.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
@@ -697,7 +698,7 @@ function Step3Contact({
               ))}
             </select>
           </Field>
-          {state.customerType === 'FLEET' && (
+          {FLEET_CUSTOMER_TYPES.includes(state.customerType) && (
             <Field label="Taille de la flotte">
               <input
                 type="number"
@@ -801,7 +802,9 @@ function initialState(context: DevisContext, searchParams: URLSearchParams | nul
     email: context.user?.email ?? '',
     companyName: context.enterprise?.name ?? '',
     commune: context.enterprise?.commune ?? '',
-    customerType: context.mode === 'FLEET' ? 'FLEET' : 'OTHER',
+    // En mode flotte on ne connaît pas encore le segment exact (VTC, entreprise,
+    // mines & BTP) : on pré-sélectionne le plus courant, le gestionnaire ajuste.
+    customerType: context.mode === 'FLEET' ? 'FLEET_COMPANY' : 'OTHER',
     fleetSize: null,
     consent: false,
     enterpriseId: context.enterprise?.id ?? null,

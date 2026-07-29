@@ -427,10 +427,10 @@ export function computeArbitrageMatrix(input: ArbitrageInput): ArbitrageResult {
 
     const warnings: string[] = []
     if (family.airRestricted && opt.mode.startsWith('AIR_')) {
-      warnings.push('Matière restreinte en fret aérien — à confirmer avec le transitaire')
+      warnings.push('Matière restreinte en fret aérien, à confirmer avant le devis')
     }
     if (family.fragile && isImport) {
-      warnings.push('Pièce fragile — emballage renforcé et assurance recommandés')
+      warnings.push('Pièce fragile : emballage renforcé et assurance recommandés')
     }
 
     return {

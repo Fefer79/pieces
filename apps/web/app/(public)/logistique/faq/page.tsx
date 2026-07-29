@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { LOGISTIQUE_FAQ, canonicalFor } from '@/lib/logistique-content'
 
 export const metadata: Metadata = {
-  title: 'FAQ — Logistique pièces détachées en Côte d\'Ivoire',
+  title: 'FAQ | Logistique pièces détachées en Côte d\'Ivoire',
   description:
     'Questions fréquentes sur l\'import de pièces détachées automobiles à Abidjan : délais, douane, véhicules, paiement, garanties. Estimation immédiate sans compte.',
   alternates: { canonical: canonicalFor('/faq') },
@@ -35,7 +35,7 @@ export default function LogistiqueFaqPage() {
         <h1 className="mt-3 text-3xl text-ink lg:text-[40px]">Avant de demander une cotation.</h1>
         <p className="mt-4 text-[15px] leading-relaxed text-muted">
           Tout ce qu&apos;on nous demande le plus souvent. Si la vôtre n&apos;y est pas, écrivez-nous
-          — la réponse finira ici.
+          et la réponse finira ici.
         </p>
 
         <div className="mt-10 space-y-3">

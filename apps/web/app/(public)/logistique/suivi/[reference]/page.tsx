@@ -129,7 +129,7 @@ export default function SuiviPage() {
           </h2>
           <p className="text-[13.5px] leading-relaxed text-muted">
             Notre équipe vérifie le poids réel de la pièce et vous adresse les options fermes par
-            WhatsApp, généralement sous deux heures ouvrées. Vous choisissez une ligne — rien
+            WhatsApp, généralement sous deux heures ouvrées. Vous choisissez une ligne, rien
             n&apos;est engagé avant votre accord.
           </p>
         </div>

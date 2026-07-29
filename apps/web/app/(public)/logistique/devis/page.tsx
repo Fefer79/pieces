@@ -4,7 +4,7 @@ import { canonicalFor, LEAD_FORM_COPY } from '@/lib/logistique-content'
 import { DevisPublicClient } from './devis-public-client'
 
 export const metadata: Metadata = {
-  title: 'Demander une cotation — Import de pièces détachées à Abidjan',
+  title: 'Demander une cotation | Import de pièces détachées à Abidjan',
   description:
     'Décrivez la pièce, le véhicule et vos coordonnées. Estimation immédiate, sans compte, en deux minutes. Devis confirmé par WhatsApp sous deux heures ouvrées.',
   alternates: { canonical: canonicalFor('/devis') },

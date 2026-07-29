@@ -10,7 +10,7 @@ import {
 } from '@/lib/logistique-content'
 
 export const metadata: Metadata = {
-  title: 'Comment ça marche — Import de pièces détachées à Abidjan',
+  title: 'Comment ça marche | Import de pièces détachées à Abidjan',
   description:
     'Quatre étapes pour faire venir une pièce détachée à Abidjan : estimation immédiate, devis ferme, acheminement, suivi de bout en bout. Sourcing, transit, douane, livraison.',
   alternates: { canonical: canonicalFor('/comment-ca-marche') },
@@ -28,8 +28,8 @@ export default function LogistiqueHowPage() {
             Quatre étapes, un seul interlocuteur, de la photo au véhicule redémarré.
           </h1>
           <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-white/65">
-            Le formulaire prend deux minutes et ne demande pas de compte. Vous voyez le coût total —
-            y compris l&apos;immobilisation — avant de vous engager. Le devis confirmé suit par
+            Le formulaire prend deux minutes et ne demande pas de compte. Vous voyez le coût total,
+            immobilisation comprise, avant de vous engager. Le devis confirmé suit par
             WhatsApp, généralement sous deux heures ouvrées.
           </p>
         </div>

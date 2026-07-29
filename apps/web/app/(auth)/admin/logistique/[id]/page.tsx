@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation'
 import { adminFetch } from '@/lib/admin-api'
 import { Chip } from '@/components/ui/chip'
 import { ArbitrageTable } from '@/components/logistique/arbitrage-table'
+import { customerTypeLabel } from '@/lib/logistique-content'
 import type { ArbitrageResult } from 'shared/constants'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -271,7 +272,7 @@ export default function AdminLogistiqueDetailPage() {
               {quote.email && <Row label="Email" value={quote.email} />}
               {quote.companyName && <Row label="Société" value={quote.companyName} />}
               {quote.commune && <Row label="Commune" value={quote.commune} />}
-              <Row label="Type" value={quote.customerType} />
+              <Row label="Type" value={customerTypeLabel(quote.customerType)} />
               {quote.fleetSize != null && <Row label="Flotte" value={String(quote.fleetSize)} />}
             </dl>
           </Section>
