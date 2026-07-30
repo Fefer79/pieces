@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { LandingPage } from '@/components/landing-page'
 import { BrowseContent } from '@/components/browse-content'
 import { MobileDrawer } from '@/components/mobile-drawer'
 import { BottomNav } from '@/components/bottom-nav'
+import { UniverseBar } from '@/components/universe-bar'
+import { LogistiqueSection } from '@/components/sections/logistique-section'
+import { FleetSection } from '@/components/sections/fleet-section'
 import { PromoCarousel, type PromoSlide } from '@/components/ui/promo-carousel'
 
 function PromoArt({ src, alt }: { src: string; alt: string }) {
@@ -48,13 +50,14 @@ const PROMO_SLIDES: PromoSlide[] = [
     theme: 'cream',
   },
   {
-    id: 'reusine',
-    eyebrow: 'Promo du mois \u00b7 Ré-usiné certifié',
-    title: 'Alternateurs ré-usinés, -40% vs neuf.',
+    id: 'logistique',
+    eyebrow: 'Logistique d\u2019import \u00b7 logistique.pieces.ci',
+    title: 'La pièce n\u2019existe pas à Abidjan ? On va la chercher.',
     description:
-      'Testés en atelier, garantie 3 mois, performance d\u2019origine. Pour Toyota, Hyundai, Nissan, Peugeot. Livraison 24-48h à Abidjan.',
-    cta: { label: 'Voir les alternateurs \u2192', href: '#alternateurs' },
-    art: <PromoArt src="/promo/reusine.webp" alt="Alternateur ré-usiné sur un établi" />,
+      'Aérien 3 à 7 jours, maritime groupé ou achat local. Le coût rendu est annoncé poste par poste \u2014 pièce, acheminement, douane, livraison. Estimation immédiate, sans compte.',
+    cta: { label: 'Demander une cotation', href: '/logistique/devis' },
+    secondaryCta: { label: 'Comment ça marche', href: '/logistique' },
+    art: <PromoArt src="/promo/reusine.webp" alt="Pièce détachée emballée pour expédition" />,
     theme: 'orange',
   },
   {
@@ -120,6 +123,9 @@ export default function BrowsePage() {
           </a>
         </div>
 
+        {/* Barre « 3 univers » — marketplace / flotte / logistique */}
+        <UniverseBar active="marketplace" />
+
         {/* Mobile carousel — replié quand un véhicule est sélectionné */}
         {vehicle ? (
           <div className="px-4 pb-4">
@@ -157,20 +163,10 @@ export default function BrowsePage() {
         {/* Browse content (sélection véhicule + recherche + catégories) */}
         <BrowseContent variant="mobile" />
 
-        {/* Entrée discrète vers le service d'import (cf. plan logistique) */}
-        <div className="mx-4 mt-4 rounded-md border border-border bg-card p-4">
-          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-            Logistique d&apos;import
-          </div>
-          <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink">
-            Pièce introuvable à Abidjan ? Estimation immédiate pour la faire venir.
-          </p>
-          <Link
-            href="/logistique/devis"
-            className="mt-2 inline-block text-[13.5px] font-semibold text-ink-2 underline underline-offset-2 hover:text-ink"
-          >
-            Demander une cotation d&apos;import →
-          </Link>
+        {/* Les deux autres univers — remplace l'ancienne carte discrète d'import */}
+        <div className="mt-6">
+          <LogistiqueSection />
+          <FleetSection />
         </div>
 
         {/* Bottom nav */}

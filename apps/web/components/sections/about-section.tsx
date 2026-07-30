@@ -1,59 +1,191 @@
+import Link from 'next/link'
+import { Chip } from '@/components/ui/chip'
+
+// « À propos » — refonte 2026-07 : passage aux tokens DESIGN.md (l'ancienne
+// version utilisait des gris/bleus Tailwind bruts) et intégration des trois
+// univers (marketplace / flotte / logistique) plutôt que des trois rôles.
+
+const PILIERS = [
+  {
+    eyebrow: 'Le problème',
+    title: 'Personne ne connaît le vrai prix',
+    body: "Entre le propriétaire du véhicule et le vendeur s'empilent des intermédiaires dont la marge n'apparaît nulle part. Deux personnes achètent la même pièce au double du prix l'une de l'autre, le même jour, dans la même rue.",
+  },
+  {
+    eyebrow: 'Ce que nous faisons',
+    title: "Le prix et l'état, écrits noir sur blanc",
+    body: "Chaque annonce affiche sa condition — neuf, occasion importée, ré-usiné, aftermarket, OEM — et le détail complet du prix avant le paiement : part vendeur, livraison, frais de plateforme. Aucun montant n'apparaît après coup.",
+  },
+  {
+    eyebrow: 'Comment nous gagnons',
+    title: "Une commission annoncée, rien d'autre",
+    body: "Nous prenons une commission visible sur chaque transaction, et un abonnement pour les flottes qui veulent piloter leurs coûts. Pas de marge caviardée dans le prix de la pièce : c'est notre seul modèle.",
+  },
+]
+
+const SERVICES = [
+  {
+    badge: 'Marketplace',
+    title: 'Acheter une pièce',
+    body: "Des milliers d'annonces de vendeurs d'Abidjan, filtrées par compatibilité avec votre véhicule. Paiement sécurisé, livraison au garage, garantie sur la pièce intermédiée.",
+    href: '/browse',
+    cta: 'Ouvrir le catalogue',
+  },
+  {
+    badge: 'Flotte',
+    title: 'Piloter un parc de véhicules',
+    body: 'Tableau de bord des coûts véhicule par véhicule, alertes d’entretien prédictives, stock tampon automatique et facture consolidée. Pour les entreprises, VTC et loueurs.',
+    href: '/entreprises',
+    cta: "Voir l'offre flotte",
+  },
+  {
+    badge: 'Logistique',
+    title: "Faire venir l'introuvable",
+    body: "Quand aucun vendeur n'a la pièce, nous la sourçons à l'étranger : aérien, maritime groupé ou achat local. Le coût rendu à Abidjan est annoncé poste par poste, douane comprise.",
+    href: '/logistique',
+    cta: 'Découvrir la logistique',
+  },
+]
+
+const PRICE_LINES: Array<{ label: string; amount: number }> = [
+  { label: 'Pièce — part vendeur', amount: 28000 },
+  { label: 'Main d’œuvre garage', amount: 12000 },
+  { label: 'Livraison Abidjan', amount: 2500 },
+  { label: 'Frais Pièces', amount: 1400 },
+]
+
+const PRICE_TOTAL = PRICE_LINES.reduce((sum, line) => sum + line.amount, 0)
+
+const fcfa = (n: number) => `${n.toLocaleString('fr-FR')} F`
+
+function UniverseBadge({ children }: { children: string }) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-border-strong px-3 py-1 font-mono text-[10.5px] uppercase tracking-[0.08em] text-muted">
+      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
+      {children}
+    </span>
+  )
+}
+
 export function AboutSection() {
   return (
-    <section id="a-propos" className="bg-white px-4 py-16 lg:px-8">
-      <div className="mx-auto max-w-4xl">
-        <h2 className="mb-8 text-center text-2xl font-bold text-[#1A1A1A] lg:text-3xl">
-          À Propos
-        </h2>
-
-        <p className="mb-8 text-center text-gray-600 lg:text-lg">
-          <strong>Pièces.ci</strong> est la première marketplace de pièces
-          détachées neuves et d&apos;occasion qui connecte propriétaires,
-          mécaniciens et vendeurs.
-        </p>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-[#002366]">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-                <path d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
-              </svg>
-            </div>
-            <h3 className="mb-2 font-semibold text-[#1A1A1A]">Mécaniciens</h3>
-            <p className="text-sm text-gray-600">
-              Trouvez rapidement la bonne pièce grâce à la recherche par photo,
-              VIN ou nom.
-            </p>
+    <>
+      <section id="a-propos" className="bg-surface px-6 py-14 lg:py-16">
+        <div className="mx-auto max-w-[1152px]">
+          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
+            À propos
           </div>
+          <h1 className="mt-3.5 max-w-[20ch] text-[34px] text-ink lg:text-[44px]">
+            Pièces optimise les dépenses auto de tout le monde.
+          </h1>
+          <p className="mt-4 max-w-[70ch] text-[16px] leading-relaxed text-muted lg:text-[17px]">
+            À Abidjan, le prix d&apos;une pièce dépend surtout de qui vous êtes et de qui vous
+            connaissez. Nous avons construit l&apos;inverse : un marché où chaque annonce montre sa
+            condition et le détail de son prix, où le devis d&apos;import est chiffré poste par
+            poste, et où une flotte voit enfin où part son argent.
+          </p>
 
-          <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-[#002366]">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-                <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h3 className="mb-2 font-semibold text-[#1A1A1A]">Propriétaires</h3>
-            <p className="text-sm text-gray-600">
-              Comparez les offres de plusieurs vendeurs et choisissez la
-              pièce au meilleur prix, en toute transparence.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-[#002366]">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-                <path d="M5.223 2.25c-.497 0-.974.198-1.325.55l-1.3 1.298A3.75 3.75 0 007.5 9.75c.627.47 1.406.75 2.25.75.844 0 1.624-.28 2.25-.75.626.47 1.406.75 2.25.75.844 0 1.623-.28 2.25-.75a3.75 3.75 0 004.902-5.652l-1.3-1.299a1.875 1.875 0 00-1.325-.549H5.223z" />
-                <path fillRule="evenodd" d="M3 20.25v-8.755c1.42.674 3.08.674 4.5 0A5.234 5.234 0 009.75 12c.804 0 1.568-.182 2.25-.506a5.234 5.234 0 002.25.506c.804 0 1.567-.182 2.25-.506 1.42.674 3.08.674 4.5 0v8.755h.75a.75.75 0 010 1.5H2.25a.75.75 0 010-1.5H3zm3 0h4.5v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V20.25H19.5v-7.513a6.174 6.174 0 01-2.25-.39 6.174 6.174 0 01-2.25.396c-.822 0-1.6-.187-2.25-.504a6.174 6.174 0 01-2.25.504 6.174 6.174 0 01-2.25-.396 6.174 6.174 0 01-2.25.39v7.513z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h3 className="mb-2 font-semibold text-[#1A1A1A]">Vendeurs</h3>
-            <p className="text-sm text-gray-600">
-              Publiez votre catalogue et recevez des commandes directement sur
-              la plateforme.
-            </p>
+          <div className="mt-12 grid gap-8 md:grid-cols-3">
+            {PILIERS.map((p) => (
+              <div key={p.title} className="border-t-2 border-ink pt-4">
+                <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-accent">
+                  {p.eyebrow}
+                </div>
+                <h3 className="mt-2 text-[20px] text-ink">{p.title}</h3>
+                <p className="mt-2.5 text-[14px] leading-relaxed text-muted">{p.body}</p>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Les trois univers — même contenu que la barre de navigation, développé */}
+      <section className="border-y border-border bg-card px-6 py-14 lg:py-16">
+        <div className="mx-auto max-w-[1152px]">
+          <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
+            Nos trois services
+          </div>
+          <h2 className="mt-3 text-3xl text-ink lg:text-[34px]">
+            Une pièce, trois façons de l&apos;obtenir.
+          </h2>
+          <p className="mt-3.5 max-w-[62ch] text-[15.5px] leading-relaxed text-muted">
+            Le même compte, le même catalogue et la même exigence de transparence — selon que la
+            pièce est disponible, que vous gérez un parc, ou qu&apos;il faut aller la chercher à
+            l&apos;étranger.
+          </p>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {SERVICES.map((s) => (
+              <article
+                key={s.title}
+                className="flex flex-col rounded-md border border-border bg-surface p-5"
+              >
+                <UniverseBadge>{s.badge}</UniverseBadge>
+                <h3 className="mt-3.5 text-[19px] text-ink">{s.title}</h3>
+                <p className="mt-2.5 flex-1 text-[14px] leading-relaxed text-muted">{s.body}</p>
+                <Link
+                  href={s.href}
+                  className="mt-4 text-[13.5px] font-semibold text-accent transition-colors hover:text-accent-hover"
+                >
+                  {s.cta} →
+                </Link>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* La transparence, concrètement — l'USP rendue vérifiable (DESIGN.md) */}
+      <section className="bg-ink px-6 py-14 text-white lg:py-16">
+        <div className="mx-auto grid max-w-[1152px] gap-10 lg:grid-cols-2 lg:items-center lg:gap-14">
+          <div>
+            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-accent">
+              Notre règle
+            </div>
+            <h2 className="mt-3 max-w-[22ch] text-3xl text-white lg:text-[34px]">
+              Vous voyez le prix complet avant de payer.
+            </h2>
+            <p className="mt-3.5 max-w-[62ch] text-[15.5px] leading-relaxed text-white/65">
+              Sur chaque commande, le détail est affiché avant le bouton de paiement. Si un montant
+              n&apos;est pas dans ce décompte, il ne vous sera pas demandé.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Chip variant="neuf">Neuf</Chip>
+              <Chip variant="occasion">Occasion importée</Chip>
+              <Chip variant="reusine">Ré-usiné</Chip>
+              <Chip variant="aftermarket">Aftermarket</Chip>
+              <Chip variant="oem" className="!bg-white/15 !text-white">
+                OEM
+              </Chip>
+            </div>
+            <p className="mt-3.5 font-mono text-[11px] uppercase tracking-[0.1em] text-white/45">
+              La condition est affichée sur chaque annonce, jamais enterrée dans le texte
+            </p>
+          </div>
+
+          <div className="rounded-md border border-white/20 px-7 py-6">
+            <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-white/55">
+              Exemple de récapitulatif
+            </div>
+            <div className="mt-2.5">
+              {PRICE_LINES.map((line) => (
+                <div
+                  key={line.label}
+                  className="flex items-baseline gap-2.5 py-1.5 text-[14.5px] text-white/85"
+                >
+                  <span>{line.label}</span>
+                  <span className="min-w-6 flex-1 -translate-y-1 border-b-2 border-dotted border-white/25" />
+                  <span className="tabular whitespace-nowrap font-mono">{fcfa(line.amount)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3.5 flex items-baseline gap-2 border-t-2 border-white/30 pt-3.5">
+              <span className="text-[15px] font-bold">Total à payer</span>
+              <span className="tabular ml-auto font-mono text-[24px]">{fcfa(PRICE_TOTAL)}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   )
 }

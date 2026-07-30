@@ -4,6 +4,10 @@ import { useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { BrowseContent } from './browse-content'
 import { PartSearchAutocomplete } from './part-search-autocomplete'
+import { UniverseBar } from './universe-bar'
+import { SiteFooter } from './site-footer'
+import { LogistiqueSection } from './sections/logistique-section'
+import { FleetSection } from './sections/fleet-section'
 import { useAuth } from '@/lib/auth-context'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
@@ -106,6 +110,9 @@ export function LandingPage({ children }: { children?: ReactNode }) {
         </div>
       </header>
 
+      {/* Barre « 3 univers » — marketplace / flotte / logistique */}
+      <UniverseBar active="marketplace" />
+
       {children}
 
       {/* Browse surface */}
@@ -115,77 +122,11 @@ export function LandingPage({ children }: { children?: ReactNode }) {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-card">
-        <div className="mx-auto max-w-[1280px] px-6 py-12">
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
-            {/* Brand */}
-            <div className="md:col-span-1">
-              <span className="font-display text-2xl text-ink">
-                Pièces<span className="text-accent">.</span>
-              </span>
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                La marketplace de pièces détachées automobiles en Côte d&apos;Ivoire. Prix transparents, multi-vendeurs, livraison au garage.
-              </p>
-            </div>
+      {/* Les deux autres univers, développés en bas de page */}
+      <LogistiqueSection />
+      <FleetSection />
 
-            {/* Navigation */}
-            <div>
-              <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                Plateforme
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                <li><a href="/browse" className="text-ink transition-colors hover:text-accent">Catalogue</a></li>
-                <li><a href="/info#comment-ca-marche" className="text-ink transition-colors hover:text-accent">Comment ça marche</a></li>
-                <li><a href="/enterprise" className="text-ink transition-colors hover:text-accent">Entreprises & flottes</a></li>
-                <li><a href="/info#a-propos" className="text-ink transition-colors hover:text-accent">À propos</a></li>
-              </ul>
-            </div>
-
-            {/* Vendeurs & légal */}
-            <div>
-              <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                Vendeurs
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                <li><a href="/seller/register" className="text-ink transition-colors hover:text-accent">Devenir vendeur</a></li>
-                <li><a href="/seller/dashboard" className="text-ink transition-colors hover:text-accent">Espace vendeur</a></li>
-                <li><a href="/info#cgv" className="text-ink transition-colors hover:text-accent">CGV</a></li>
-                <li><a href="/info#confidentialite" className="text-ink transition-colors hover:text-accent">Confidentialité</a></li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h3 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                Contact
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                <li className="text-muted">Abidjan, Côte d&apos;Ivoire</li>
-                <li>
-                  <a href="https://wa.me/2250706846268" target="_blank" rel="noopener noreferrer" className="text-ink transition-colors hover:text-accent">
-                    WhatsApp · +225 07 06 84 62 68
-                  </a>
-                </li>
-                <li>
-                  <a href="mailto:contact@pieces.ci" className="text-ink transition-colors hover:text-accent">
-                    contact@pieces.ci
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 md:flex-row">
-            <p className="text-xs text-muted">
-              &copy; {new Date().getFullYear()} Pièces.ci — Tous droits réservés
-            </p>
-            <p className="text-xs text-muted-2">
-              Fait à Abidjan
-            </p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

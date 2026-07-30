@@ -4,7 +4,8 @@ Drop AI-generated `.webp` files here (800×600 or 1200×900 recommended, object-
 
 - `intro.webp` — Marché de pièces auto à Abidjan au golden hour
 - `transparence.webp` — Mains de mécanicien tenant une clé à molette, macro
-- `reusine.webp` — Alternateur ré-usiné sur un établi d'atelier
+- `reusine.webp` — Colis / pièce détachée emballée pour expédition (slide Logistique d'import ;
+  fichier historiquement produit pour l'ancien slide « Ré-usinés », à remplacer)
 - `flotte.webp` — Flotte de véhicules utilitaires à l'aube
 - `conseil.webp` — Technicien ivoirien souriant, smartphone, atelier
 

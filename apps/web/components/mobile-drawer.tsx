@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth-context'
 
 const PUBLIC_LINKS = [
+  { href: '/entreprises', label: 'Entreprises & flottes' },
+  { href: '/logistique', label: "Logistique d'import" },
   { href: '/info#a-propos', label: 'À Propos' },
   { href: '/info#comment-ca-marche', label: 'Comment ça marche' },
   { href: '/info#contact', label: 'Contact' },
