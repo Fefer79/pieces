@@ -33,6 +33,55 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo test
 
+  # Rejoue toutes les migrations sur une base jetable et compare le résultat à
+  # schema.prisma. Attrape le cas où un modèle a été ajouté au schéma puis poussé
+  # avec `db push` sans migration : la prod finit par recevoir une migration qui
+  # échoue (« already exists ») et bloque tous les déploiements — cf. l'incident
+  # du 2026-07-29 sur 20260727_part_requests.
+  migrations:
+    name: Migrations ↔ schema
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shadow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      SHADOW_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/shadow
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Les migrations reproduisent-elles schema.prisma ?
+        run: |
+          if pnpm -F shared db:check-drift; then
+            echo "✅ Les migrations reproduisent exactement schema.prisma."
+          else
+            echo "::error::Écart entre prisma/migrations et schema.prisma."
+            echo ""
+            echo "Le schéma contient des changements qui n'existent dans aucune migration"
+            echo "(typiquement un 'pnpm -F shared db:push' au lieu d'un 'db:migrate')."
+            echo "Génère la migration manquante avec : pnpm -F shared db:migrate"
+            echo ""
+            echo "SQL qu'il reste à appliquer pour rattraper l'écart :"
+            echo "-----------------------------------------------------"
+            pnpm -F shared db:drift-sql || true
+            exit 1
+          fi
+
   build:
     name: Build
     runs-on: ubuntu-latest
