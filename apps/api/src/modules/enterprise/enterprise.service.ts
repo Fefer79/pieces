@@ -1,3 +1,4 @@
+import { MANAGE_ROLES, OWNER_ONLY } from './roles.js'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import type { EnterpriseMemberRole } from '@prisma/client'
@@ -127,7 +128,7 @@ export async function inviteMember(
   invitedBy: string,
   data: { phone?: string; email?: string; role: EnterpriseMemberRole },
 ) {
-  await assertMember(enterpriseId, invitedBy, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, invitedBy, MANAGE_ROLES)
 
   const target = await prisma.user.findFirst({
     where: data.phone ? { phone: data.phone } : { email: data.email },
@@ -180,12 +181,63 @@ export async function listMembers(enterpriseId: string, userId: string) {
   })
 }
 
+/**
+ * Change le rôle d'un membre.
+ *
+ * Réservé au propriétaire : si un gestionnaire pouvait promouvoir, il se
+ * promouvrait lui-même et la matrice de droits ne voudrait plus rien dire.
+ */
+export async function updateMemberRole(
+  enterpriseId: string,
+  actorUserId: string,
+  memberId: string,
+  role: EnterpriseMemberRole,
+) {
+  await assertMember(enterpriseId, actorUserId, OWNER_ONLY)
+  const target = await prisma.enterpriseMember.findUnique({
+    where: { id: memberId },
+    select: { id: true, enterpriseId: true, userId: true, role: true },
+  })
+  if (!target || target.enterpriseId !== enterpriseId) {
+    throw new AppError('MEMBER_NOT_FOUND', 404)
+  }
+  if (target.role === role) {
+    throw new AppError('MEMBER_ROLE_UNCHANGED', 400, {
+      message: 'Ce membre a déjà ce rôle',
+    })
+  }
+  // Rétrograder le dernier propriétaire laisserait la flotte sans personne
+  // pour gérer les membres — même garde-fou que la suppression.
+  if (target.role === 'OWNER') {
+    const ownerCount = await prisma.enterpriseMember.count({
+      where: { enterpriseId, role: 'OWNER' },
+    })
+    if (ownerCount <= 1) {
+      throw new AppError('LAST_OWNER', 400, {
+        message: 'Impossible de rétrograder le dernier propriétaire',
+      })
+    }
+  }
+
+  return prisma.enterpriseMember.update({
+    where: { id: memberId },
+    data: { role },
+    select: {
+      id: true,
+      role: true,
+      invitedAt: true,
+      joinedAt: true,
+      user: { select: { id: true, name: true, phone: true, email: true } },
+    },
+  })
+}
+
 export async function removeMember(
   enterpriseId: string,
   actorUserId: string,
   memberId: string,
 ) {
-  await assertMember(enterpriseId, actorUserId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, actorUserId, MANAGE_ROLES)
   const target = await prisma.enterpriseMember.findUnique({
     where: { id: memberId },
     select: { enterpriseId: true, userId: true, role: true },

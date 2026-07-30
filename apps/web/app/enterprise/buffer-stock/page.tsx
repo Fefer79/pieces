@@ -7,6 +7,7 @@ import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { CatalogItemPicker, type PickedCatalogItem } from '@/components/catalog-item-picker'
 import { ConditionChip, PartSourceChip, type Condition, type PartSource } from '@/components/ui/chip'
+import { RoleGate } from '@/components/role-gate'
 
 type StockStatus = 'OUT' | 'LOW' | 'BELOW_TARGET' | 'OK'
 
@@ -127,12 +128,14 @@ export default function EnterpriseBufferStockPage() {
             </p>
           )}
         </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink"
-        >
-          {showForm ? 'Annuler' : '+ Ajouter une référence'}
-        </button>
+        <RoleGate action="manageFleet">
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink"
+          >
+            {showForm ? 'Annuler' : '+ Ajouter une référence'}
+          </button>
+        </RoleGate>
       </div>
 
       {error && (

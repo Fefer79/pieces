@@ -1,13 +1,12 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { MANAGE_ROLES, ENTRY_ROLES } from './roles.js'
 import { normalizeHeader, extractSheetRows } from './xlsxImport.js'
 import { parseCsv } from './vehicle.service.js'
 import { normalizeIvorianPhone as normalizePhone } from '../../lib/phone.js'
 import type { DriverStatus, DriverIncidentType, DriverIncidentSeverity } from '@prisma/client'
 
-const MANAGE_ROLES = ['OWNER', 'MANAGER'] as const
-const ENTRY_ROLES = ['OWNER', 'MANAGER', 'MECHANIC'] as const
 
 const DRIVER_SELECT = {
   id: true,
@@ -125,7 +124,7 @@ export async function getEnterpriseDriver(enterpriseId: string, userId: string, 
 }
 
 export async function createEnterpriseDriver(enterpriseId: string, userId: string, data: DriverInput) {
-  await assertMember(enterpriseId, userId, [...MANAGE_ROLES])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   try {
     return await prisma.driver.create({
       data: {
@@ -156,7 +155,7 @@ export async function updateEnterpriseDriver(
   driverId: string,
   data: Partial<DriverInput>,
 ) {
-  await assertMember(enterpriseId, userId, [...MANAGE_ROLES])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   await assertDriver(enterpriseId, driverId)
   return prisma.driver.update({
     where: { id: driverId },
@@ -169,7 +168,7 @@ export async function updateEnterpriseDriver(
 }
 
 export async function deleteEnterpriseDriver(enterpriseId: string, userId: string, driverId: string) {
-  await assertMember(enterpriseId, userId, [...MANAGE_ROLES])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   await assertDriver(enterpriseId, driverId)
   await prisma.driver.delete({ where: { id: driverId } })
   return { ok: true }
@@ -183,7 +182,7 @@ export async function assignVehicleToDriver(
   driverId: string,
   vehicleId: string | null,
 ) {
-  await assertMember(enterpriseId, userId, [...MANAGE_ROLES])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   await assertDriver(enterpriseId, driverId)
   if (vehicleId) await assertVehicle(enterpriseId, vehicleId)
 
@@ -245,7 +244,7 @@ export async function addDriverDailyRecord(
   driverId: string,
   data: DailyInput,
 ) {
-  await assertMember(enterpriseId, userId, [...ENTRY_ROLES])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   await assertDriver(enterpriseId, driverId)
   return upsertDailyRecord(driverId, data)
 }
@@ -263,7 +262,7 @@ export async function addDriverIncident(
     vehicleId?: string
   },
 ) {
-  await assertMember(enterpriseId, userId, [...ENTRY_ROLES])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   await assertDriver(enterpriseId, driverId)
   const vehicleId = data.vehicleId ?? (await activeVehicleId(driverId)) ?? undefined
   return prisma.driverIncident.create({
@@ -426,7 +425,7 @@ export async function importDriverRows(
   rows: string[][],
   emptyMessage: string,
 ): Promise<DriverImportResult> {
-  await assertMember(enterpriseId, userId, [...MANAGE_ROLES])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
 
   const [headerRow] = rows
   if (!headerRow) {

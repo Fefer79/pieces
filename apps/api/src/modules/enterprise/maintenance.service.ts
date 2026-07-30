@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { MANAGE_ROLES, ENTRY_ROLES } from './roles.js'
 import { notifyMaintenanceDue } from '../notification/notification.service.js'
 import type { MaintenanceKind } from '@prisma/client'
 
@@ -101,7 +102,7 @@ export async function createSchedule(
   vehicleId: string,
   data: ScheduleInput,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'MECHANIC'])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   await loadVehicle(enterpriseId, vehicleId)
   return prisma.maintenanceSchedule.create({
     data: {
@@ -126,7 +127,7 @@ export async function updateSchedule(
   scheduleId: string,
   data: Partial<ScheduleInput>,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'MECHANIC'])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   const existing = await prisma.maintenanceSchedule.findFirst({
     where: { id: scheduleId, vehicleId, vehicle: { enterpriseId } },
     select: { id: true },
@@ -156,7 +157,7 @@ export async function deleteSchedule(
   vehicleId: string,
   scheduleId: string,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   const existing = await prisma.maintenanceSchedule.findFirst({
     where: { id: scheduleId, vehicleId, vehicle: { enterpriseId } },
     select: { id: true },
@@ -277,7 +278,7 @@ export async function markScheduleDone(
   scheduleId: string,
   doneAtKm?: number,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'MECHANIC'])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   const vehicle = await loadVehicle(enterpriseId, vehicleId)
   const existing = await prisma.maintenanceSchedule.findFirst({
     where: { id: scheduleId, vehicleId },

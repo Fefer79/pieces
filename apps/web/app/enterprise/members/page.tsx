@@ -9,13 +9,11 @@ import {
   type EnterpriseMember,
 } from '@/lib/enterprise-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { useEnterprise } from '@/lib/enterprise-context'
+import { can, FLEET_ROLE_LABEL, FLEET_ROLE_HELP, type FleetRole } from '@/lib/enterprise-roles'
 
-const ROLE_LABEL: Record<EnterpriseMember['role'], string> = {
-  OWNER: 'Propriétaire',
-  MANAGER: 'Manager',
-  MECHANIC: 'Mécanicien',
-  ACCOUNTANT: 'Comptable',
-}
+const ROLE_LABEL = FLEET_ROLE_LABEL
+const ROLES: FleetRole[] = ['MECHANIC', 'MANAGER', 'ACCOUNTANT', 'OWNER']
 
 export default function EnterpriseMembersPage() {
   const [enterpriseId, setEnterpriseId] = useState<string | null>(null)
@@ -23,6 +21,8 @@ export default function EnterpriseMembersPage() {
   const [loading, setLoading] = useState(true)
   const [showInvite, setShowInvite] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { role: myRole } = useEnterprise()
+  const canManage = can(myRole, 'manageMembers')
 
   useEffect(() => { setEnterpriseId(getActiveEnterpriseId()) }, [])
 
@@ -35,6 +35,17 @@ export default function EnterpriseMembersPage() {
   }
 
   useEffect(() => { if (enterpriseId) load(enterpriseId) }, [enterpriseId])
+
+  async function handleChangeRole(memberId: string, role: FleetRole) {
+    if (!enterpriseId) return
+    setError(null)
+    const res = await enterpriseFetch(`/${enterpriseId}/members/${memberId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    })
+    if (!res.ok) { setError(res.message); return }
+    load(enterpriseId)
+  }
 
   async function handleRemove(memberId: string) {
     if (!enterpriseId) return
@@ -59,14 +70,20 @@ export default function EnterpriseMembersPage() {
         <div>
           <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">Entreprise</div>
           <h1 className="mt-1 font-display text-3xl text-ink">Membres</h1>
-          <p className="mt-1 text-sm text-muted">Gérez les mécaniciens et employés de votre entreprise.</p>
+          <p className="mt-1 text-sm text-muted">
+            {canManage
+              ? 'Invitez des membres et ajustez leurs droits.'
+              : "Seul le propriétaire peut inviter des membres ou changer leurs droits."}
+          </p>
         </div>
-        <button
-          onClick={() => setShowInvite(true)}
-          className="rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink"
-        >
-          Inviter un membre
-        </button>
+        {canManage && (
+          <button
+            onClick={() => setShowInvite(true)}
+            className="rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink"
+          >
+            Inviter un membre
+          </button>
+        )}
       </div>
 
       {error && <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
@@ -90,11 +107,26 @@ export default function EnterpriseMembersPage() {
             {members.map((m) => (
               <Tr key={m.id}>
                 <Td className="text-ink">{m.user.name ?? '—'}</Td>
-                <Td className="text-muted">{ROLE_LABEL[m.role]}</Td>
+                <Td>
+                  {canManage ? (
+                    <select
+                      value={m.role}
+                      onChange={(e) => handleChangeRole(m.id, e.target.value as FleetRole)}
+                      className="rounded-sm border border-border bg-white px-2 py-1 text-sm text-ink"
+                      title={FLEET_ROLE_HELP[m.role]}
+                    >
+                      {ROLES.map((r) => (
+                        <option key={r} value={r}>{ROLE_LABEL[r]}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="text-muted">{ROLE_LABEL[m.role]}</span>
+                  )}
+                </Td>
                 <Td className="text-muted tabular">{m.user.phone ?? '—'}</Td>
                 <Td className="text-muted">{m.user.email ?? '—'}</Td>
                 <Td align="right">
-                  {m.role !== 'OWNER' && (
+                  {canManage && m.role !== 'OWNER' && (
                     <button
                       onClick={() => handleRemove(m.id)}
                       className="text-sm text-red-600 hover:underline"
@@ -175,10 +207,9 @@ function InviteMemberModal({
               value={role} onChange={(e) => setRole(e.target.value as EnterpriseMember['role'])}
               className="mt-1 w-full rounded-sm border border-border bg-white px-3 py-2 text-sm"
             >
-              <option value="MECHANIC">Mécanicien — recherche et identification</option>
-              <option value="MANAGER">Manager — gère véhicules et commandes</option>
-              <option value="ACCOUNTANT">Comptable — exports financiers</option>
-              <option value="OWNER">Propriétaire — accès total</option>
+              {ROLES.map((r) => (
+                <option key={r} value={r}>{FLEET_ROLE_LABEL[r]} — {FLEET_ROLE_HELP[r]}</option>
+              ))}
             </select>
           </div>
           {error && <div className="text-sm text-red-600">{error}</div>}

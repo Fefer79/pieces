@@ -1,6 +1,7 @@
 import type { OrderStatus } from '@prisma/client'
 import { prisma } from '../../lib/prisma.js'
 import { assertMember } from './enterprise.service.js'
+import { FINANCE_ROLES } from './roles.js'
 
 /**
  * Commandes rattachées à une entreprise.
@@ -14,7 +15,7 @@ import { assertMember } from './enterprise.service.js'
 
 // Le mécanicien voit ce qu'il a lui-même engagé, pas la dépense globale de son
 // employeur. Le propriétaire, le gestionnaire et le comptable voient tout.
-const FULL_VISIBILITY_ROLES = ['OWNER', 'MANAGER', 'ACCOUNTANT']
+const FULL_VISIBILITY_ROLES = FINANCE_ROLES
 
 const SELECT = {
   id: true,

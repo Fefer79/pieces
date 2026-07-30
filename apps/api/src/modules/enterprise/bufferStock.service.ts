@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { MANAGE_ROLES, ENTRY_ROLES } from './roles.js'
 import { notifyBufferReplenish } from '../notification/notification.service.js'
 
 export interface BufferStockInput {
@@ -63,7 +64,7 @@ export async function createBufferStock(
   userId: string,
   data: BufferStockInput,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   const item = await prisma.catalogItem.findUnique({
     where: { id: data.catalogItemId },
     select: { id: true },
@@ -99,7 +100,7 @@ export async function updateBufferStock(
   id: string,
   data: Partial<Omit<BufferStockInput, 'catalogItemId'>>,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   const existing = await prisma.enterpriseBufferStock.findFirst({
     where: { id, enterpriseId },
     select: { id: true },
@@ -123,7 +124,7 @@ export async function adjustBufferStock(
   id: string,
   delta: number,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'MECHANIC'])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   const existing = await prisma.enterpriseBufferStock.findFirst({
     where: { id, enterpriseId },
     select: { id: true, currentQty: true },
@@ -273,7 +274,7 @@ export async function deleteBufferStock(
   userId: string,
   id: string,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   const existing = await prisma.enterpriseBufferStock.findFirst({
     where: { id, enterpriseId },
     select: { id: true },

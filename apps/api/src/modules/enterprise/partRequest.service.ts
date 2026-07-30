@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { REQUESTER_ROLES, APPROVER_ROLES } from './roles.js'
 import { uploadToR2 } from '../../lib/r2.js'
 import { processVariants, MAX_FILE_SIZE } from '../../lib/imageProcessor.js'
 import { createOrder } from '../order/order.service.js'
@@ -17,8 +18,6 @@ const MAX_PHOTOS_PER_REQUEST = 3
 // Le mécanicien diagnostique et demande la pièce ; owner et manager peuvent
 // aussi saisir une demande. Seuls OWNER / MANAGER approuvent, refusent et
 // convertissent en commande — le chauffeur n'a aucun accès en écriture.
-const REQUESTER_ROLES: EnterpriseMemberRole[] = ['MECHANIC', 'OWNER', 'MANAGER']
-const APPROVER_ROLES: EnterpriseMemberRole[] = ['OWNER', 'MANAGER']
 
 export interface PartRequestInput {
   vehicleId: string

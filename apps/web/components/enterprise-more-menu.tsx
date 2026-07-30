@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEnterprise } from '@/lib/enterprise-context'
+import { can, type FleetAction } from '@/lib/enterprise-roles'
 
 // Toutes les sections flotte — le tiroir « Plus » garantit l'accès mobile aux
 // pages absentes de la barre du bas (Dashboard / Véhicules / Commandes).
@@ -19,9 +21,9 @@ const ENTERPRISE_LINKS = [
   { href: '/enterprise/centers', label: 'Centres' },
   { href: '/enterprise/returns', label: 'Retours' },
   { href: '/enterprise/buffer-stock', label: 'Stock tampon' },
-  { href: '/enterprise/invoices', label: 'Factures' },
-  { href: '/enterprise/billing', label: 'Abonnement' },
-] as const
+  { href: '/enterprise/invoices', label: 'Factures', requires: 'viewFinance' },
+  { href: '/enterprise/billing', label: 'Abonnement', requires: 'viewFinance' },
+] as const satisfies readonly { href: string; label: string; requires?: FleetAction }[]
 
 // Pages atteignables uniquement via le tiroir (hors raccourcis de la barre) :
 // le bouton « Plus » s'allume quand on est sur l'une d'elles.
@@ -30,6 +32,9 @@ const BAR_HREFS = new Set(['/enterprise/dashboard', '/enterprise/vehicles', '/en
 export function EnterpriseMoreMenu() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const { role } = useEnterprise()
+  // Miroir de la matrice serveur : on masque ce qui renverrait un 403.
+  const links = ENTERPRISE_LINKS.filter((l) => !('requires' in l) || can(role, l.requires))
 
   useEffect(() => {
     if (open) {
@@ -95,7 +100,7 @@ export function EnterpriseMoreMenu() {
 
         <nav className="flex-1 overflow-y-auto px-3 py-5">
           <ul className="space-y-1">
-            {ENTERPRISE_LINKS.map((link) => {
+            {links.map((link) => {
               const active = pathname === link.href || pathname.startsWith(link.href + '/')
               return (
                 <li key={link.href}>

@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { MANAGE_ROLES, ENTRY_ROLES } from './roles.js'
 import { normalizeHeader, extractSheetRows } from './xlsxImport.js'
 import { canonicalPlate } from '../../lib/plate.js'
 import { splitCategory } from 'shared/constants'
@@ -89,7 +90,7 @@ export async function createEnterpriseVehicle(
   userId: string,
   data: VehicleInput,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'MECHANIC'])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   const plateCanonical = canonicalPlate(data.plate)
   await assertPlateAvailable(enterpriseId, plateCanonical)
   return prisma.vehicle.create({
@@ -135,7 +136,7 @@ export async function updateEnterpriseVehicle(
   vehicleId: string,
   data: Partial<VehicleInput>,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'MECHANIC'])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   const existing = await prisma.vehicle.findFirst({
     where: { id: vehicleId, enterpriseId },
     select: { id: true },
@@ -310,7 +311,7 @@ export async function deleteEnterpriseVehicle(
   userId: string,
   vehicleId: string,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   const existing = await prisma.vehicle.findFirst({
     where: { id: vehicleId, enterpriseId },
     select: { id: true },
@@ -414,7 +415,7 @@ export async function importVehicleRows(
   rows: string[][],
   emptyMessage: string,
 ): Promise<ImportResult> {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
 
   const [headerRow] = rows
   if (!headerRow) {

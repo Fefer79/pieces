@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { MANAGE_ROLES, ENTRY_ROLES } from './roles.js'
 
 export interface CenterInput {
   name: string
@@ -67,7 +68,7 @@ export async function createCenter(
   userId: string,
   data: CenterInput,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   return prisma.maintenanceCenter.create({
     data: {
       enterpriseId,
@@ -92,7 +93,7 @@ export async function updateCenter(
   centerId: string,
   data: Partial<CenterInput>,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   const existing = await prisma.maintenanceCenter.findFirst({
     where: { id: centerId, enterpriseId },
     select: { id: true },
@@ -121,7 +122,7 @@ export async function deleteCenter(
   userId: string,
   centerId: string,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER'])
+  await assertMember(enterpriseId, userId, MANAGE_ROLES)
   const existing = await prisma.maintenanceCenter.findFirst({
     where: { id: centerId, enterpriseId },
     select: { id: true, _count: { select: { vehicles: true } } },
@@ -138,7 +139,7 @@ export async function setVehicleHomeCenter(
   vehicleId: string,
   homeCenterId: string | null,
 ) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'MECHANIC'])
+  await assertMember(enterpriseId, userId, ENTRY_ROLES)
   const vehicle = await prisma.vehicle.findFirst({
     where: { id: vehicleId, enterpriseId },
     select: { id: true },

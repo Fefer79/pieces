@@ -35,6 +35,10 @@ export const inviteMemberSchema = z.object({
   message: 'phone ou email requis',
 })
 
+export const updateMemberRoleSchema = z.object({
+  role: enterpriseMemberRoleSchema,
+})
+
 export const fleetVehicleSchema = z.object({
   brand: z.string().min(1, 'La marque est requise'),
   model: z.string().min(1, 'Le modèle est requis'),

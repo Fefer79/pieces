@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { FINANCE_ROLES, ACCOUNTING_ROLES } from './roles.js'
 
 const COLOR_INK = '#0F1115'
 const COLOR_MUTED = '#6B6F76'
@@ -78,7 +79,7 @@ export async function listInvoicesForEnterprise(
   userId: string,
   filter?: { year?: number; month?: number },
 ) {
-  await assertMember(enterpriseId, userId)
+  await assertMember(enterpriseId, userId, FINANCE_ROLES)
   const where: { enterpriseId: string; issuedAt?: { gte: Date; lt: Date } } = { enterpriseId }
   if (filter?.year && filter?.month) {
     const start = new Date(filter.year, filter.month - 1, 1)
@@ -127,7 +128,7 @@ export async function getInvoicePdf(
     throw new AppError('INVOICE_NOT_FOUND', 404, { message: 'Facture introuvable' })
   }
   if (invoice.enterpriseId) {
-    await assertMember(invoice.enterpriseId, userId)
+    await assertMember(invoice.enterpriseId, userId, FINANCE_ROLES)
   } else if (invoice.order.initiatorId !== userId) {
     throw new AppError('INVOICE_FORBIDDEN', 403, { message: 'Accès refusé à cette facture' })
   }
@@ -285,7 +286,7 @@ export async function getMonthlyInvoicePdf(
   month: number,
   userId: string,
 ): Promise<Buffer> {
-  await assertMember(enterpriseId, userId)
+  await assertMember(enterpriseId, userId, FINANCE_ROLES)
   const enterprise = await prisma.enterprise.findUnique({ where: { id: enterpriseId } })
   if (!enterprise) throw new AppError('ENTERPRISE_NOT_FOUND', 404, { message: 'Entreprise introuvable' })
 
@@ -431,7 +432,8 @@ export async function exportFecCsv(
   month: number,
   userId: string,
 ): Promise<string> {
-  await assertMember(enterpriseId, userId)
+  // Le FEC est une pièce comptable : réservé au propriétaire et au comptable.
+  await assertMember(enterpriseId, userId, ACCOUNTING_ROLES)
   const start = new Date(year, month - 1, 1)
   const end = new Date(year, month, 1)
   const invoices = await prisma.invoice.findMany({

@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma.js'
 import { assertMember } from './enterprise.service.js'
+import { FINANCE_ROLES } from './roles.js'
 import { getFleetMoneyPits } from './analytics.service.js'
 
 const ACTIVE_ORDER_STATUSES = [
@@ -84,7 +85,7 @@ export async function getEnterpriseDashboard(enterpriseId: string, userId: strin
 }
 
 export async function exportEnterpriseOrdersCsv(enterpriseId: string, userId: string) {
-  await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'ACCOUNTANT'])
+  await assertMember(enterpriseId, userId, FINANCE_ROLES)
   const orders = await prisma.order.findMany({
     where: { enterpriseId },
     orderBy: { createdAt: 'desc' },

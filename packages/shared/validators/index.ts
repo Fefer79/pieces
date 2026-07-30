@@ -56,6 +56,7 @@ export {
   enterpriseMemberRoleSchema,
   createEnterpriseSchema,
   inviteMemberSchema,
+  updateMemberRoleSchema,
   fleetVehicleSchema,
   updateVehicleSchema,
   updateMileageSchema,

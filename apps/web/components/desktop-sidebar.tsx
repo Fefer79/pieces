@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { useCart } from '@/lib/cart'
 import { ContextSwitcher } from './context-switcher'
+import { useEnterprise } from '@/lib/enterprise-context'
+import { can, type FleetAction, type FleetRole } from '@/lib/enterprise-roles'
 
 type Icon = (p: { className?: string }) => React.ReactNode
 interface NavItem {
@@ -12,10 +14,24 @@ interface NavItem {
   label: string
   icon: Icon
   badge?: number
+  // Droit requis dans l'entreprise active. Absent = visible par tout membre.
+  // Miroir de la matrice serveur : masquer ici évite un 403 au clic, ce n'est
+  // pas ce qui protège la donnée.
+  requires?: FleetAction
 }
 interface NavSection {
   title: string
   items: NavItem[]
+}
+
+/**
+ * Retire les entrées dont le membre n'a pas le droit. Une section vidée
+ * disparaît, plutôt que d'afficher un titre sans contenu.
+ */
+function filterByRole(sections: NavSection[], role: FleetRole | null): NavSection[] {
+  return sections
+    .map((s) => ({ ...s, items: s.items.filter((i) => !i.requires || can(role, i.requires)) }))
+    .filter((s) => s.items.length > 0)
 }
 
 function getSections(
@@ -44,12 +60,13 @@ function getSections(
         { href: '/enterprise/members', label: 'Membres', icon: UsersIcon },
         { href: '/enterprise/orders', label: 'Commandes', icon: OrdersIcon },
         { href: '/enterprise/requests', label: 'Demandes', icon: OrdersIcon },
+        { href: '/enterprise/logistics/quotes', label: 'Cotations import', icon: BoxIcon },
         { href: '/enterprise/search', label: 'Recherche', icon: SearchIcon },
         { href: '/enterprise/centers', label: 'Centres', icon: BuildingIcon },
         { href: '/enterprise/returns', label: 'Retours', icon: ReturnIcon },
         { href: '/enterprise/buffer-stock', label: 'Stock tampon', icon: BoxIcon },
-        { href: '/enterprise/invoices', label: 'Factures', icon: FileIcon },
-        { href: '/enterprise/billing', label: 'Abonnement', icon: CardIcon },
+        { href: '/enterprise/invoices', label: 'Factures', icon: FileIcon, requires: 'viewFinance' },
+        { href: '/enterprise/billing', label: 'Abonnement', icon: CardIcon, requires: 'viewFinance' },
       ] },
       { title: 'Compte', items: [
         { href: '/dashboard', label: 'Retour à l’app', icon: HomeIcon },
@@ -123,6 +140,9 @@ export function DesktopSidebar() {
   const pathname = usePathname()
   const { user, isAuthenticated, logout } = useAuth()
   const { count } = useCart()
+  // Hors /enterprise/*, le provider est absent et le rôle vaut null : les
+  // entrées gatées n'existent que dans la section Flotte, donc sans effet.
+  const { role: fleetRole } = useEnterprise()
   const isAdmin = user?.roles?.includes('ADMIN') ?? false
 
   if (!isAuthenticated) {
@@ -142,7 +162,10 @@ export function DesktopSidebar() {
   }
 
   const onEnterprise = pathname.startsWith('/enterprise')
-  const sections = getSections(user?.activeContext ?? null, isAdmin, count, onEnterprise)
+  const sections = filterByRole(
+    getSections(user?.activeContext ?? null, isAdmin, count, onEnterprise),
+    fleetRole,
+  )
 
   return (
     <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:bg-ink lg:text-white">

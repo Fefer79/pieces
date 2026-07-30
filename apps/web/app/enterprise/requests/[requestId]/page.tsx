@@ -13,6 +13,7 @@ import {
 import { Price } from '@/components/ui/price'
 import { LogisticsMatrixCard } from '@/components/logistics-matrix'
 import { CatalogItemPicker, type PickedCatalogItem } from '@/components/catalog-item-picker'
+import { useCan } from '@/components/role-gate'
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: 'Brouillon',
@@ -54,6 +55,7 @@ export default function EnterpriseRequestDetailPage() {
   const [selectedSource, setSelectedSource] = useState<'LOCAL' | 'AIR' | 'CARGO' | null>(null)
   const [converting, setConverting] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
+  const canApprove = useCan('approve')
 
   useEffect(() => { setEnterpriseId(getActiveEnterpriseId()) }, [])
 
@@ -206,7 +208,13 @@ export default function EnterpriseRequestDetailPage() {
         <div className="space-y-4">
           <div className="rounded-md border border-border bg-card p-5">
             <h2 className="mb-4 font-display text-lg text-ink">Actions</h2>
-            {request.status === 'SUBMITTED' && (
+            {request.status === 'SUBMITTED' && !canApprove && (
+              <p className="text-sm text-muted">
+                En attente de la décision du gestionnaire ou du propriétaire.
+              </p>
+            )}
+
+            {request.status === 'SUBMITTED' && canApprove && (
               <div className="space-y-2">
                 <button
                   onClick={() => doAction('approve')}
@@ -233,7 +241,13 @@ export default function EnterpriseRequestDetailPage() {
               </div>
             )}
 
-            {request.status === 'APPROVED' && (
+            {request.status === 'APPROVED' && !canApprove && (
+              <p className="text-sm text-muted">
+                Demande approuvée. La commande sera passée par un gestionnaire.
+              </p>
+            )}
+
+            {request.status === 'APPROVED' && canApprove && (
               <div className="space-y-4">
                 <p className="text-sm text-muted">
                   Choisissez l&apos;option de sourcing, puis la pièce à commander.

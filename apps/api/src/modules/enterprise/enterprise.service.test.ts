@@ -13,6 +13,7 @@ const enterpriseMemberFindUnique = vi.fn()
 const enterpriseMemberCreate = vi.fn()
 const enterpriseMemberCount = vi.fn()
 const enterpriseMemberDelete = vi.fn()
+const enterpriseMemberUpdate = vi.fn()
 const userFindFirst = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
@@ -26,6 +27,7 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...a: unknown[]) => enterpriseMemberFindUnique(...a),
       create: (...a: unknown[]) => enterpriseMemberCreate(...a),
       count: (...a: unknown[]) => enterpriseMemberCount(...a),
+      update: (...a: unknown[]) => enterpriseMemberUpdate(...a),
       delete: (...a: unknown[]) => enterpriseMemberDelete(...a),
     },
     user: {
@@ -40,6 +42,7 @@ const {
   assertMember,
   inviteMember,
   removeMember,
+  updateMemberRole,
 } = await import('./enterprise.service.js')
 
 describe('enterprise.service', () => {
@@ -201,6 +204,78 @@ describe('enterprise.service', () => {
       await removeMember('e1', 'actor-1', 'm-mech')
 
       expect(enterpriseMemberDelete).toHaveBeenCalledWith({ where: { id: 'm-mech' } })
+    })
+  })
+
+  describe('updateMemberRole', () => {
+    it('promeut un mécanicien en gestionnaire', async () => {
+      enterpriseMemberFindUnique
+        .mockResolvedValueOnce({ role: 'OWNER' }) // acteur
+        .mockResolvedValueOnce({ id: 'm-mech', enterpriseId: 'e1', userId: 'u-mech', role: 'MECHANIC' })
+      enterpriseMemberUpdate.mockResolvedValueOnce({ id: 'm-mech', role: 'MANAGER' })
+
+      const res = await updateMemberRole('e1', 'actor-1', 'm-mech', 'MANAGER')
+
+      expect(enterpriseMemberUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'm-mech' }, data: { role: 'MANAGER' } }),
+      )
+      expect(res.role).toBe('MANAGER')
+    })
+
+    it('refuse un MANAGER : sinon il se promeut lui-même propriétaire', async () => {
+      enterpriseMemberFindUnique.mockResolvedValueOnce({ role: 'MANAGER' })
+
+      await expect(updateMemberRole('e1', 'actor-1', 'm-x', 'OWNER')).rejects.toMatchObject({
+        statusCode: 403,
+        code: 'ENTERPRISE_INSUFFICIENT_ROLE',
+      })
+      expect(enterpriseMemberUpdate).not.toHaveBeenCalled()
+    })
+
+    it('refuse de rétrograder le dernier propriétaire', async () => {
+      enterpriseMemberFindUnique
+        .mockResolvedValueOnce({ role: 'OWNER' })
+        .mockResolvedValueOnce({ id: 'm-owner', enterpriseId: 'e1', userId: 'u-owner', role: 'OWNER' })
+      enterpriseMemberCount.mockResolvedValueOnce(1)
+
+      await expect(updateMemberRole('e1', 'actor-1', 'm-owner', 'MANAGER')).rejects.toMatchObject({
+        statusCode: 400,
+        code: 'LAST_OWNER',
+      })
+      expect(enterpriseMemberUpdate).not.toHaveBeenCalled()
+    })
+
+    it('accepte de rétrograder un propriétaire quand il en reste un autre', async () => {
+      enterpriseMemberFindUnique
+        .mockResolvedValueOnce({ role: 'OWNER' })
+        .mockResolvedValueOnce({ id: 'm-owner2', enterpriseId: 'e1', userId: 'u2', role: 'OWNER' })
+      enterpriseMemberCount.mockResolvedValueOnce(2)
+      enterpriseMemberUpdate.mockResolvedValueOnce({ id: 'm-owner2', role: 'MANAGER' })
+
+      await updateMemberRole('e1', 'actor-1', 'm-owner2', 'MANAGER')
+
+      expect(enterpriseMemberUpdate).toHaveBeenCalled()
+    })
+
+    it("refuse un membre d'une autre entreprise", async () => {
+      enterpriseMemberFindUnique
+        .mockResolvedValueOnce({ role: 'OWNER' })
+        .mockResolvedValueOnce({ id: 'm-x', enterpriseId: 'e-autre', userId: 'u-x', role: 'MECHANIC' })
+
+      await expect(updateMemberRole('e1', 'actor-1', 'm-x', 'MANAGER')).rejects.toMatchObject({
+        statusCode: 404,
+        code: 'MEMBER_NOT_FOUND',
+      })
+    })
+
+    it('rejette un rôle identique plutôt que d’écrire pour rien', async () => {
+      enterpriseMemberFindUnique
+        .mockResolvedValueOnce({ role: 'OWNER' })
+        .mockResolvedValueOnce({ id: 'm-mech', enterpriseId: 'e1', userId: 'u', role: 'MECHANIC' })
+
+      await expect(updateMemberRole('e1', 'actor-1', 'm-mech', 'MECHANIC')).rejects.toMatchObject({
+        code: 'MEMBER_ROLE_UNCHANGED',
+      })
     })
   })
 })

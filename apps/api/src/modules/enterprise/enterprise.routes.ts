@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import {
   createEnterpriseSchema,
   inviteMemberSchema,
+  updateMemberRoleSchema,
   fleetVehicleSchema,
   updateVehicleSchema,
   updateMileageSchema,
@@ -64,6 +65,7 @@ import {
   getEnterprise,
   inviteMember,
   listMembers,
+  updateMemberRole,
   removeMember,
   assertMember,
 } from './enterprise.service.js'
@@ -207,6 +209,28 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
       }
       const data = await inviteMember(enterpriseId, request.user.id, body)
       return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.patch(
+    '/:enterpriseId/members/:memberId',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        description: "Change le rôle d'un membre (propriétaire uniquement)",
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(updateMemberRoleSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, memberId } = request.params as {
+        enterpriseId: string
+        memberId: string
+      }
+      const { role } = request.body as { role: EnterpriseMemberRole }
+      const data = await updateMemberRole(enterpriseId, request.user.id, memberId, role)
+      return reply.send({ data })
     },
   )
 

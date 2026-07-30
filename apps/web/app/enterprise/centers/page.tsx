@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { enterpriseFetch, getActiveEnterpriseId, type MaintenanceCenter } from '@/lib/enterprise-api'
 import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { RoleGate } from '@/components/role-gate'
 
 const DAY_LABEL: Record<number, string> = {
   0: 'Dimanche',
@@ -95,12 +96,14 @@ export default function EnterpriseCentersPage() {
             Ateliers où les pièces sont livrées. Un véhicule peut être rattaché à un centre.
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink"
-        >
-          {showForm ? 'Annuler' : '+ Ajouter un centre'}
-        </button>
+        <RoleGate action="manageFleet">
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="rounded-md bg-ink-2 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink"
+          >
+            {showForm ? 'Annuler' : '+ Ajouter un centre'}
+          </button>
+        </RoleGate>
       </div>
 
       {error && (
@@ -243,12 +246,14 @@ export default function EnterpriseCentersPage() {
                     >
                       {c.active ? 'Désactiver' : 'Réactiver'}
                     </button>
-                    <button
-                      onClick={() => handleDelete(c.id)}
-                      className="rounded-sm border border-red-200 px-2 py-1 text-[11px] text-red-600 hover:bg-red-50"
-                    >
-                      Supprimer
-                    </button>
+                    <RoleGate action="manageFleet">
+                      <button
+                        onClick={() => handleDelete(c.id)}
+                        className="rounded-sm border border-red-200 px-2 py-1 text-[11px] text-red-600 hover:bg-red-50"
+                      >
+                        Supprimer
+                      </button>
+                    </RoleGate>
                   </Td>
                 </Tr>
               ))}
