@@ -15,6 +15,7 @@ import {
   LEAD_FORM_COPY,
   CUSTOMER_TYPE_OPTIONS,
   FLEET_CUSTOMER_TYPES,
+  isCustomerType,
   computeCertainty,
   type LeadCertaintySignals,
   type LeadCertaintyLevel,
@@ -802,9 +803,16 @@ function initialState(context: DevisContext, searchParams: URLSearchParams | nul
     email: context.user?.email ?? '',
     companyName: context.enterprise?.name ?? '',
     commune: context.enterprise?.commune ?? '',
+    // `?profil=` vient des cartes de segment de la vitrine : le visiteur a déjà
+    // dit qui il est en cliquant, on ne le lui redemande pas. Une valeur inconnue
+    // est ignorée (l'API refuserait un segment hors enum).
     // En mode flotte on ne connaît pas encore le segment exact (VTC, entreprise,
     // mines & BTP) : on pré-sélectionne le plus courant, le gestionnaire ajuste.
-    customerType: context.mode === 'FLEET' ? 'FLEET_COMPANY' : 'OTHER',
+    customerType: isCustomerType(qp('profil'))
+      ? qp('profil')!
+      : context.mode === 'FLEET'
+        ? 'FLEET_COMPANY'
+        : 'OTHER',
     fleetSize: null,
     consent: false,
     enterpriseId: context.enterprise?.id ?? null,

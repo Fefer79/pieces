@@ -49,6 +49,7 @@ export const canonicalFor = (slug: string) =>
   `${LOGISTIQUE_BASE_URL}${slug === '/' ? '' : slug}`
 
 export const LOGISTIQUE_NAV: Array<{ href: string; label: string }> = [
+  { href: '/logistique/flottes-vtc', label: 'Flottes VTC' },
   { href: '/logistique/comment-ca-marche', label: 'Comment ça marche' },
   { href: '/logistique/calculateur', label: 'Calculateur' },
   { href: '/logistique/faq', label: 'FAQ' },
@@ -58,16 +59,30 @@ export const LOGISTIQUE_FOOTER_NOTE =
   'Les délais et montants affichés sont des estimations de cadrage, confirmées par un devis avant toute commande. Ils n\'engagent pas de délai contractuel.'
 
 // ---------------------------------------------------------------------------
-// Hero
+// Hero — vitrine ouverte (page d'accueil, tous demandeurs)
 // ---------------------------------------------------------------------------
 
+/**
+ * La home s'adresse à tout le monde : le service ne suppose pas que le véhicule
+ * produise une recette. L'argument d'entrée est donc le coût RENDU à Abidjan,
+ * tout compris — pas l'immobilisation, qui reste l'argument du segment VTC et
+ * vit sur /logistique/flottes-vtc (VTC_HERO plus bas).
+ */
 export const LOGISTIQUE_HERO = {
   eyebrow: 'Le logisticien des pièces détachées auto en Côte d\'Ivoire',
-  title: 'Nous chiffrons l\'attente.',
-  lead: 'Une pièce introuvable à Abidjan, c\'est un véhicule à l\'arrêt. Nous comparons les options d\'approvisionnement (achat local, aérien, maritime) et nous y ajoutons le revenu perdu chaque jour d\'immobilisation.',
+  title: 'La pièce que vous ne trouvez pas à Abidjan, nous la faisons venir.',
+  lead: 'Une référence introuvable, un modèle trop récent, une marque peu distribuée : nous identifions la pièce exacte, nous la sourçons chez le fournisseur ou à l\'usine, et nous vous annonçons le coût rendu à Abidjan — fret, douane et livraison compris. Un seul interlocuteur, un seul montant.',
   ctaPrimary: { label: 'Demander une cotation', href: '/logistique/devis' },
-  ctaSecondary: { label: 'Combien coûte un véhicule à l\'arrêt ?', href: '/logistique/calculateur' },
-  audiences: ['Flottes VTC', 'Flottes d\'entreprise', 'Mines & BTP', 'Particuliers VTC'],
+  ctaSecondary: { label: 'Comment ça marche', href: '/logistique/comment-ca-marche' },
+  audiences: [
+    'Particuliers',
+    'Garages & ateliers',
+    'Flottes VTC',
+    'Flottes d\'entreprise',
+    'Mines & BTP',
+    'Concessionnaires',
+    'Importateurs',
+  ],
 }
 
 export interface ReceiptLine {
@@ -75,6 +90,122 @@ export interface ReceiptLine {
   value: string
   /** Ligne mise en avant comme le poste dominant. */
   dominant?: boolean
+}
+
+/**
+ * Composant signature « Reçu », version ouverte : la décomposition du coût rendu
+ * à Abidjan, sans immobilisation. C'est la règle DESIGN.md « décomposition de
+ * prix explicite » appliquée à l'import, et elle vaut pour tous les demandeurs.
+ * Même pièce d'exemple que le reçu VTC, pour que les deux pages se répondent.
+ */
+export const LOGISTIQUE_RECEIPT_OPEN = {
+  header: 'Amortisseur avant · Bestune B70 2024',
+  subheader: 'Aérien standard, 5 jours',
+  lines: [
+    { label: 'Prix pièce (usine)', value: '32 000' },
+    { label: 'Fret aérien (poids taxable 4,5 kg)', value: '46 500' },
+    { label: 'Douane (20 %)', value: '15 700' },
+    { label: 'Livraison Abidjan', value: '2 000' },
+  ] as ReceiptLine[],
+  total: { label: 'Coût rendu à Abidjan', value: '96 200 FCFA' },
+  note: 'Estimation de cadrage, ± 20 %. Aucun poste caché : ce que vous voyez est ce que vous payez, douane comprise.',
+}
+
+export const LOGISTIQUE_STATS: Array<{ num: string; cap: string }> = [
+  { num: '4 h → 45 j', cap: 'six modes d\'acheminement comparés sur la même grille' },
+  { num: '17 familles', cap: 'de pièces codées en poids et en volume : vous n\'avez rien à peser' },
+  { num: '0 F', cap: 'la cotation et le devis confirmé sont gratuits, sans compte' },
+  { num: '2 h', cap: 'le retour habituel sur un devis confirmé, par WhatsApp, en heures ouvrées' },
+]
+
+/**
+ * Segments servis. Chaque carte pointe vers le formulaire avec le type de
+ * demandeur pré-sélectionné (`?profil=`), ce qui évite au visiteur de se
+ * reconnaître dans un menu déroulant après coup. Les valeurs `profil`
+ * correspondent aux `CUSTOMER_TYPE_OPTIONS` (donc à l'enum côté API).
+ */
+export const LOGISTIQUE_SEGMENTS: Array<{
+  profil: string
+  title: string
+  body: string
+  href?: string
+  hrefLabel?: string
+}> = [
+  {
+    profil: 'INDIVIDUAL',
+    title: 'Particuliers',
+    body: 'Votre voiture est immobilisée faute d\'une pièce que personne n\'a en stock à Abidjan. Nous la trouvons et nous vous donnons son coût rendu avant que vous engagiez quoi que ce soit.',
+  },
+  {
+    profil: 'GARAGE',
+    title: 'Garages & ateliers',
+    body: 'Vous avez identifié la panne, pas le fournisseur. Envoyez la référence OEM ou une photo : nous cotons, nous importons et nous livrons à l\'atelier.',
+  },
+  {
+    profil: 'FLEET_VTC',
+    title: 'Flottes VTC',
+    body: 'L\'offre la plus complète : arbitrage délai / coût, stock pré-positionné à Abidjan, entreposage et audit des dépenses.',
+    href: '/logistique/flottes-vtc',
+    hrefLabel: 'Voir l\'offre flottes VTC',
+  },
+  {
+    profil: 'FLEET_COMPANY',
+    title: 'Flottes d\'entreprise',
+    body: 'Véhicules de fonction et utilitaires : approvisionnement planifié, facturation centralisée, inventaire exportable pour votre maintenance.',
+  },
+  {
+    profil: 'MINING_BTP',
+    title: 'Mines & BTP',
+    body: 'Engins et poids lourds : pièces lourdes ou volumineuses, arbitrage entre aérien et maritime groupé, acheminement hors Abidjan chiffré dans le devis.',
+  },
+  {
+    profil: 'DEALER',
+    title: 'Concessionnaires',
+    body: 'Compléter un stock de pièces d\'origine sans immobiliser de trésorerie sur un conteneur entier : vous commandez ce dont vous avez besoin, quand vous en avez besoin.',
+  },
+  {
+    profil: 'IMPORTER',
+    title: 'Importateurs & revendeurs',
+    body: 'Groupage maritime, formalités douanières et livraison locale sur des séries de références, avec le détail poste par poste.',
+  },
+]
+
+export const LOGISTIQUE_SEGMENTS_INTRO =
+  'Le service est le même pour tous : une pièce à trouver, un coût rendu à Abidjan, un seul interlocuteur. Ce qui change, c\'est ce que nous ajoutons autour.'
+
+/**
+ * Bloc prioritaire de la home renvoyant vers la page flottes VTC. Il conserve le
+ * chiffre-choc de l'immobilisation, mais comme argument d'UN segment — plus
+ * comme thèse du site.
+ */
+export const VTC_TEASER = {
+  eyebrow: 'Offre prioritaire · Flottes VTC',
+  title: 'Si votre véhicule produit une recette, l\'attente coûte plus cher que la pièce.',
+  lead: 'Pour les flottes VTC, nous chiffrons un troisième terme que personne ne met dans la balance : le revenu perdu chaque jour d\'immobilisation. À 30 000 F par jour, cinq jours d\'attente valent 150 000 F, soit près de cinq fois le prix de l\'amortisseur.',
+  bullets: [
+    'Matrice d\'arbitrage : six modes d\'acheminement comparés en coût total réel.',
+    'Stock pré-positionné à Abidjan : la pièce disponible en 4 h, pas en 5 jours.',
+    'Entreposage et dispatch, suivis par référence OEM et par véhicule.',
+    'Audit big data annuel de vos dépenses en pièces détachées.',
+  ],
+  ctaPrimary: { label: 'Voir l\'offre flottes VTC', href: '/logistique/flottes-vtc' },
+  ctaSecondary: {
+    label: 'Calculer mon coût d\'immobilisation',
+    href: '/logistique/calculateur',
+  },
+}
+
+// ---------------------------------------------------------------------------
+// Hero — page flottes VTC (/logistique/flottes-vtc)
+// ---------------------------------------------------------------------------
+
+export const VTC_HERO = {
+  eyebrow: 'Offre flottes VTC',
+  title: 'Nous chiffrons l\'attente.',
+  lead: 'Une pièce introuvable à Abidjan, c\'est un véhicule à l\'arrêt et une recette perdue. Nous comparons les options d\'approvisionnement (achat local, aérien, maritime) et nous y ajoutons le revenu perdu chaque jour d\'immobilisation.',
+  ctaPrimary: { label: 'Demander une cotation', href: '/logistique/devis?profil=FLEET_VTC' },
+  ctaSecondary: { label: 'Combien coûte un véhicule à l\'arrêt ?', href: '/logistique/calculateur' },
+  audiences: ['Flottes VTC', 'Flottes d\'entreprise', 'Mines & BTP', 'Particuliers VTC'],
 }
 
 /**
@@ -96,7 +227,7 @@ export const LOGISTIQUE_RECEIPT = {
   note: 'Estimation de cadrage, ± 20 %. L\'immobilisation représente 61 % du coût total réel. C\'est beaucoup plus que le prix de la pièce.',
 }
 
-export const LOGISTIQUE_STATS: Array<{ num: string; cap: string }> = [
+export const VTC_STATS: Array<{ num: string; cap: string }> = [
   { num: '4 h → 45 j', cap: 'six modes d\'acheminement comparés sur la même grille' },
   { num: '30 000 F', cap: 'ce que coûte une journée d\'arrêt d\'un véhicule premium' },
   { num: '× 42', cap: 'écart entre la pièce la moins chère et le coût total le plus élevé' },
@@ -209,7 +340,17 @@ export const PUBLIC_MODES: LogisticsMode[] = [
 // Ce que nous prenons en charge
 // ---------------------------------------------------------------------------
 
-export const LOGISTIQUE_LEVERS: Array<{ line: string; title: string; body: string }> = [
+/**
+ * `fleetOnly` marque les leviers qui ne s'adressent qu'aux gestionnaires de
+ * parc : sur la vitrine ouverte ils portent une mention « Flottes » pour qu'un
+ * particulier ne se demande pas si l'offre le concerne.
+ */
+export const LOGISTIQUE_LEVERS: Array<{
+  line: string
+  title: string
+  body: string
+  fleetOnly?: boolean
+}> = [
   {
     line: 'Sourcing',
     title: 'Trouver la bonne référence',
@@ -227,11 +368,13 @@ export const LOGISTIQUE_LEVERS: Array<{ line: string; title: string; body: strin
   },
   {
     line: 'Entreposage',
+    fleetOnly: true,
     title: 'Stocker, dispatcher, livrer à la demande',
     body: 'Pour les gestionnaires de flotte, nous gardons vos pièces importées en stock à Abidjan, suivies par référence et par véhicule. La mise à disposition est facturée à l\'enlèvement ou à la livraison, selon votre cadence, sans facturation au mètre carré.',
   },
   {
     line: 'Anticipation',
+    fleetOnly: true,
     title: 'Éviter l\'urgence',
     body: 'Sur un parc homogène, nous construisons un plan d\'approvisionnement trimestriel : les pièces d\'usure arrivent par maritime avant la panne, sont stockées, puis dispatchées au fil des besoins.',
   },
@@ -464,7 +607,7 @@ export const CUSTOMER_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'MINING_BTP', label: 'Mines & BTP' },
   { value: 'INDIVIDUAL', label: 'Particulier (dont chauffeur VTC)' },
   { value: 'GARAGE', label: 'Garage / atelier' },
-  { value: 'DEALER', label: 'Concession' },
+  { value: 'DEALER', label: 'Concessionnaire' },
   { value: 'IMPORTER', label: 'Importateur / revendeur' },
   { value: 'OTHER', label: 'Autre' },
 ]
@@ -474,6 +617,14 @@ export const FLEET_CUSTOMER_TYPES = ['FLEET_VTC', 'FLEET_COMPANY', 'MINING_BTP']
 
 export const customerTypeLabel = (value: string) =>
   CUSTOMER_TYPE_OPTIONS.find((o) => o.value === value)?.label ?? value
+
+/**
+ * Valide un segment reçu par l'URL (`/logistique/devis?profil=GARAGE`). Un
+ * paramètre inconnu est ignoré plutôt que propagé : le wizard enverrait sinon
+ * une valeur refusée par l'enum côté API.
+ */
+export const isCustomerType = (value: string | null | undefined): boolean =>
+  !!value && CUSTOMER_TYPE_OPTIONS.some((o) => o.value === value)
 
 export const MERCI_COPY = {
   title: 'Demande enregistrée.',

@@ -16,6 +16,7 @@ export const LOGISTIQUE_PREFIX = '/logistique'
 /** Slugs exacts servis à la racine du sous-domaine. */
 export const LOGISTIQUE_SLUGS = [
   '/',
+  '/flottes-vtc',
   '/devis',
   '/devis/merci',
   '/calculateur',

@@ -1,56 +1,41 @@
 import Link from 'next/link'
-import {
-  computeArbitrageMatrix,
-  matchLogisticsFamily,
-  PART_LOGISTICS_FAMILIES,
-} from 'shared/constants'
+import { PART_LOGISTICS_FAMILIES } from 'shared/constants'
 import { Chip } from '@/components/ui/chip'
-import { ArbitrageTable } from '@/components/logistique/arbitrage-table'
 import {
   LOGISTIQUE_HERO,
-  LOGISTIQUE_RECEIPT,
+  LOGISTIQUE_RECEIPT_OPEN,
   LOGISTIQUE_STATS,
-  TOTAL_COST_FORMULA,
-  TOTAL_COST_INTRO,
-  DEMO_MATRIX,
-  DEMO_MATRIX_PART_QUERY,
-  SWITCH_RULE,
+  LOGISTIQUE_SEGMENTS,
+  LOGISTIQUE_SEGMENTS_INTRO,
+  VTC_TEASER,
   MODE_COPY,
   PUBLIC_MODES,
   LOGISTIQUE_LEVERS,
-  STORAGE_FLEET_BULLETS,
-  AUDIT_BIGDATA,
   WEIGHT_VOLUME_PROMISE,
   LOGISTIQUE_STEPS,
   CONFIDENCE_LEVELS,
   canonicalFor,
 } from '@/lib/logistique-content'
 
+// Vitrine ouverte : le service logistique s'adresse à tout le monde, du
+// particulier à l'importateur. L'argument d'entrée est le coût RENDU à Abidjan
+// (décomposition explicite, DESIGN.md RISK #2), pas le coût d'immobilisation —
+// celui-ci ne vaut que pour un véhicule qui produit une recette et vit
+// désormais sur /logistique/flottes-vtc, résumé ici en section prioritaire.
+
 export const metadata = {
   title: 'Pièces Logistique | Le logisticien des pièces détachées auto en Côte d\'Ivoire',
   description:
-    'Nous chiffrons l\'attente. Cotation immédiate pour importer une pièce détachée automobile à Abidjan : aérien 3 à 7 jours, maritime groupé, achat local. Chaque option comparée coût total, immobilisation du véhicule comprise.',
+    'Nous trouvons et importons la pièce détachée auto introuvable à Abidjan : aérien 3 à 7 jours, maritime groupé, achat local. Coût rendu annoncé poste par poste, douane comprise. Particuliers, garages, flottes et professionnels.',
   alternates: { canonical: canonicalFor('/') },
 }
 
 const EYEBROW = 'font-mono text-[11px] font-medium uppercase tracking-[0.1em]'
 
-const fmt = (n: number) => n.toLocaleString('fr-FR')
-
 export default function LogistiquePage() {
-  // La table de démonstration sort du MÊME moteur que le produit : impossible que
-  // le discours commercial dérive de ce que voit réellement un client.
-  const demo = computeArbitrageMatrix({
-    ...DEMO_MATRIX.input,
-    family: matchLogisticsFamily(DEMO_MATRIX_PART_QUERY),
-  })
-  const best = demo.options.find((o) => o.recommended) ?? demo.options[0]!
-  const worst = demo.options[demo.options.length - 1]!
-  const ratio = Math.round(worst.totalCost / Math.max(best.totalCost, 1))
-
   return (
     <>
-      {/* ===== Hero navy + Reçu d'arbitrage ===== */}
+      {/* ===== Hero navy + Reçu « coût rendu » ===== */}
       <section className="bg-ink text-white">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8 lg:py-24">
           <div>
@@ -87,14 +72,16 @@ export default function LogistiquePage() {
             </div>
           </div>
 
-          {/* Composant signature « Reçu » — la transparence appliquée à l'arbitrage */}
+          {/* Composant signature « Reçu » — la décomposition du coût rendu */}
           <div className="w-full max-w-md overflow-hidden rounded-lg bg-card text-ink shadow-[0_24px_60px_rgba(0,0,0,0.35)] lg:justify-self-end">
             <div className="bg-ink px-6 py-4 text-white">
-              <div className={`${EYEBROW} text-white/60`}>{LOGISTIQUE_RECEIPT.header}</div>
-              <div className="mt-1 font-display text-[22px]">{LOGISTIQUE_RECEIPT.subheader}</div>
+              <div className={`${EYEBROW} text-white/60`}>{LOGISTIQUE_RECEIPT_OPEN.header}</div>
+              <div className="mt-1 font-display text-[22px]">
+                {LOGISTIQUE_RECEIPT_OPEN.subheader}
+              </div>
             </div>
             <div className="px-6 py-5">
-              {LOGISTIQUE_RECEIPT.lines.map((l) => (
+              {LOGISTIQUE_RECEIPT_OPEN.lines.map((l) => (
                 <div key={l.label} className="flex items-baseline gap-2.5 py-1.5 text-sm">
                   <span className={'min-w-0 ' + (l.dominant ? 'font-semibold text-ink' : '')}>
                     {l.label}
@@ -111,13 +98,13 @@ export default function LogistiquePage() {
                 </div>
               ))}
               <div className="mt-3 flex items-baseline gap-2 border-t-2 border-ink pt-3.5">
-                <span className="text-[15px] font-bold">{LOGISTIQUE_RECEIPT.total.label}</span>
+                <span className="text-[15px] font-bold">{LOGISTIQUE_RECEIPT_OPEN.total.label}</span>
                 <span className="tabular ml-auto font-mono text-[22px] text-ink">
-                  {LOGISTIQUE_RECEIPT.total.value}
+                  {LOGISTIQUE_RECEIPT_OPEN.total.value}
                 </span>
               </div>
               <p className="mt-4 rounded-md bg-surface px-3.5 py-2.5 text-xs leading-relaxed text-muted">
-                {LOGISTIQUE_RECEIPT.note}
+                {LOGISTIQUE_RECEIPT_OPEN.note}
               </p>
             </div>
           </div>
@@ -136,49 +123,76 @@ export default function LogistiquePage() {
         </div>
       </div>
 
-      {/* ===== La thèse ===== */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-10 lg:px-8 lg:py-14">
-        <div className={`${EYEBROW} text-muted`}>Le troisième terme</div>
+      {/* ===== Pour qui ===== */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+        <div className={`${EYEBROW} text-muted`}>Pour qui</div>
         <h2 className="mt-3 max-w-3xl text-3xl text-ink lg:text-[38px]">
-          Le prix de la pièce n&apos;est presque jamais ce qui coûte le plus cher.
+          Une pièce à faire venir, quel que soit le nombre de véhicules.
         </h2>
-        <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">{TOTAL_COST_INTRO}</p>
-        <pre className="mt-7 overflow-x-auto rounded-md border-l-[3px] border-accent bg-card p-5 font-mono text-[12.5px] leading-relaxed text-ink">
-          {TOTAL_COST_FORMULA.join('\n')}
-        </pre>
+        <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
+          {LOGISTIQUE_SEGMENTS_INTRO}
+        </p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {LOGISTIQUE_SEGMENTS.map((s) => (
+            <article
+              key={s.profil}
+              className="flex flex-col rounded-md border border-border bg-card p-5"
+            >
+              <h3 className="text-[19px] text-ink">{s.title}</h3>
+              <p className="mt-2.5 flex-1 text-[14px] leading-relaxed text-muted">{s.body}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3.5">
+                <Link
+                  href={`/logistique/devis?profil=${s.profil}`}
+                  className="text-[13.5px] font-semibold text-accent hover:text-accent-hover"
+                >
+                  Demander une cotation →
+                </Link>
+                {s.href && (
+                  <Link
+                    href={s.href}
+                    className="text-[13.5px] font-medium text-muted underline underline-offset-2 hover:text-ink"
+                  >
+                    {s.hrefLabel}
+                  </Link>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
-      {/* ===== Matrice d'arbitrage ===== */}
-      <section className="border-y border-border bg-card">
-        <div className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
-          <div className={`${EYEBROW} text-muted`}>Exemple réel</div>
-          <h2 className="mt-3 text-3xl text-ink lg:text-[38px]">{DEMO_MATRIX.vehicle}</h2>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
-            {DEMO_MATRIX.caption}
-          </p>
-
-          <div className="mt-7">
-            <ArbitrageTable result={demo} />
-          </div>
-
-          <p className="mt-4 text-xs text-muted-2">
-            {demo.familyLabel} · {demo.weightKg} kg · {demo.volumeDm3} dm³ · estimation par famille,
-            ± 20 %. Le poids réel est confirmé auprès du fournisseur avant le devis.
-          </p>
-
-          <div className="mt-8 grid gap-5 lg:grid-cols-2">
-            <div className="rounded-md border border-border bg-surface p-5">
-              <div className={`${EYEBROW} text-muted`}>Ce que la table démontre</div>
-              <p className="mt-2 text-[15px] leading-relaxed text-ink">
-                {DEMO_MATRIX.note} Ici, l&apos;écart entre la meilleure option et la pire est de{' '}
-                <strong className="tabular font-mono">× {ratio}</strong>.
-              </p>
-            </div>
-            <div className="rounded-md border border-border bg-surface p-5">
-              <div className={`${EYEBROW} text-muted`}>La règle à retenir</div>
-              <p className="mt-2 text-[15px] leading-relaxed text-ink">{SWITCH_RULE}</p>
+      {/* ===== Section prioritaire : flottes VTC ===== */}
+      <section className="bg-ink text-white">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-20">
+          <div>
+            <div className={`${EYEBROW} text-accent`}>{VTC_TEASER.eyebrow}</div>
+            <h2 className="mt-3 text-3xl text-white lg:text-[38px]">{VTC_TEASER.title}</h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-white/65">{VTC_TEASER.lead}</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href={VTC_TEASER.ctaPrimary.href}
+                className="rounded-md bg-accent px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-accent-hover"
+              >
+                {VTC_TEASER.ctaPrimary.label} →
+              </Link>
+              <Link
+                href={VTC_TEASER.ctaSecondary.href}
+                className="rounded-md border border-white/35 px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-white/[0.08]"
+              >
+                {VTC_TEASER.ctaSecondary.label}
+              </Link>
             </div>
           </div>
+          <ul className="space-y-3.5 self-center">
+            {VTC_TEASER.bullets.map((b) => (
+              <li key={b} className="flex gap-3 text-[15px] leading-relaxed text-white/80">
+                <span aria-hidden="true" className="mt-0.5 text-accent">
+                  →
+                </span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -187,8 +201,8 @@ export default function LogistiquePage() {
         <div className={`${EYEBROW} text-muted`}>Acheminement</div>
         <h2 className="mt-3 text-3xl text-ink lg:text-[38px]">Cinq façons de faire venir la pièce.</h2>
         <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
-          Chaque mode est chiffré sur la même grille : prix de la pièce, acheminement, douane,
-          livraison et coût d&apos;immobilisation sur la durée du transit.
+          Chaque mode est chiffré sur la même grille : prix de la pièce, acheminement, douane et
+          livraison à Abidjan. Vous choisissez la ligne qui vous convient, poste par poste.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PUBLIC_MODES.map((mode) => {
@@ -215,8 +229,11 @@ export default function LogistiquePage() {
             </p>
             <p className="mt-3 border-t border-border pt-3 text-[12.5px] leading-relaxed text-muted-2">
               Réservé aux flottes sous plan d&apos;anticipation.{' '}
-              <Link href="/entreprises" className="underline underline-offset-2 hover:text-ink">
-                Voir l&apos;offre flotte
+              <Link
+                href="/logistique/flottes-vtc"
+                className="underline underline-offset-2 hover:text-ink"
+              >
+                Voir l&apos;offre flottes VTC
               </Link>
               .
             </p>
@@ -232,50 +249,19 @@ export default function LogistiquePage() {
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {LOGISTIQUE_LEVERS.map((l) => (
               <div key={l.title} className="border-t-2 border-ink pt-4">
-                <div className={`${EYEBROW} text-accent`}>{l.line}</div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`${EYEBROW} text-accent`}>{l.line}</span>
+                  {l.fleetOnly && (
+                    <span className="rounded-full border border-border-strong px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-2">
+                      Flottes
+                    </span>
+                  )}
+                </div>
                 <h3 className="mt-2 text-[19px] text-ink">{l.title}</h3>
                 <p className="mt-2 text-[14px] leading-relaxed text-muted">{l.body}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ===== Stockage & dispatch pour flottes ===== */}
-      <section className="bg-ink text-white">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-20">
-          <div>
-            <div className={`${EYEBROW} text-accent`}>Stockage & dispatch</div>
-            <h2 className="mt-3 text-3xl text-white lg:text-[38px]">
-              Vos pièces importées, gardées à Abidjan, prêtes à être dispatchées.
-            </h2>
-            <p className="mt-4 text-[15px] leading-relaxed text-white/65">
-              Pour les gestionnaires de flotte, importer en gros par maritime ne suffit pas : il
-              faut ensuite stocker, suivre par référence et par véhicule, puis dispatcher au fil des
-              besoins.
-            </p>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-              Quand la pièce attendue est déjà à Abidjan, le délai se compte en heures et non en
-              semaines : le coût d&apos;immobilisation tombe. La mise à disposition est facturée à
-              la pièce servie, pas au mètre carré.
-            </p>
-            <Link
-              href="/entreprises"
-              className="mt-6 inline-block rounded-md bg-accent px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-accent-hover"
-            >
-              Voir l&apos;offre flotte →
-            </Link>
-          </div>
-          <ul className="space-y-3.5 self-center">
-            {STORAGE_FLEET_BULLETS.map((b) => (
-              <li key={b} className="flex gap-3 text-[15px] leading-relaxed text-white/80">
-                <span aria-hidden="true" className="mt-0.5 text-accent">
-                  →
-                </span>
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 
@@ -350,68 +336,6 @@ export default function LogistiquePage() {
         </div>
       </section>
 
-      {/* ===== Audit big data ===== */}
-      <section className="border-y border-border bg-card">
-        <div className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
-          <div className={`${EYEBROW} text-muted`}>{AUDIT_BIGDATA.eyebrow}</div>
-          <h2 className="mt-3 max-w-3xl text-3xl text-ink lg:text-[38px]">
-            {AUDIT_BIGDATA.title}
-          </h2>
-          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
-            {AUDIT_BIGDATA.lead}
-          </p>
-
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
-            {AUDIT_BIGDATA.sources.map((s) => (
-              <div key={s.title} className="rounded-md border border-border bg-surface p-5">
-                <div className={`${EYEBROW} text-accent`}>{s.title}</div>
-                <p className="mt-2 text-[14.5px] leading-relaxed text-ink">{s.body}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div>
-              <div className={`${EYEBROW} text-muted`}>Ce que vous recevez</div>
-              <ul className="mt-3 space-y-2.5">
-                {AUDIT_BIGDATA.outputs.map((line) => (
-                  <li
-                    key={line}
-                    className="flex gap-3 border-t border-border pt-2.5 text-[14.5px] leading-relaxed text-ink first:border-t-0 first:pt-0"
-                  >
-                    <span aria-hidden="true" className="mt-0.5 text-accent">→</span>
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <aside className="rounded-md border border-ink bg-ink p-5 text-white">
-              <div className={`${EYEBROW} text-accent`}>Tarification</div>
-              <p className="mt-2 text-[15px] font-semibold leading-snug">
-                {AUDIT_BIGDATA.pricing.included}
-              </p>
-              <p className="mt-3 text-[15px] font-semibold leading-snug text-white/95">
-                {AUDIT_BIGDATA.pricing.onDemand}
-              </p>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-white/65">
-                {AUDIT_BIGDATA.pricing.onDemandNote}
-              </p>
-              <Link
-                href={AUDIT_BIGDATA.ctaFleetHref}
-                className="mt-5 inline-block rounded-md bg-accent px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-accent-hover"
-              >
-                {AUDIT_BIGDATA.ctaFleetLabel} →
-              </Link>
-            </aside>
-          </div>
-
-          <p className="mt-7 max-w-3xl text-[13px] leading-relaxed text-muted-2">
-            {AUDIT_BIGDATA.principle}
-          </p>
-        </div>
-      </section>
-
       {/* ===== CTA final ===== */}
       <section className="bg-ink text-white">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 text-center lg:px-8 lg:py-20">
@@ -430,14 +354,14 @@ export default function LogistiquePage() {
               Demander une cotation
             </Link>
             <Link
-              href="/logistique/calculateur"
+              href="/logistique/comment-ca-marche"
               className="rounded-md border border-white/35 px-6 py-3 text-[15px] font-semibold text-white hover:bg-white/[0.08]"
             >
-              Calculer mon coût d&apos;immobilisation
+              Comment ça marche
             </Link>
           </div>
           <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.1em] text-white/40">
-            Immobilisation de référence · {fmt(demo.downtimeCostPerDay)} F par jour
+            Cotation gratuite · sans compte · douane et livraison comprises
           </p>
         </div>
       </section>
