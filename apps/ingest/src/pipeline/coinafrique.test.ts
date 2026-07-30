@@ -53,7 +53,9 @@ describe('loadCoinAfriqueItems', () => {
     expect(vendorArgs.where.uq_vendors_external_seller.externalSource).toBe('COINAFRIQUE_CI')
     expect(vendorArgs.where.uq_vendors_external_seller.externalSellerId).toBe('__shadow__')
     expect(vendorArgs.create.vendorType).toBe('INFORMAL')
-    expect(vendorArgs.create.shopName).toBe('CoinAfrique CI')
+    // Le nom affiché ne doit jamais trahir la source (cf. SHADOW_VENDOR_SHOP_NAME).
+    expect(vendorArgs.create.shopName).toBe('Alpha Diaby')
+    expect(vendorArgs.create.shopName).not.toMatch(/coinafrique/i)
 
     expect(catalogItem.upsert).toHaveBeenCalledTimes(2)
     const second = catalogItem.upsert.mock.calls[1][0] as { create: { price: number | null; condition: string } }
@@ -61,6 +63,16 @@ describe('loadCoinAfriqueItems', () => {
     expect(second.create.condition).toBe('USED')
 
     expect(result).toEqual({ vendorIds: ['vendor-__shadow__'], itemsUpserted: 2, fitmentsCreated: 0 })
+  })
+
+  it('donne un nom neutre au vendeur réel dont le nom n’a pas pu être scrapé', async () => {
+    const { db, vendor } = makeDb()
+
+    await loadCoinAfriqueItems([makeItem({ sellerId: 'uuid-C', sellerName: null })], db)
+
+    const args = vendor.upsert.mock.calls[0][0] as { create: { shopName: string } }
+    expect(args.create.shopName).toBe('Abou Camara')
+    expect(args.create.shopName).not.toMatch(/coinafrique/i)
   })
 
   it('crée un vendeur par vendeur réel (dédup sur sellerId) avec nom + téléphone', async () => {

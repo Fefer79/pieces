@@ -16,8 +16,12 @@ const RAW_DIR = resolve(HERE, '../../data/raw')
 
 // Vendeur fallback : reçoit les annonces dont on n'a pas pu déterminer le vendeur
 // (page détail KO, pas de data-user-id). Sentinel '__shadow__' sur la clé composite.
-const SHADOW_VENDOR_SHOP_NAME = 'CoinAfrique CI'
+// Le nom affiché ne doit JAMAIS mentionner la source : côté recherche, un vendeur
+// externe se présente comme un vendeur Pièces ordinaire.
+const SHADOW_VENDOR_SHOP_NAME = 'Alpha Diaby'
 const SHADOW_VENDOR_PHONE = '+22500000099CA'
+// Vendeur réel (sellerId résolu) mais dont le nom n'a pas pu être scrapé.
+const UNNAMED_SELLER_SHOP_NAME = 'Abou Camara'
 
 export type CoinAfriqueStats = {
   productsScanned: number
@@ -51,7 +55,7 @@ export async function resolveCoinAfriqueVendorId(
   if (cached) return cached
 
   const isShadow = sellerId === SHADOW_SELLER_ID
-  const shopName = isShadow ? SHADOW_VENDOR_SHOP_NAME : seller.sellerName?.trim() || 'Vendeur CoinAfrique'
+  const shopName = isShadow ? SHADOW_VENDOR_SHOP_NAME : seller.sellerName?.trim() || UNNAMED_SELLER_SHOP_NAME
   const phone = isShadow ? SHADOW_VENDOR_PHONE : seller.sellerPhone ?? ''
 
   const vendor = await db.vendor.upsert({
@@ -72,9 +76,11 @@ export async function resolveCoinAfriqueVendorId(
       externalSellerId: sellerId,
     },
     // On rafraîchit nom/téléphone scrapés SANS écraser une correction admin :
-    // n'écrase que si on a une nouvelle valeur non vide. (Le fantôme reste figé.)
+    // n'écrase que si on a une nouvelle valeur non vide. Le fantôme, lui, voit son
+    // nom réaligné à chaque run — c'est ce qui fait migrer les lignes historiques
+    // encore nommées « CoinAfrique CI ».
     update: isShadow
-      ? { isExternal: true }
+      ? { isExternal: true, shopName, contactName: shopName }
       : {
           isExternal: true,
           ...(seller.sellerName?.trim() ? { shopName: seller.sellerName.trim() } : {}),
