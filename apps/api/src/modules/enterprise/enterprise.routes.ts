@@ -25,6 +25,7 @@ import {
   rejectPartRequestSchema,
   convertPartRequestSchema,
   partRequestMatrixSchema,
+  listEnterpriseOrdersQuerySchema,
 } from 'shared/validators'
 import {
   listBufferStock,
@@ -91,6 +92,7 @@ import {
   importDriversFromXlsx,
 } from './driver.service.js'
 import { getEnterpriseDashboard, exportEnterpriseOrdersCsv } from './dashboard.service.js'
+import { listEnterpriseOrders, type ListEnterpriseOrdersFilters } from './order.service.js'
 import { getFleetAnalytics } from './analytics.service.js'
 import { getSubscriptionForMember } from './subscription.service.js'
 import {
@@ -895,6 +897,28 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
       reply.header('Content-Type', 'text/csv; charset=utf-8')
       reply.header('Content-Disposition', `attachment; filename="pieces-fec-${yyyymm}.csv"`)
       return reply.send(csv)
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/orders',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        description: 'Commandes de la flotte (toutes pour OWNER/MANAGER/ACCOUNTANT, les siennes pour MECHANIC)',
+        security: [{ BearerAuth: [] }],
+        querystring: zodToFastify(listEnterpriseOrdersQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await listEnterpriseOrders(
+        enterpriseId,
+        request.user.id,
+        request.query as ListEnterpriseOrdersFilters,
+      )
+      return reply.send({ data })
     },
   )
 

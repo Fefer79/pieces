@@ -180,6 +180,29 @@ export const adjustBufferStockSchema = z.object({
 // Subscription packaging (Pro Flotte 3 niveaux — phase 1 fondations)
 // ---------------------------------------------------------------------------
 
+export const orderStatusSchema = z.enum([
+  'DRAFT',
+  'PENDING_PAYMENT',
+  'PAID',
+  'VENDOR_CONFIRMED',
+  'DISPATCHED',
+  'IN_TRANSIT',
+  'DELIVERED',
+  'CONFIRMED',
+  'COMPLETED',
+  'CANCELLED',
+])
+
+// Querystring : tout arrive en chaîne, d'où les coercions.
+export const listEnterpriseOrdersQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  status: orderStatusSchema.optional(),
+  vehicleId: z.string().uuid().optional(),
+  from: z.string().datetime().optional(),
+  to: z.string().datetime().optional(),
+})
+
 export const subscriptionTierSchema = z.enum(['FREE', 'PRO_FLOTTE', 'PRO_FLOTTE_PLUS'])
 export const subscriptionStatusSchema = z.enum(['TRIALING', 'ACTIVE', 'SUSPENDED', 'CANCELLED'])
 export const billingCycleSchema = z.enum(['MONTHLY', 'ANNUAL'])

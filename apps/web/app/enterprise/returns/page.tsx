@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { apiFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { EnterpriseOrderPicker } from '@/components/enterprise-order-picker'
 
 type ReturnReason = 'DEFECTIVE' | 'WRONG_PART' | 'NOT_AS_DESCRIBED' | 'NO_LONGER_NEEDED' | 'OTHER'
 type ReturnStatus = 'REQUESTED' | 'ACCEPTED' | 'PICKED_UP' | 'INSPECTED' | 'REFUNDED' | 'REJECTED' | 'CANCELLED'
@@ -65,6 +66,7 @@ export default function EnterpriseReturnsPage() {
   const [showForm, setShowForm] = useState(false)
 
   const [orderId, setOrderId] = useState('')
+  const [orderItemId, setOrderItemId] = useState<string | null>(null)
   const [reason, setReason] = useState<ReturnReason>('DEFECTIVE')
   const [description, setDescription] = useState('')
   const [pickupAddress, setPickupAddress] = useState('')
@@ -89,6 +91,7 @@ export default function EnterpriseReturnsPage() {
     setSubmitting(true)
     setError(null)
     const payload: Record<string, unknown> = { orderId: orderId.trim(), reason }
+    if (orderItemId) payload.orderItemId = orderItemId
     if (description) payload.description = description
     if (pickupAddress) payload.pickupAddress = pickupAddress
     if (pickupContactName) payload.pickupContactName = pickupContactName
@@ -99,7 +102,7 @@ export default function EnterpriseReturnsPage() {
     })
     setSubmitting(false)
     if (!res.ok) { setError(res.message); return }
-    setOrderId(''); setDescription(''); setPickupAddress(''); setPickupContactName(''); setPickupContactPhone('')
+    setOrderId(''); setOrderItemId(null); setDescription(''); setPickupAddress(''); setPickupContactName(''); setPickupContactPhone('')
     setShowForm(false)
     load()
   }
@@ -141,16 +144,14 @@ export default function EnterpriseReturnsPage() {
         <form onSubmit={handleCreate} className="mb-6 rounded-md border border-border bg-card p-5">
           <h2 className="mb-4 font-display text-lg text-ink">Nouvelle demande</h2>
           <div className="space-y-4">
-            <Field label="ID commande *">
-              <input
-                type="text"
-                required
-                value={orderId}
-                onChange={(e) => setOrderId(e.target.value)}
-                placeholder="UUID de la commande concernée"
-                className="returns-input font-mono"
+            {enterpriseId && (
+              <EnterpriseOrderPicker
+                enterpriseId={enterpriseId}
+                orderId={orderId}
+                orderItemId={orderItemId}
+                onChange={(oid, itemId) => { setOrderId(oid); setOrderItemId(itemId) }}
               />
-            </Field>
+            )}
             <Field label="Motif *">
               <select value={reason} onChange={(e) => setReason(e.target.value as ReturnReason)} className="returns-input">
                 {(Object.keys(REASON_LABEL) as ReturnReason[]).map((r) => (

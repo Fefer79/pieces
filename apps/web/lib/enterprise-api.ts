@@ -79,6 +79,27 @@ export async function enterpriseDownload(path: string): Promise<Blob | null> {
 
 const ACTIVE_KEY = 'pieces.activeEnterpriseId'
 
+// Téléchargement authentifié hors périmètre /enterprises (devis PDF d'une
+// commande, par exemple).
+export async function apiDownload(path: string): Promise<Blob | null> {
+  const token = await getToken()
+  if (!token) return null
+  const res = await fetch(`/api/v1${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) return null
+  return res.blob()
+}
+
+export function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export function getActiveEnterpriseId(): string | null {
   if (typeof window === 'undefined') return null
   return localStorage.getItem(ACTIVE_KEY)
@@ -125,6 +146,41 @@ export type FleetVehicle = {
     deliveryDayOfWeek: number | null
   } | null
   createdAt: string
+}
+
+export type EnterpriseOrderItem = {
+  id: string
+  name: string
+  quantity: number
+  priceSnapshot: number
+  condition: 'NEW' | 'USED' | 'REFURBISHED' | null
+  partSource: 'OEM' | 'AFTERMARKET' | 'COMPATIBLE' | null
+  vendorShopName: string
+}
+
+export type EnterpriseOrder = {
+  id: string
+  status: string
+  totalAmount: number
+  deliveryFee: number
+  laborCost: number | null
+  paymentMethod: string | null
+  deliveryCommune: string | null
+  paidAt: string | null
+  createdAt: string
+  vehicle: { id: string; brand: string; model: string; year: number; plate: string | null } | null
+  initiator: { id: string; name: string | null; phone: string | null }
+  invoice: { id: string; invoiceNumber: string } | null
+  items: EnterpriseOrderItem[]
+}
+
+export type EnterpriseOrderPage = {
+  orders: EnterpriseOrder[]
+  total: number
+  page: number
+  totalPages: number
+  // 'own' quand le membre est MECHANIC : il ne voit que ses propres commandes.
+  scope: 'enterprise' | 'own'
 }
 
 export type MaintenanceCenter = {
