@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
+import { formatDocumentNumber, nextSequence } from '../erp/core/sequence.service.js'
 
 const COLOR_INK = '#0F1115'
 const COLOR_MUTED = '#6B6F76'
@@ -17,10 +18,9 @@ function dateFr(d: Date): string {
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
+/** `PCS-202607-00001`. Format historique conservé à l'identique. */
 function invoiceNumberFor(now: Date, seq: number): string {
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  return `PCS-${y}${m}-${String(seq).padStart(5, '0')}`
+  return formatDocumentNumber('PCS', now, seq)
 }
 
 /**
@@ -52,13 +52,15 @@ export async function getOrCreateInvoiceForOrder(orderId: string) {
   const totalTtc = order.totalAmount
   const { ht, tva } = splitTtc(totalTtc)
 
-  // Sequence: count invoices issued this year+month + 1
+  // Numérotation : compteur atomique, jamais un `count() + 1`.
+  //
+  // L'ancienne version lisait le nombre de factures du mois puis ajoutait 1.
+  // Deux commandes payées simultanément lisaient le même compte et
+  // construisaient le même `invoiceNumber`, contraint @unique : l'une des deux
+  // remontait une erreur et sa facture n'était jamais émise.
   const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const countThisMonth = await prisma.invoice.count({
-    where: { issuedAt: { gte: startOfMonth } },
-  })
-  const invoiceNumber = invoiceNumberFor(now, countThisMonth + 1)
+  const seq = await nextSequence('INVOICE', now)
+  const invoiceNumber = invoiceNumberFor(now, seq)
 
   return prisma.invoice.create({
     data: {

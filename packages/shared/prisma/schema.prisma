@@ -52,6 +52,7 @@ model User {
   partRequestEvents      PartRequestEvent[]      @relation("PartRequestEventActor")
   logisticsQuoteRequests LogisticsQuoteRequest[] @relation("LogisticsLeadOwner")
   assignedLogisticsLeads LogisticsQuoteRequest[] @relation("LogisticsLeadAssignee")
+  staffMember            StaffMember?            @relation("UserStaffMember")
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -178,6 +179,7 @@ enum JobType {
   ENRICHMENT_FITMENTS
   ENRICHMENT_SOURCING_SCAN
   ENRICHMENT_SOURCING_COLLECT
+  ERP_POST_SALES_JOURNAL
 }
 
 enum JobStatus {
@@ -1803,4 +1805,136 @@ model LogisticsQuoteRequestEvent {
 
   @@index([quoteRequestId, createdAt], name: "idx_logistics_lead_events_request")
   @@map("logistics_quote_request_events")
+}
+
+// ---------------------------------------------------------------------------
+// ERP / CRM interne (erp.pieces.ci) — socle
+//
+// Le RBAC interne vit à côté de `Role`, jamais dedans : `Role` pilote les
+// « espaces » client (achat, vendeur, flotte, livreur, chauffeur, liaison,
+// admin) et le `activeContext`. Les métiers internes (commercial, comptable,
+// acheteur, magasinier, ops) sont une autre dimension → `StaffMember`.
+// La matrice des capacités est du code pur : packages/shared/constants/erp-rbac.ts
+// ---------------------------------------------------------------------------
+
+enum StaffRole {
+  DIRECTION
+  COMMERCIAL
+  COMPTABLE
+  ACHETEUR
+  MAGASINIER
+  OPS_LOGISTIQUE
+  SUPPORT
+}
+
+/// Ligne d'activité — dimension analytique commune au CRM, aux ventes,
+/// aux achats et à la comptabilité. Ce n'est PAS un tenant : une seule
+/// instance ERP pilote les trois surfaces commerciales.
+enum BusinessUnit {
+  MARKETPLACE
+  FLOTTE
+  LOGISTIQUE
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model StaffMember {
+  id            String         @id @default(cuid())
+  userId        String         @unique @map("user_id")
+  user          User           @relation("UserStaffMember", fields: [userId], references: [id], onDelete: Cascade)
+  staffRole     StaffRole      @map("staff_role")
+  businessUnits BusinessUnit[] @map("business_units")
+  title         String?
+  active        Boolean        @default(true)
+  hiredAt       DateTime?      @map("hired_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  assignedTasks Task[] @relation("TaskAssignee")
+  createdTasks  Task[] @relation("TaskCreator")
+  notes         Note[] @relation("NoteAuthor")
+
+  @@index([staffRole], name: "idx_staff_members_role")
+  @@index([active], name: "idx_staff_members_active")
+  @@map("staff_members")
+}
+
+/// Tâche interne (relance commerciale, rappel de règlement, contrôle de stock…).
+/// Rattachement polymorphe volontaire : `relatedType` + `relatedId` évitent
+/// d'ajouter une FK par entité rattachable. Aucune contrainte référentielle —
+/// les cibles vivent dans des modules différents et peuvent disparaître.
+model Task {
+  id               String        @id @default(cuid())
+  title            String
+  description      String?
+  status           TaskStatus    @default(OPEN)
+  priority         TaskPriority  @default(NORMAL)
+  dueAt            DateTime?     @map("due_at")
+  businessUnit     BusinessUnit? @map("business_unit")
+  assigneeStaffId  String?       @map("assignee_staff_id")
+  assignee         StaffMember?  @relation("TaskAssignee", fields: [assigneeStaffId], references: [id], onDelete: SetNull)
+  createdByStaffId String?       @map("created_by_staff_id")
+  createdBy        StaffMember?  @relation("TaskCreator", fields: [createdByStaffId], references: [id], onDelete: SetNull)
+  relatedType      String?       @map("related_type")
+  relatedId        String?       @map("related_id")
+  completedAt      DateTime?     @map("completed_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  @@index([assigneeStaffId, status], name: "idx_tasks_assignee_status")
+  @@index([status, dueAt], name: "idx_tasks_status_due")
+  @@index([relatedType, relatedId], name: "idx_tasks_related")
+  @@map("tasks")
+}
+
+/// Note libre rattachée à n'importe quelle entité (même rattachement
+/// polymorphe que Task). Distincte d'`ActivityLog`, qui est un journal d'audit
+/// machine : ici c'est de la saisie humaine.
+model Note {
+  id            String      @id @default(cuid())
+  body          String
+  authorStaffId String      @map("author_staff_id")
+  author        StaffMember @relation("NoteAuthor", fields: [authorStaffId], references: [id], onDelete: Cascade)
+  relatedType   String      @map("related_type")
+  relatedId     String      @map("related_id")
+  pinned        Boolean     @default(false)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@index([relatedType, relatedId, createdAt], name: "idx_notes_related")
+  @@map("notes")
+}
+
+/// Compteur de numérotation atomique (factures, avoirs, bons de commande,
+/// réceptions, écritures, opportunités…).
+///
+/// ⚠ Le seul accès autorisé est `nextSequence()` (apps/api/src/modules/erp/core/
+/// sequence.service.ts), qui fait un `INSERT … ON CONFLICT DO UPDATE …
+/// RETURNING`. Ne jamais lire puis écrire en deux requêtes : c'est exactement
+/// la course que ce modèle vient corriger (l'ancien `invoice.count() + 1`
+/// pouvait attribuer deux fois le même numéro de facture).
+///
+/// `year`/`month` à 0 pour les compteurs non périodiques.
+model Sequence {
+  id        String   @id @default(cuid())
+  key       String
+  year      Int
+  month     Int
+  nextValue Int      @default(1) @map("next_value")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([key, year, month], name: "uq_sequence_key_period")
+  @@map("sequences")
 }

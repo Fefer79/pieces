@@ -5,6 +5,7 @@ import {
   isLogistiqueSlug,
   toLogistiqueInternalPath,
 } from './lib/logistique-routes'
+import { isErpHost, isErpPassthrough, toErpInternalPath } from './lib/erp-routes'
 
 const PROTECTED_PATHS = [
   '/dashboard',
@@ -18,6 +19,7 @@ const PROTECTED_PATHS = [
   '/enterprise',
   '/liaison',
   '/driver',
+  '/erp',
 ]
 
 export async function middleware(request: NextRequest) {
@@ -56,6 +58,25 @@ export async function middleware(request: NextRequest) {
   }
 
   const host = (request.headers.get('host') ?? '').split(':')[0] ?? ''
+
+  // Sous-domaine erp.pieces.ci : ERP/CRM interne, 100 % authentifié.
+  //
+  // ⚠ ORDRE : ce bloc passe AVANT la redirection racine → /dashboard. Le cookie
+  // d'auth est scopé `.pieces.ci` (lib/cookie-domain.ts) : sans cela, tout
+  // membre de l'équipe déjà connecté serait renvoyé vers son tableau de bord
+  // acheteur et ne verrait jamais l'ERP. Même piège que pour logistique.*, mais
+  // la conclusion diffère : ici on redirige les visiteurs non connectés vers
+  // /login au lieu de servir une vitrine, puisqu'il n'y a rien de public.
+  if (isErpHost(host) && !isErpPassthrough(request.nextUrl.pathname)) {
+    if (!isAuthed) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('returnTo', toErpInternalPath(request.nextUrl.pathname))
+      return NextResponse.redirect(loginUrl)
+    }
+    return NextResponse.rewrite(
+      new URL(toErpInternalPath(request.nextUrl.pathname), request.url),
+    )
+  }
 
   // Sous-domaine logistique.pieces.ci : vitrine + parcours de cotation.
   //

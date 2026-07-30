@@ -131,6 +131,20 @@ export const SPACES: Space[] = [
     root: '/admin',
     reserved: 'Cet espace est réservé aux administrateurs Pièces.',
   },
+  // L'ERP porte sa propre coquille (comme /admin) : il ne passe pas par
+  // l'AppShell, donc SpaceGuard ne s'exécute jamais sur /erp. Cette entrée sert
+  // uniquement à rendre l'espace visible dans « Mes espaces » et le sélecteur —
+  // le contrôle d'accès réel est la capacité ERP côté API.
+  {
+    key: 'erp',
+    label: 'ERP',
+    description: 'Pilotage commercial, comptable et achats',
+    role: 'ADMIN',
+    matchRoles: ['ADMIN'],
+    prefix: '/erp',
+    root: '/erp',
+    reserved: 'Cet espace est réservé à l’équipe interne Pièces.',
+  },
 ]
 
 /** Espace dont `pathname` fait partie, ou null pour les routes partagées. */

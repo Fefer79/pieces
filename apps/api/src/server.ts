@@ -6,6 +6,7 @@ import { rateLimit } from './plugins/rateLimit.js'
 import { swagger } from './plugins/swagger.js'
 import { setupErrorHandler } from './plugins/errorHandler.js'
 import { auth } from './plugins/auth.js'
+import { erpAuth } from './plugins/erpAuth.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { userRoutes } from './modules/user/user.routes.js'
 import { consentRoutes } from './modules/consent/consent.routes.js'
@@ -33,6 +34,7 @@ import {
   enterpriseLogisticsRoutes,
   adminLogisticsRoutes,
 } from './modules/logistics/logistics.routes.js'
+import { erpCoreRoutes } from './modules/erp/core/erpCore.routes.js'
 import multipart from '@fastify/multipart'
 import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled, ensureEnrichmentSourcingScheduled } from './modules/queue/worker.js'
 
@@ -61,6 +63,7 @@ export function buildApp() {
   fastify.register(rateLimit)
   fastify.register(swagger)
   fastify.register(auth)
+  fastify.register(erpAuth)
   fastify.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } })
   setupErrorHandler(fastify)
 
@@ -95,6 +98,9 @@ export function buildApp() {
   // montées sous le préfixe entreprise pour rester cohérentes avec le reste.
   fastify.register(enterpriseLogisticsRoutes, { prefix: '/api/v1/enterprises' })
   fastify.register(adminLogisticsRoutes, { prefix: '/api/v1/admin/logistics' })
+  // ERP interne (erp.pieces.ci). Un registrar par domaine — on ne refait pas le
+  // monolithe du module admin.
+  fastify.register(erpCoreRoutes, { prefix: '/api/v1/erp' })
 
   return fastify
 }
