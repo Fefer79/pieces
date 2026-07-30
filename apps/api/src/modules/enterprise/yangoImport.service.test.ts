@@ -8,6 +8,7 @@ vi.stubEnv('PORT', '3001')
 
 const driverFindMany = vi.fn()
 const driverCreateMany = vi.fn()
+const vehicleFindMany = vi.fn()
 const vehicleCreateMany = vi.fn()
 const vehicleCreateManyAndReturn = vi.fn()
 const driverAssignmentUpdateMany = vi.fn()
@@ -21,6 +22,7 @@ vi.mock('../../lib/prisma.js', () => ({
       createMany: (...a: unknown[]) => driverCreateMany(...a),
     },
     vehicle: {
+      findMany: (...a: unknown[]) => vehicleFindMany(...a),
       createMany: (...a: unknown[]) => vehicleCreateMany(...a),
       createManyAndReturn: (...a: unknown[]) => vehicleCreateManyAndReturn(...a),
     },
@@ -46,6 +48,7 @@ function row(name: string, tel: string, permis: string, veh: string, plaque: str
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vehicleFindMany.mockResolvedValue([])
   enterpriseMemberFindUnique.mockResolvedValue({ role: 'OWNER' })
   driverFindMany.mockResolvedValue([]) // 1er appel : téléphones existants (aucun)
   driverCreateMany.mockResolvedValue({ count: 0 })

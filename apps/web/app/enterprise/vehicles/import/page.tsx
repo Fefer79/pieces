@@ -7,6 +7,8 @@ import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 
 type ImportResult = {
   created: number
+  // Véhicules déjà dans le parc : un réimport n'est pas une erreur.
+  skipped?: number
   assigned?: number
   errors: { line: number; message: string }[]
 }
@@ -115,6 +117,14 @@ Renault,Master,2020,CD-5678-CI,45000,LIVRAISON,Treichville,Awa Traoré`}
               <> · <span className="font-semibold tabular">{result.assigned}</span> affecté{result.assigned > 1 ? 's' : ''} à un chauffeur</>
             ) : null}.
           </p>
+          {result.skipped ? (
+            <p className="mt-1 text-sm text-muted">
+              <span className="font-semibold tabular">{result.skipped}</span> véhicule
+              {result.skipped > 1 ? 's' : ''} déjà dans le parc, ignoré
+              {result.skipped > 1 ? 's' : ''} — le même fichier peut être réimporté
+              sans dupliquer la flotte.
+            </p>
+          ) : null}
           {result.errors.length > 0 && (
             <div className="mt-4">
               <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">

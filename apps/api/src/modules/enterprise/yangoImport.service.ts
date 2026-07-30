@@ -2,6 +2,7 @@ import { AppError } from '../../lib/appError.js'
 import { normalizeHeader, extractSheetRows } from './xlsxImport.js'
 import { parseCsv, importVehicleRows } from './vehicle.service.js'
 import { importDriverRows } from './driver.service.js'
+import { canonicalPlate } from '../../lib/plate.js'
 
 // --- Import « export Yango » (un seul fichier) ---------------------------
 //
@@ -32,7 +33,12 @@ const COL = {
 
 type YangoResult = {
   drivers: { created: number; errors: { line: number; message: string }[] }
-  vehicles: { created: number; assigned?: number; errors: { line: number; message: string }[] }
+  vehicles: {
+    created: number
+    skipped?: number
+    assigned?: number
+    errors: { line: number; message: string }[]
+  }
 }
 
 export async function importYangoFromCsv(
@@ -68,11 +74,6 @@ function splitVehicle(raw: string): { brand: string; model: string } | null {
   const sp = v.indexOf(' ')
   if (sp === -1) return { brand: v, model: v } // un seul mot : marque = modèle
   return { brand: v.slice(0, sp).trim(), model: v.slice(sp + 1).trim() }
-}
-
-/** Plaque canonique : majuscules, sans espace ni tiret (« 1749-WW-CI-01 » → « 1749WWCI01 »). */
-function canonicalPlate(raw: string): string {
-  return raw.toUpperCase().replace(/[^A-Z0-9]/g, '')
 }
 
 async function importYangoRows(
@@ -121,6 +122,7 @@ async function importYangoRows(
     const split = splitVehicle(cell(row, COL.vehicle))
     if (!plateRaw || !split) continue
     const plate = canonicalPlate(plateRaw)
+    if (!plate) continue
     if (seenPlates.has(plate)) continue // plaque partagée : un seul véhicule
     seenPlates.add(plate)
     vehicleRows.push([split.brand, split.model, String(YANGO_DEFAULT_VEHICLE_YEAR), plate, 'TRANSPORT', name])
@@ -131,7 +133,7 @@ async function importYangoRows(
   const vehicles =
     vehicleRows.length > 1
       ? await importVehicleRows(enterpriseId, userId, vehicleRows, 'Aucun véhicule dans le fichier Yango')
-      : { created: 0, assigned: 0, errors: [] }
+      : { created: 0, skipped: 0, assigned: 0, errors: [] }
 
   return { drivers, vehicles }
 }

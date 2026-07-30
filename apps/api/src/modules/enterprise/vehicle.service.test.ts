@@ -52,6 +52,7 @@ vi.mock('../../lib/prisma.js', () => ({
 const {
   listEnterpriseVehicles,
   createEnterpriseVehicle,
+  updateEnterpriseVehicle,
   updateMileage,
   importVehiclesFromCsv,
   importVehiclesFromXlsx,
@@ -67,6 +68,10 @@ describe('enterprise/vehicle.service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     asOwner()
+    // Parc vide par défaut : la déduplication par plaque interroge la base
+    // avant toute création.
+    vehicleFindMany.mockResolvedValue([])
+    vehicleFindFirst.mockResolvedValue(null)
   })
 
   describe('listEnterpriseVehicles', () => {
@@ -305,6 +310,143 @@ describe('enterprise/vehicle.service', () => {
         statusCode: 403,
         code: 'ENTERPRISE_INSUFFICIENT_ROLE',
       })
+    })
+
+    describe('déduplication par plaque', () => {
+      it('réimporter le même fichier ne recrée aucun véhicule', async () => {
+        // Le parc contient déjà les deux plaques.
+        vehicleFindMany.mockResolvedValue([
+          { plateCanonical: '1749WWCI01' },
+          { plateCanonical: '31422WWCI01' },
+        ])
+        const csv = csvOf(
+          'marque,modele,annee,immatriculation',
+          'Toyota,Hilux,2018,1749-WW-CI-01',
+          'Renault,Master,2020,31422 WW CI 01',
+        )
+
+        const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+        expect(result.created).toBe(0)
+        expect(result.skipped).toBe(2)
+        expect(vehicleCreateMany).not.toHaveBeenCalled()
+        expect(vehicleCreateManyAndReturn).not.toHaveBeenCalled()
+      })
+
+      it('reconnaît la même plaque quelle que soit la ponctuation ou la casse', async () => {
+        vehicleFindMany.mockResolvedValue([{ plateCanonical: '1749WWCI01' }])
+        vehicleCreateMany.mockResolvedValueOnce({ count: 1 })
+        const csv = csvOf(
+          'marque,modele,annee,immatriculation',
+          'Toyota,Hilux,2018,1749wwci01',
+          'Renault,Master,2020,4242-AB-CI-02',
+        )
+
+        const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+        expect(result.created).toBe(1)
+        expect(result.skipped).toBe(1)
+        const data = vehicleCreateMany.mock.calls[0]![0] as {
+          data: Array<{ plate: string; plateCanonical: string }>
+        }
+        expect(data.data).toHaveLength(1)
+        expect(data.data[0]).toMatchObject({ plateCanonical: '4242ABCI02' })
+      })
+
+      it('signale une plaque en double à l’intérieur du fichier', async () => {
+        vehicleCreateMany.mockResolvedValueOnce({ count: 1 })
+        const csv = csvOf(
+          'marque,modele,annee,immatriculation',
+          'Toyota,Hilux,2018,1749-WW-CI-01',
+          'Toyota,Hilux,2018,1749WWCI01',
+        )
+
+        const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+        expect(result.created).toBe(1)
+        expect(result.skipped).toBe(1)
+        expect(result.errors[0]!.message).toMatch(/double dans le fichier/)
+      })
+
+      it('crée les véhicules sans plaque : rien à dédupliquer', async () => {
+        vehicleCreateMany.mockResolvedValueOnce({ count: 2 })
+        const csv = csvOf('marque,modele,annee', 'Toyota,Hilux,2018', 'Renault,Master,2020')
+
+        const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+        expect(result.created).toBe(2)
+        expect(result.skipped).toBe(0)
+      })
+
+      it('garde les affectations chauffeur alignées quand une ligne est ignorée', async () => {
+        // Régression : le filtrage des doublons doit porter sur la liste utilisée
+        // pour apparier created[i] ↔ valid[i], sinon Awa hérite du véhicule de
+        // Koffi.
+        vehicleFindMany.mockResolvedValue([{ plateCanonical: '1749WWCI01' }])
+        vehicleCreateManyAndReturn.mockResolvedValueOnce([{ id: 'v2' }, { id: 'v3' }])
+        driverFindMany.mockResolvedValueOnce([
+          { id: 'd1', name: 'Koffi Yao' },
+          { id: 'd2', name: 'Awa Traoré' },
+          { id: 'd3', name: 'Sana Doumbia' },
+        ])
+        const csv = csvOf(
+          'marque,modele,annee,immatriculation,chauffeur',
+          'Toyota,Hilux,2018,1749-WW-CI-01,Koffi Yao', // déjà en base → ignoré
+          'Renault,Master,2020,4242-AB-CI-02,Awa Traoré',
+          'Suzuki,Dzire,2021,5353-CD-CI-03,Sana Doumbia',
+        )
+
+        const result = await importVehiclesFromCsv('e1', 'u1', csv)
+
+        expect(result.created).toBe(2)
+        expect(result.skipped).toBe(1)
+        expect(driverAssignmentCreate).toHaveBeenCalledWith({ data: { driverId: 'd2', vehicleId: 'v2' } })
+        expect(driverAssignmentCreate).toHaveBeenCalledWith({ data: { driverId: 'd3', vehicleId: 'v3' } })
+        expect(driverAssignmentCreate).not.toHaveBeenCalledWith(
+          expect.objectContaining({ data: expect.objectContaining({ driverId: 'd1' }) }),
+        )
+      })
+    })
+  })
+
+  describe('unicité de plaque hors import', () => {
+    it('refuse la création d’un véhicule dont la plaque est déjà dans la flotte', async () => {
+      vehicleFindFirst.mockResolvedValueOnce({ id: 'v-existant', plate: '1749-WW-CI-01' })
+
+      await expect(
+        createEnterpriseVehicle('e1', 'u1', {
+          brand: 'Toyota',
+          model: 'Hilux',
+          year: 2018,
+          plate: '1749wwci01',
+        }),
+      ).rejects.toMatchObject({ statusCode: 409, code: 'VEHICLE_PLATE_DUPLICATE' })
+      expect(vehicleCreate).not.toHaveBeenCalled()
+    })
+
+    it('accepte une plaque libre et stocke sa forme canonique', async () => {
+      vehicleCreate.mockResolvedValueOnce({ id: 'v1' })
+
+      await createEnterpriseVehicle('e1', 'u1', {
+        brand: 'Toyota',
+        model: 'Hilux',
+        year: 2018,
+        plate: '4242-AB-CI-02',
+      })
+
+      const arg = vehicleCreate.mock.calls[0]![0] as { data: { plateCanonical: string } }
+      expect(arg.data.plateCanonical).toBe('4242ABCI02')
+    })
+
+    it('laisse un véhicule garder sa propre plaque à la mise à jour', async () => {
+      vehicleFindFirst
+        .mockResolvedValueOnce({ id: 'v1' }) // le véhicule ciblé existe
+        .mockResolvedValueOnce(null) // aucun autre véhicule ne porte la plaque
+      vehicleUpdate.mockResolvedValueOnce({ id: 'v1' })
+
+      await updateEnterpriseVehicle('e1', 'u1', 'v1', { plate: '1749-WW-CI-01' })
+
+      expect(vehicleUpdate).toHaveBeenCalled()
     })
   })
 

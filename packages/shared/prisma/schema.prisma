@@ -784,6 +784,9 @@ model Vehicle {
   year             Int
   vin              String?
   plate            String?
+  // Plaque normalisée (majuscules, sans séparateur) : clé de déduplication du
+  // parc. Voir apps/api/src/lib/plate.ts — `plate` reste la saisie d'origine.
+  plateCanonical   String?            @map("plate_canonical")
   engine           String?
   mileage          Int?
   mileageUpdatedAt DateTime?          @map("mileage_updated_at")
@@ -805,6 +808,7 @@ model Vehicle {
   @@index([userId], name: "idx_vehicles_user")
   @@index([enterpriseId], name: "idx_vehicles_enterprise")
   @@index([plate], name: "idx_vehicles_plate")
+  @@index([enterpriseId, plateCanonical], name: "idx_vehicles_enterprise_plate_canonical")
   @@index([homeCenterId], name: "idx_vehicles_home_center")
   @@map("vehicles")
 }

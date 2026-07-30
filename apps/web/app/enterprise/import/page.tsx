@@ -8,7 +8,7 @@ import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 type ImportErr = { line: number; message: string }
 type YangoResult = {
   drivers: { created: number; errors: ImportErr[] }
-  vehicles: { created: number; assigned?: number; errors: ImportErr[] }
+  vehicles: { created: number; skipped?: number; assigned?: number; errors: ImportErr[] }
 }
 
 function ErrorList({ errors }: { errors: ImportErr[] }) {
@@ -139,6 +139,14 @@ export default function YangoImportPage() {
               )}
               .
             </p>
+            {result.vehicles.skipped ? (
+              <p className="mt-1 text-sm text-muted">
+                <span className="font-semibold tabular">{result.vehicles.skipped}</span> véhicule
+                {result.vehicles.skipped > 1 ? 's' : ''} déjà dans le parc, ignoré
+                {result.vehicles.skipped > 1 ? 's' : ''} — le même export Yango peut être
+                réimporté sans dupliquer la flotte.
+              </p>
+            ) : null}
             <ErrorList errors={result.vehicles.errors} />
           </div>
 

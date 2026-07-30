@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { assertMember } from './enterprise.service.js'
 import { normalizeHeader, extractSheetRows } from './xlsxImport.js'
+import { canonicalPlate } from '../../lib/plate.js'
 import { splitCategory } from 'shared/constants'
 import type { VehicleUsageType } from '@prisma/client'
 
@@ -89,14 +90,43 @@ export async function createEnterpriseVehicle(
   data: VehicleInput,
 ) {
   await assertMember(enterpriseId, userId, ['OWNER', 'MANAGER', 'MECHANIC'])
+  const plateCanonical = canonicalPlate(data.plate)
+  await assertPlateAvailable(enterpriseId, plateCanonical)
   return prisma.vehicle.create({
     data: {
       enterpriseId,
       ...data,
+      plateCanonical,
       mileageUpdatedAt: data.mileage != null ? new Date() : null,
     },
     select: SELECT,
   })
+}
+
+/**
+ * Une plaque ne peut désigner qu'un véhicule dans une flotte donnée : deux
+ * fiches pour le même véhicule faussent les coûts et sont facturées deux fois.
+ */
+async function assertPlateAvailable(
+  enterpriseId: string,
+  plateCanonical: string | null,
+  excludeVehicleId?: string,
+) {
+  if (!plateCanonical) return
+  const clash = await prisma.vehicle.findFirst({
+    where: {
+      enterpriseId,
+      plateCanonical,
+      ...(excludeVehicleId ? { id: { not: excludeVehicleId } } : {}),
+    },
+    select: { id: true, plate: true },
+  })
+  if (clash) {
+    throw new AppError('VEHICLE_PLATE_DUPLICATE', 409, {
+      message: `Un véhicule immatriculé ${clash.plate ?? plateCanonical} existe déjà dans cette flotte`,
+      details: { vehicleId: clash.id },
+    })
+  }
 }
 
 export async function updateEnterpriseVehicle(
@@ -112,10 +142,17 @@ export async function updateEnterpriseVehicle(
   })
   if (!existing) throw new AppError('VEHICLE_NOT_FOUND', 404)
 
+  // `plate` absent du patch = plaque inchangée ; présent = recalcul + contrôle.
+  const plateCanonical = 'plate' in data ? canonicalPlate(data.plate) : undefined
+  if (plateCanonical !== undefined) {
+    await assertPlateAvailable(enterpriseId, plateCanonical, vehicleId)
+  }
+
   return prisma.vehicle.update({
     where: { id: vehicleId },
     data: {
       ...data,
+      ...(plateCanonical !== undefined ? { plateCanonical } : {}),
       ...(data.mileage != null ? { mileageUpdatedAt: new Date() } : {}),
     },
     select: SELECT,
@@ -346,6 +383,9 @@ const VALID_USAGE: VehicleUsageType[] = [
 type ImportError = { line: number; message: string }
 type ImportResult = {
   created: number
+  // Lignes ignorées parce que le véhicule est déjà dans le parc. Ce n'est pas
+  // une erreur : c'est le comportement attendu d'un réimport.
+  skipped?: number
   // Nombre d'affectations chauffeur↔véhicule créées via la colonne « Chauffeur attitré ».
   assigned?: number
   errors: ImportError[]
@@ -408,33 +448,82 @@ export async function importVehicleRows(
   }
 
   if (valid.length === 0) {
-    return { created: 0, errors }
+    return { created: 0, skipped: 0, errors }
+  }
+
+  // Déduplication par plaque canonique — d'abord à l'intérieur du fichier, puis
+  // contre le parc existant. Sans ça, réimporter le même export duplique la
+  // flotte, et l'abonnement (facturé au véhicule) double avec elle.
+  //
+  // Le filtrage porte sur `valid` AVANT la construction de `data` : plus bas,
+  // l'affectation des chauffeurs apparie `created[i]` avec `valid[i]`, et tout
+  // écart entre les deux listes lierait un chauffeur au mauvais véhicule.
+  const existingPlates = new Set(
+    (
+      await prisma.vehicle.findMany({
+        where: {
+          enterpriseId,
+          plateCanonical: {
+            in: valid
+              .map((v) => canonicalPlate(v.input.plate))
+              .filter((p): p is string => p !== null),
+          },
+        },
+        select: { plateCanonical: true },
+      })
+    )
+      .map((v) => v.plateCanonical)
+      .filter((p): p is string => p !== null),
+  )
+
+  const seenInFile = new Set<string>()
+  let skipped = 0
+  const toCreate = valid.filter((v) => {
+    const plateCanonical = canonicalPlate(v.input.plate)
+    if (!plateCanonical) return true // sans plaque, on ne peut pas dédupliquer
+    if (existingPlates.has(plateCanonical)) {
+      errors.push({ line: v.line, message: `véhicule déjà enregistré : ${v.input.plate}` })
+      skipped++
+      return false
+    }
+    if (seenInFile.has(plateCanonical)) {
+      errors.push({ line: v.line, message: `plaque en double dans le fichier : ${v.input.plate}` })
+      skipped++
+      return false
+    }
+    seenInFile.add(plateCanonical)
+    return true
+  })
+
+  if (toCreate.length === 0) {
+    return { created: 0, skipped, errors }
   }
 
   const now = new Date()
-  const data = valid.map((v) => ({
+  const data = toCreate.map((v) => ({
     enterpriseId,
     ...v.input,
+    plateCanonical: canonicalPlate(v.input.plate),
     mileageUpdatedAt: v.input.mileage != null ? now : null,
   }))
 
   // Sans colonne chauffeur : insertion en masse, pas besoin des IDs créés.
-  if (valid.every((v) => !v.driverName)) {
+  if (toCreate.every((v) => !v.driverName)) {
     await prisma.vehicle.createMany({ data })
-    return { created: valid.length, errors }
+    return { created: toCreate.length, skipped, errors }
   }
 
   // Avec affectations : on récupère les IDs (createManyAndReturn préserve
   // l'ordre d'insertion sur Postgres) pour lier chaque véhicule à son chauffeur.
   const created = await prisma.vehicle.createManyAndReturn({ data, select: { id: true } })
   const links: { vehicleId: string; driverName?: string; line: number }[] = []
-  for (const [idx, v] of valid.entries()) {
+  for (const [idx, v] of toCreate.entries()) {
     const row = created[idx]
     if (row) links.push({ vehicleId: row.id, driverName: v.driverName, line: v.line })
   }
   const assigned = await assignDriversToVehicles(enterpriseId, links, errors)
 
-  return { created: valid.length, assigned, errors }
+  return { created: toCreate.length, skipped, assigned, errors }
 }
 
 /**
