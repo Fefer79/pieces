@@ -808,6 +808,10 @@ model Vehicle {
   @@index([userId], name: "idx_vehicles_user")
   @@index([enterpriseId], name: "idx_vehicles_enterprise")
   @@index([plate], name: "idx_vehicles_plate")
+  // Index de recherche. L'unicité (enterprise_id, plate_canonical) est en plus
+  // un index UNIQUE *partiel* — non exprimable en Prisma — créé par la migration
+  // 20260730_vehicle_plate_unique. Un `db:push` le supprimerait : le recréer à
+  // la main si vous prototypez avec push.
   @@index([enterpriseId, plateCanonical], name: "idx_vehicles_enterprise_plate_canonical")
   @@index([homeCenterId], name: "idx_vehicles_home_center")
   @@map("vehicles")
