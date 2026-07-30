@@ -29,6 +29,8 @@ const SELECT = {
       id: true,
       name: true,
       category: true,
+      condition: true,
+      partSource: true,
       oemReference: true,
       imageThumbUrl: true,
       vendor: { select: { id: true, shopName: true } },

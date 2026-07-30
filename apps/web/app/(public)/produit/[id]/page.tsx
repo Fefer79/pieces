@@ -391,7 +391,7 @@ export default function ProductPage() {
               {compatibility === null && item.isUniversallyCompatible && item.fitments.length === 0 && (
                 <div className="mb-4 flex items-start gap-2 rounded-md bg-card px-3.5 py-2.5 text-[13px] font-medium ring-1 ring-border">
                   <span aria-hidden>🌐</span>
-                  <span>Pièce compatible universelle — s'adapte à tous les véhicules</span>
+                  <span>Pièce compatible universelle — s&apos;adapte à tous les véhicules</span>
                 </div>
               )}
 

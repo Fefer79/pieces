@@ -12,6 +12,7 @@ import {
 } from '@/lib/enterprise-api'
 import { Price } from '@/components/ui/price'
 import { LogisticsMatrixCard } from '@/components/logistics-matrix'
+import { CatalogItemPicker, type PickedCatalogItem } from '@/components/catalog-item-picker'
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: 'Brouillon',
@@ -49,7 +50,7 @@ export default function EnterpriseRequestDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState('')
-  const [catalogItemId, setCatalogItemId] = useState('')
+  const [catalogItem, setCatalogItem] = useState<PickedCatalogItem | null>(null)
   const [selectedSource, setSelectedSource] = useState<'LOCAL' | 'AIR' | 'CARGO' | null>(null)
   const [converting, setConverting] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -81,11 +82,11 @@ export default function EnterpriseRequestDetailPage() {
   }
 
   async function convert() {
-    if (!enterpriseId || !request || !selectedSource || !catalogItemId) return
+    if (!enterpriseId || !request || !selectedSource || !catalogItem) return
     setConverting(true)
     const res = await enterpriseFetch(`/${enterpriseId}/part-requests/${requestId}/convert-to-order`, {
       method: 'POST',
-      body: JSON.stringify({ source: selectedSource, catalogItemId }),
+      body: JSON.stringify({ source: selectedSource, catalogItemId: catalogItem.id }),
     })
     setConverting(false)
     if (!res.ok) { setError(res.message); return }
@@ -235,7 +236,7 @@ export default function EnterpriseRequestDetailPage() {
             {request.status === 'APPROVED' && (
               <div className="space-y-4">
                 <p className="text-sm text-muted">
-                  Sélectionnez une option de sourcing, renseignez le catalogueItemId, puis convertissez en commande.
+                  Choisissez l&apos;option de sourcing, puis la pièce à commander.
                 </p>
                 <div className="space-y-2">
                   {SOURCING_OPTIONS.map((opt) => (
@@ -257,15 +258,16 @@ export default function EnterpriseRequestDetailPage() {
                     </button>
                   ))}
                 </div>
-                <input
-                  value={catalogItemId}
-                  onChange={(e) => setCatalogItemId(e.target.value)}
-                  placeholder="catalogItemId (UUID)"
-                  className="w-full rounded-sm border border-border bg-white px-3 py-2 text-sm font-mono"
+                <CatalogItemPicker
+                  value={catalogItem}
+                  onChange={setCatalogItem}
+                  initialQuery={request.oemReference ?? request.partName}
+                  label="Pièce à commander"
+                  required
                 />
                 <button
                   onClick={convert}
-                  disabled={converting || !selectedSource || !catalogItemId}
+                  disabled={converting || !selectedSource || !catalogItem}
                   className="w-full rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
                 >
                   {converting ? 'Conversion…' : 'Convertir en commande'}

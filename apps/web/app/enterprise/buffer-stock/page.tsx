@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { CatalogItemPicker, type PickedCatalogItem } from '@/components/catalog-item-picker'
+import { ConditionChip, PartSourceChip, type Condition, type PartSource } from '@/components/ui/chip'
 
 type StockStatus = 'OUT' | 'LOW' | 'BELOW_TARGET' | 'OK'
 
@@ -21,6 +23,8 @@ interface BufferStockRow {
     id: string
     name: string | null
     category: string | null
+    condition: Condition
+    partSource: PartSource | null
     oemReference: string | null
     imageThumbUrl: string | null
     vendor: { id: string; shopName: string }
@@ -47,7 +51,7 @@ export default function EnterpriseBufferStockPage() {
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
 
-  const [catalogItemId, setCatalogItemId] = useState('')
+  const [catalogItem, setCatalogItem] = useState<PickedCatalogItem | null>(null)
   const [targetQty, setTargetQty] = useState('')
   const [currentQty, setCurrentQty] = useState('')
   const [autoReplenish, setAutoReplenish] = useState(false)
@@ -66,11 +70,11 @@ export default function EnterpriseBufferStockPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!enterpriseId || !catalogItemId.trim() || !targetQty) return
+    if (!enterpriseId || !catalogItem || !targetQty) return
     setSubmitting(true)
     setError(null)
     const payload: Record<string, unknown> = {
-      catalogItemId: catalogItemId.trim(),
+      catalogItemId: catalogItem.id,
       targetQty: Number(targetQty),
       autoReplenish,
     }
@@ -81,7 +85,7 @@ export default function EnterpriseBufferStockPage() {
     })
     setSubmitting(false)
     if (!res.ok) { setError(res.message); return }
-    setCatalogItemId(''); setTargetQty(''); setCurrentQty(''); setAutoReplenish(false)
+    setCatalogItem(null); setTargetQty(''); setCurrentQty(''); setAutoReplenish(false)
     setShowForm(false)
     load()
   }
@@ -140,17 +144,15 @@ export default function EnterpriseBufferStockPage() {
       {showForm && (
         <form onSubmit={handleCreate} className="mb-6 rounded-md border border-border bg-card p-5">
           <h2 className="mb-4 font-display text-lg text-ink">Nouvelle référence en stock</h2>
+          <div className="mb-4">
+            <CatalogItemPicker
+              value={catalogItem}
+              onChange={setCatalogItem}
+              label="Pièce à garder en stock"
+              required
+            />
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="ID pièce catalogue *">
-              <input
-                type="text"
-                required
-                value={catalogItemId}
-                onChange={(e) => setCatalogItemId(e.target.value)}
-                placeholder="UUID CatalogItem"
-                className="buf-input font-mono"
-              />
-            </Field>
             <Field label="Quantité cible *">
               <input
                 type="number"
@@ -232,8 +234,14 @@ export default function EnterpriseBufferStockPage() {
                 <Tr key={r.id}>
                   <Td className="text-ink">
                     {r.catalogItem.name ?? 'Sans nom'}
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      <ConditionChip condition={r.catalogItem.condition} />
+                      {r.catalogItem.partSource && (
+                        <PartSourceChip source={r.catalogItem.partSource} />
+                      )}
+                    </div>
                     {r.catalogItem.oemReference && (
-                      <p className="mt-0.5 font-mono text-[10px] text-muted">
+                      <p className="mt-1 font-mono text-[10px] text-muted">
                         Réf. {r.catalogItem.oemReference}
                       </p>
                     )}
