@@ -12,6 +12,10 @@ const mockOrderFindUnique = vi.fn()
 const mockGetUser = vi.fn()
 const mockUserUpsert = vi.fn()
 const mockVerifyCinetPay = vi.fn()
+const mockSubPayFindUnique = vi.fn()
+const mockSubPayUpdate = vi.fn()
+const mockSubFindFirst = vi.fn()
+const mockSubCreate = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -23,10 +27,19 @@ vi.mock('../../lib/supabase.js', () => ({
   },
 }))
 
-vi.mock('../../lib/cinetpay.js', () => ({
-  verifyCinetPayTransaction: (...args: unknown[]) => mockVerifyCinetPay(...args),
-  initPayment: vi.fn(),
-}))
+vi.mock('../../lib/cinetpay.js', async () => {
+  // Seule la vérification est bouchonnée : le reste (rapprochement opérateur,
+  // arrondi XOF) est de la logique pure dont dépend la branche abonnement.
+  const actual = await vi.importActual<typeof import('../../lib/cinetpay.js')>(
+    '../../lib/cinetpay.js',
+  )
+  return {
+    ...actual,
+    verifyCinetPayTransaction: (...args: unknown[]) => mockVerifyCinetPay(...args),
+    initPayment: vi.fn(),
+    initCinetPayPayment: vi.fn(),
+  }
+})
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
@@ -45,6 +58,16 @@ vi.mock('../../lib/prisma.js', () => ({
       create: (...args: unknown[]) => mockEscrowCreate(...args),
       findUnique: (...args: unknown[]) => mockEscrowFindUnique(...args),
     },
+    subscriptionPayment: {
+      findUnique: (...args: unknown[]) => mockSubPayFindUnique(...args),
+      update: (...args: unknown[]) => mockSubPayUpdate(...args),
+    },
+    enterpriseSubscription: {
+      findFirst: (...args: unknown[]) => mockSubFindFirst(...args),
+      create: (...args: unknown[]) => mockSubCreate(...args),
+      update: vi.fn(),
+    },
+    enterpriseSubscriptionEvent: { create: vi.fn(), createMany: vi.fn() },
   },
 }))
 
@@ -130,6 +153,69 @@ describe('Payment Routes', () => {
 
       expect(response.statusCode).toBe(200)
       expect(mockEscrowCreate).not.toHaveBeenCalled()
+    })
+
+    // Le webhook est partagé : c'est le préfixe de la référence qui décide du
+    // domaine. Une confusion ici encaisserait un abonnement sur une commande.
+    it('routes a subscription reference to the subscription flow, not to escrow', async () => {
+      mockVerifyCinetPay.mockResolvedValueOnce({
+        status: 'ACCEPTED',
+        amount: 24_500,
+        paymentMethod: 'WAVECI',
+      })
+      mockSubPayFindUnique.mockResolvedValueOnce({
+        id: 'pay-1',
+        enterpriseId: 'ent-1',
+        transactionId: 'piecesabo_pay-1_1234567890',
+        amount: 24_500,
+        tier: 'PRO_FLOTTE',
+        billingCycle: 'MONTHLY',
+        operator: 'ORANGE_MONEY',
+        status: 'PENDING',
+        periodStart: null,
+        periodEnd: null,
+      })
+      mockSubPayUpdate.mockImplementation(({ data }: { data: Record<string, unknown> }) =>
+        Promise.resolve({ id: 'pay-1', ...data }),
+      )
+      mockSubFindFirst.mockResolvedValueOnce(null)
+      mockSubCreate.mockResolvedValueOnce({ id: 'sub-new' })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/webhooks/cinetpay',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ cpm_trans_id: 'piecesabo_pay-1_1234567890', cpm_trans_status: 'ACCEPTED' }),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(mockEscrowCreate).not.toHaveBeenCalled()
+      expect(mockSubCreate).toHaveBeenCalled()
+      // l'opérateur retenu est celui confirmé par CinetPay, pas celui choisi
+      expect(mockSubPayUpdate.mock.calls[0]![0]).toMatchObject({
+        data: expect.objectContaining({ status: 'PAID', operator: 'WAVE' }),
+      })
+    })
+
+    it('marks a refused subscription payment as failed instead of leaving it pending', async () => {
+      mockVerifyCinetPay.mockResolvedValueOnce({ status: 'REFUSED', amount: 0 })
+      mockSubPayFindUnique.mockResolvedValueOnce({ id: 'pay-1', status: 'PENDING' })
+      mockSubPayUpdate.mockResolvedValueOnce({ id: 'pay-1', status: 'FAILED' })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/webhooks/cinetpay',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ cpm_trans_id: 'piecesabo_pay-1_1234567890', cpm_trans_status: 'REFUSED' }),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(mockSubPayUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ status: 'FAILED' }) }),
+      )
+      expect(mockSubCreate).not.toHaveBeenCalled()
     })
 
     it('returns 400 when transaction ID missing', async () => {

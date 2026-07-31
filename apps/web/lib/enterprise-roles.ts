@@ -27,6 +27,8 @@ const CAN = {
   viewFinance: ['OWNER', 'MANAGER', 'ACCOUNTANT'],
   /** Export FEC — pièce comptable. */
   viewAccounting: ['OWNER', 'ACCOUNTANT'],
+  /** Engager la dépense d'abonnement : payer, changer de palier. */
+  payBilling: ['OWNER', 'ACCOUNTANT'],
   /** Créer, modifier, supprimer véhicules / chauffeurs / centres / stock. */
   manageFleet: ['OWNER', 'MANAGER'],
   /** Saisie terrain : kilométrage, entretien fait, ajustement de stock. */

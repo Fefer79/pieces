@@ -95,6 +95,7 @@ Stack à trois familles, **partagée entre l'app web et les documents PDF/DOCX**
 |---|---|---|---|
 | Orange Money | `om` | `#FF6600` | Logo pill, selection highlight |
 | MTN Money | `mtn` | `#FFCC00` (texte: ink) | Logo pill |
+| Moov Money | `moov` | `#005BAA` | Logo pill |
 | Wave | `wave` | `#00BFFF` | Logo pill |
 | COD (espèces) | `cod` | `#4B4B4B` | Logo pill |
 

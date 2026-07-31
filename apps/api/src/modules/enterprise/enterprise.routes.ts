@@ -27,6 +27,8 @@ import {
   convertPartRequestSchema,
   partRequestMatrixSchema,
   listEnterpriseOrdersQuerySchema,
+  initSubscriptionPaymentSchema,
+  subscriptionQuoteQuerySchema,
 } from 'shared/validators'
 import {
   listBufferStock,
@@ -96,7 +98,14 @@ import {
 import { getEnterpriseDashboard, exportEnterpriseOrdersCsv } from './dashboard.service.js'
 import { listEnterpriseOrders, type ListEnterpriseOrdersFilters } from './order.service.js'
 import { getFleetAnalytics } from './analytics.service.js'
-import { getSubscriptionForMember } from './subscription.service.js'
+import { getSubscriptionForMember, type SubscriptionTier, type BillingCycle } from './subscription.service.js'
+import {
+  getQuoteForMember,
+  initSubscriptionPayment,
+  listSubscriptionPayments,
+  getSubscriptionPayment,
+} from './subscriptionPayment.service.js'
+import type { MobileMoneyOperator } from '../../lib/cinetpay.js'
 import {
   listInvoicesForEnterprise,
   getInvoicePdf,
@@ -850,6 +859,93 @@ export async function enterpriseRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { enterpriseId } = request.params as { enterpriseId: string }
       const data = await getSubscriptionForMember(enterpriseId, request.user.id)
+      return reply.send({ data })
+    },
+  )
+
+  // ---- Encaissement de l'abonnement (mobile money) ----------------------
+
+  fastify.get(
+    '/:enterpriseId/subscription/quote',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        description: 'Montant à régler et période couverte pour un palier + cycle donnés',
+        querystring: zodToFastify(subscriptionQuoteQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const q = request.query as { tier: SubscriptionTier; billingCycle?: BillingCycle }
+      const data = await getQuoteForMember(enterpriseId, request.user.id, {
+        tier: q.tier,
+        billingCycle: q.billingCycle ?? 'MONTHLY',
+      })
+      return reply.send({ data })
+    },
+  )
+
+  fastify.post(
+    '/:enterpriseId/subscription/payments',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        description: "Initialise un paiement d'abonnement par mobile money (CinetPay)",
+        body: zodToFastify(initSubscriptionPaymentSchema),
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const body = request.body as {
+        tier: SubscriptionTier
+        billingCycle: BillingCycle
+        operator: MobileMoneyOperator
+        payerPhone: string
+      }
+      const data = await initSubscriptionPayment(enterpriseId, request.user.id, body)
+      return reply.status(201).send({ data })
+    },
+  )
+
+  fastify.get(
+    '/:enterpriseId/subscription/payments',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        description: "Historique des paiements d'abonnement",
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId } = request.params as { enterpriseId: string }
+      const data = await listSubscriptionPayments(enterpriseId, request.user.id)
+      return reply.send({ data })
+    },
+  )
+
+  // Consulté en boucle courte au retour de CinetPay : la page de facturation
+  // attend la confirmation du webhook sans recharger tout l'abonnement.
+  fastify.get(
+    '/:enterpriseId/subscription/payments/:paymentId',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Enterprise'],
+        security: [{ BearerAuth: [] }],
+        description: "Statut d'un paiement d'abonnement",
+      },
+    },
+    async (request, reply) => {
+      const { enterpriseId, paymentId } = request.params as {
+        enterpriseId: string
+        paymentId: string
+      }
+      const data = await getSubscriptionPayment(enterpriseId, request.user.id, paymentId)
       return reply.send({ data })
     },
   )

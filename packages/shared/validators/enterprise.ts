@@ -225,3 +225,29 @@ export const updateSubscriptionSchema = z.object({
   billingCycle: billingCycleSchema.optional(),
   notes: z.string().max(500).nullable().optional(),
 })
+
+// ---- Encaissement de l'abonnement (mobile money) --------------------------
+
+/** Opérateurs mobile money encaissés en Côte d'Ivoire. */
+export const mobileMoneyOperatorSchema = z.enum([
+  'ORANGE_MONEY',
+  'MTN_MOMO',
+  'MOOV_MONEY',
+  'WAVE',
+])
+
+export const subscriptionQuoteQuerySchema = z.object({
+  tier: subscriptionTierSchema,
+  billingCycle: billingCycleSchema.default('MONTHLY'),
+})
+
+export const initSubscriptionPaymentSchema = z.object({
+  tier: subscriptionTierSchema,
+  billingCycle: billingCycleSchema.default('MONTHLY'),
+  operator: mobileMoneyOperatorSchema,
+  // Le numéro qui règle n'est pas forcément celui du compte : un gérant peut
+  // payer depuis le téléphone de la société.
+  payerPhone: z
+    .string()
+    .regex(/^\+225(01|05|07)\d{8}$/, 'Numéro ivoirien invalide (format: +225 XX XX XX XX XX)'),
+})

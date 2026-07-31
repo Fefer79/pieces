@@ -1,6 +1,11 @@
 import type { FastifyInstance } from 'fastify'
 import { confirmOrderPayment, getEscrowByOrderId } from './payment.service.js'
 import { verifyCinetPayTransaction } from '../../lib/cinetpay.js'
+import {
+  isSubscriptionTransaction,
+  confirmSubscriptionPayment,
+  markSubscriptionPaymentFailed,
+} from '../enterprise/subscriptionPayment.service.js'
 import { getOrderById } from '../order/order.service.js'
 import { requireAuth } from '../../plugins/auth.js'
 
@@ -30,6 +35,24 @@ export async function paymentRoutes(fastify: FastifyInstance) {
         return reply
           .status(401)
           .send({ error: { code: 'WEBHOOK_UNVERIFIED', message: 'Transaction non vérifiable' } })
+      }
+
+      // Deux domaines partagent ce webhook : les commandes
+      // (`pieces_{orderId}_{ts}`) et les abonnements flotte
+      // (`piecesabo_{paymentId}_{ts}`). Le préfixe décide, jamais le payload.
+      if (isSubscriptionTransaction(body.cpm_trans_id)) {
+        if (verification.status !== 'ACCEPTED') {
+          // On trace le refus : une tentative laissée en PENDING pour toujours
+          // ressemble à un paiement perdu au support.
+          await markSubscriptionPaymentFailed(body.cpm_trans_id, verification.status || 'REFUSED')
+          return reply.status(200).send({ status: 'ignored' })
+        }
+        await confirmSubscriptionPayment(
+          body.cpm_trans_id,
+          verification.amount,
+          verification.paymentMethod,
+        )
+        return reply.status(200).send({ status: 'ok' })
       }
 
       // Transaction non acceptée : on acquitte sans rien écrire.

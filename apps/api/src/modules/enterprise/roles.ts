@@ -25,6 +25,13 @@ export const FINANCE_ROLES: EnterpriseMemberRole[] = ['OWNER', 'MANAGER', 'ACCOU
 /** Comptabilité pure (FEC) — le gestionnaire n'a pas à y toucher. */
 export const ACCOUNTING_ROLES: EnterpriseMemberRole[] = ['OWNER', 'ACCOUNTANT']
 
+/**
+ * Engager la dépense d'abonnement (payer, changer de palier). Même périmètre
+ * que la comptabilité pure, et pour la même raison : le gestionnaire pilote la
+ * flotte, il n'engage pas l'entreprise auprès de Pièces.
+ */
+export const BILLING_ROLES: EnterpriseMemberRole[] = ['OWNER', 'ACCOUNTANT']
+
 /** Émettre une demande de pièce. */
 export const REQUESTER_ROLES: EnterpriseMemberRole[] = ['OWNER', 'MANAGER', 'MECHANIC']
 

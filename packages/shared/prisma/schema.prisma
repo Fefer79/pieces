@@ -144,6 +144,7 @@ enum OrderStatus {
 enum PaymentMethod {
   ORANGE_MONEY
   MTN_MOMO
+  MOOV_MONEY
   WAVE
   COD
 }
@@ -463,6 +464,7 @@ model Enterprise {
   monthlyInvoices        EnterpriseMonthlyInvoice[]
   drivers                Driver[]
   logisticsQuoteRequests LogisticsQuoteRequest[]
+  subscriptionPayments   SubscriptionPayment[]
 
   @@index([slug], name: "idx_enterprises_slug")
   @@map("enterprises")
@@ -498,6 +500,57 @@ enum SubscriptionEventKind {
   CYCLE_CHANGED
   ROI_GUARANTEE_INVOKED
   SLA_BREACH
+  PAYMENT_INITIATED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  RENEWED
+}
+
+enum SubscriptionPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+/// Encaissement d'un abonnement flotte par mobile money (CinetPay).
+///
+/// Une ligne = une tentative de paiement d'une période. On garde les tentatives
+/// échouées ou abandonnées : sans elles, impossible de répondre à « le client
+/// dit avoir payé, on ne voit rien ». `transactionId` est la référence envoyée
+/// à CinetPay et l'unique clé de rapprochement au retour du webhook.
+model SubscriptionPayment {
+  id             String                  @id @default(uuid())
+  enterpriseId   String                  @map("enterprise_id")
+  enterprise     Enterprise              @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  subscriptionId String?                 @map("subscription_id")
+  subscription   EnterpriseSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  transactionId String                    @unique @map("transaction_id")
+  amount        Int
+  tier          SubscriptionTier
+  billingCycle  BillingCycle              @map("billing_cycle")
+  // Nombre de véhicules au moment du paiement : le parc bouge, la facture non.
+  vehicleCount  Int                       @map("vehicle_count")
+  // Opérateur choisi dans notre interface. Écrasé au webhook par celui que
+  // CinetPay confirme réellement — le client peut changer d'avis sur leur page.
+  operator      PaymentMethod
+  payerPhone    String                    @map("payer_phone")
+  status        SubscriptionPaymentStatus @default(PENDING)
+  paymentUrl    String?                   @map("payment_url")
+
+  periodStart   DateTime? @map("period_start")
+  periodEnd     DateTime? @map("period_end")
+  paidAt        DateTime? @map("paid_at")
+  failureReason String?   @map("failure_reason")
+
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([enterpriseId], name: "idx_sub_payments_enterprise")
+  @@index([status], name: "idx_sub_payments_status")
+  @@map("subscription_payments")
 }
 
 model Invoice {
@@ -558,7 +611,8 @@ model EnterpriseSubscription {
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
 
-  events EnterpriseSubscriptionEvent[]
+  events   EnterpriseSubscriptionEvent[]
+  payments SubscriptionPayment[]
 
   @@index([enterpriseId], name: "idx_enterprise_subs_enterprise")
   @@index([status], name: "idx_enterprise_subs_status")
