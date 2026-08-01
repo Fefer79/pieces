@@ -52,6 +52,9 @@ model User {
   partRequestEvents      PartRequestEvent[]      @relation("PartRequestEventActor")
   logisticsQuoteRequests LogisticsQuoteRequest[] @relation("LogisticsLeadOwner")
   assignedLogisticsLeads LogisticsQuoteRequest[] @relation("LogisticsLeadAssignee")
+  crmInteractions        CrmInteraction[]
+  crmTasksAssignees      CrmTask[]               @relation("CrmTaskAssignee")
+  crmTasksCreees         CrmTask[]               @relation("CrmTaskCreator")
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -179,6 +182,7 @@ enum JobType {
   ENRICHMENT_FITMENTS
   ENRICHMENT_SOURCING_SCAN
   ENRICHMENT_SOURCING_COLLECT
+  CRM_DUE_TASKS_SCAN
 }
 
 enum JobStatus {
@@ -1683,6 +1687,93 @@ model VendorContactLink {
   @@unique([contactId, url], name: "uq_vendor_contact_link_url")
   @@index([contactId], name: "idx_vendor_contact_links_contact")
   @@map("vendor_contact_links")
+}
+
+// ---------------------------------------------------------------------------
+// CRM interne — clients & vendeurs (équipe Pièces)
+//
+// Cible polymorphe subject/subjectId (USER → users.id, VENDOR → vendors.id) :
+// même pattern que ActivityLog.targetType/targetId, pas de FK base de données.
+// ---------------------------------------------------------------------------
+
+enum CrmSubjectType {
+  USER
+  VENDOR
+}
+
+enum CrmInteractionType {
+  NOTE
+  APPEL
+  WHATSAPP
+  VISITE
+  EMAIL
+  RELANCE
+}
+
+enum CrmTaskStatus {
+  A_FAIRE
+  FAIT
+  ANNULE
+}
+
+model CrmInteraction {
+  id        String             @id @default(uuid())
+  subject   CrmSubjectType
+  subjectId String             @map("subject_id")
+  type      CrmInteractionType
+  details   String?
+  meta      Json?
+  authorId  String             @map("author_id")
+  author    User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  @@index([subject, subjectId, createdAt(sort: Desc)], name: "idx_crm_interactions_subject")
+  @@index([authorId], name: "idx_crm_interactions_author")
+  @@map("crm_interactions")
+}
+
+model CrmTask {
+  id             String         @id @default(uuid())
+  titre          String
+  notes          String?
+  subject        CrmSubjectType
+  subjectId      String         @map("subject_id")
+  statut         CrmTaskStatus  @default(A_FAIRE)
+  echeanceLe     DateTime?      @map("echeance_le")
+  rappelEnvoyeAt DateTime?      @map("rappel_envoye_at")
+  faitAt         DateTime?      @map("fait_at")
+  assigneeId     String?        @map("assignee_id")
+  assignee       User?          @relation("CrmTaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdById    String         @map("created_by_id")
+  createdBy      User           @relation("CrmTaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  @@index([statut, echeanceLe], name: "idx_crm_tasks_statut_echeance")
+  @@index([subject, subjectId], name: "idx_crm_tasks_subject")
+  @@index([assigneeId, statut], name: "idx_crm_tasks_assignee")
+  @@map("crm_tasks")
+}
+
+model CrmTag {
+  id          String             @id @default(uuid())
+  nom         String             @unique
+  couleur     String?
+  assignments CrmTagAssignment[]
+
+  @@map("crm_tags")
+}
+
+model CrmTagAssignment {
+  tagId     String         @map("tag_id")
+  tag       CrmTag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  subject   CrmSubjectType
+  subjectId String         @map("subject_id")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@id([tagId, subject, subjectId])
+  @@index([subject, subjectId], name: "idx_crm_tag_assignments_subject")
+  @@map("crm_tag_assignments")
 }
 
 // ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@ import { handleImageProcess, handleAiIdentify } from './handlers/imageProcess.js
 import { handleMaintenanceReminderScan } from './handlers/maintenanceReminder.js'
 import { handleBufferStockReplenishScan } from './handlers/bufferStockReplenish.js'
 import { handleVendorRelanceScan } from './handlers/vendorRelance.js'
+import { handleCrmDueTasksScan } from './handlers/crmDueTasks.js'
 import {
   handleEnrichmentFitments,
   handleEnrichmentSourcingScan,
@@ -18,7 +19,7 @@ type Logger = {
 }
 
 const POLL_INTERVAL = 30_000 // 30 seconds
-const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN', 'ENRICHMENT_FITMENTS', 'ENRICHMENT_SOURCING_SCAN', 'ENRICHMENT_SOURCING_COLLECT'] as const
+const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN', 'ENRICHMENT_FITMENTS', 'ENRICHMENT_SOURCING_SCAN', 'ENRICHMENT_SOURCING_COLLECT', 'CRM_DUE_TASKS_SCAN'] as const
 
 const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   IMAGE_PROCESS_VARIANTS: handleImageProcess,
@@ -29,6 +30,7 @@ const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   ENRICHMENT_FITMENTS: handleEnrichmentFitments,
   ENRICHMENT_SOURCING_SCAN: handleEnrichmentSourcingScan,
   ENRICHMENT_SOURCING_COLLECT: handleEnrichmentSourcingCollect,
+  CRM_DUE_TASKS_SCAN: handleCrmDueTasksScan,
 }
 
 /**
@@ -112,6 +114,29 @@ export async function ensureEnrichmentSourcingScheduled(logger: Logger) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     logger.error({ event: 'ENRICHMENT_SOURCING_SCHEDULE_ERROR', error: message }, 'Failed to schedule enrichment sourcing')
+  }
+}
+
+/**
+ * Idem pour le rappel quotidien des tâches CRM dues. Idempotent : un seul job
+ * PENDING/PROCESSING à la fois. Premier passage au prochain 7h00, puis le
+ * handler se replanifie chaque jour à 7h00.
+ */
+export async function ensureCrmDueTasksScheduled(logger: Logger) {
+  try {
+    const existing = await prisma.job.findFirst({
+      where: { type: 'CRM_DUE_TASKS_SCAN', status: { in: ['PENDING', 'PROCESSING'] } },
+      select: { id: true },
+    })
+    if (existing) return
+    const next7am = new Date()
+    next7am.setHours(7, 0, 0, 0)
+    if (next7am <= new Date()) next7am.setDate(next7am.getDate() + 1)
+    await enqueue('CRM_DUE_TASKS_SCAN', {}, { scheduledAt: next7am })
+    logger.info({ event: 'CRM_DUE_TASKS_SCHEDULED', scheduledAt: next7am.toISOString() }, 'CRM due tasks scan scheduled')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    logger.error({ event: 'CRM_DUE_TASKS_SCHEDULE_ERROR', error: message }, 'Failed to schedule CRM due tasks scan')
   }
 }
 

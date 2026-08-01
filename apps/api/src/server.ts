@@ -28,13 +28,14 @@ import { returnRoutes } from './modules/returns/return.routes.js'
 import { vendorContractRoutes } from './modules/vendorContract/vendorContract.routes.js'
 import { enrichmentRoutes } from './modules/enrichment/enrichment.routes.js'
 import { contactsRoutes } from './modules/contacts/contacts.routes.js'
+import { crmRoutes } from './modules/crm/crm.routes.js'
 import {
   logisticsRoutes,
   enterpriseLogisticsRoutes,
   adminLogisticsRoutes,
 } from './modules/logistics/logistics.routes.js'
 import multipart from '@fastify/multipart'
-import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled, ensureEnrichmentSourcingScheduled } from './modules/queue/worker.js'
+import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled, ensureEnrichmentSourcingScheduled, ensureCrmDueTasksScheduled } from './modules/queue/worker.js'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -90,6 +91,7 @@ export function buildApp() {
   fastify.register(vendorContractRoutes, { prefix: '/api/v1/vendor-contracts' })
   fastify.register(enrichmentRoutes, { prefix: '/api/v1/enrichments' })
   fastify.register(contactsRoutes, { prefix: '/api/v1/contacts' })
+  fastify.register(crmRoutes, { prefix: '/api/v1/admin/crm' })
   fastify.register(logisticsRoutes, { prefix: '/api/v1/logistics' })
   // Cotations logistique scopées flotte — servies par le module logistics mais
   // montées sous le préfixe entreprise pour rester cohérentes avec le reste.
@@ -115,6 +117,7 @@ const start = async () => {
     void ensureBufferReplenishScheduled(fastify.log)
     void ensureVendorRelanceScheduled(fastify.log)
     void ensureEnrichmentSourcingScheduled(fastify.log)
+    void ensureCrmDueTasksScheduled(fastify.log)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)

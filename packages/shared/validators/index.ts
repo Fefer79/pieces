@@ -140,6 +140,34 @@ export type {
   ConvertContactInput,
 } from './vendorContact'
 export {
+  crmSubjectSchema,
+  crmInteractionTypeSchema,
+  crmTaskStatusSchema,
+  crmClientSegmentSchema,
+  crmVendorSegmentSchema,
+  createCrmInteractionSchema,
+  createCrmTaskSchema,
+  updateCrmTaskSchema,
+  crmTasksQuerySchema,
+  createCrmTagSchema,
+  crmTagAssignSchema,
+  crmRelanceWhatsAppSchema,
+  crmTimelineParamsSchema,
+  crmTimelineQuerySchema,
+  crmTaskParamsSchema,
+  crmTagParamsSchema,
+} from './crm'
+export type {
+  CreateCrmInteractionInput,
+  CreateCrmTaskInput,
+  UpdateCrmTaskInput,
+  CrmTasksQuery,
+  CreateCrmTagInput,
+  CrmTagAssignInput,
+  CrmRelanceWhatsAppInput,
+  CrmTimelineQuery,
+} from './crm'
+export {
   LOGISTICS_VIN_REGEX,
   IVORIAN_PHONE_INPUT_REGEX,
   logisticsLeadStatusSchema,

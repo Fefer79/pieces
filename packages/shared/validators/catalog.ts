@@ -151,6 +151,8 @@ export const adminListQuerySchema = z.object({
   role: z.string().max(40).optional(),
   source: ingestSourceSchema.optional(),
   hasOem: z.enum(['true', 'false']).optional(),
+  tagId: z.string().uuid().optional(),
+  segment: z.string().max(40).optional(),
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(200).optional(),
 })

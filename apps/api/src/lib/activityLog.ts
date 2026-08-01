@@ -19,12 +19,17 @@ export type ActivityAction =
   | 'CONTACT_ACTIVITY_LOGGED'
   | 'CONTACT_ASSIGNED'
   | 'CONTACT_CONVERTED'
+  | 'CRM_INTERACTION_ADDED'
+  | 'CRM_TASK_CREATED'
+  | 'CRM_TASK_UPDATED'
+  | 'CRM_RELANCE_SENT'
+  | 'CRM_TAG_ASSIGNED'
 
 interface RecordParams {
   actorId: string
   actorRole: Role
   action: ActivityAction
-  targetType: 'Vendor' | 'CatalogItem' | 'PartEnrichment' | 'VendorContact'
+  targetType: 'Vendor' | 'CatalogItem' | 'PartEnrichment' | 'VendorContact' | 'User' | 'CrmTask'
   targetId?: string | null
   payload?: Record<string, unknown>
 }

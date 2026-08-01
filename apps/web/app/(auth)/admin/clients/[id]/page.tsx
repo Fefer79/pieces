@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { adminFetch, fmtFcfa } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { CrmSection } from '@/components/crm/crm-section'
 
 interface Detail {
   user: { id: string; name: string | null; phone: string | null; email: string | null; roles: string[]; activeContext: string | null; createdAt: string }
@@ -114,6 +115,10 @@ export default function AdminClientDetailPage() {
             {data.orders.length === 0 && <Tr hover={false}><Td colSpan={4} align="center" className="py-6 text-muted">Aucune commande.</Td></Tr>}
           </Tbody>
         </Table>
+      </div>
+
+      <div className="mt-4">
+        <CrmSection subject="USER" subjectId={id} />
       </div>
     </div>
   )

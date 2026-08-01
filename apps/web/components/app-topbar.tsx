@@ -12,6 +12,7 @@ const TITLES: { prefix: string; title: string }[] = [
   { prefix: '/search', title: 'Recherche' },
   { prefix: '/vehicles', title: 'Mes véhicules' },
   { prefix: '/profile', title: 'Compte' },
+  { prefix: '/admin/crm', title: 'CRM' },
   { prefix: '/admin', title: 'Administration' },
   { prefix: '/liaison', title: 'Liaison' },
   { prefix: '/enterprise', title: 'Flotte' },

@@ -14,6 +14,7 @@ const NAV = [
   { href: '/admin/enrichments', label: 'Fiches terrain' },
   { href: '/admin/vendors', label: 'Vendeurs' },
   { href: '/admin/clients', label: 'Clients' },
+  { href: '/admin/crm', label: 'CRM' },
   { href: '/admin/enterprises', label: 'Entreprises' },
   { href: '/admin/liaisons', label: 'Liaisons' },
   { href: '/admin/prospection', label: 'Prospection' },

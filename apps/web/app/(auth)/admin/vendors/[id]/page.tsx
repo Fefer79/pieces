@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { adminFetch, fmtFcfa } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { CrmSection } from '@/components/crm/crm-section'
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
@@ -235,6 +236,10 @@ export default function AdminVendorDetailPage() {
             )}
           </Tbody>
         </Table>
+      </div>
+
+      <div className="mt-6">
+        <CrmSection subject="VENDOR" subjectId={id} />
       </div>
     </div>
   )

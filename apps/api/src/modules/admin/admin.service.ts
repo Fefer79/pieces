@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client'
 import { AppError } from '../../lib/appError.js'
 import { addPhotoToItem, removePhotoFromItem, reorderItemPhotos } from '../catalog/catalog.service.js'
 import { registerWhatsAppUser, normalizeWaNumber, notifyWhatsAppUser } from '../whatsapp/whatsapp.service.js'
+import { resolveClientSegmentIds, resolveVendorSegmentIds } from '../../lib/crmSegments.js'
 import { splitCategory, subcategoryOf, CATEGORY_SEPARATOR } from 'shared/constants'
 
 // Story 9.1: Order history for user
@@ -401,8 +402,73 @@ interface AdminListQuery {
   role?: string
   source?: 'HAUTOPARTS_3H' | 'MAPA_CI' | 'JUMIA_CI' | 'COINAFRIQUE_CI' | 'ANNUAIRE_CI' | 'GLOBAL_AUTO_CI' | 'OSM' | 'GOOGLE_PLACES' | 'NHTSA' | 'WIKIPEDIA' | 'PARTSOUQ' | 'MANUAL'
   hasOem?: 'true' | 'false'
+  tagId?: string
+  segment?: string
   page?: number
   limit?: number
+}
+
+// ---------------------------------------------------------------------------
+// Filtres CRM communs aux listes clients / vendeurs (tag + segment calculé)
+// ---------------------------------------------------------------------------
+
+// Résout les ids de fiches correspondant aux filtres CRM (tag et/ou segment),
+// composés en AND. Retourne null quand aucun filtre CRM n'est demandé.
+async function resolveCrmSubjectFilter(
+  subject: 'USER' | 'VENDOR',
+  query: AdminListQuery,
+): Promise<string[] | null> {
+  let ids: string[] | null = null
+  if (query.tagId) {
+    const rows = await prisma.crmTagAssignment.findMany({
+      where: { tagId: query.tagId, subject },
+      select: { subjectId: true },
+    })
+    ids = rows.map((r) => r.subjectId)
+  }
+  if (query.segment) {
+    const segmentIds =
+      subject === 'USER'
+        ? await resolveClientSegmentIds(query.segment)
+        : await resolveVendorSegmentIds(query.segment)
+    if (ids === null) {
+      ids = segmentIds
+    } else {
+      const segmentSet = new Set(segmentIds)
+      ids = ids.filter((id) => segmentSet.has(id))
+    }
+  }
+  return ids
+}
+
+// Enrichit en batch (pas de N+1) les lignes paginées avec les noms de tags et
+// la date de dernière interaction CRM de chaque fiche.
+async function getCrmListMeta(subject: 'USER' | 'VENDOR', ids: string[]) {
+  if (ids.length === 0) {
+    return { tags: new Map<string, string[]>(), lastInteraction: new Map<string, Date>() }
+  }
+  const [assignments, lastInteractions] = await Promise.all([
+    prisma.crmTagAssignment.findMany({
+      where: { subject, subjectId: { in: ids } },
+      include: { tag: true },
+    }),
+    prisma.crmInteraction.groupBy({
+      by: ['subjectId'],
+      where: { subject, subjectId: { in: ids } },
+      _max: { createdAt: true },
+    }),
+  ])
+  const tags = new Map<string, string[]>()
+  for (const a of assignments) {
+    const list = tags.get(a.subjectId) ?? []
+    list.push(a.tag.nom)
+    tags.set(a.subjectId, list)
+  }
+  const lastInteraction = new Map<string, Date>()
+  for (const li of lastInteractions) {
+    if (li._max.createdAt) lastInteraction.set(li.subjectId, li._max.createdAt)
+  }
+  return { tags, lastInteraction }
 }
 
 export async function getAdminCatalogList(query: AdminListQuery) {
@@ -598,6 +664,9 @@ export async function getAdminVendorsList(query: AdminListQuery) {
     ]
   }
 
+  const crmIds = await resolveCrmSubjectFilter('VENDOR', query)
+  if (crmIds) where.id = { in: crmIds }
+
   const [vendors, total] = await Promise.all([
     prisma.vendor.findMany({
       where,
@@ -612,7 +681,14 @@ export async function getAdminVendorsList(query: AdminListQuery) {
     prisma.vendor.count({ where }),
   ])
 
-  return { vendors, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+  const meta = await getCrmListMeta('VENDOR', vendors.map((v) => v.id))
+  const enriched = vendors.map((v) => ({
+    ...v,
+    tags: meta.tags.get(v.id) ?? [],
+    lastInteractionAt: meta.lastInteraction.get(v.id)?.toISOString() ?? null,
+  }))
+
+  return { vendors: enriched, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
 }
 
 export async function getAdminVendorDetail(vendorId: string) {
@@ -752,6 +828,9 @@ export async function getAdminClientsList(query: AdminListQuery) {
     where.roles = { has: query.role as Prisma.UserWhereInput['roles'] extends { has?: infer R } ? R : never }
   }
 
+  const crmIds = await resolveCrmSubjectFilter('USER', query)
+  if (crmIds) where.id = { in: crmIds }
+
   const [users, total] = await Promise.all([
     prisma.user.findMany({
       where,
@@ -772,7 +851,14 @@ export async function getAdminClientsList(query: AdminListQuery) {
     prisma.user.count({ where }),
   ])
 
-  return { users, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
+  const meta = await getCrmListMeta('USER', users.map((u) => u.id))
+  const enriched = users.map((u) => ({
+    ...u,
+    tags: meta.tags.get(u.id) ?? [],
+    lastInteractionAt: meta.lastInteraction.get(u.id)?.toISOString() ?? null,
+  }))
+
+  return { users: enriched, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } }
 }
 
 export async function getAdminClientDetail(userId: string) {

@@ -1,9 +1,13 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { adminFetch, downloadCsv } from '@/lib/admin-api'
+import { crmFetch, type CrmTag } from '@/lib/crm-api'
+import { CLIENT_SEGMENT_LABELS, formatShortDate } from '@/lib/crm-utils'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { Chip } from '@/components/ui/chip'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 
 interface Client {
@@ -14,16 +18,32 @@ interface Client {
   roles: string[]
   createdAt: string
   _count: { initiatedOrders: number }
+  tags: string[]
+  lastInteractionAt: string | null
 }
 interface ListResponse {
   users: Client[]
   pagination: { page: number; limit: number; total: number; totalPages: number }
 }
 
+// `useSearchParams` (arrivée depuis le workbench CRM avec ?segment=…) impose
+// une frontière Suspense, sans quoi le prérendu de la page échoue au build.
 export default function AdminClientsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted">Chargement…</div>}>
+      <ClientsListPage />
+    </Suspense>
+  )
+}
+
+function ClientsListPage() {
+  const searchParams = useSearchParams()
   const [data, setData] = useState<ListResponse | null>(null)
   const [q, setQ] = useState('')
   const [role, setRole] = useState('')
+  const [segment, setSegment] = useState(() => searchParams.get('segment') ?? '')
+  const [tagId, setTagId] = useState('')
+  const [tags, setTags] = useState<CrmTag[]>([])
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [showRegister, setShowRegister] = useState(false)
@@ -32,11 +52,19 @@ export default function AdminClientsPage() {
     const params = new URLSearchParams()
     if (q) params.set('q', q)
     if (role) params.set('role', role)
+    if (segment) params.set('segment', segment)
+    if (tagId) params.set('tagId', tagId)
     params.set('page', String(page))
     adminFetch<ListResponse>(`/admin/clients/list?${params}`).then(setData).catch((e) => setError(e.message))
-  }, [q, role, page])
+  }, [q, role, segment, tagId, page])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    crmFetch<CrmTag[]>('/tags').then((res) => {
+      if (res.ok) setTags(res.data)
+    })
+  }, [])
 
   const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
     const res = await adminFetch<{ suggestions: PredictiveItem[] }>(
@@ -81,6 +109,18 @@ export default function AdminClientsPage() {
           <option value="ENTERPRISE">Entreprise</option>
           <option value="ADMIN">Admin</option>
         </select>
+        <select value={segment} onChange={(e) => { setPage(1); setSegment(e.target.value) }} className="rounded-sm border border-border-strong bg-card px-3 py-2 text-sm">
+          <option value="">Tous les segments</option>
+          {Object.entries(CLIENT_SEGMENT_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+        <select value={tagId} onChange={(e) => { setPage(1); setTagId(e.target.value) }} className="rounded-sm border border-border-strong bg-card px-3 py-2 text-sm">
+          <option value="">Tous les tags</option>
+          {tags.map((t) => (
+            <option key={t.id} value={t.id}>{t.nom}</option>
+          ))}
+        </select>
       </div>
       {error && <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">{error}</div>}
       {!data ? <div className="text-sm text-muted">Chargement…</div> : (
@@ -93,6 +133,8 @@ export default function AdminClientsPage() {
                   <Th>Téléphone</Th>
                   <Th>Email</Th>
                   <Th>Rôles</Th>
+                  <Th>Tags</Th>
+                  <Th>Dernière interaction</Th>
                   <Th align="right">Commandes</Th>
                 </Tr>
               </Thead>
@@ -105,10 +147,21 @@ export default function AdminClientsPage() {
                     <Td className="text-xs">{u.phone ?? '—'}</Td>
                     <Td className="text-xs">{u.email ?? '—'}</Td>
                     <Td className="text-xs">{u.roles.join(', ')}</Td>
+                    <Td>
+                      <span className="flex flex-wrap items-center gap-1">
+                        {u.tags.slice(0, 2).map((t) => (
+                          <Chip key={t} variant="plain">{t}</Chip>
+                        ))}
+                        {u.tags.length > 2 && (
+                          <span className="text-[10px] text-muted">+{u.tags.length - 2}</span>
+                        )}
+                      </span>
+                    </Td>
+                    <Td className="text-xs">{u.lastInteractionAt ? formatShortDate(u.lastInteractionAt) : '—'}</Td>
                     <Td num>{u._count.initiatedOrders}</Td>
                   </Tr>
                 ))}
-                {data.users.length === 0 && <Tr hover={false}><Td colSpan={5} align="center" className="py-6 text-muted">Aucun client.</Td></Tr>}
+                {data.users.length === 0 && <Tr hover={false}><Td colSpan={7} align="center" className="py-6 text-muted">Aucun client.</Td></Tr>}
               </Tbody>
             </Table>
           </div>

@@ -201,6 +201,7 @@ Copier `.env.example` en `.env.local` et renseigner les valeurs. Les schémas Zo
 - **Auth** : `requireAuth` lit le header `Authorization: Bearer <token>`, supporte le JWT Supabase et le token Pièces WhatsApp ; `requireRole(...)` et `requireConsent` pour les gardes
 - **Machine à états** : les commandes (`Order`) utilisent `order.stateMachine.ts` avec `canTransition()` avant toute mise à jour DB
 - **Content parsers** : les parsers de body sont enregistrés au niveau d’un plugin de route, intentionnellement scopés (ex. webhook WhatsApp HMAC avec raw body)
+- **CRM interne** : module `crm` (préfixe `/api/v1/admin/crm`, guard `ADMIN`) — timeline 360° clients/vendeurs, interactions, tâches/relances, tags, segments calculés. Cible polymorphe `subject`/`subjectId` (`USER` → `users.id`, `VENDOR` → `vendors.id`, pas de FK DB). Relances WhatsApp via `notifyWhatsAppUser` (opt-out `NotificationPreference` respecté) ; rappel quotidien des tâches dues via le job `CRM_DUE_TASKS_SCAN` (7h)
 
 ### Web (`apps/web`)
 
@@ -211,11 +212,12 @@ Copier `.env.example` en `.env.local` et renseigner les valeurs. Les schémas Zo
 - **PWA** : `public/manifest.json`, service worker Serwist, theme color `#002366`, background `#FAFAFA`
 - **Espaces** : l’UI masque le vocabulaire RBAC. La source de vérité est `apps/web/lib/spaces.ts`. Les espaces sont Achat, Vendeur, Flotte, Livreur, Chauffeur, Liaison, Administration.
 - **Vitrine flotte** : `app/(public)/entreprises/*` est servie sur le sous-domaine `flotte.pieces.ci`. Les plans flotte sont centralisés dans `apps/web/lib/fleet-plans.ts`.
+- **CRM admin** : workbench `app/(auth)/admin/crm/` + bloc `components/crm/crm-section.tsx` monté sur les fiches clients/vendeurs ; appels via `lib/crm-api.ts` (`crmFetch`, union `{ ok, data } | { ok: false, message }`), helpers purs dans `lib/crm-utils.ts`
 
 ### Base de données (`packages/shared`)
 
 - PostgreSQL, schéma Prisma dans `prisma/schema.prisma`
-- Modèles clés : `User`, `Vendor`, `CatalogItem`, `Order`, `OrderItem`, `Delivery`, `Dispute`, `EscrowTransaction`, `VehicleMake`, `VehicleModel`, `Enterprise`, `Driver`, `Job`, etc.
+- Modèles clés : `User`, `Vendor`, `CatalogItem`, `Order`, `OrderItem`, `Delivery`, `Dispute`, `EscrowTransaction`, `VehicleMake`, `VehicleModel`, `Enterprise`, `Driver`, `Job`, `CrmInteraction`, `CrmTask`, `CrmTag`, etc.
 - Enum `Role` : `BUYER`, `SELLER`, `RIDER`, `DRIVER`, `ADMIN`, `ENTERPRISE`, `LIAISON`
 - Enum `PartCondition` : `NEW`, `USED`, `REFURBISHED`, `AFTERMARKET`, `OEM`
 - Format téléphone : `+225XXXXXXXXXX`
