@@ -31,6 +31,12 @@ export type ActivityAction =
   | 'PURCHASE_ORDER_CREATED'
   | 'PURCHASE_ORDER_UPDATED'
   | 'PURCHASE_ORDER_RECEIVED'
+  | 'EQUIPE_PROFILE_UPDATED'
+  | 'OBJECTIVE_SET'
+  | 'COMMISSION_GENERATED'
+  | 'COMMISSION_UPDATED'
+  | 'COMMISSION_PAID'
+  | 'COMMISSION_CANCELLED'
 
 interface RecordParams {
   actorId: string
@@ -47,6 +53,8 @@ interface RecordParams {
     | 'StockLevel'
     | 'Supplier'
     | 'PurchaseOrder'
+    | 'AgentObjective'
+    | 'AgentCommission'
   targetId?: string | null
   payload?: Record<string, unknown>
 }

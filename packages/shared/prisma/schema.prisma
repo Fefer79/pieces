@@ -57,6 +57,9 @@ model User {
   crmTasksCreees         CrmTask[]               @relation("CrmTaskCreator")
   stockMovements         StockMovement[]
   purchaseOrdersCreated  PurchaseOrder[]         @relation("PurchaseOrderCreator")
+  teamProfile            TeamMemberProfile?
+  agentObjectives        AgentObjective[]
+  agentCommissions       AgentCommission[]
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -2115,4 +2118,81 @@ model LogisticsQuoteRequestEvent {
 
   @@index([quoteRequestId, createdAt], name: "idx_logistics_lead_events_request")
   @@map("logistics_quote_request_events")
+}
+
+// ---------------------------------------------------------------------------
+// ERP — Équipe & commissions (équipe Pièces)
+//
+// TeamMemberProfile complète User pour les membres internes (liaisons) : taux
+// de commission terrain, fonction, activation. AgentObjective fixe des cibles
+// mensuelles dont la progression est calculée en direct (jamais stockée).
+// AgentCommission est un snapshot mensuel généré depuis les commissions
+// plateforme réelles (OrderItem.commissionAmount) des vendeurs gérés par
+// l'agent (Vendor.managedByLiaisonId), puis marqué payé : il n'est jamais
+// réécrit après paiement.
+// ---------------------------------------------------------------------------
+
+enum AgentObjectiveMetric {
+  VENDEURS_GERES
+  NOUVEAUX_VENDEURS
+  PROSPECTS_CONCLUS
+  PIECES_AJOUTEES
+  INTERACTIONS_CRM
+  TACHES_FAITES
+  VISITES_TERRAIN
+}
+
+enum AgentCommissionStatus {
+  ESTIMEE
+  DUE
+  PAYEE
+  ANNULEE
+}
+
+model TeamMemberProfile {
+  id                String    @id @default(uuid())
+  userId            String    @unique @map("user_id")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fonction          String?
+  tauxCommissionPct Int       @default(10) @map("taux_commission_pct")
+  actif             Boolean   @default(true)
+  embaucheLe        DateTime? @map("embauche_le")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("team_member_profiles")
+}
+
+model AgentObjective {
+  id        String               @id @default(uuid())
+  agentId   String               @map("agent_id")
+  agent     User                 @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  periode   String               // 'YYYY-MM'
+  metrique  AgentObjectiveMetric
+  cible     Int
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime             @updatedAt @map("updated_at")
+
+  @@unique([agentId, periode, metrique])
+  @@index([periode], name: "idx_agent_objectives_periode")
+  @@map("agent_objectives")
+}
+
+model AgentCommission {
+  id          String                @id @default(uuid())
+  agentId     String                @map("agent_id")
+  agent       User                  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  periode     String                // 'YYYY-MM'
+  baseFcfa    Int                   @map("base_fcfa")
+  tauxPct     Int                   @map("taux_pct")
+  montantFcfa Int                   @map("montant_fcfa")
+  statut      AgentCommissionStatus @default(DUE)
+  paidAt      DateTime?             @map("paid_at")
+  note        String?
+  createdAt   DateTime              @default(now()) @map("created_at")
+  updatedAt   DateTime              @updatedAt @map("updated_at")
+
+  @@unique([agentId, periode])
+  @@index([periode, statut], name: "idx_agent_commissions_periode_statut")
+  @@map("agent_commissions")
 }

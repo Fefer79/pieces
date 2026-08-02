@@ -14,6 +14,7 @@ const TITLES: { prefix: string; title: string }[] = [
   { prefix: '/profile', title: 'Compte' },
   { prefix: '/admin/crm', title: 'CRM' },
   { prefix: '/admin/stock', title: 'Stock & achats' },
+  { prefix: '/admin/equipe', title: 'Équipe' },
   { prefix: '/admin', title: 'Administration' },
   { prefix: '/liaison', title: 'Liaison' },
   { prefix: '/enterprise', title: 'Flotte' },

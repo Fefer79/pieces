@@ -209,6 +209,30 @@ export type {
   EstimateLandedCostInput,
 } from './stock'
 export {
+  agentObjectiveMetricSchema,
+  agentCommissionStatusSchema,
+  periodeSchema,
+  equipeMembersQuerySchema,
+  equipeMemberParamsSchema,
+  upsertTeamProfileSchema,
+  objectivesQuerySchema,
+  setObjectiveSchema,
+  objectiveParamsSchema,
+  agentCommissionsQuerySchema,
+  generateCommissionsSchema,
+  updateAgentCommissionSchema,
+  agentCommissionParamsSchema,
+} from './equipe'
+export type {
+  EquipeMembersQuery,
+  UpsertTeamProfileInput,
+  ObjectivesQuery,
+  SetObjectiveInput,
+  AgentCommissionsQuery,
+  GenerateCommissionsInput,
+  UpdateAgentCommissionInput,
+} from './equipe'
+export {
   LOGISTICS_VIN_REGEX,
   IVORIAN_PHONE_INPUT_REGEX,
   logisticsLeadStatusSchema,

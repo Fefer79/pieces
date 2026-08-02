@@ -30,6 +30,7 @@ import { enrichmentRoutes } from './modules/enrichment/enrichment.routes.js'
 import { contactsRoutes } from './modules/contacts/contacts.routes.js'
 import { crmRoutes } from './modules/crm/crm.routes.js'
 import { stockRoutes } from './modules/stock/stock.routes.js'
+import { equipeRoutes } from './modules/equipe/equipe.routes.js'
 import {
   logisticsRoutes,
   enterpriseLogisticsRoutes,
@@ -101,6 +102,7 @@ export function buildApp() {
   fastify.register(contactsRoutes, { prefix: '/api/v1/contacts' })
   fastify.register(crmRoutes, { prefix: '/api/v1/admin/crm' })
   fastify.register(stockRoutes, { prefix: '/api/v1/admin/stock' })
+  fastify.register(equipeRoutes, { prefix: '/api/v1/admin/equipe' })
   fastify.register(logisticsRoutes, { prefix: '/api/v1/logistics' })
   // Cotations logistique scopées flotte — servies par le module logistics mais
   // montées sous le préfixe entreprise pour rester cohérentes avec le reste.

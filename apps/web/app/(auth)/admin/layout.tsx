@@ -18,6 +18,7 @@ const NAV = [
   { href: '/admin/stock', label: 'Stock & achats' },
   { href: '/admin/enterprises', label: 'Entreprises' },
   { href: '/admin/liaisons', label: 'Liaisons' },
+  { href: '/admin/equipe', label: 'Équipe' },
   { href: '/admin/prospection', label: 'Prospection' },
   { href: '/admin/logistique', label: 'Cotations logistique' },
   { href: '/admin/external-imports', label: 'Imports externes' },

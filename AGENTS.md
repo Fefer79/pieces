@@ -203,6 +203,7 @@ Copier `.env.example` en `.env.local` et renseigner les valeurs. Les schémas Zo
 - **Content parsers** : les parsers de body sont enregistrés au niveau d’un plugin de route, intentionnellement scopés (ex. webhook WhatsApp HMAC avec raw body)
 - **CRM interne** : module `crm` (préfixe `/api/v1/admin/crm`, guard `ADMIN`) — timeline 360° clients/vendeurs, interactions, tâches/relances, tags, segments calculés. Cible polymorphe `subject`/`subjectId` (`USER` → `users.id`, `VENDOR` → `vendors.id`, pas de FK DB). Relances WhatsApp via `notifyWhatsAppUser` (opt-out `NotificationPreference` respecté) ; rappel quotidien des tâches dues via le job `CRM_DUE_TASKS_SCAN` (7h)
 - **ERP Stock & achats** : module `stock` (préfixe `/api/v1/admin/stock`, guard `ADMIN`) — emplacements (`StockLocation`), niveaux par fiche/emplacement (`StockLevel`, CUMP `cumpFcfa`, seuil bas), journal `StockMovement` (RECEPTION / SORTIE_COMMANDE / AJUSTEMENT / RESTITUTION), fournisseurs (`Supplier`) et bons de commande (`PurchaseOrder`, statuts BROUILLON → ENVOYEE → EN_TRANSIT → RECEPTION_PARTIELLE → RECEPTIONNEE / ANNULEE). Estimation coût rendu entrepôt via `LOGISTICS_MODES` + `CUSTOMS_DUTY_RATE` (`shared/constants/logistics`). Sorties décrémentées à la commande payée, restitution à l’annulation si payée (`order.service.ts`), décrément multi-emplacements = première location active par `createdAt`
+- **ERP Équipe & commissions** : module `equipe` (préfixe `/api/v1/admin/equipe`, guard `ADMIN`) — membres = `User` avec rôle `LIAISON`, profil RH léger (`TeamMemberProfile`, taux de commission), objectifs mensuels (`AgentObjective`, 7 métriques à progression calculée en direct), commissions mensuelles (`AgentCommission`, statuts ESTIMEE / DUE / PAYEE / ANNULEE). Règle de calcul : `taux%` × Σ `OrderItem.commissionAmount` des commandes `COMPLETED` de la période (sur `order.createdAt`, bornes UTC — même filtre que `getAdminOverview`) dont le vendeur est actuellement géré par l’agent (`Vendor.managedByLiaisonId`) ; montant arrondi aux 100 F. Génération manuelle par période : upsert `(agentId, periode)`, ne réécrit jamais une PAYEE ni une ANNULEE ; base 0 → ESTIMEE
 
 ### Web (`apps/web`)
 
@@ -215,11 +216,12 @@ Copier `.env.example` en `.env.local` et renseigner les valeurs. Les schémas Zo
 - **Vitrine flotte** : `app/(public)/entreprises/*` est servie sur le sous-domaine `flotte.pieces.ci`. Les plans flotte sont centralisés dans `apps/web/lib/fleet-plans.ts`.
 - **CRM admin** : workbench `app/(auth)/admin/crm/` + bloc `components/crm/crm-section.tsx` monté sur les fiches clients/vendeurs ; appels via `lib/crm-api.ts` (`crmFetch`, union `{ ok, data } | { ok: false, message }`), helpers purs dans `lib/crm-utils.ts`
 - **ERP Stock admin** : pages `app/(auth)/admin/stock/` (onglets Inventaire / Achats / Fournisseurs / Mouvements via `components/stock/stock-tabs.tsx`) ; appels via `lib/stock-api.ts`, helpers purs dans `lib/stock-utils.ts` ; colonnes/chips stock aussi sur `admin/parts`
+- **ERP Équipe admin** : pages `app/(auth)/admin/equipe/` (onglets Membres / Commissions via `components/equipe/equipe-tabs.tsx`, fiche membre `[id]`) ; appels via `lib/equipe-api.ts` (`equipeFetch`), helpers purs dans `lib/equipe-utils.ts` ; formulaire de profil partagé `components/equipe/profile-form-card.tsx`
 
 ### Base de données (`packages/shared`)
 
 - PostgreSQL, schéma Prisma dans `prisma/schema.prisma`
-- Modèles clés : `User`, `Vendor`, `CatalogItem`, `Order`, `OrderItem`, `Delivery`, `Dispute`, `EscrowTransaction`, `VehicleMake`, `VehicleModel`, `Enterprise`, `Driver`, `Job`, `CrmInteraction`, `CrmTask`, `CrmTag`, `StockLocation`, `StockLevel`, `StockMovement`, `Supplier`, `PurchaseOrder`, `PurchaseOrderItem`, etc.
+- Modèles clés : `User`, `Vendor`, `CatalogItem`, `Order`, `OrderItem`, `Delivery`, `Dispute`, `EscrowTransaction`, `VehicleMake`, `VehicleModel`, `Enterprise`, `Driver`, `Job`, `CrmInteraction`, `CrmTask`, `CrmTag`, `StockLocation`, `StockLevel`, `StockMovement`, `Supplier`, `PurchaseOrder`, `PurchaseOrderItem`, `TeamMemberProfile`, `AgentObjective`, `AgentCommission`, etc.
 - Enum `Role` : `BUYER`, `SELLER`, `RIDER`, `DRIVER`, `ADMIN`, `ENTERPRISE`, `LIAISON`
 - Enum `PartCondition` : `NEW`, `USED`, `REFURBISHED`, `AFTERMARKET`, `OEM`
 - Format téléphone : `+225XXXXXXXXXX`
