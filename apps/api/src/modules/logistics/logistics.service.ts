@@ -80,11 +80,10 @@ const REFERENCE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // sans I, O, 0, 1
 export function buildReference(now = new Date()): string {
   const dd = String(now.getUTCDate()).padStart(2, '0')
   const mm = String(now.getUTCMonth() + 1).padStart(2, '0')
-  const bytes = randomBytes(4)
-  let suffix = ''
-  for (let i = 0; i < 4; i++) {
-    suffix += REFERENCE_ALPHABET[bytes[i]! % REFERENCE_ALPHABET.length]
-  }
+  const suffix = Array.from(
+    randomBytes(4),
+    (b) => REFERENCE_ALPHABET[b % REFERENCE_ALPHABET.length],
+  ).join('')
   return `LOG-${dd}${mm}-${suffix}`
 }
 

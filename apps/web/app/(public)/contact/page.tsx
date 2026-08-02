@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { BottomNav } from '@/components/bottom-nav'
 
 const WA_NUMBER = '2250706846268'
@@ -31,17 +32,17 @@ export default function ContactPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between px-6 py-3">
-          <a href="/" className="flex-shrink-0">
+          <Link href="/" className="flex-shrink-0">
             <span className="font-display text-2xl text-ink">
               Pièces<span className="text-accent">.</span>
             </span>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/browse"
             className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
           >
             Rechercher
-          </a>
+          </Link>
         </div>
       </header>
 

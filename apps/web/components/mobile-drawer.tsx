@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 
 const PUBLIC_LINKS = [
@@ -75,9 +76,9 @@ export function MobileDrawer() {
       >
         {/* Header with brand + close */}
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <a href="/" onClick={() => setOpen(false)} className="font-display text-2xl text-ink">
+          <Link href="/" onClick={() => setOpen(false)} className="font-display text-2xl text-ink">
             Pièces<span className="text-accent">.</span>
-          </a>
+          </Link>
           <button
             onClick={() => setOpen(false)}
             className="flex h-10 w-10 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface hover:text-ink"
@@ -148,12 +149,12 @@ export function MobileDrawer() {
         {/* Footer */}
         <div className="border-t border-border p-4">
           {isAuthenticated ? (
-            <a
+            <Link
               href="/browse"
               className="block rounded-md bg-accent px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
             >
               Rechercher des pièces
-            </a>
+            </Link>
           ) : (
             <a
               href="/login"

@@ -95,7 +95,7 @@ export default function OrderHistoryPage() {
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
 
-  const orders = data?.orders ?? []
+  const orders = useMemo(() => data?.orders ?? [], [data])
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {}

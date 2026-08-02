@@ -303,6 +303,8 @@ export default function VendorCatalogUploadPage() {
           </div>
           {serialPhotoPreview ? (
             <div className="flex items-center gap-3">
+              {/* Aperçu local (URL blob) : next/image ne sait pas optimiser un blob. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={serialPhotoPreview}
                 alt="Aperçu numéro de série"

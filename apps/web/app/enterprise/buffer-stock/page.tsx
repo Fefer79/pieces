@@ -1,7 +1,7 @@
 'use client'
-/* eslint-disable react-hooks/set-state-in-effect, react/no-unescaped-entities */
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { enterpriseFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
@@ -60,14 +60,14 @@ export default function EnterpriseBufferStockPage() {
 
   useEffect(() => { setEnterpriseId(getActiveEnterpriseId()) }, [])
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!enterpriseId) return
     const res = await enterpriseFetch<BufferStockRow[]>(`/${enterpriseId}/buffer-stock`)
     if (!res.ok) { setError(res.message); return }
     setRows(res.data)
-  }
+  }, [enterpriseId])
 
-  useEffect(() => { load() /* eslint-disable-next-line */ }, [enterpriseId])
+  useEffect(() => { load() }, [load])
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()

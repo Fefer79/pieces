@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { BrowseContent } from './browse-content'
 import { PartSearchAutocomplete } from './part-search-autocomplete'
 import { UniverseBar } from './universe-bar'
@@ -38,14 +39,14 @@ export function LandingPage({ children }: { children?: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto grid max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3">
           {/* Logo — desktop mirrors mobile: big mark + subtitle */}
-          <a href="/" className="flex flex-shrink-0 flex-col leading-tight">
+          <Link href="/" className="flex flex-shrink-0 flex-col leading-tight">
             <span className="font-display text-3xl text-ink">
               Pièces<span className="text-accent">.</span>
             </span>
             <span className="text-[11px] tracking-wide text-muted">
               Pièces détachées automobiles
             </span>
-          </a>
+          </Link>
 
           {/* Recherche pièce — scopée au véhicule, navigue vers /search */}
           <div className="hidden md:block">

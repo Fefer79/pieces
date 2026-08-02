@@ -1,7 +1,7 @@
 'use client'
-/* eslint-disable react-hooks/set-state-in-effect, react/no-unescaped-entities */
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { enterpriseFetch, getActiveEnterpriseId, type MaintenanceCenter } from '@/lib/enterprise-api'
 import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
@@ -35,14 +35,14 @@ export default function EnterpriseCentersPage() {
 
   useEffect(() => { setEnterpriseId(getActiveEnterpriseId()) }, [])
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!enterpriseId) return
     const res = await enterpriseFetch<MaintenanceCenter[]>(`/${enterpriseId}/centers`)
     if (!res.ok) { setError(res.message); return }
     setCenters(res.data)
-  }
+  }, [enterpriseId])
 
-  useEffect(() => { load() /* eslint-disable-next-line */ }, [enterpriseId])
+  useEffect(() => { load() }, [load])
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()

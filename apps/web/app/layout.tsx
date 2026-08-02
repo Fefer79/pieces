@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Instrument_Sans, DM_Mono } from 'next/font/google'
+import { Instrument_Sans, DM_Mono, Gloock } from 'next/font/google'
 import { AuthProvider } from '@/lib/auth-context'
 import './globals.css'
 
@@ -13,6 +13,13 @@ const dmMono = DM_Mono({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-dm-mono',
+  display: 'swap',
+})
+
+const gloock = Gloock({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-gloock',
   display: 'swap',
 })
 
@@ -31,13 +38,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" dir="ltr">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Gloock&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className={`${instrumentSans.variable} ${dmMono.variable} bg-surface text-ink antialiased`}>
+      <body className={`${instrumentSans.variable} ${dmMono.variable} ${gloock.variable} bg-surface text-ink antialiased`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -93,7 +93,7 @@ export default function VendorCatalogPage() {
     } finally {
       setLoading(false)
     }
-  }, [getAccessToken])
+  }, [getAccessToken, router])
 
   useEffect(() => {
     fetchItems(statusFilter || undefined)

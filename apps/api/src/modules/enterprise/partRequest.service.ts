@@ -9,7 +9,6 @@ import type {
   PartRequestStatus,
   PartRequestUrgency,
   PartRequestSource,
-  EnterpriseMemberRole,
 } from '@prisma/client'
 
 const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']

@@ -75,17 +75,17 @@ async function main() {
   })) as VehicleRow[]
 
   // Regroupement (entreprise, plaque canonique).
-  const groups = new Map<string, VehicleRow[]>()
+  const groups = new Map<string, { enterpriseId: string; plate: string; list: VehicleRow[] }>()
   for (const v of vehicles) {
     const plate = canonicalPlate(v.plate)
     if (!plate || !v.enterpriseId) continue
     const key = `${v.enterpriseId}::${plate}`
-    const list = groups.get(key) ?? []
-    list.push(v)
-    groups.set(key, list)
+    const group = groups.get(key) ?? { enterpriseId: v.enterpriseId, plate, list: [] }
+    group.list.push(v)
+    groups.set(key, group)
   }
 
-  const duplicateGroups = [...groups.entries()].filter(([, list]) => list.length > 1)
+  const duplicateGroups = [...groups.values()].filter((g) => g.list.length > 1)
 
   if (duplicateGroups.length === 0) {
     console.log('Aucun doublon de plaque. Rien à fusionner.')
@@ -94,8 +94,7 @@ async function main() {
 
   // Impact par flotte : c'est le nombre de véhicules facturés qui change.
   const perEnterprise = new Map<string, number>()
-  for (const [key, list] of duplicateGroups) {
-    const enterpriseId = key.split('::')[0]!
+  for (const { enterpriseId, list } of duplicateGroups) {
     perEnterprise.set(enterpriseId, (perEnterprise.get(enterpriseId) ?? 0) + list.length - 1)
   }
 
@@ -116,8 +115,7 @@ async function main() {
   console.log('')
 
   let merged = 0
-  for (const [key, list] of duplicateGroups) {
-    const plate = key.split('::')[1]
+  for (const { plate, list } of duplicateGroups) {
     const [survivor, ...dupes] = list // trié par createdAt asc
     if (!survivor) continue
 

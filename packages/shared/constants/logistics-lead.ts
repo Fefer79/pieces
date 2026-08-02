@@ -50,7 +50,8 @@ export interface CertaintyLevelSpec {
   tone: 'warn' | 'mid' | 'ok'
 }
 
-export const CERTAINTY_LEVELS: CertaintyLevelSpec[] = [
+/** Triés du niveau le plus exigeant au plus permissif — le dernier (LOW) sert de repli. */
+export const CERTAINTY_LEVELS: [CertaintyLevelSpec, CertaintyLevelSpec, CertaintyLevelSpec] = [
   {
     key: 'HIGH',
     min: 70,
@@ -106,13 +107,13 @@ export function computeCertainty(signals: LeadCertaintySignals): {
     additive.reduce((sum, s) => sum + (has(s) ? CERTAINTY_WEIGHTS[s] : 0), 0)
 
   const score = Math.max(0, Math.min(100, raw))
-  const level = (CERTAINTY_LEVELS.find((l) => score >= l.min) ?? CERTAINTY_LEVELS[2]!).key
+  const level = (CERTAINTY_LEVELS.find((l) => score >= l.min) ?? CERTAINTY_LEVELS[2]).key
 
   return { score, level }
 }
 
 export function certaintyLevelSpec(level: LeadCertaintyLevel): CertaintyLevelSpec {
-  return CERTAINTY_LEVELS.find((l) => l.key === level) ?? CERTAINTY_LEVELS[2]!
+  return CERTAINTY_LEVELS.find((l) => l.key === level) ?? CERTAINTY_LEVELS[2]
 }
 
 /** Libellés de l'incitation « prochaine meilleure action ». */

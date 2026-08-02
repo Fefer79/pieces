@@ -1,7 +1,7 @@
 'use client'
-/* eslint-disable react-hooks/set-state-in-effect, react/no-unescaped-entities */
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { enterpriseFetch, getActiveEnterpriseId, type FleetVehicle, type MaintenanceCenter } from '@/lib/enterprise-api'
@@ -141,7 +141,7 @@ export default function VehicleDetailPage() {
 
   useEffect(() => { setEnterpriseId(getActiveEnterpriseId()) }, [])
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!enterpriseId) return
     const [vRes, aRes, sRes, cRes] = await Promise.all([
       enterpriseFetch<VehicleDetail>(`/${enterpriseId}/vehicles/${vehicleId}`),
@@ -155,7 +155,7 @@ export default function VehicleDetailPage() {
     if (aRes.ok) setAnalytics(aRes.data)
     if (sRes.ok) setSchedules(sRes.data)
     if (cRes.ok) setCenters(cRes.data)
-  }
+  }, [enterpriseId, vehicleId])
 
   async function handleHomeCenterChange(centerId: string) {
     if (!enterpriseId) return
@@ -218,7 +218,7 @@ export default function VehicleDetailPage() {
     load()
   }
 
-  useEffect(() => { load() /* eslint-disable-next-line */ }, [enterpriseId, vehicleId])
+  useEffect(() => { load() }, [load])
 
   async function handleMileageSubmit(e: React.FormEvent) {
     e.preventDefault()

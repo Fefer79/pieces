@@ -41,7 +41,7 @@
   --color-cod: #4B4B4B;
 
   /* Typography */
-  --font-display: 'Gloock', ui-serif, Georgia, serif;
+  --font-display: var(--font-gloock), ui-serif, Georgia, serif;
   --font-body: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), ui-monospace, 'SFMono-Regular', monospace;
 

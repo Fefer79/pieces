@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { LandingPage } from '@/components/landing-page'
 import { BrowseContent } from '@/components/browse-content'
@@ -93,14 +94,14 @@ export default function BrowsePage() {
       <div className="flex min-h-dvh flex-col pb-[calc(env(safe-area-inset-bottom)+5rem)] lg:hidden">
         {/* Header */}
         <header className="flex items-center justify-between bg-card px-4 pb-2 pt-4">
-          <a href="/" className="flex flex-col">
+          <Link href="/" className="flex flex-col">
             <span className="font-display text-3xl text-ink">
               Pièces<span className="text-accent">.</span>
             </span>
             <span className="text-xs tracking-wide text-muted">
               Pièces détachées automobiles
             </span>
-          </a>
+          </Link>
           <MobileDrawer />
         </header>
 

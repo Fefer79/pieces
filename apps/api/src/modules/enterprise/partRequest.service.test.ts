@@ -16,7 +16,6 @@ const enterpriseMemberFindUnique = vi.fn()
 const vehicleFindFirst = vi.fn()
 const catalogItemFindUnique = vi.fn()
 const driverFindFirst = vi.fn()
-const orderCreate = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
@@ -51,7 +50,7 @@ vi.mock('../order/order.service.js', () => ({
   createOrder: vi.fn(),
 }))
 
-const { createPartRequest, listPartRequestsForEnterprise, submitPartRequest, approvePartRequest, convertToOrder } =
+const { createPartRequest, listPartRequestsForEnterprise, submitPartRequest, approvePartRequest } =
   await import('./partRequest.service.js')
 
 function asManager() {

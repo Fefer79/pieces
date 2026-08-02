@@ -1,7 +1,7 @@
 'use client'
-/* eslint-disable react-hooks/set-state-in-effect, react/no-unescaped-entities */
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { apiFetch, getActiveEnterpriseId } from '@/lib/enterprise-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
@@ -76,14 +76,14 @@ export default function EnterpriseReturnsPage() {
 
   useEffect(() => { setEnterpriseId(getActiveEnterpriseId()) }, [])
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!enterpriseId) return
     const res = await apiFetch<ReturnRow[]>(`/returns/by-enterprise/${enterpriseId}`)
     if (!res.ok) { setError(res.message); return }
     setReturns(res.data)
-  }
+  }, [enterpriseId])
 
-  useEffect(() => { load() /* eslint-disable-next-line */ }, [enterpriseId])
+  useEffect(() => { load() }, [load])
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
