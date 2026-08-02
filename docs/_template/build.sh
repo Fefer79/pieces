@@ -79,6 +79,7 @@ DOCS=(
   "CRO_BIBLE|Document interne|Handover CRO · v1.1 · 29 mai 2026"
   "manuel-prospection-vendeurs-2026-07|Manuel utilisateur|Prospection vendeurs — Liaisons & Admin · v1.0 · 17 juillet 2026"
   "manuel-crm-clients-vendeurs-2026-08|Manuel utilisateur|CRM interne — clients & vendeurs · v1.0 · Août 2026"
+  "manuel-erp-stock-achats-2026-08|Manuel utilisateur|ERP Stock, achats & fournisseurs — Admin · v1.0 · Août 2026"
 )
 
 # Filter to the slugs given on the command line, if any
@@ -96,9 +97,13 @@ build_one() {
     return
   fi
 
-  # Render header from template
+  # Render header from template. Escape & in values: in a sed replacement
+  # string it expands to the whole match (would re-inject the placeholder).
   local header="$TMP_DIR/header-$slug.html"
-  sed "s|{{CATEGORY}}|$cat|g; s|{{SUBTITLE}}|$sub|g" "$HEADER_TPL" > "$header"
+  local cat_esc sub_esc
+  cat_esc=$(printf '%s' "$cat" | sed -e 's/\\/\\\\/g' -e 's/&/\\&/g')
+  sub_esc=$(printf '%s' "$sub" | sed -e 's/\\/\\\\/g' -e 's/&/\\&/g')
+  sed "s|{{CATEGORY}}|$cat_esc|g; s|{{SUBTITLE}}|$sub_esc|g" "$HEADER_TPL" > "$header"
 
   # DOCX (plain — no logo header, Word renders system fonts)
   "$PANDOC" "$md" -o "$DOCS_DIR/$slug.docx" --from gfm
