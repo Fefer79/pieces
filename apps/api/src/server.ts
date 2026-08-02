@@ -29,13 +29,21 @@ import { vendorContractRoutes } from './modules/vendorContract/vendorContract.ro
 import { enrichmentRoutes } from './modules/enrichment/enrichment.routes.js'
 import { contactsRoutes } from './modules/contacts/contacts.routes.js'
 import { crmRoutes } from './modules/crm/crm.routes.js'
+import { stockRoutes } from './modules/stock/stock.routes.js'
 import {
   logisticsRoutes,
   enterpriseLogisticsRoutes,
   adminLogisticsRoutes,
 } from './modules/logistics/logistics.routes.js'
 import multipart from '@fastify/multipart'
-import { startWorker, ensureMaintenanceReminderScheduled, ensureBufferReplenishScheduled, ensureVendorRelanceScheduled, ensureEnrichmentSourcingScheduled, ensureCrmDueTasksScheduled } from './modules/queue/worker.js'
+import {
+  startWorker,
+  ensureMaintenanceReminderScheduled,
+  ensureBufferReplenishScheduled,
+  ensureVendorRelanceScheduled,
+  ensureEnrichmentSourcingScheduled,
+  ensureCrmDueTasksScheduled,
+} from './modules/queue/worker.js'
 
 // Fail-fast: validate environment variables at startup
 const env = apiEnvSchema.parse(process.env)
@@ -92,6 +100,7 @@ export function buildApp() {
   fastify.register(enrichmentRoutes, { prefix: '/api/v1/enrichments' })
   fastify.register(contactsRoutes, { prefix: '/api/v1/contacts' })
   fastify.register(crmRoutes, { prefix: '/api/v1/admin/crm' })
+  fastify.register(stockRoutes, { prefix: '/api/v1/admin/stock' })
   fastify.register(logisticsRoutes, { prefix: '/api/v1/logistics' })
   // Cotations logistique scopées flotte — servies par le module logistics mais
   // montées sous le préfixe entreprise pour rester cohérentes avec le reste.
@@ -111,7 +120,9 @@ const start = async () => {
     if (env.WHATSAPP_PROVIDER === 'baileys') {
       // Dynamic import keeps baileys out of the process when the Cloud API webhook is used.
       const { startBaileysGateway } = await import('./modules/whatsapp/baileys.gateway.js')
-      startBaileysGateway(fastify.log).catch((err) => fastify.log.error({ err }, 'Baileys gateway failed to start'))
+      startBaileysGateway(fastify.log).catch((err) =>
+        fastify.log.error({ err }, 'Baileys gateway failed to start'),
+      )
     }
     void ensureMaintenanceReminderScheduled(fastify.log)
     void ensureBufferReplenishScheduled(fastify.log)

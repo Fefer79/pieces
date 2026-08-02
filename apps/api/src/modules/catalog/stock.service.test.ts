@@ -9,6 +9,9 @@ vi.stubEnv('PORT', '3001')
 const orderItemFindMany = vi.fn()
 const catalogItemFindUnique = vi.fn()
 const catalogItemUpdate = vi.fn()
+const stockLevelFindFirst = vi.fn()
+const stockLevelUpdate = vi.fn()
+const stockMovementCreate = vi.fn()
 const mockNotifyLowStock = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
@@ -18,6 +21,13 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...a: unknown[]) => catalogItemFindUnique(...a),
       update: (...a: unknown[]) => catalogItemUpdate(...a),
     },
+    stockLevel: {
+      findFirst: (...a: unknown[]) => stockLevelFindFirst(...a),
+      update: (...a: unknown[]) => stockLevelUpdate(...a),
+    },
+    stockMovement: {
+      create: (...a: unknown[]) => stockMovementCreate(...a),
+    },
   },
 }))
 
@@ -25,7 +35,7 @@ vi.mock('../notification/notification.service.js', () => ({
   notifyVendorLowStock: (...a: unknown[]) => mockNotifyLowStock(...a),
 }))
 
-const { consumeStockForOrder } = await import('./stock.service.js')
+const { consumeStockForOrder, restockForOrder } = await import('./stock.service.js')
 
 const VENDOR = { phone: '+2250700000000', shopName: 'Garage Adjamé' }
 
@@ -129,5 +139,107 @@ describe('consumeStockForOrder', () => {
   it('avale les erreurs sans throw (fire-and-forget)', async () => {
     orderItemFindMany.mockRejectedValueOnce(new Error('db down'))
     await expect(consumeStockForOrder('order-1')).resolves.toBeUndefined()
+  })
+
+  it('trace un mouvement SORTIE_COMMANDE quand un niveau ERP existe', async () => {
+    orderItemFindMany.mockResolvedValueOnce([{ catalogItemId: 'item-1', quantity: 2 }])
+    catalogItemFindUnique.mockResolvedValueOnce(catalogItem({ stockQuantity: 5 }))
+    stockLevelFindFirst.mockResolvedValueOnce({ id: 'lvl-1', locationId: 'loc-1', qtyOnHand: 10 })
+
+    await consumeStockForOrder('order-1')
+
+    expect(stockLevelUpdate).toHaveBeenCalledWith({
+      where: { id: 'lvl-1' },
+      data: { qtyOnHand: 8 },
+    })
+    expect(stockMovementCreate).toHaveBeenCalledWith({
+      data: {
+        type: 'SORTIE_COMMANDE',
+        catalogItemId: 'item-1',
+        locationId: 'loc-1',
+        quantite: 2,
+        refType: 'Order',
+        refId: 'order-1',
+      },
+    })
+  })
+
+  it('ne trace rien sans niveau ERP (stock géré hors entrepôt)', async () => {
+    orderItemFindMany.mockResolvedValueOnce([{ catalogItemId: 'item-1', quantity: 1 }])
+    catalogItemFindUnique.mockResolvedValueOnce(catalogItem({ stockQuantity: 5 }))
+    stockLevelFindFirst.mockResolvedValueOnce(null)
+
+    await consumeStockForOrder('order-1')
+
+    expect(catalogItemUpdate).toHaveBeenCalled()
+    expect(stockMovementCreate).not.toHaveBeenCalled()
+  })
+
+  it("un échec de traçabilité ERP n'interrompt pas la boucle", async () => {
+    orderItemFindMany.mockResolvedValueOnce([{ catalogItemId: 'item-1', quantity: 1 }])
+    catalogItemFindUnique.mockResolvedValueOnce(catalogItem({ stockQuantity: 5 }))
+    stockLevelFindFirst.mockRejectedValueOnce(new Error('db down'))
+
+    await expect(consumeStockForOrder('order-1')).resolves.toBeUndefined()
+    expect(catalogItemUpdate).toHaveBeenCalled()
+  })
+})
+
+describe('restockForOrder', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    catalogItemUpdate.mockResolvedValue({})
+    stockLevelUpdate.mockResolvedValue({})
+    stockMovementCreate.mockResolvedValue({})
+  })
+
+  it('ré-incrémente la quantité et recalcule inStock', async () => {
+    orderItemFindMany.mockResolvedValueOnce([{ catalogItemId: 'item-1', quantity: 2 }])
+    catalogItemFindUnique.mockResolvedValueOnce(catalogItem({ stockQuantity: 0 }))
+    stockLevelFindFirst.mockResolvedValueOnce(null)
+
+    await restockForOrder('order-1')
+
+    expect(catalogItemUpdate).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: { stockQuantity: 2, inStock: true },
+    })
+  })
+
+  it('ignore les fiches à quantité non suivie', async () => {
+    orderItemFindMany.mockResolvedValueOnce([{ catalogItemId: 'item-1', quantity: 1 }])
+    catalogItemFindUnique.mockResolvedValueOnce(catalogItem({ stockQuantity: null }))
+
+    await restockForOrder('order-1')
+
+    expect(catalogItemUpdate).not.toHaveBeenCalled()
+  })
+
+  it('trace un mouvement RESTITUTION quand un niveau ERP existe', async () => {
+    orderItemFindMany.mockResolvedValueOnce([{ catalogItemId: 'item-1', quantity: 2 }])
+    catalogItemFindUnique.mockResolvedValueOnce(catalogItem({ stockQuantity: 1 }))
+    stockLevelFindFirst.mockResolvedValueOnce({ id: 'lvl-1', locationId: 'loc-1', qtyOnHand: 3 })
+
+    await restockForOrder('order-1')
+
+    expect(stockLevelUpdate).toHaveBeenCalledWith({
+      where: { id: 'lvl-1' },
+      data: { qtyOnHand: 5 },
+    })
+    expect(stockMovementCreate).toHaveBeenCalledWith({
+      data: {
+        type: 'RESTITUTION',
+        catalogItemId: 'item-1',
+        locationId: 'loc-1',
+        quantite: 2,
+        refType: 'Order',
+        refId: 'order-1',
+      },
+    })
+  })
+
+  it('avale les erreurs sans throw (fire-and-forget)', async () => {
+    orderItemFindMany.mockRejectedValueOnce(new Error('db down'))
+    await expect(restockForOrder('order-1')).resolves.toBeUndefined()
   })
 })

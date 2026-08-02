@@ -13,6 +13,7 @@ const TITLES: { prefix: string; title: string }[] = [
   { prefix: '/vehicles', title: 'Mes véhicules' },
   { prefix: '/profile', title: 'Compte' },
   { prefix: '/admin/crm', title: 'CRM' },
+  { prefix: '/admin/stock', title: 'Stock & achats' },
   { prefix: '/admin', title: 'Administration' },
   { prefix: '/liaison', title: 'Liaison' },
   { prefix: '/enterprise', title: 'Flotte' },
@@ -74,7 +75,16 @@ export function AppTopbar() {
         title="Notifications (bientôt disponible)"
         className="relative flex h-10 w-10 items-center justify-center rounded-md text-ink transition-colors hover:bg-surface"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.7 21a2 2 0 01-3.4 0" />
         </svg>

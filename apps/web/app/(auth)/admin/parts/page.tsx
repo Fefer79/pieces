@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { adminFetch, downloadCsv, fmtFcfa } from '@/lib/admin-api'
+import { partStockChipOf, partStockStatus } from '@/lib/stock-utils'
 import { Chip } from '@/components/ui/chip'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
@@ -17,6 +18,9 @@ interface Item {
   commissionAmount: number | null
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
   condition: 'NEW' | 'USED' | 'REFURBISHED' | null
+  inStock: boolean
+  stockQuantity: number | null
+  lowStockThreshold: number
   createdAt: string
   vendor: { id: string; shopName: string }
   photos: { urlThumb: string | null; urlOriginal: string }[]
@@ -41,6 +45,9 @@ export default function AdminPartsPage() {
   const [category, setCategory] = useState('')
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  // Filtre stock client-side (la liste admin n'a pas de filtre serveur dédié :
+  // il s'applique à la page affichée, les compteurs viennent déjà avec chaque item).
+  const [stockFilter, setStockFilter] = useState('')
   // Suppression : id en attente de confirmation, puis id en cours de suppression.
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -56,7 +63,9 @@ export default function AdminPartsPage() {
       .catch((e) => setError(e.message))
   }, [q, status, category, page])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   async function handleDelete(id: string) {
     setDeletingId(id)
@@ -87,6 +96,13 @@ export default function AdminPartsPage() {
     return res.suggestions
   }, [])
 
+  // Le filtre statut stock n'existe pas côté API : il s'applique à la page affichée.
+  const displayedItems = data
+    ? stockFilter
+      ? data.items.filter((it) => partStockStatus(it) === stockFilter)
+      : data.items
+    : []
+
   return (
     <div className="p-4 lg:p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -102,7 +118,10 @@ export default function AdminPartsPage() {
       <div className="mb-3 flex flex-wrap gap-2">
         <PredictiveSearch
           value={q}
-          onChange={(v) => { setPage(1); setQ(v) }}
+          onChange={(v) => {
+            setPage(1)
+            setQ(v)
+          }}
           fetchSuggestions={fetchSuggestions}
           badges={PART_BADGES}
           placeholder="Rechercher (nom, catégorie, OEM, marque, vendeur…)"
@@ -110,7 +129,10 @@ export default function AdminPartsPage() {
         />
         <select
           value={status}
-          onChange={(e) => { setPage(1); setStatus(e.target.value) }}
+          onChange={(e) => {
+            setPage(1)
+            setStatus(e.target.value)
+          }}
           className="rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
         >
           <option value="">Tous les statuts</option>
@@ -121,15 +143,34 @@ export default function AdminPartsPage() {
         <div className="min-w-[180px]">
           <CategoryCascadeSelect
             value={category}
-            onChange={(v) => { setPage(1); setCategory(v) }}
+            onChange={(v) => {
+              setPage(1)
+              setCategory(v)
+            }}
             className="w-full rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
             categoryPlaceholder="Toutes les catégories"
             subcategoryPlaceholder="Toutes les sous-catégories"
           />
         </div>
+        <select
+          value={stockFilter}
+          onChange={(e) => setStockFilter(e.target.value)}
+          className="rounded-sm border border-border-strong bg-card px-3 py-2 text-sm"
+          title="Filtre appliqué à la page affichée"
+        >
+          <option value="">Tout le stock</option>
+          <option value="rupture">Rupture</option>
+          <option value="bas">Stock bas</option>
+          <option value="ok">Stock OK</option>
+          <option value="non-suivi">Non suivi</option>
+        </select>
       </div>
 
-      {error && <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">{error}</div>}
+      {error && (
+        <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-3 text-sm text-error-fg">
+          {error}
+        </div>
+      )}
 
       {!data ? (
         <div className="text-sm text-muted">Chargement…</div>
@@ -144,13 +185,15 @@ export default function AdminPartsPage() {
                   <Th>Vendeur</Th>
                   <Th align="right">Prix</Th>
                   <Th align="right">Commission</Th>
+                  <Th>Stock</Th>
                   <Th>Statut</Th>
                   <Th align="right"></Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {data.items.map((it) => {
+                {displayedItems.map((it) => {
                   const src = it.photos[0]?.urlThumb ?? it.photos[0]?.urlOriginal
+                  const stockChip = partStockChipOf(it)
                   return (
                     <Tr key={it.id}>
                       <Td>
@@ -159,14 +202,27 @@ export default function AdminPartsPage() {
                         </div>
                       </Td>
                       <Td>
-                        <Link href={`/admin/catalog/${it.id}`} className="font-medium text-ink hover:text-accent hover:underline">{it.name ?? '—'}</Link>
+                        <Link
+                          href={`/admin/catalog/${it.id}`}
+                          className="font-medium text-ink hover:text-accent hover:underline"
+                        >
+                          {it.name ?? '—'}
+                        </Link>
                         <div className="text-xs text-muted">{it.category ?? ''}</div>
                       </Td>
                       <Td>
-                        <Link href={`/admin/vendors/${it.vendor.id}`} className="text-ink-2 hover:underline">{it.vendor.shopName}</Link>
+                        <Link
+                          href={`/admin/vendors/${it.vendor.id}`}
+                          className="text-ink-2 hover:underline"
+                        >
+                          {it.vendor.shopName}
+                        </Link>
                       </Td>
                       <Td num>{fmtFcfa(it.price)}</Td>
                       <Td num>{fmtFcfa(it.commissionAmount)}</Td>
+                      <Td>
+                        <Chip variant={stockChip.variant}>{stockChip.label}</Chip>
+                      </Td>
                       <Td>
                         {it.status === 'PUBLISHED' && <Chip variant="status-ok">Publié</Chip>}
                         {it.status === 'DRAFT' && <Chip variant="status-warn">Brouillon</Chip>}
@@ -202,18 +258,37 @@ export default function AdminPartsPage() {
                     </Tr>
                   )
                 })}
-                {data.items.length === 0 && (
-                  <Tr hover={false}><Td colSpan={7} align="center" className="py-6 text-muted">Aucune pièce.</Td></Tr>
+                {displayedItems.length === 0 && (
+                  <Tr hover={false}>
+                    <Td colSpan={8} align="center" className="py-6 text-muted">
+                      Aucune pièce.
+                    </Td>
+                  </Tr>
                 )}
               </Tbody>
             </Table>
           </div>
 
           <div className="mt-3 flex items-center justify-between text-sm text-muted">
-            <div>{data.pagination.total} pièces · page {data.pagination.page}/{data.pagination.totalPages}</div>
+            <div>
+              {data.pagination.total} pièces · page {data.pagination.page}/
+              {data.pagination.totalPages}
+            </div>
             <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="rounded-sm border border-border-strong px-2 py-1 disabled:opacity-40">←</button>
-              <button disabled={page >= data.pagination.totalPages} onClick={() => setPage(page + 1)} className="rounded-sm border border-border-strong px-2 py-1 disabled:opacity-40">→</button>
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+                className="rounded-sm border border-border-strong px-2 py-1 disabled:opacity-40"
+              >
+                ←
+              </button>
+              <button
+                disabled={page >= data.pagination.totalPages}
+                onClick={() => setPage(page + 1)}
+                className="rounded-sm border border-border-strong px-2 py-1 disabled:opacity-40"
+              >
+                →
+              </button>
             </div>
           </div>
         </>

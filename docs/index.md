@@ -110,6 +110,7 @@ Analyses détaillées exhaustives de zones spécifiques :
 - [Brochure commerciale Entreprises](./brochure-commerciale-entreprises-2026-06-03.md) — Présentation B2B dédiée aux gestionnaires de flotte (5 à 100+ véhicules) : Pro Flotte 3 niveaux + chauffeurs, pain points, ROI, dashboard, workflow approbation, cas d'usage, démarrage — Édition 2026-06-03
 - [Note de partenariat Yango](./pitch-partenariat-yango-2026-06.md) — Pitch B2B2C au réseau partenaires Yango : disponibilité flotte = volume de courses, coût caché de l'immobilisation, 3 formes de collaboration (référencement / co-marketing / intégration), proposition de pilote 60 j — Juin 2026 ([PDF](./pitch-partenariat-yango-2026-06.pdf))
 - [Manuel — Prospection vendeurs](./manuel-prospection-vendeurs-2026-07.md) — Mode d'emploi Liaisons & Admin de l'outil de prospection : carnet de prospects, journal d'actions (appel/WhatsApp/visite + statut + relance), radar de leads OSM & marketplaces, attribution, déduplication et conversion en vendeur — Juillet 2026 ([PDF](./manuel-prospection-vendeurs-2026-07.pdf))
+- [Manuel — CRM clients & vendeurs](./manuel-crm-clients-vendeurs-2026-08.md) — Mode d'emploi du CRM interne (espace Administration) : tableau de bord et tâches, fiches 360° avec timeline fusionnée, interactions, tags, segments clients/vendeurs, relances WhatsApp et rappel automatique du matin — Août 2026 ([PDF](./manuel-crm-clients-vendeurs-2026-08.pdf))
 
 ### Stratégie & financement (confidentiel)
 

@@ -15,6 +15,7 @@ const NAV = [
   { href: '/admin/vendors', label: 'Vendeurs' },
   { href: '/admin/clients', label: 'Clients' },
   { href: '/admin/crm', label: 'CRM' },
+  { href: '/admin/stock', label: 'Stock & achats' },
   { href: '/admin/enterprises', label: 'Entreprises' },
   { href: '/admin/liaisons', label: 'Liaisons' },
   { href: '/admin/prospection', label: 'Prospection' },
@@ -35,7 +36,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const guard = useCallback(async () => {
     try {
-      const { data: { session } } = await getSupabase().auth.getSession()
+      const {
+        data: { session },
+      } = await getSupabase().auth.getSession()
       const token = session?.access_token
       if (!token) {
         router.push('/login')
@@ -56,7 +59,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [router])
 
-  useEffect(() => { guard() }, [guard])
+  useEffect(() => {
+    guard()
+  }, [guard])
 
   if (checking) {
     return <div className="p-8 text-sm text-muted">Vérification des droits…</div>
@@ -84,7 +89,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             Administration
           </h4>
           {NAV.map((n) => {
-            const active = pathname === n.href || (n.href !== '/admin' && pathname.startsWith(n.href))
+            const active =
+              pathname === n.href || (n.href !== '/admin' && pathname.startsWith(n.href))
             return (
               <Link
                 key={n.href}
@@ -108,7 +114,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onChange={(e) => router.push(e.target.value)}
             className="w-full rounded-sm border border-border-strong bg-surface px-2 py-2 text-sm"
           >
-            {NAV.map((n) => <option key={n.href} value={n.href}>{n.label}</option>)}
+            {NAV.map((n) => (
+              <option key={n.href} value={n.href}>
+                {n.label}
+              </option>
+            ))}
           </select>
         </div>
         {children}

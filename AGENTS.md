@@ -202,6 +202,7 @@ Copier `.env.example` en `.env.local` et renseigner les valeurs. Les schémas Zo
 - **Machine à états** : les commandes (`Order`) utilisent `order.stateMachine.ts` avec `canTransition()` avant toute mise à jour DB
 - **Content parsers** : les parsers de body sont enregistrés au niveau d’un plugin de route, intentionnellement scopés (ex. webhook WhatsApp HMAC avec raw body)
 - **CRM interne** : module `crm` (préfixe `/api/v1/admin/crm`, guard `ADMIN`) — timeline 360° clients/vendeurs, interactions, tâches/relances, tags, segments calculés. Cible polymorphe `subject`/`subjectId` (`USER` → `users.id`, `VENDOR` → `vendors.id`, pas de FK DB). Relances WhatsApp via `notifyWhatsAppUser` (opt-out `NotificationPreference` respecté) ; rappel quotidien des tâches dues via le job `CRM_DUE_TASKS_SCAN` (7h)
+- **ERP Stock & achats** : module `stock` (préfixe `/api/v1/admin/stock`, guard `ADMIN`) — emplacements (`StockLocation`), niveaux par fiche/emplacement (`StockLevel`, CUMP `cumpFcfa`, seuil bas), journal `StockMovement` (RECEPTION / SORTIE_COMMANDE / AJUSTEMENT / RESTITUTION), fournisseurs (`Supplier`) et bons de commande (`PurchaseOrder`, statuts BROUILLON → ENVOYEE → EN_TRANSIT → RECEPTION_PARTIELLE → RECEPTIONNEE / ANNULEE). Estimation coût rendu entrepôt via `LOGISTICS_MODES` + `CUSTOMS_DUTY_RATE` (`shared/constants/logistics`). Sorties décrémentées à la commande payée, restitution à l’annulation si payée (`order.service.ts`), décrément multi-emplacements = première location active par `createdAt`
 
 ### Web (`apps/web`)
 
@@ -213,11 +214,12 @@ Copier `.env.example` en `.env.local` et renseigner les valeurs. Les schémas Zo
 - **Espaces** : l’UI masque le vocabulaire RBAC. La source de vérité est `apps/web/lib/spaces.ts`. Les espaces sont Achat, Vendeur, Flotte, Livreur, Chauffeur, Liaison, Administration.
 - **Vitrine flotte** : `app/(public)/entreprises/*` est servie sur le sous-domaine `flotte.pieces.ci`. Les plans flotte sont centralisés dans `apps/web/lib/fleet-plans.ts`.
 - **CRM admin** : workbench `app/(auth)/admin/crm/` + bloc `components/crm/crm-section.tsx` monté sur les fiches clients/vendeurs ; appels via `lib/crm-api.ts` (`crmFetch`, union `{ ok, data } | { ok: false, message }`), helpers purs dans `lib/crm-utils.ts`
+- **ERP Stock admin** : pages `app/(auth)/admin/stock/` (onglets Inventaire / Achats / Fournisseurs / Mouvements via `components/stock/stock-tabs.tsx`) ; appels via `lib/stock-api.ts`, helpers purs dans `lib/stock-utils.ts` ; colonnes/chips stock aussi sur `admin/parts`
 
 ### Base de données (`packages/shared`)
 
 - PostgreSQL, schéma Prisma dans `prisma/schema.prisma`
-- Modèles clés : `User`, `Vendor`, `CatalogItem`, `Order`, `OrderItem`, `Delivery`, `Dispute`, `EscrowTransaction`, `VehicleMake`, `VehicleModel`, `Enterprise`, `Driver`, `Job`, `CrmInteraction`, `CrmTask`, `CrmTag`, etc.
+- Modèles clés : `User`, `Vendor`, `CatalogItem`, `Order`, `OrderItem`, `Delivery`, `Dispute`, `EscrowTransaction`, `VehicleMake`, `VehicleModel`, `Enterprise`, `Driver`, `Job`, `CrmInteraction`, `CrmTask`, `CrmTag`, `StockLocation`, `StockLevel`, `StockMovement`, `Supplier`, `PurchaseOrder`, `PurchaseOrderItem`, etc.
 - Enum `Role` : `BUYER`, `SELLER`, `RIDER`, `DRIVER`, `ADMIN`, `ENTERPRISE`, `LIAISON`
 - Enum `PartCondition` : `NEW`, `USED`, `REFURBISHED`, `AFTERMARKET`, `OEM`
 - Format téléphone : `+225XXXXXXXXXX`

@@ -55,6 +55,8 @@ model User {
   crmInteractions        CrmInteraction[]
   crmTasksAssignees      CrmTask[]               @relation("CrmTaskAssignee")
   crmTasksCreees         CrmTask[]               @relation("CrmTaskCreator")
+  stockMovements         StockMovement[]
+  purchaseOrdersCreated  PurchaseOrder[]         @relation("PurchaseOrderCreator")
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -219,6 +221,10 @@ model Vendor {
   // le téléphone (qui peut manquer). Le vendeur fantôme/fallback utilise '__shadow__'.
   externalSellerId String? @map("external_seller_id")
 
+  // Vendeur « Pièces — Stock interne » : ses CatalogItem portent le stock propre
+  // vendu sur la marketplace (approvisionné via les bons de commande de l'ERP).
+  isInternal Boolean @default(false) @map("is_internal")
+
   ordersDelivered Int       @default(0) @map("orders_delivered")
   disputesOpened  Int       @default(0) @map("disputes_opened")
   avgReviewRating Float?    @map("avg_review_rating")
@@ -362,6 +368,9 @@ model CatalogItem {
   photos                  CatalogItemPhoto[]
   fitments                CatalogItemFitment[]
   bufferStockEntries      EnterpriseBufferStock[]
+  stockLevels             StockLevel[]
+  stockMovements          StockMovement[]
+  purchaseOrderItems      PurchaseOrderItem[]
   createdAt               DateTime                @default(now()) @map("created_at")
   updatedAt               DateTime                @updatedAt @map("updated_at")
 
@@ -1774,6 +1783,156 @@ model CrmTagAssignment {
   @@id([tagId, subject, subjectId])
   @@index([subject, subjectId], name: "idx_crm_tag_assignments_subject")
   @@map("crm_tag_assignments")
+}
+
+// ---------------------------------------------------------------------------
+// ERP — Stock, achats & fournisseurs (équipe Pièces)
+//
+// StockMovement est la source de vérité : toute variation de quantité passe par
+// un mouvement + mise à jour transactionnelle des compteurs (StockLevel et, pour
+// les articles vendus sur la marketplace, CatalogItem.stockQuantity).
+// ---------------------------------------------------------------------------
+
+enum StockMovementType {
+  RECEPTION
+  SORTIE_COMMANDE
+  AJUSTEMENT
+  RESTITUTION
+}
+
+enum PurchaseOrderStatus {
+  BROUILLON
+  ENVOYEE
+  EN_TRANSIT
+  RECEPTION_PARTIELLE
+  RECEPTIONNEE
+  ANNULEE
+}
+
+model StockLocation {
+  id        String   @id @default(uuid())
+  nom       String
+  type      String   @default("ENTREPOT") // ENTREPOT | BOUTIQUE | TRANSIT
+  commune   String?
+  adresse   String?
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  levels         StockLevel[]
+  movements      StockMovement[]
+  purchaseOrders PurchaseOrder[]
+
+  @@map("stock_locations")
+}
+
+model StockLevel {
+  id            String        @id @default(uuid())
+  catalogItemId String        @map("catalog_item_id")
+  catalogItem   CatalogItem   @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  locationId    String        @map("location_id")
+  location      StockLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  qtyOnHand     Int           @default(0) @map("qty_on_hand")
+  seuilBas      Int           @default(2) @map("seuil_bas")
+  // Coût unitaire moyen pondéré (FCFA), null si jamais approvisionné.
+  cumpFcfa      Int?          @map("cump_fcfa")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@unique([catalogItemId, locationId], name: "uq_stock_levels_item_location")
+  @@index([locationId], name: "idx_stock_levels_location")
+  @@map("stock_levels")
+}
+
+model StockMovement {
+  id               String            @id @default(uuid())
+  type             StockMovementType
+  catalogItemId    String            @map("catalog_item_id")
+  catalogItem      CatalogItem       @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  locationId       String            @map("location_id")
+  location         StockLocation     @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  quantite         Int // toujours positive — le type donne le sens
+  coutUnitaireFcfa Int?              @map("cout_unitaire_fcfa")
+  refType          String?           @map("ref_type") // 'PurchaseOrder' | 'Order' | 'MANUEL'
+  refId            String?           @map("ref_id")
+  note             String?
+  actorId          String?           @map("actor_id")
+  actor            User?             @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  createdAt        DateTime          @default(now()) @map("created_at")
+
+  @@index([catalogItemId, createdAt], name: "idx_stock_movements_item")
+  @@index([locationId, createdAt], name: "idx_stock_movements_location")
+  @@map("stock_movements")
+}
+
+model Supplier {
+  id                String   @id @default(uuid())
+  nom               String
+  pays              String?
+  ville             String?
+  contactName       String?  @map("contact_name")
+  telephone         String?
+  whatsapp          String?
+  email             String?
+  site              String?
+  devise            String   @default("AED") // devise de facturation habituelle
+  delaiTypiqueJours Int?     @map("delai_typique_jours")
+  conditions        String? // incoterm, paiement, MOQ — texte libre
+  notes             String?
+  actif             Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  purchaseOrders PurchaseOrder[]
+
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id                String              @id @default(uuid())
+  numero            String              @unique // BC-YYYYMMDD-XXXX
+  supplierId        String              @map("supplier_id")
+  supplier          Supplier            @relation(fields: [supplierId], references: [id])
+  destinationId     String?             @map("destination_id")
+  destination       StockLocation?      @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  mode              String              @default("LOCAL") // clés LOGISTICS_MODES (constants/logistics.ts)
+  statut            PurchaseOrderStatus @default(BROUILLON)
+  devise            String              @default("FCFA")
+  tauxChange        Int?                @map("taux_change") // 1 unité devise = N FCFA
+  montantEstimeFcfa Int?                @map("montant_estime_fcfa")
+  fraisEstimes      Json?               @map("frais_estimes") // { fret, douane, lastMile, total }
+  montantReelFcfa   Int?                @map("montant_reel_fcfa")
+  envoyeAt          DateTime?           @map("envoye_at")
+  etaAt             DateTime?           @map("eta_at")
+  recuAt            DateTime?           @map("recu_at")
+  notes             String?
+  createdById       String              @map("created_by_id")
+  createdBy         User                @relation("PurchaseOrderCreator", fields: [createdById], references: [id])
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  lines PurchaseOrderItem[]
+
+  @@index([statut], name: "idx_purchase_orders_statut")
+  @@index([supplierId], name: "idx_purchase_orders_supplier")
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(uuid())
+  purchaseOrderId String        @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  // null = ligne libre (fiche catalogue pas encore créée) : coût tracké, pas d'impact stock.
+  catalogItemId   String?       @map("catalog_item_id")
+  catalogItem     CatalogItem?  @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+  designation     String
+  oemReference    String?       @map("oem_reference")
+  quantite        Int
+  quantiteRecue   Int           @default(0) @map("quantite_recue")
+  prixUnitaire    Float         @map("prix_unitaire") // dans la devise du BC
+  poidsEstimeKg   Float?        @map("poids_estime_kg")
+
+  @@index([purchaseOrderId], name: "idx_purchase_order_items_po")
+  @@map("purchase_order_items")
 }
 
 // ---------------------------------------------------------------------------

@@ -4,8 +4,12 @@ import { AppError } from '../../lib/appError.js'
 import { canTransition } from './order.stateMachine.js'
 import { recomputeVendorScore } from '../vendor/vendorScore.service.js'
 import { getOrCreateInvoiceForOrder } from '../enterprise/invoice.service.js'
-import { consumeStockForOrder } from '../catalog/stock.service.js'
-import { computeDeliveryFee, type DeliveryPricingMode, type DeliveryPricingTier } from 'shared/constants'
+import { consumeStockForOrder, restockForOrder } from '../catalog/stock.service.js'
+import {
+  computeDeliveryFee,
+  type DeliveryPricingMode,
+  type DeliveryPricingTier,
+} from 'shared/constants'
 import { currentTier } from '../enterprise/subscription.service.js'
 
 const DELIVERED_STATUSES = new Set(['DELIVERED', 'CONFIRMED', 'COMPLETED'])
@@ -70,7 +74,9 @@ async function assertOrderReadAccess(
 }
 
 // Somme des quantités par pièce (un même catalogItemId peut apparaître plusieurs fois).
-function qtyMapFromItems(items: { catalogItemId: string; quantity?: number }[]): Map<string, number> {
+function qtyMapFromItems(
+  items: { catalogItemId: string; quantity?: number }[],
+): Map<string, number> {
   const qtyById = new Map<string, number>()
   for (const i of items) {
     const qty = i.quantity && i.quantity > 0 ? i.quantity : 1
@@ -170,14 +176,16 @@ export async function createOrder(
     let memberOfEnterprise = false
     if (vehicle.enterpriseId) {
       const membership = await prisma.enterpriseMember.findUnique({
-        where: { uq_enterprise_member: { enterpriseId: vehicle.enterpriseId, userId: initiatorId } },
+        where: {
+          uq_enterprise_member: { enterpriseId: vehicle.enterpriseId, userId: initiatorId },
+        },
         select: { id: true },
       })
       memberOfEnterprise = membership !== null
     }
     if (!ownsDirectly && !memberOfEnterprise) {
       throw new AppError('VEHICLE_FORBIDDEN', 403, {
-        message: 'Vous n\'avez pas accès à ce véhicule',
+        message: "Vous n'avez pas accès à ce véhicule",
       })
     }
 
@@ -197,7 +205,10 @@ export async function createOrder(
   const tier: DeliveryPricingTier = enterpriseId ? await currentTier(enterpriseId) : 'FREE'
   const subtotalByVendor = new Map<string, number>()
   for (const c of create) {
-    subtotalByVendor.set(c.vendorId, (subtotalByVendor.get(c.vendorId) ?? 0) + c.priceSnapshot * c.quantity)
+    subtotalByVendor.set(
+      c.vendorId,
+      (subtotalByVendor.get(c.vendorId) ?? 0) + c.priceSnapshot * c.quantity,
+    )
   }
   const deliveryFee =
     computeDeliveryFee({
@@ -239,7 +250,10 @@ export async function createOrder(
 // Palier de livraison applicable au panier : abonnement actif (essai inclus) de
 // l'entreprise du véhicule sélectionné, si l'utilisateur en est membre. Sert au
 // front pour afficher les frais par mode — le calcul autoritaire reste createOrder.
-export async function getDeliveryTier(userId: string, vehicleId?: string): Promise<DeliveryPricingTier> {
+export async function getDeliveryTier(
+  userId: string,
+  vehicleId?: string,
+): Promise<DeliveryPricingTier> {
   if (!vehicleId) return 'FREE'
   const vehicle = await prisma.vehicle.findUnique({
     where: { id: vehicleId },
@@ -451,6 +465,13 @@ export async function transitionOrder(
     void consumeStockForOrder(orderId)
   }
 
+  if (toStatus === 'CANCELLED' && order.paidAt) {
+    // Annulation après paiement : le stock consommé au passage en PAID est
+    // restitué (garde sur l'état AVANT transition, order est relu ci-dessus).
+    // Fire-and-forget : ne throw jamais.
+    void restockForOrder(orderId)
+  }
+
   return updated
 }
 
@@ -471,7 +492,9 @@ export async function selectPaymentMethod(
   }
 
   if (order.status !== 'DRAFT') {
-    throw new AppError('ORDER_INVALID_STATUS', 400, { message: 'La commande n\'est plus en brouillon' })
+    throw new AppError('ORDER_INVALID_STATUS', 400, {
+      message: "La commande n'est plus en brouillon",
+    })
   }
 
   if (paymentMethod === 'COD' && order.totalAmount > COD_MAX_AMOUNT) {

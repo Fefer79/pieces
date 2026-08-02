@@ -24,12 +24,29 @@ export type ActivityAction =
   | 'CRM_TASK_UPDATED'
   | 'CRM_RELANCE_SENT'
   | 'CRM_TAG_ASSIGNED'
+  | 'STOCK_ADJUSTED'
+  | 'STOCK_LOCATION_CREATED'
+  | 'SUPPLIER_CREATED'
+  | 'SUPPLIER_UPDATED'
+  | 'PURCHASE_ORDER_CREATED'
+  | 'PURCHASE_ORDER_UPDATED'
+  | 'PURCHASE_ORDER_RECEIVED'
 
 interface RecordParams {
   actorId: string
   actorRole: Role
   action: ActivityAction
-  targetType: 'Vendor' | 'CatalogItem' | 'PartEnrichment' | 'VendorContact' | 'User' | 'CrmTask'
+  targetType:
+    | 'Vendor'
+    | 'CatalogItem'
+    | 'PartEnrichment'
+    | 'VendorContact'
+    | 'User'
+    | 'CrmTask'
+    | 'StockLocation'
+    | 'StockLevel'
+    | 'Supplier'
+    | 'PurchaseOrder'
   targetId?: string | null
   payload?: Record<string, unknown>
 }
