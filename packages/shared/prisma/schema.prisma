@@ -60,6 +60,7 @@ model User {
   teamProfile            TeamMemberProfile?
   agentObjectives        AgentObjective[]
   agentCommissions       AgentCommission[]
+  marketingCampaigns     MarketingCampaign[]
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -188,6 +189,7 @@ enum JobType {
   ENRICHMENT_SOURCING_SCAN
   ENRICHMENT_SOURCING_COLLECT
   CRM_DUE_TASKS_SCAN
+  MARKETING_CAMPAIGN_SEND
 }
 
 enum JobStatus {
@@ -1786,6 +1788,57 @@ model CrmTagAssignment {
   @@id([tagId, subject, subjectId])
   @@index([subject, subjectId], name: "idx_crm_tag_assignments_subject")
   @@map("crm_tag_assignments")
+}
+
+// ---------------------------------------------------------------------------
+// ERP — Marketing (équipe Pièces)
+//
+// MarketingCampaign est une campagne WhatsApp en masse ciblée via les segments
+// CRM calculés (clients / vendeurs) ou un tag CRM. L'audience est résolue au
+// lancement (totalCibles) puis à nouveau à l'envoi ; l'envoi est asynchrone
+// (job MARKETING_CAMPAIGN_SEND, maxAttempts 1 — jamais de doublon d'envoi).
+// Les compteurs finaux (envoyes, echecs, optouts, sans_telephone) sont remplis
+// par le worker en fin d'envoi ; les destinataires désabonnés
+// (NotificationPreference.whatsapp = false) sont exclus et comptés, jamais
+// contactés. Chaque envoi tenté est tracé en CrmInteraction (type RELANCE).
+// ---------------------------------------------------------------------------
+
+enum MarketingCampaignStatus {
+  BROUILLON
+  PLANIFIEE
+  EN_COURS
+  TERMINEE
+  ANNULEE
+}
+
+enum MarketingAudienceType {
+  SEGMENT_CLIENT
+  SEGMENT_VENDEUR
+  TAG
+}
+
+model MarketingCampaign {
+  id            String                  @id @default(uuid())
+  nom           String
+  message       String
+  audienceType  MarketingAudienceType   @map("audience_type")
+  audienceValue String                  @map("audience_value")
+  statut        MarketingCampaignStatus @default(BROUILLON)
+  totalCibles   Int                     @default(0) @map("total_cibles")
+  envoyes       Int                     @default(0)
+  echecs        Int                     @default(0)
+  optouts       Int                     @default(0)
+  sansTelephone Int                     @default(0) @map("sans_telephone")
+  scheduledAt   DateTime?               @map("scheduled_at")
+  startedAt     DateTime?               @map("started_at")
+  completedAt   DateTime?               @map("completed_at")
+  createdById   String                  @map("created_by_id")
+  createdBy     User                    @relation(fields: [createdById], references: [id])
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+
+  @@index([statut])
+  @@map("marketing_campaigns")
 }
 
 // ---------------------------------------------------------------------------

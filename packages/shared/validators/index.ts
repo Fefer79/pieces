@@ -233,6 +233,47 @@ export type {
   UpdateAgentCommissionInput,
 } from './equipe'
 export {
+  financePeriodeSchema,
+  financeOverviewQuerySchema,
+  financeMonthlyQuerySchema,
+  financeVendorsQuerySchema,
+  financeExportQuerySchema,
+} from './finance'
+export type {
+  FinanceOverviewQuery,
+  FinanceMonthlyQuery,
+  FinanceVendorsQuery,
+  FinanceExportQuery,
+} from './finance'
+export {
+  marketingCampaignStatusSchema,
+  marketingAudienceTypeSchema,
+  marketingCampaignsQuerySchema,
+  createCampaignSchema,
+  marketingCampaignParamsSchema,
+  previewAudienceQuerySchema,
+} from './marketing'
+export type {
+  MarketingCampaignsQuery,
+  CreateCampaignInput,
+  PreviewAudienceQuery,
+} from './marketing'
+export {
+  supportDisputeStatusSchema,
+  supportReturnStatusSchema,
+  supportDisputesQuerySchema,
+  supportReturnsQuerySchema,
+  supportIdParamsSchema,
+  supportResolveDisputeSchema,
+  supportTransitionReturnSchema,
+} from './support'
+export type {
+  SupportDisputesQuery,
+  SupportReturnsQuery,
+  SupportResolveDisputeInput,
+  SupportTransitionReturnInput,
+} from './support'
+export {
   LOGISTICS_VIN_REGEX,
   IVORIAN_PHONE_INPUT_REGEX,
   logisticsLeadStatusSchema,

@@ -5,6 +5,7 @@ import { handleMaintenanceReminderScan } from './handlers/maintenanceReminder.js
 import { handleBufferStockReplenishScan } from './handlers/bufferStockReplenish.js'
 import { handleVendorRelanceScan } from './handlers/vendorRelance.js'
 import { handleCrmDueTasksScan } from './handlers/crmDueTasks.js'
+import { handleMarketingCampaignSend } from './handlers/marketingCampaignSend.js'
 import {
   handleEnrichmentFitments,
   handleEnrichmentSourcingScan,
@@ -19,7 +20,7 @@ type Logger = {
 }
 
 const POLL_INTERVAL = 30_000 // 30 seconds
-const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN', 'ENRICHMENT_FITMENTS', 'ENRICHMENT_SOURCING_SCAN', 'ENRICHMENT_SOURCING_COLLECT', 'CRM_DUE_TASKS_SCAN'] as const
+const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN', 'ENRICHMENT_FITMENTS', 'ENRICHMENT_SOURCING_SCAN', 'ENRICHMENT_SOURCING_COLLECT', 'CRM_DUE_TASKS_SCAN', 'MARKETING_CAMPAIGN_SEND'] as const
 
 const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   IMAGE_PROCESS_VARIANTS: handleImageProcess,
@@ -31,6 +32,7 @@ const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   ENRICHMENT_SOURCING_SCAN: handleEnrichmentSourcingScan,
   ENRICHMENT_SOURCING_COLLECT: handleEnrichmentSourcingCollect,
   CRM_DUE_TASKS_SCAN: handleCrmDueTasksScan,
+  MARKETING_CAMPAIGN_SEND: handleMarketingCampaignSend,
 }
 
 /**

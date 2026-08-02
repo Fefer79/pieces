@@ -37,6 +37,13 @@ export type ActivityAction =
   | 'COMMISSION_UPDATED'
   | 'COMMISSION_PAID'
   | 'COMMISSION_CANCELLED'
+  | 'CAMPAIGN_CREATED'
+  | 'CAMPAIGN_LAUNCHED'
+  | 'CAMPAIGN_CANCELLED'
+  | 'DISPUTE_REVIEWED'
+  | 'DISPUTE_RESOLVED'
+  | 'DISPUTE_CLOSED'
+  | 'RETURN_STATUS_UPDATED'
 
 interface RecordParams {
   actorId: string
@@ -55,6 +62,9 @@ interface RecordParams {
     | 'PurchaseOrder'
     | 'AgentObjective'
     | 'AgentCommission'
+    | 'MarketingCampaign'
+    | 'Dispute'
+    | 'ReturnOrder'
   targetId?: string | null
   payload?: Record<string, unknown>
 }

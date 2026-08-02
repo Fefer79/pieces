@@ -15,7 +15,10 @@ const NAV = [
   { href: '/admin/vendors', label: 'Vendeurs' },
   { href: '/admin/clients', label: 'Clients' },
   { href: '/admin/crm', label: 'CRM' },
+  { href: '/admin/marketing', label: 'Marketing' },
+  { href: '/admin/support', label: 'SAV' },
   { href: '/admin/stock', label: 'Stock & achats' },
+  { href: '/admin/finance', label: 'Finance' },
   { href: '/admin/enterprises', label: 'Entreprises' },
   { href: '/admin/liaisons', label: 'Liaisons' },
   { href: '/admin/equipe', label: 'Équipe' },
@@ -91,7 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </h4>
           {NAV.map((n) => {
             const active =
-              pathname === n.href || (n.href !== '/admin' && pathname.startsWith(n.href))
+              pathname === n.href || (n.href !== '/admin' && pathname.startsWith(n.href + '/'))
             return (
               <Link
                 key={n.href}

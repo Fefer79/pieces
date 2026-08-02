@@ -80,6 +80,9 @@ DOCS=(
   "manuel-prospection-vendeurs-2026-07|Manuel utilisateur|Prospection vendeurs — Liaisons & Admin · v1.0 · 17 juillet 2026"
   "manuel-crm-clients-vendeurs-2026-08|Manuel utilisateur|CRM interne — clients & vendeurs · v1.0 · Août 2026"
   "manuel-erp-stock-achats-2026-08|Manuel utilisateur|ERP Stock, achats & fournisseurs — Admin · v1.0 · Août 2026"
+  "manuel-erp-finance-2026-08|Manuel utilisateur|ERP Finance — Admin · v1.0 · Août 2026"
+  "manuel-marketing-campagnes-2026-08|Manuel utilisateur|Marketing — campagnes WhatsApp · v1.0 · Août 2026"
+  "manuel-support-sav-2026-08|Manuel utilisateur|Support & SAV — litiges & retours · v1.0 · Août 2026"
 )
 
 # Filter to the slugs given on the command line, if any
