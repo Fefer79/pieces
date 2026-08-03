@@ -25,6 +25,7 @@ import {
   matchLogisticsFamily,
   resolveEconomyCategory,
   computeCertainty,
+  publicCarrierLabel,
   DOWNTIME_COST_PER_DAY,
   type ArbitrageOptionInput,
   type LeadCertaintySignals,
@@ -555,6 +556,46 @@ export async function recomputeCertainty(id: string) {
 // Lectures
 // ---------------------------------------------------------------------------
 
+/**
+ * Expédition telle qu'on l'expose au client : les étapes et l'ETA, rien d'autre.
+ *
+ * ⚠ Ni `carrier` brut, ni `carrierOther`, ni `trackingNumber`, ni les coûts —
+ * le transporteur est remplacé par `carrierLabel` (voir `sanitizeShipment`).
+ */
+const PUBLIC_SHIPMENT_SELECT = {
+  reference: true,
+  status: true,
+  carrier: true, // consommé par sanitizeShipment, JAMAIS renvoyé tel quel
+  etaAt: true,
+  deliveredAt: true,
+  events: {
+    select: { id: true, toStatus: true, label: true, location: true, occurredAt: true },
+    orderBy: { occurredAt: 'asc' },
+  },
+} satisfies Prisma.ShipmentSelect
+
+type RawPublicShipment = {
+  reference: string
+  status: string
+  carrier: string
+  etaAt: Date | null
+  deliveredAt: Date | null
+  events: unknown[]
+}
+
+/**
+ * Remplace le transporteur par un libellé publiable.
+ *
+ * Règle produit (apps/web/lib/logistique-content.ts) : le partenaire transitaire
+ * n'est JAMAIS nommé côté client. Appliquée ICI, dans la projection, et pas
+ * seulement au rendu — sinon le nom fuite dans le JSON.
+ */
+function sanitizeShipment(shipment: RawPublicShipment | null) {
+  if (!shipment) return null
+  const { carrier, ...rest } = shipment
+  return { ...rest, carrierLabel: publicCarrierLabel(carrier) }
+}
+
 /** Projection sans donnée sensible : ni URL de photo, ni note interne, ni IP. */
 const PUBLIC_SELECT = {
   id: true,
@@ -574,6 +615,9 @@ const PUBLIC_SELECT = {
   estimateJson: true,
   createdAt: true,
   photos: { select: { id: true, kind: true, position: true }, orderBy: { position: 'asc' } },
+  // La dernière expédition rattachée : c'est elle que voit le client sur sa
+  // page de suivi une fois la commande passée.
+  shipments: { select: PUBLIC_SHIPMENT_SELECT, orderBy: { createdAt: 'desc' }, take: 1 },
 } satisfies Prisma.LogisticsQuoteRequestSelect
 
 const OWNER_SELECT = {
@@ -599,6 +643,16 @@ const OWNER_SELECT = {
   },
 } satisfies Prisma.LogisticsQuoteRequestSelect
 
+/**
+ * Aplatit `shipments: [...]` en un `shipment` unique et assaini. Toute lecture
+ * destinée au client ou à la flotte DOIT passer par là — c'est le seul endroit
+ * qui retire le nom du transitaire.
+ */
+function withPublicShipment<T extends { shipments: RawPublicShipment[] }>(lead: T) {
+  const { shipments, ...rest } = lead
+  return { ...rest, shipment: sanitizeShipment(shipments[0] ?? null) }
+}
+
 export async function getQuoteRequestByReference(reference: string, uploadToken: string) {
   const lead = await prisma.logisticsQuoteRequest.findUnique({
     where: { reference },
@@ -609,16 +663,17 @@ export async function getQuoteRequestByReference(reference: string, uploadToken:
     throw new AppError('LOGISTICS_LEAD_NOT_FOUND', 404, { message: 'Demande introuvable' })
   }
   const { uploadTokenHash: _drop, ...rest } = lead
-  return rest
+  return withPublicShipment(rest)
 }
 
 export async function listQuoteRequestsForUser(userId: string) {
-  return prisma.logisticsQuoteRequest.findMany({
+  const leads = await prisma.logisticsQuoteRequest.findMany({
     where: { userId, status: { not: 'SPAM' } },
     orderBy: { createdAt: 'desc' },
     take: 50,
     select: OWNER_SELECT,
   })
+  return leads.map(withPublicShipment)
 }
 
 export async function listQuoteRequestsForEnterprise(
@@ -646,7 +701,7 @@ export async function listQuoteRequestsForEnterprise(
     prisma.logisticsQuoteRequest.count({ where }),
   ])
 
-  return { items, total, page: query.page, pageSize: query.pageSize }
+  return { items: items.map(withPublicShipment), total, page: query.page, pageSize: query.pageSize }
 }
 
 export async function getQuoteRequestForEnterprise(
@@ -662,7 +717,7 @@ export async function getQuoteRequestForEnterprise(
   if (!lead) {
     throw new AppError('LOGISTICS_LEAD_NOT_FOUND', 404, { message: 'Cotation introuvable' })
   }
-  return lead
+  return withPublicShipment(lead)
 }
 
 // ---------------------------------------------------------------------------
@@ -685,6 +740,26 @@ const ADMIN_SELECT = {
   customerType: true,
   fleetSize: true,
   updatedAt: true,
+  // Les ops voient le transporteur réel et le numéro de suivi — c'est la
+  // projection publique qui les masque, pas celle-ci.
+  shipments: {
+    select: {
+      id: true,
+      reference: true,
+      status: true,
+      carrier: true,
+      trackingNumber: true,
+      trackingUrl: true,
+      etaAt: true,
+      deliveredAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  },
+  sourcingSearches: {
+    select: { id: true, status: true, origin: true, _count: { select: { offers: true } } },
+    orderBy: { createdAt: 'desc' },
+    take: 1,
+  },
 } satisfies Prisma.LogisticsQuoteRequestSelect
 
 export async function adminListQuoteRequests(query: AdminLogisticsListQuery) {

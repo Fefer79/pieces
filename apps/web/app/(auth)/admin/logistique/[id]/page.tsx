@@ -1,9 +1,8 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { adminFetch } from '@/lib/admin-api'
 import { Chip } from '@/components/ui/chip'
 import { ArbitrageTable } from '@/components/logistique/arbitrage-table'
@@ -70,6 +69,14 @@ interface AdminQuoteDetail {
   campaign: string | null
   userAgent: string | null
   createdAt: string
+  shipments: {
+    id: string
+    reference: string
+    status: string
+    trackingNumber: string | null
+    etaAt: string | null
+  }[]
+  sourcingSearches: { id: string; status: string; origin: string; _count: { offers: number } }[]
   photos: {
     id: string
     kind: 'PART' | 'REGISTRATION_CARD' | 'OTHER'
@@ -97,20 +104,24 @@ export default function AdminLogistiqueDetailPage() {
   const [newStatus, setNewStatus] = useState<string>('')
   const [opsNote, setOpsNote] = useState('')
   const [lostReason, setLostReason] = useState('')
+  const [sourcingBusy, setSourcingBusy] = useState(false)
+  const router = useRouter()
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const res = await adminFetch<AdminQuoteDetail>(`/admin/logistics/quote-requests/${params.id}`)
-    setLoading(false)
-    if ('data' in res && res.data) {
-      const q = res.data as unknown as AdminQuoteDetail
+    try {
+      // adminFetch déballe déjà `body.data` et lève sur erreur : le résultat EST
+      // la cotation, il n'y a pas d'enveloppe à ouvrir une seconde fois.
+      const q = await adminFetch<AdminQuoteDetail>(`/admin/logistics/quote-requests/${params.id}`)
       setQuote(q)
       setNewStatus(q.status)
       setOpsNote(q.opsNote ?? '')
       setLostReason(q.lostReason ?? '')
-    } else {
-      setError(String((res as { message?: string }).message ?? 'Erreur'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setLoading(false)
     }
   }, [params.id])
 
@@ -138,6 +149,27 @@ export default function AdminLogistiqueDetailPage() {
     void load()
   }
 
+  /**
+   * Ouvre (ou rouvre) le dossier de sourcing de cette demande. C'est le lien
+   * besoin → offres : l'API est idempotente, un second clic ramène le dossier
+   * existant plutôt que d'en créer un doublon.
+   */
+  async function openSourcing() {
+    if (!quote) return
+    setSourcingBusy(true)
+    try {
+      const search = await adminFetch<{ id: string }>('/admin/sourcing/searches', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ quoteRequestId: quote.id }),
+      })
+      router.push(`/admin/sourcing/${search.id}`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur')
+      setSourcingBusy(false)
+    }
+  }
+
   if (loading) return <div className="p-8 text-sm text-muted">Chargement…</div>
   if (error) return <div className="p-8 text-sm text-red-600">{error}</div>
   if (!quote) return null
@@ -161,6 +193,60 @@ export default function AdminLogistiqueDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-6">
+          {/* Lien besoin → offres réelles */}
+          <Section title="Sourcing">
+            {quote.sourcingSearches.length > 0 ? (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[13.5px] text-muted">
+                  {quote.sourcingSearches[0]!._count.offers} offre
+                  {quote.sourcingSearches[0]!._count.offers > 1 ? 's' : ''} collectée
+                  {quote.sourcingSearches[0]!._count.offers > 1 ? 's' : ''} pour cette demande.
+                </p>
+                <Link
+                  href={`/admin/sourcing/${quote.sourcingSearches[0]!.id}`}
+                  className="rounded-md border border-border-strong px-3 py-2 text-sm text-ink hover:bg-surface"
+                >
+                  Ouvrir le dossier →
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[13.5px] text-muted">
+                  Ouvrez un dossier pour y coller les liens des pages vendeur trouvées et comparer
+                  les offres au coût rendu Abidjan.
+                </p>
+                <button
+                  onClick={openSourcing}
+                  disabled={sourcingBusy}
+                  className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
+                >
+                  {sourcingBusy ? 'Ouverture…' : 'Sourcer cette pièce'}
+                </button>
+              </div>
+            )}
+          </Section>
+
+          {quote.shipments.length > 0 && (
+            <Section title="Expéditions">
+              <ul className="space-y-2">
+                {quote.shipments.map((s) => (
+                  <li key={s.id} className="flex items-center justify-between text-[13.5px]">
+                    <Link
+                      href={`/admin/expeditions/${s.id}`}
+                      className="font-mono text-ink-2 hover:underline"
+                    >
+                      {s.reference}
+                    </Link>
+                    <span className="text-muted">
+                      {s.status}
+                      {s.etaAt && ` · ETA ${new Date(s.etaAt).toLocaleDateString('fr-FR')}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
           {estimate && (
             <Section title="Matrice d'arbitrage (recalculée serveur)">
               <ArbitrageTable

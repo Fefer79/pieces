@@ -294,3 +294,39 @@ export type {
   AdminUpdateLogisticsQuoteRequestInput,
   EnterpriseLogisticsListQuery,
 } from './logistics'
+// NB : partConditionSchema / partSourceSchema sont déjà exportés depuis
+// ./catalog — on ne réexporte pas les homonymes définis dans ./sourcing.
+export {
+  sourcingOriginSchema,
+  sourcingSearchStatusSchema,
+  sourcingOfferStatusSchema,
+  sourcingChannelSchema,
+  currencyCodeSchema,
+  shipmentCarrierSchema,
+  shipmentStatusSchema,
+  sourcingModeSchema,
+  sourcingSearchCreateSchema,
+  adminSourcingListQuerySchema,
+  offerUrlsSchema,
+  offerCreateSchema,
+  offerUpdateSchema,
+  offerToPurchaseOrderSchema,
+  shipmentCreateSchema,
+  shipmentUpdateSchema,
+  shipmentTransitionSchema,
+  adminShipmentListQuerySchema,
+  sourcingOffersOutputSchema,
+} from './sourcing'
+export type {
+  SourcingSearchCreateInput,
+  AdminSourcingListQuery,
+  OfferUrlsInput,
+  OfferCreateInput,
+  OfferUpdateInput,
+  OfferToPurchaseOrderInput,
+  ShipmentCreateInput,
+  ShipmentUpdateInput,
+  ShipmentTransitionInput,
+  AdminShipmentListQuery,
+  SourcingOffersOutput,
+} from './sourcing'

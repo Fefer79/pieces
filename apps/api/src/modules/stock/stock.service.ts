@@ -436,7 +436,9 @@ export async function getSupplier(id: string) {
 // ---------------------------------------------------------------------------
 
 // Matrice des transitions autorisées (la réception se fait via /receive).
-const PO_TRANSITIONS: Record<PurchaseOrderStatus, PurchaseOrderStatus[]> = {
+// Exportée : le suivi d'expédition propage le statut au BC et doit respecter
+// exactement les mêmes règles (modules/sourcing/shipment.service.ts).
+export const PO_TRANSITIONS: Record<PurchaseOrderStatus, PurchaseOrderStatus[]> = {
   BROUILLON: ['ENVOYEE', 'ANNULEE'],
   ENVOYEE: ['EN_TRANSIT', 'ANNULEE'],
   EN_TRANSIT: ['ANNULEE'],

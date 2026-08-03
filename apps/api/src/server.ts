@@ -30,6 +30,7 @@ import { enrichmentRoutes } from './modules/enrichment/enrichment.routes.js'
 import { contactsRoutes } from './modules/contacts/contacts.routes.js'
 import { crmRoutes } from './modules/crm/crm.routes.js'
 import { stockRoutes } from './modules/stock/stock.routes.js'
+import { sourcingRoutes, shipmentRoutes } from './modules/sourcing/sourcing.routes.js'
 import { equipeRoutes } from './modules/equipe/equipe.routes.js'
 import { financeRoutes } from './modules/finance/finance.routes.js'
 import { marketingRoutes } from './modules/marketing/marketing.routes.js'
@@ -105,6 +106,8 @@ export function buildApp() {
   fastify.register(contactsRoutes, { prefix: '/api/v1/contacts' })
   fastify.register(crmRoutes, { prefix: '/api/v1/admin/crm' })
   fastify.register(stockRoutes, { prefix: '/api/v1/admin/stock' })
+  fastify.register(sourcingRoutes, { prefix: '/api/v1/admin/sourcing' })
+  fastify.register(shipmentRoutes, { prefix: '/api/v1/admin/shipments' })
   fastify.register(equipeRoutes, { prefix: '/api/v1/admin/equipe' })
   fastify.register(financeRoutes, { prefix: '/api/v1/admin/finance' })
   fastify.register(marketingRoutes, { prefix: '/api/v1/admin/marketing' })

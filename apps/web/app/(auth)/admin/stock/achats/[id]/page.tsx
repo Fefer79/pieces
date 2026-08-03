@@ -19,6 +19,14 @@ import {
   poStatusVariant,
   poTransitionActionLabel,
 } from '@/lib/stock-utils'
+import {
+  shipmentFetch,
+  CARRIER_LABELS,
+  SHIPMENT_STATUS_LABELS,
+  type Paginated,
+  type ShipmentRow,
+  type ShipmentCarrierCode,
+} from '@/lib/sourcing-api'
 import { Chip } from '@/components/ui/chip'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
@@ -31,6 +39,9 @@ export default function PurchaseOrderDetailPage() {
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [shipments, setShipments] = useState<ShipmentRow[] | null>(null)
+  const [carrier, setCarrier] = useState<ShipmentCarrierCode>('TRANSITAIRE')
+  const [trackingNumber, setTrackingNumber] = useState('')
 
   const load = useCallback(() => {
     stockFetch<PurchaseOrderDetail>(`/purchase-orders/${params.id}`).then((res) => {
@@ -44,9 +55,41 @@ export default function PurchaseOrderDetailPage() {
     })
   }, [params.id])
 
+  const loadShipments = useCallback(() => {
+    shipmentFetch<Paginated<ShipmentRow>>(`?q=${encodeURIComponent(params.id)}`).then((res) => {
+      // La recherche porte sur les références, pas sur l'id : on filtre côté client.
+      if (res.ok) setShipments(res.data.items.filter((s) => s.purchaseOrderId === params.id))
+      else setShipments([])
+    })
+  }, [params.id])
+
   useEffect(() => {
     load()
-  }, [load])
+    loadShipments()
+  }, [load, loadShipments])
+
+  async function createShipment() {
+    if (!po || busy) return
+    setBusy(true)
+    setError(null)
+    const res = await shipmentFetch<ShipmentRow>('', {
+      method: 'POST',
+      body: JSON.stringify({
+        purchaseOrderId: po.id,
+        carrier,
+        mode: po.mode,
+        ...(trackingNumber ? { trackingNumber } : {}),
+        ...(po.supplier.pays ? { originCountry: po.supplier.pays } : {}),
+      }),
+    })
+    setBusy(false)
+    if (!res.ok) {
+      setError(res.message)
+      return
+    }
+    setTrackingNumber('')
+    loadShipments()
+  }
 
   async function transition(target: PurchaseOrderStatus) {
     if (!po || busy) return
@@ -103,6 +146,63 @@ export default function PurchaseOrderDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-6">
+          <Section title="Expédition">
+            {shipments === null ? (
+              <p className="text-sm text-muted">Chargement…</p>
+            ) : shipments.length > 0 ? (
+              <ul className="space-y-2">
+                {shipments.map((s) => (
+                  <li key={s.id} className="flex flex-wrap items-center justify-between gap-2">
+                    <Link
+                      href={`/admin/expeditions/${s.id}`}
+                      className="font-mono text-[13.5px] text-ink-2 hover:underline"
+                    >
+                      {s.reference}
+                    </Link>
+                    <span className="text-[13px] text-muted">
+                      {CARRIER_LABELS[s.carrier] ?? s.carrier} ·{' '}
+                      {SHIPMENT_STATUS_LABELS[s.status]}
+                      {s.trackingNumber && ` · ${s.trackingNumber}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <>
+                <p className="text-[13.5px] text-muted">
+                  Aucune expédition suivie pour ce bon. Créez-en une pour tracer le transport
+                  jusqu&apos;à l&apos;entrepôt — le client la verra sur sa page de suivi.
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                  <select
+                    value={carrier}
+                    onChange={(e) => setCarrier(e.target.value as ShipmentCarrierCode)}
+                    className="rounded-sm border border-border-strong bg-card px-3 py-2 text-sm text-ink"
+                  >
+                    {(Object.keys(CARRIER_LABELS) as ShipmentCarrierCode[]).map((c) => (
+                      <option key={c} value={c}>
+                        {CARRIER_LABELS[c]}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    value={trackingNumber}
+                    onChange={(e) => setTrackingNumber(e.target.value)}
+                    placeholder="N° de suivi (optionnel)"
+                    className="rounded-sm border border-border-strong bg-card px-3 py-2 font-mono text-sm text-ink"
+                  />
+                  <button
+                    onClick={createShipment}
+                    disabled={busy}
+                    className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
+                  >
+                    Créer
+                  </button>
+                </div>
+              </>
+            )}
+          </Section>
+
           <Section title={`Lignes (${po.lines.length})`}>
             <Table>
               <Thead>
