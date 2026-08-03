@@ -12,6 +12,7 @@ import { uploadToR2 } from '../../lib/r2.js'
 import { processVariants, MAX_FILE_SIZE } from '../../lib/imageProcessor.js'
 import { normalizeIvorianPhone } from '../../lib/phone.js'
 import { assertMember } from '../enterprise/enterprise.service.js'
+import { getShipmentForQuoteRequest } from '../sourcing/shipment.service.js'
 import { sendBaileysText, isBaileysConnected } from '../whatsapp/baileys.sender.js'
 import {
   createLogisticsQuoteRequestSchema,
@@ -609,7 +610,10 @@ export async function getQuoteRequestByReference(reference: string, uploadToken:
     throw new AppError('LOGISTICS_LEAD_NOT_FOUND', 404, { message: 'Demande introuvable' })
   }
   const { uploadTokenHash: _drop, ...rest } = lead
-  return rest
+  // L'expédition, quand la demande en a une : le client suit la même référence
+  // du devis à la livraison. Projection publique — le transitaire n'y est pas nommé.
+  const shipment = await getShipmentForQuoteRequest(lead.id)
+  return { ...rest, shipment }
 }
 
 export async function listQuoteRequestsForUser(userId: string) {

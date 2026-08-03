@@ -55,6 +55,18 @@ export function extractJson(text: string): unknown {
   }
 }
 
+/**
+ * Outil de recherche web côté serveur. `user_location` cadre les résultats sur
+ * Abidjan — utile pour l'enrichissement local, neutre pour le sourcing
+ * international (les requêtes y sont explicitement géographiques).
+ */
+export const webSearchTool = (maxUses: number) => ({
+  type: 'web_search_20260209' as const,
+  name: 'web_search' as const,
+  max_uses: maxUses,
+  user_location: { type: 'approximate' as const, country: 'CI', city: 'Abidjan' },
+})
+
 type MessageCreateParams = Parameters<Anthropic['messages']['create']>[0]
 
 /**

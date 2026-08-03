@@ -39,6 +39,11 @@ import {
   enterpriseLogisticsRoutes,
   adminLogisticsRoutes,
 } from './modules/logistics/logistics.routes.js'
+import { sourcingRoutes } from './modules/sourcing/sourcing.routes.js'
+import {
+  shipmentRoutes,
+  publicShipmentRoutes,
+} from './modules/sourcing/shipment.routes.js'
 import multipart from '@fastify/multipart'
 import {
   startWorker,
@@ -114,6 +119,10 @@ export function buildApp() {
   // montées sous le préfixe entreprise pour rester cohérentes avec le reste.
   fastify.register(enterpriseLogisticsRoutes, { prefix: '/api/v1/enterprises' })
   fastify.register(adminLogisticsRoutes, { prefix: '/api/v1/admin/logistics' })
+  fastify.register(sourcingRoutes, { prefix: '/api/v1/admin/sourcing' })
+  fastify.register(shipmentRoutes, { prefix: '/api/v1/admin/shipments' })
+  // Suivi client d'une expédition — même hôte public que le suivi de cotation.
+  fastify.register(publicShipmentRoutes, { prefix: '/api/v1/logistics' })
 
   return fastify
 }

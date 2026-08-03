@@ -44,6 +44,9 @@ export type ActivityAction =
   | 'DISPUTE_RESOLVED'
   | 'DISPUTE_CLOSED'
   | 'RETURN_STATUS_UPDATED'
+  | 'SOURCING_SEARCH_CREATED'
+  | 'SOURCING_PO_CREATED'
+  | 'SHIPMENT_CREATED'
 
 interface RecordParams {
   actorId: string
@@ -65,6 +68,8 @@ interface RecordParams {
     | 'MarketingCampaign'
     | 'Dispute'
     | 'ReturnOrder'
+    | 'SourcingSearch'
+    | 'Shipment'
   targetId?: string | null
   payload?: Record<string, unknown>
 }

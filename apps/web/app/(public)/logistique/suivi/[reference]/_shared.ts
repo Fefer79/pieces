@@ -64,4 +64,27 @@ export interface FleetQuoteRow {
     note: string | null
     createdAt: string
   }[]
+  /**
+   * Expédition rattachée, quand la commande est partie. Projection publique :
+   * le partenaire transitaire n'y est jamais nommé (`carrierLabel` vaut
+   * « Notre partenaire logistique » hors DHL/FedEx/UPS).
+   */
+  shipment: {
+    reference: string
+    status: string
+    statusLabel: string
+    carrierLabel: string
+    trackingNumber: string | null
+    trackingUrl: string | null
+    etaAt: string | null
+    departedAt: string | null
+    deliveredAt: string | null
+    events: {
+      id: string
+      toStatus: string | null
+      label: string
+      location: string | null
+      occurredAt: string
+    }[]
+  } | null
 }

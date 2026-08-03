@@ -63,3 +63,24 @@ export type {
   LeadCertaintySignals,
   CertaintyLevelSpec,
 } from './logistics-lead'
+export {
+  SUPPORTED_CURRENCIES,
+  EUR_XOF_PARITY,
+  CURRENCY_RATES_FCFA,
+  CURRENCY_LABEL,
+  isSupportedCurrency,
+  currencyRate,
+  toFcfa,
+} from './currencies'
+export type { SupportedCurrency } from './currencies'
+export {
+  SHIPMENT_CARRIERS,
+  CARRIERS,
+  buildTrackingUrl,
+  publicCarrierLabel,
+  SHIPMENT_STATUSES,
+  SHIPMENT_STATUS_LABEL,
+  SHIPMENT_TRANSITIONS,
+  canTransitionShipment,
+} from './carriers'
+export type { ShipmentCarrierKey, CarrierSpec, ShipmentStatusKey } from './carriers'

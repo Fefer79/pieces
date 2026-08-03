@@ -123,6 +123,50 @@ export default function SuiviPage() {
           </div>
         )}
 
+        {quote.shipment && (
+          <div className="rounded-md border border-border bg-card p-5">
+            <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              Acheminement
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <Chip variant="status-warn">{quote.shipment.statusLabel}</Chip>
+              <span className="text-[13px] text-muted">{quote.shipment.carrierLabel}</span>
+              {quote.shipment.trackingUrl && quote.shipment.trackingNumber && (
+                <a
+                  href={quote.shipment.trackingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-[12px] text-ink-2 hover:underline"
+                >
+                  {quote.shipment.trackingNumber} ↗
+                </a>
+              )}
+            </div>
+            {quote.shipment.etaAt && (
+              <p className="mt-2 text-[13px] text-muted">
+                Arrivée estimée à Abidjan le{' '}
+                <span className="text-ink">
+                  {new Date(quote.shipment.etaAt).toLocaleDateString('fr-FR')}
+                </span>
+                .
+              </p>
+            )}
+            {quote.shipment.events.length > 0 && (
+              <ol className="mt-4 space-y-3">
+                {quote.shipment.events.map((ev) => (
+                  <li key={ev.id} className="border-l-2 border-border pl-3">
+                    <div className="text-[13.5px] font-semibold text-ink">{ev.label}</div>
+                    <div className="font-mono text-[11px] text-muted-2">
+                      {new Date(ev.occurredAt).toLocaleDateString('fr-FR')}
+                      {ev.location && ` · ${ev.location}`}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        )}
+
         <div className="rounded-md border border-border bg-card p-5">
           <h2 className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
             Prochaines étapes

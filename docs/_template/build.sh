@@ -83,6 +83,7 @@ DOCS=(
   "manuel-erp-finance-2026-08|Manuel utilisateur|ERP Finance — Admin · v1.0 · Août 2026"
   "manuel-marketing-campagnes-2026-08|Manuel utilisateur|Marketing — campagnes WhatsApp · v1.0 · Août 2026"
   "manuel-support-sav-2026-08|Manuel utilisateur|Support & SAV — litiges & retours · v1.0 · Août 2026"
+  "manuel-sourcing-expeditions-2026-08|Manuel utilisateur|Sourcing & Expéditions — Admin · v1.0 · Août 2026"
   "logistique-familles-pieces-2026-07|Référentiel logistique|17 familles de pièces — poids & volumes · logistique.pieces.ci · Juillet 2026"
 )
 

@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation'
 import { adminFetch } from '@/lib/admin-api'
 import { Chip } from '@/components/ui/chip'
 import { ArbitrageTable } from '@/components/logistique/arbitrage-table'
+import { SourcingPanel } from '@/components/logistique/sourcing-panel'
 import { customerTypeLabel } from '@/lib/logistique-content'
 import type { ArbitrageResult } from 'shared/constants'
 
@@ -170,6 +171,10 @@ export default function AdminLogistiqueDetailPage() {
               />
             </Section>
           )}
+
+          <Section title="Sourcing">
+            <SourcingPanel quoteRequestId={quote.id} />
+          </Section>
 
           {quote.photos.length > 0 && (
             <Section title={`Photos (${quote.photos.length})`}>

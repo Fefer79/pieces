@@ -153,7 +153,11 @@ export const createPurchaseOrderSchema = z.object({
   supplierId: z.string().uuid(),
   destinationId: z.string().uuid().optional().nullable(),
   mode: purchaseOrderModeSchema.default('LOCAL'),
-  devise: z.string().length(3).default('FCFA'),
+  // 3 ou 4 caractères : les codes ISO font 3 lettres, mais la valeur par défaut
+  // historique est « FCFA » (et c'est aussi le défaut en base). Avec
+  // `.length(3)` le défaut échouait sa propre validation — un BC créé sans
+  // devise explicite était rejeté.
+  devise: z.string().min(3).max(4).default('FCFA'),
   tauxChange: z.number().int().min(1).optional().nullable(),
   etaAt: z.string().datetime().optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
