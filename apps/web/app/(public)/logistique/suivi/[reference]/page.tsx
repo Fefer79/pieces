@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useParams, useSearchParams } from 'next/navigation'
 import { Chip } from '@/components/ui/chip'
 import { ArbitrageTable } from '@/components/logistique/arbitrage-table'
+import { ShipmentTimeline } from '@/components/logistique/shipment-timeline'
 import { CERTAINTY_CHIP, STATUS_LABELS, STATUS_CHIP, type FleetQuoteRow } from './_shared'
 import type { ArbitrageResult } from 'shared/constants'
 
@@ -101,6 +102,8 @@ export default function SuiviPage() {
           </p>
         </div>
 
+        {quote.shipment && <ShipmentTimeline shipment={quote.shipment} />}
+
         {estimate && (
           <div className="rounded-md border border-border bg-card p-5">
             <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
@@ -123,16 +126,20 @@ export default function SuiviPage() {
           </div>
         )}
 
-        <div className="rounded-md border border-border bg-card p-5">
-          <h2 className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-            Prochaines étapes
-          </h2>
-          <p className="text-[13.5px] leading-relaxed text-muted">
-            Notre équipe vérifie le poids réel de la pièce et vous adresse les options fermes par
-            WhatsApp, généralement sous deux heures ouvrées. Vous choisissez une ligne, rien
-            n&apos;est engagé avant votre accord.
-          </p>
-        </div>
+        {/* Une fois l'expédition lancée, ce message n'a plus lieu d'être : la
+            frise ci-dessus dit déjà où en est la pièce. */}
+        {!quote.shipment && (
+          <div className="rounded-md border border-border bg-card p-5">
+            <h2 className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              Prochaines étapes
+            </h2>
+            <p className="text-[13.5px] leading-relaxed text-muted">
+              Notre équipe vérifie le poids réel de la pièce et vous adresse les options fermes par
+              WhatsApp, généralement sous deux heures ouvrées. Vous choisissez une ligne, rien
+              n&apos;est engagé avant votre accord.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   )

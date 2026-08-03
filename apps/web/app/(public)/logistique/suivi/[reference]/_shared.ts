@@ -2,6 +2,7 @@
 // dupliquer la définition des libellés et variantes de chips.
 
 import type { ChipVariant } from '@/components/ui/chip'
+import type { PublicShipment } from '@/components/logistique/shipment-timeline'
 
 export const STATUS_LABELS: Record<string, string> = {
   NEW: 'Nouveau',
@@ -64,4 +65,6 @@ export interface FleetQuoteRow {
     note: string | null
     createdAt: string
   }[]
+  /** L'expédition rattachée, une fois la commande passée. `null` avant. */
+  shipment?: PublicShipment | null
 }

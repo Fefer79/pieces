@@ -21,6 +21,7 @@ import {
 } from '@/lib/stock-utils'
 import { Chip } from '@/components/ui/chip'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
+import { ShipmentPanel } from '@/components/sourcing/shipment-panel'
 
 // Statuts depuis lesquels une réception est possible (garde identique côté API).
 const RECEIVABLE: PurchaseOrderStatus[] = ['ENVOYEE', 'EN_TRANSIT', 'RECEPTION_PARTIELLE']
@@ -147,6 +148,10 @@ export default function PurchaseOrderDetailPage() {
                 ))}
               </Tbody>
             </Table>
+          </Section>
+
+          <Section title="Expédition">
+            <ShipmentPanel purchaseOrderId={po.id} mode={po.mode} />
           </Section>
 
           {RECEIVABLE.includes(po.statut) && (
