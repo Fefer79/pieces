@@ -3,6 +3,7 @@ import {
   createWithPauseResume,
   extractJson,
   textOf,
+  webSearchTool,
 } from '../../lib/anthropic.js'
 import {
   enrichmentPass1OutputSchema,
@@ -41,13 +42,6 @@ export interface IdentificationPayload {
   reference_fabricant: string | null
   references_oem: Array<{ constructeur: string; reference: string }>
 }
-
-const webSearchTool = (maxUses: number) => ({
-  type: 'web_search_20260209' as const,
-  name: 'web_search' as const,
-  max_uses: maxUses,
-  user_location: { type: 'approximate' as const, country: 'CI', city: 'Abidjan' },
-})
 
 /**
  * Passe 1 — synchrone, vision seule (< 10 s). Un seul appel avec les photos,

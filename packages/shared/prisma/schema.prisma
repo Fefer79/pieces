@@ -61,6 +61,9 @@ model User {
   agentObjectives        AgentObjective[]
   agentCommissions       AgentCommission[]
   marketingCampaigns     MarketingCampaign[]
+  sourcingSearches       SourcingSearch[]        @relation("SourcingSearchCreator")
+  shipmentsCreated       Shipment[]              @relation("ShipmentCreator")
+  shipmentEvents         ShipmentEvent[]         @relation("ShipmentEventActor")
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -190,6 +193,7 @@ enum JobType {
   ENRICHMENT_SOURCING_COLLECT
   CRM_DUE_TASKS_SCAN
   MARKETING_CAMPAIGN_SEND
+  SOURCING_SEARCH_RUN
 }
 
 enum JobStatus {
@@ -728,6 +732,7 @@ model PartRequest {
   photos                 PartRequestPhoto[]
   events                 PartRequestEvent[]
   logisticsQuoteRequests LogisticsQuoteRequest[]
+  sourcingSearches       SourcingSearch[]
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @updatedAt @map("updated_at")
 
@@ -1966,7 +1971,9 @@ model PurchaseOrder {
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
 
-  lines PurchaseOrderItem[]
+  lines          PurchaseOrderItem[]
+  shipments      Shipment[]
+  sourcingOffers SourcingOffer[]
 
   @@index([statut], name: "idx_purchase_orders_statut")
   @@index([supplierId], name: "idx_purchase_orders_supplier")
@@ -2129,8 +2136,10 @@ model LogisticsQuoteRequest {
   lostReason            String?   @map("lost_reason")
   convertedEnterpriseId String?   @map("converted_enterprise_id")
 
-  photos LogisticsQuoteRequestPhoto[]
-  events LogisticsQuoteRequestEvent[]
+  photos           LogisticsQuoteRequestPhoto[]
+  events           LogisticsQuoteRequestEvent[]
+  sourcingSearches SourcingSearch[]
+  shipments        Shipment[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -2220,7 +2229,7 @@ model AgentObjective {
   id        String               @id @default(uuid())
   agentId   String               @map("agent_id")
   agent     User                 @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  periode   String               // 'YYYY-MM'
+  periode   String // 'YYYY-MM'
   metrique  AgentObjectiveMetric
   cible     Int
   createdAt DateTime             @default(now()) @map("created_at")
@@ -2235,7 +2244,7 @@ model AgentCommission {
   id          String                @id @default(uuid())
   agentId     String                @map("agent_id")
   agent       User                  @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  periode     String                // 'YYYY-MM'
+  periode     String // 'YYYY-MM'
   baseFcfa    Int                   @map("base_fcfa")
   tauxPct     Int                   @map("taux_pct")
   montantFcfa Int                   @map("montant_fcfa")
@@ -2248,4 +2257,221 @@ model AgentCommission {
   @@unique([agentId, periode])
   @@index([periode, statut], name: "idx_agent_commissions_periode_statut")
   @@map("agent_commissions")
+}
+
+// ---------------------------------------------------------------------------
+// Sourcing & Expéditions (docs/sourcing-expeditions-plan-2026-08.md)
+//
+// Le chaînon manquant entre le besoin (LogisticsQuoteRequest / PartRequest) et
+// l'achat (PurchaseOrder). SourcingSearch = une exécution de l'agent de
+// recherche web sur un besoin donné ; SourcingOffer = une offre candidate
+// trouvée, comparée aux autres par computeArbitrageMatrix() une fois convertie
+// en FCFA. Shipment suit ensuite le colis jusqu'à Abidjan.
+//
+// Règle : les prix issus de l'agent sont INDICATIFS (priceConfirmed = false)
+// tant qu'un opérateur ne les a pas vérifiés auprès du fournisseur.
+// ---------------------------------------------------------------------------
+
+enum SourcingSearchStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
+enum SourcingOfferStatus {
+  CANDIDATE
+  SHORTLISTED
+  CONTACTED
+  REJECTED
+  ORDERED
+}
+
+enum SourcingChannel {
+  MARKETPLACE_INTL
+  DISTRIBUTOR_REGIONAL
+  EXPORTER
+  MANUFACTURER
+  LOCAL
+}
+
+enum ShipmentCarrier {
+  DHL
+  FEDEX
+  UPS
+  TRANSITAIRE
+  AIR_CARGO
+  SEA_LCL
+  POSTAL
+  OTHER
+}
+
+enum ShipmentStatus {
+  SOURCING
+  COLLECTED
+  IN_TRANSIT
+  CUSTOMS
+  LOCAL_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model SourcingSearch {
+  id     String               @id @default(cuid())
+  status SourcingSearchStatus @default(PENDING)
+
+  // Rattachement au besoin — l'un OU l'autre, jamais obligatoire (une recherche
+  // exploratoire hors demande reste possible).
+  quoteRequestId String?                @map("quote_request_id")
+  quoteRequest   LogisticsQuoteRequest? @relation(fields: [quoteRequestId], references: [id], onDelete: SetNull)
+  partRequestId  String?                @map("part_request_id")
+  partRequest    PartRequest?           @relation(fields: [partRequestId], references: [id], onDelete: SetNull)
+
+  // Snapshot de la requête au moment du lancement : la demande peut être
+  // corrigée après coup, les offres restent rattachées à ce qui a été cherché.
+  partName     String  @map("part_name")
+  oemReference String? @map("oem_reference")
+  vehicleBrand String? @map("vehicle_brand")
+  vehicleModel String? @map("vehicle_model")
+  vehicleYear  Int?    @map("vehicle_year")
+  quantity     Int     @default(1)
+
+  model       String?
+  startedAt   DateTime? @map("started_at")
+  finishedAt  DateTime? @map("finished_at")
+  error       String?
+  createdById String    @map("created_by_id")
+  createdBy   User      @relation("SourcingSearchCreator", fields: [createdById], references: [id])
+
+  offers SourcingOffer[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt], name: "idx_sourcing_searches_status")
+  @@index([quoteRequestId], name: "idx_sourcing_searches_quote_request")
+  @@index([partRequestId], name: "idx_sourcing_searches_part_request")
+  @@map("sourcing_searches")
+}
+
+model SourcingOffer {
+  id       String         @id @default(cuid())
+  searchId String         @map("search_id")
+  search   SourcingSearch @relation(fields: [searchId], references: [id], onDelete: Cascade)
+
+  supplierName String          @map("supplier_name")
+  channel      SourcingChannel @default(MARKETPLACE_INTL)
+  country      String?
+  city         String?
+  url          String?
+  sourceSite   String?         @map("source_site")
+
+  title          String?
+  brand          String?
+  oemReference   String?        @map("oem_reference")
+  conditionLabel String?        @map("condition_label")
+  condition      PartCondition?
+
+  // Prix tels qu'affichés par la source + conversion FCFA au taux du jour.
+  // priceConfirmed passe à true seulement après vérification ops.
+  priceAmount    Float?  @map("price_amount")
+  priceCurrency  String? @map("price_currency")
+  priceFcfa      Int?    @map("price_fcfa")
+  priceConfirmed Boolean @default(false) @map("price_confirmed")
+  shippingAmount Float?  @map("shipping_amount")
+
+  moq          Int?
+  leadTimeDays Int?    @map("lead_time_days")
+  weightKg     Float?  @map("weight_kg")
+  availability String?
+
+  contactPhone    String? @map("contact_phone")
+  contactEmail    String? @map("contact_email")
+  contactWhatsapp String? @map("contact_whatsapp")
+
+  confidence Float               @default(0)
+  status     SourcingOfferStatus @default(CANDIDATE)
+  opsNote    String?             @map("ops_note")
+  chosenMode String?             @map("chosen_mode") // clé LogisticsMode (constants/logistics.ts)
+
+  purchaseOrderId String?        @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([searchId, status], name: "idx_sourcing_offers_search")
+  @@index([purchaseOrderId], name: "idx_sourcing_offers_po")
+  @@map("sourcing_offers")
+}
+
+model Shipment {
+  id        String         @id @default(cuid())
+  reference String         @unique // EXP-YYYYMMDD-XXXX
+  status    ShipmentStatus @default(SOURCING)
+
+  purchaseOrderId String?                @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder?         @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+  quoteRequestId  String?                @map("quote_request_id")
+  quoteRequest    LogisticsQuoteRequest? @relation(fields: [quoteRequestId], references: [id], onDelete: SetNull)
+
+  carrier        ShipmentCarrier @default(TRANSITAIRE)
+  carrierOther   String?         @map("carrier_other")
+  trackingNumber String?         @map("tracking_number")
+  trackingUrl    String?         @map("tracking_url")
+  mode           String          @default("AIR_STANDARD") // clé LOGISTICS_MODES
+
+  originCountry String? @map("origin_country")
+  originCity    String? @map("origin_city")
+
+  departedAt       DateTime? @map("departed_at")
+  etaAt            DateTime? @map("eta_at")
+  customsClearedAt DateTime? @map("customs_cleared_at")
+  arrivedAt        DateTime? @map("arrived_at")
+  deliveredAt      DateTime? @map("delivered_at")
+
+  weightKg           Float? @map("weight_kg")
+  volumeDm3          Float? @map("volume_dm3")
+  chargeableWeightKg Float? @map("chargeable_weight_kg")
+  freightCostFcfa    Int?   @map("freight_cost_fcfa")
+  customsCostFcfa    Int?   @map("customs_cost_fcfa")
+  lastMileCostFcfa   Int?   @map("last_mile_cost_fcfa")
+  totalCostFcfa      Int?   @map("total_cost_fcfa")
+
+  // Jeton de suivi public haché (même schéma que LogisticsQuoteRequest).
+  publicTokenHash String? @map("public_token_hash")
+  notes           String?
+
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("ShipmentCreator", fields: [createdById], references: [id])
+
+  events ShipmentEvent[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt], name: "idx_shipments_status")
+  @@index([purchaseOrderId], name: "idx_shipments_po")
+  @@index([quoteRequestId], name: "idx_shipments_quote_request")
+  @@map("shipments")
+}
+
+model ShipmentEvent {
+  id         String   @id @default(cuid())
+  shipmentId String   @map("shipment_id")
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  fromStatus  ShipmentStatus? @map("from_status")
+  toStatus    ShipmentStatus? @map("to_status")
+  label       String
+  location    String?
+  occurredAt  DateTime        @default(now()) @map("occurred_at")
+  actorUserId String?         @map("actor_user_id")
+  actor       User?           @relation("ShipmentEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  note        String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([shipmentId, occurredAt], name: "idx_shipment_events_shipment")
+  @@map("shipment_events")
 }

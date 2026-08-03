@@ -12,6 +12,7 @@ import { uploadToR2 } from '../../lib/r2.js'
 import { processVariants, MAX_FILE_SIZE } from '../../lib/imageProcessor.js'
 import { normalizeIvorianPhone } from '../../lib/phone.js'
 import { assertMember } from '../enterprise/enterprise.service.js'
+import { getShipmentForQuoteRequest } from '../sourcing/shipment.service.js'
 import { sendBaileysText, isBaileysConnected } from '../whatsapp/baileys.sender.js'
 import {
   createLogisticsQuoteRequestSchema,
@@ -609,7 +610,11 @@ export async function getQuoteRequestByReference(reference: string, uploadToken:
     throw new AppError('LOGISTICS_LEAD_NOT_FOUND', 404, { message: 'Demande introuvable' })
   }
   const { uploadTokenHash: _drop, ...rest } = lead
-  return rest
+  // L'expédition rattachée, si elle existe : c'est ce qui fait vivre la page de
+  // suivi une fois la commande passée. Aucun coût n'y figure et le transitaire
+  // n'y est jamais nommé (cf. toPublicShipment).
+  const shipment = await getShipmentForQuoteRequest(lead.id)
+  return { ...rest, shipment }
 }
 
 export async function listQuoteRequestsForUser(userId: string) {

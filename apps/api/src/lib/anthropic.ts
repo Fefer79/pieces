@@ -55,6 +55,18 @@ export function extractJson(text: string): unknown {
   }
 }
 
+/**
+ * Outil de recherche web côté serveur. Partagé par l'agent Fiche Terrain
+ * (enrichment) et l'agent de sourcing d'offres : `max_uses` borne le coût et la
+ * latence de chaque passe, la localisation oriente les résultats sur Abidjan.
+ */
+export const webSearchTool = (maxUses: number) => ({
+  type: 'web_search_20260209' as const,
+  name: 'web_search' as const,
+  max_uses: maxUses,
+  user_location: { type: 'approximate' as const, country: 'CI', city: 'Abidjan' },
+})
+
 type MessageCreateParams = Parameters<Anthropic['messages']['create']>[0]
 
 /**

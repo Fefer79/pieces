@@ -34,6 +34,8 @@ import { equipeRoutes } from './modules/equipe/equipe.routes.js'
 import { financeRoutes } from './modules/finance/finance.routes.js'
 import { marketingRoutes } from './modules/marketing/marketing.routes.js'
 import { supportRoutes } from './modules/support/support.routes.js'
+import { sourcingRoutes } from './modules/sourcing/sourcing.routes.js'
+import { shipmentRoutes, publicShipmentRoutes } from './modules/sourcing/shipment.routes.js'
 import {
   logisticsRoutes,
   enterpriseLogisticsRoutes,
@@ -109,7 +111,11 @@ export function buildApp() {
   fastify.register(financeRoutes, { prefix: '/api/v1/admin/finance' })
   fastify.register(marketingRoutes, { prefix: '/api/v1/admin/marketing' })
   fastify.register(supportRoutes, { prefix: '/api/v1/admin/support' })
+  fastify.register(sourcingRoutes, { prefix: '/api/v1/admin/sourcing' })
+  fastify.register(shipmentRoutes, { prefix: '/api/v1/admin/shipments' })
   fastify.register(logisticsRoutes, { prefix: '/api/v1/logistics' })
+  // Suivi client d'une expédition — même préfixe public que les cotations.
+  fastify.register(publicShipmentRoutes, { prefix: '/api/v1/logistics' })
   // Cotations logistique scopées flotte — servies par le module logistics mais
   // montées sous le préfixe entreprise pour rester cohérentes avec le reste.
   fastify.register(enterpriseLogisticsRoutes, { prefix: '/api/v1/enterprises' })

@@ -50,6 +50,31 @@ export type {
   ArbitrageResult,
 } from './logistics'
 export {
+  CURRENCY_RATES_FCFA,
+  RATES_UPDATED_AT,
+  FIXED_PARITY_CURRENCIES,
+  normalizeCurrency,
+  toFcfa,
+  formatCurrencyAmount,
+} from './currencies'
+export type { SupportedCurrency } from './currencies'
+export {
+  SHIPMENT_CARRIERS,
+  SHIPMENT_CARRIER_KEYS,
+  buildTrackingUrl,
+  publicCarrierLabel,
+  SHIPMENT_FLOW,
+  SHIPMENT_STATUSES,
+  SHIPMENT_TRANSITIONS,
+  canTransitionShipment,
+} from './carriers'
+export type {
+  ShipmentCarrierKey,
+  CarrierSpec,
+  ShipmentStatusKey,
+  ShipmentStatusSpec,
+} from './carriers'
+export {
   CERTAINTY_WEIGHTS,
   CERTAINTY_LEVELS,
   CERTAINTY_SIGNAL_LABEL,
