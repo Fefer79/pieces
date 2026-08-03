@@ -61,6 +61,10 @@ model User {
   agentObjectives        AgentObjective[]
   agentCommissions       AgentCommission[]
   marketingCampaigns     MarketingCampaign[]
+  sourcingSearches       SourcingSearch[]        @relation("SourcingSearchCreator")
+  sourcingOffers         SourcingOffer[]         @relation("SourcingOfferCreator")
+  shipmentsCreated       Shipment[]              @relation("ShipmentCreator")
+  shipmentEvents         ShipmentEvent[]         @relation("ShipmentEventActor")
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -190,6 +194,7 @@ enum JobType {
   ENRICHMENT_SOURCING_COLLECT
   CRM_DUE_TASKS_SCAN
   MARKETING_CAMPAIGN_SEND
+  SOURCING_SEARCH_RUN
 }
 
 enum JobStatus {
@@ -728,6 +733,7 @@ model PartRequest {
   photos                 PartRequestPhoto[]
   events                 PartRequestEvent[]
   logisticsQuoteRequests LogisticsQuoteRequest[]
+  sourcingSearches       SourcingSearch[]
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @updatedAt @map("updated_at")
 
@@ -1966,7 +1972,9 @@ model PurchaseOrder {
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
 
-  lines PurchaseOrderItem[]
+  lines          PurchaseOrderItem[]
+  sourcingOffers SourcingOffer[]
+  shipments      Shipment[]
 
   @@index([statut], name: "idx_purchase_orders_statut")
   @@index([supplierId], name: "idx_purchase_orders_supplier")
@@ -2129,8 +2137,10 @@ model LogisticsQuoteRequest {
   lostReason            String?   @map("lost_reason")
   convertedEnterpriseId String?   @map("converted_enterprise_id")
 
-  photos LogisticsQuoteRequestPhoto[]
-  events LogisticsQuoteRequestEvent[]
+  photos           LogisticsQuoteRequestPhoto[]
+  events           LogisticsQuoteRequestEvent[]
+  sourcingSearches SourcingSearch[]
+  shipments        Shipment[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -2248,4 +2258,237 @@ model AgentCommission {
   @@unique([agentId, periode])
   @@index([periode, statut], name: "idx_agent_commissions_periode_statut")
   @@map("agent_commissions")
+}
+
+// ---------------------------------------------------------------------------
+// Sourcing & expéditions — de la demande client à la livraison
+//
+// `SourcingSearch` est le DOSSIER de sourcing d'un besoin, pas nécessairement
+// une recherche automatique : le mode nominal est la saisie manuelle, où l'ops
+// colle les liens des pages vendeur qu'il a trouvées lui-même. La recherche
+// agentique (origin AGENT) écrit exactement les mêmes lignes `SourcingOffer` —
+// rien en aval ne distingue les deux.
+//
+// Voir docs/logistique-as-a-service.md §4 (étapes de transport) et §7.
+// ---------------------------------------------------------------------------
+
+enum SourcingSearchStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
+/** Qui a produit la ligne : l'ops (collage manuel) ou l'agent. */
+enum SourcingOrigin {
+  MANUAL
+  AGENT
+}
+
+enum SourcingOfferStatus {
+  CANDIDATE
+  SHORTLISTED
+  CONTACTED
+  REJECTED
+  ORDERED
+}
+
+enum SourcingChannel {
+  MARKETPLACE_INTL
+  DISTRIBUTOR_REGIONAL
+  EXPORTER
+  MANUFACTURER
+  LOCAL
+}
+
+enum ShipmentCarrier {
+  DHL
+  FEDEX
+  UPS
+  TRANSITAIRE
+  AIR_CARGO
+  SEA_LCL
+  POSTAL
+  OTHER
+}
+
+/** Étapes de transport — reprise littérale de docs/logistique-as-a-service.md §4. */
+enum ShipmentStatus {
+  SOURCING
+  COLLECTED
+  IN_TRANSIT
+  CUSTOMS
+  LOCAL_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model SourcingSearch {
+  id     String               @id @default(uuid())
+  origin SourcingOrigin       @default(MANUAL)
+  status SourcingSearchStatus @default(DONE)
+
+  // Rattachement au besoin — l'un OU l'autre (cuid côté lead, uuid côté flotte).
+  quoteRequestId String?                @map("quote_request_id")
+  quoteRequest   LogisticsQuoteRequest? @relation(fields: [quoteRequestId], references: [id], onDelete: SetNull)
+  partRequestId  String?                @map("part_request_id")
+  partRequest    PartRequest?           @relation(fields: [partRequestId], references: [id], onDelete: SetNull)
+
+  // Snapshot de la demande : le dossier reste lisible même si le lead évolue.
+  partName     String  @map("part_name")
+  oemReference String? @map("oem_reference")
+  vehicleBrand String? @map("vehicle_brand")
+  vehicleModel String? @map("vehicle_model")
+  vehicleYear  Int?    @map("vehicle_year")
+  quantity     Int     @default(1)
+
+  // Exécution agentique (null en saisie manuelle)
+  model      String?
+  startedAt  DateTime? @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  error      String?
+
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("SourcingSearchCreator", fields: [createdById], references: [id])
+
+  offers SourcingOffer[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([quoteRequestId], name: "idx_sourcing_searches_quote_request")
+  @@index([partRequestId], name: "idx_sourcing_searches_part_request")
+  @@index([status, createdAt], name: "idx_sourcing_searches_status")
+  @@map("sourcing_searches")
+}
+
+/**
+ * Une offre candidate. Seule `url` est obligatoire : l'ops colle d'abord un
+ * lien nu, puis complète prix / pays / délai ligne par ligne. Exiger davantage
+ * à la création rendrait le collage en masse inutilisable.
+ */
+model SourcingOffer {
+  id       String         @id @default(uuid())
+  searchId String         @map("search_id")
+  search   SourcingSearch @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  origin   SourcingOrigin @default(MANUAL)
+
+  url          String
+  sourceSite   String          @map("source_site") // hostname, sans www.
+  supplierName String?         @map("supplier_name")
+  channel      SourcingChannel @default(MARKETPLACE_INTL)
+  country      String?
+  city         String?
+
+  title        String?
+  brand        String?
+  oemReference String?        @map("oem_reference")
+  condition    PartCondition?
+  source       PartSource?
+
+  // Prix affiché sur la page, JAMAIS un devis fournisseur tant que
+  // priceConfirmed est faux — la matrice le signale.
+  priceAmount    Float?  @map("price_amount") // dans priceCurrency
+  priceCurrency  String  @default("EUR") @map("price_currency")
+  priceFcfa      Int?    @map("price_fcfa") // converti à l'écriture
+  priceConfirmed Boolean @default(false) @map("price_confirmed")
+  shippingAmount Float?  @map("shipping_amount")
+
+  moq          Int?
+  leadTimeDays Int?    @map("lead_time_days")
+  weightKg     Float?  @map("weight_kg")
+  availability String?
+
+  contactPhone    String? @map("contact_phone")
+  contactEmail    String? @map("contact_email")
+  contactWhatsapp String? @map("contact_whatsapp")
+
+  confidence Float? // renseigné par l'agent uniquement
+  status     SourcingOfferStatus @default(CANDIDATE)
+  opsNote    String?             @map("ops_note")
+  chosenMode String?             @map("chosen_mode") // clé LOGISTICS_MODES
+
+  purchaseOrderId String?        @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+
+  createdById String? @map("created_by_id")
+  createdBy   User?   @relation("SourcingOfferCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Recoller deux fois le même lien dans un dossier ne crée pas de doublon.
+  @@unique([searchId, url], name: "uq_sourcing_offers_search_url")
+  @@index([searchId, status], name: "idx_sourcing_offers_search_status")
+  @@map("sourcing_offers")
+}
+
+model Shipment {
+  id        String @id @default(uuid())
+  reference String @unique // EXP-YYYYMMDD-XXXX
+
+  purchaseOrderId String?        @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+  // Rattachement direct au besoin : c'est lui qui alimente la page de suivi client.
+  quoteRequestId  String?                @map("quote_request_id")
+  quoteRequest    LogisticsQuoteRequest? @relation(fields: [quoteRequestId], references: [id], onDelete: SetNull)
+
+  carrier        ShipmentCarrier
+  carrierOther   String?         @map("carrier_other")
+  trackingNumber String?         @map("tracking_number")
+  trackingUrl    String?         @map("tracking_url")
+  mode           String          @default("AIR_STANDARD") // clé LOGISTICS_MODES
+  status         ShipmentStatus  @default(SOURCING)
+
+  originCountry String? @map("origin_country")
+  originCity    String? @map("origin_city")
+
+  departedAt       DateTime? @map("departed_at")
+  etaAt            DateTime? @map("eta_at")
+  customsClearedAt DateTime? @map("customs_cleared_at")
+  arrivedAt        DateTime? @map("arrived_at")
+  deliveredAt      DateTime? @map("delivered_at")
+
+  weightKg           Float? @map("weight_kg")
+  volumeDm3          Float? @map("volume_dm3")
+  chargeableWeightKg Float? @map("chargeable_weight_kg")
+
+  freightCostFcfa  Int? @map("freight_cost_fcfa")
+  customsCostFcfa  Int? @map("customs_cost_fcfa")
+  lastMileCostFcfa Int? @map("last_mile_cost_fcfa")
+  totalCostFcfa    Int? @map("total_cost_fcfa")
+
+  notes       String?
+  createdById String  @map("created_by_id")
+  createdBy   User    @relation("ShipmentCreator", fields: [createdById], references: [id])
+
+  events ShipmentEvent[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt], name: "idx_shipments_status")
+  @@index([quoteRequestId], name: "idx_shipments_quote_request")
+  @@index([purchaseOrderId], name: "idx_shipments_purchase_order")
+  @@map("shipments")
+}
+
+model ShipmentEvent {
+  id         String          @id @default(uuid())
+  shipmentId String          @map("shipment_id")
+  shipment   Shipment        @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  fromStatus ShipmentStatus? @map("from_status")
+  toStatus   ShipmentStatus? @map("to_status")
+  label      String
+  location   String?
+  occurredAt DateTime        @default(now()) @map("occurred_at")
+
+  actorUserId String? @map("actor_user_id")
+  actorUser   User?   @relation("ShipmentEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  note        String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([shipmentId, occurredAt], name: "idx_shipment_events_shipment")
+  @@map("shipment_events")
 }

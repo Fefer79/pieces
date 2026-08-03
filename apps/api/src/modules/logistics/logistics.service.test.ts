@@ -53,6 +53,7 @@ vi.mock('../whatsapp/baileys.sender.js', () => ({
 const {
   createQuoteRequest,
   addQuoteRequestPhoto,
+  getQuoteRequestByReference,
   buildReference,
   buildEstimate,
   hashToken,
@@ -376,5 +377,77 @@ describe('addQuoteRequestPhoto', () => {
 
     const key = uploadToR2.mock.calls[0]![0]
     expect(key).toMatch(/^logistics-leads\/lead-1\/[0-9a-f-]{36}_registration_card\.jpg$/)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Suivi public — le transitaire ne doit JAMAIS fuiter
+// ---------------------------------------------------------------------------
+
+describe('getQuoteRequestByReference — projection publique de l\'expédition', () => {
+  const TOKEN = 'a'.repeat(64)
+
+  function leadWithShipment(carrier: string) {
+    return {
+      id: 'lead-1',
+      reference: 'LOG-0308-AB2C',
+      partName: 'Amortisseur avant',
+      uploadTokenHash: hashToken(TOKEN),
+      photos: [],
+      shipments: [
+        {
+          reference: 'EXP-20260803-AAAA',
+          status: 'IN_TRANSIT',
+          carrier,
+          etaAt: null,
+          deliveredAt: null,
+          events: [
+            { id: 'e1', toStatus: 'COLLECTED', label: 'Colis récupéré', location: 'Dubaï', occurredAt: new Date() },
+          ],
+        },
+      ],
+    }
+  }
+
+  it('aplatit l\'expédition et ne renvoie jamais le transporteur brut', async () => {
+    leadFindUnique.mockResolvedValue(leadWithShipment('TRANSITAIRE'))
+
+    const res = await getQuoteRequestByReference('LOG-0308-AB2C', TOKEN)
+
+    expect(res).not.toHaveProperty('shipments')
+    expect(res.shipment).toMatchObject({
+      reference: 'EXP-20260803-AAAA',
+      status: 'IN_TRANSIT',
+      carrierLabel: 'notre partenaire logistique',
+    })
+    // Le nom du partenaire ne doit apparaître nulle part dans la charge utile.
+    expect(res.shipment).not.toHaveProperty('carrier')
+    expect(JSON.stringify(res)).not.toMatch(/TRANSITAIRE/)
+  })
+
+  it('nomme DHL, dont le suivi est public de toute façon', async () => {
+    leadFindUnique.mockResolvedValue(leadWithShipment('DHL'))
+    const res = await getQuoteRequestByReference('LOG-0308-AB2C', TOKEN)
+    expect(res.shipment?.carrierLabel).toBe('DHL Express')
+  })
+
+  it('conserve les étapes visibles par le client', async () => {
+    leadFindUnique.mockResolvedValue(leadWithShipment('DHL'))
+    const res = await getQuoteRequestByReference('LOG-0308-AB2C', TOKEN)
+    expect(res.shipment?.events).toHaveLength(1)
+    expect(res.shipment?.events[0]).toMatchObject({ label: 'Colis récupéré', location: 'Dubaï' })
+  })
+
+  it('renvoie shipment: null tant qu\'aucune expédition n\'est créée', async () => {
+    leadFindUnique.mockResolvedValue({ ...leadWithShipment('DHL'), shipments: [] })
+    const res = await getQuoteRequestByReference('LOG-0308-AB2C', TOKEN)
+    expect(res.shipment).toBeNull()
+  })
+
+  it('refuse un jeton invalide sans distinguer de « introuvable »', async () => {
+    leadFindUnique.mockResolvedValue(leadWithShipment('DHL'))
+    await expect(
+      getQuoteRequestByReference('LOG-0308-AB2C', 'b'.repeat(64)),
+    ).rejects.toMatchObject({ statusCode: 404 })
   })
 })

@@ -63,3 +63,24 @@ export type {
   LeadCertaintySignals,
   CertaintyLevelSpec,
 } from './logistics-lead'
+export {
+  CURRENCY_CODES,
+  CURRENCY_RATES_FCFA,
+  CURRENCY_LABELS,
+  isCurrencyCode,
+  toFcfa,
+} from './currencies'
+export type { CurrencyCode } from './currencies'
+export {
+  SHIPMENT_CARRIERS,
+  CARRIER_LABELS,
+  CARRIER_PUBLIC_FALLBACK,
+  isCarrierPublic,
+  publicCarrierLabel,
+  buildTrackingUrl,
+  SHIPMENT_STATUSES,
+  SHIPMENT_STATUS_LABELS,
+  SHIPMENT_TRANSITIONS,
+  canTransitionShipment,
+} from './carriers'
+export type { ShipmentCarrierCode, ShipmentStatusCode } from './carriers'

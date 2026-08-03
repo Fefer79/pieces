@@ -29,7 +29,40 @@ export const CERTAINTY_CHIP: Record<string, ChipVariant> = {
   HIGH: 'status-ok',
 }
 
+export const SHIPMENT_STATUS_LABELS: Record<string, string> = {
+  SOURCING: 'Approvisionnement',
+  COLLECTED: 'Colis récupéré',
+  IN_TRANSIT: 'En transit',
+  CUSTOMS: 'Dédouanement',
+  LOCAL_DELIVERY: 'Livraison Abidjan',
+  DELIVERED: 'Livré',
+  CANCELLED: 'Annulé',
+}
+
+/**
+ * Expédition telle que la voit le client.
+ *
+ * ⚠ Il n'y a délibérément PAS de champ `carrier` : l'API renvoie un
+ * `carrierLabel` déjà assaini (« notre partenaire logistique » pour un
+ * transitaire). Ne pas réintroduire le transporteur brut ici.
+ */
+export interface PublicShipment {
+  reference: string
+  status: string
+  carrierLabel: string
+  etaAt: string | null
+  deliveredAt: string | null
+  events: {
+    id: string
+    toStatus: string | null
+    label: string
+    location: string | null
+    occurredAt: string
+  }[]
+}
+
 export interface FleetQuoteRow {
+  shipment: PublicShipment | null
   id: string
   reference: string
   status: keyof typeof STATUS_LABELS
