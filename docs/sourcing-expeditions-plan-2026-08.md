@@ -1,16 +1,28 @@
 # Module Sourcing & Expéditions — de la demande client à la livraison
 
 > **Plan d'implémentation.** Rédigé le 2026-08-03 après analyse du code existant.
-> Statut : **prêt à implémenter, non commencé.**
+> Statut : **implémenté le 2026-08-03** — les 4 lots sont livrés. Ce document reste la
+> référence de conception ; le code fait foi.
 
-## Comment reprendre dans une nouvelle session
+## Où est le code
 
-1. Lire ce fichier en entier.
-2. Lire `CLAUDE.md` (conventions monorepo, pattern module API, validation Zod, erreurs) et
-   `DESIGN.md` (chips de condition, détail de prix explicite — deux règles porteuses ici).
-3. Lire `docs/logistique-as-a-service.md` §4 (parcours de cotation), §7 (modèle de données proposé)
-   et §9 (phasage) : ce plan est la mise en œuvre concrète de la **Phase 4**, non commencée.
-4. Attaquer par le **Lot 1** (modèle de données) — les lots suivants en dépendent tous.
+| Lot | Où |
+|---|---|
+| 1 — modèle de données | `packages/shared/prisma/schema.prisma` (SourcingSearch, SourcingOffer, Shipment, ShipmentEvent) + `migrations/20260803_sourcing_shipments/` |
+| 2 — agent de recherche | `packages/shared/constants/{currencies,carriers}.ts`, `validators/sourcing.ts`, `apps/api/src/modules/sourcing/sourcing.{prompts,agent}.ts`, `queue/handlers/sourcingSearch.ts` |
+| 3 — service & arbitrage | `apps/api/src/modules/sourcing/{sourcing,shipment}.{service,routes}.ts` → `/api/v1/admin/sourcing`, `/api/v1/admin/shipments`, `/api/v1/logistics/shipments/:reference/public` |
+| 4 — interfaces | `apps/web/lib/sourcing-{api,utils}.ts`, `app/(auth)/admin/{sourcing,expeditions}/`, `components/sourcing/`, `components/logistique/shipment-timeline.tsx` |
+
+**Écarts assumés par rapport au plan initial** : le rendu d'arbitrage admin est écrit dans la page
+plutôt que de réutiliser `components/logistics-matrix.tsx` (qui est une carte interactive flotte
+allant chercher sa matrice par le réseau, pas un rendu de résultat déjà calculé) ; les tables
+statut → chip vivent dans `lib/sourcing-utils.ts` car Next.js refuse tout export supplémentaire
+depuis un fichier de page.
+
+**Reste ouvert** : cf. « Points d'attention » en fin de document — la calibration de la grille de
+fret (n° 3) et la mise à jour des taux de change (n° 4) ne sont pas résolues par ce lot.
+
+## Contexte de rédaction (conservé)
 
 ---
 
