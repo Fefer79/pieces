@@ -16,6 +16,8 @@ export const sourcingOfferStatusSchema = z.enum([
   'ORDERED',
 ])
 
+export const sourcingSearchOriginSchema = z.enum(['MANUAL', 'AGENT'])
+
 export const sourcingChannelSchema = z.enum([
   'MARKETPLACE_INTL',
   'DISTRIBUTOR_REGIONAL',
@@ -98,6 +100,12 @@ export const sourcingOffersOutputSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const sourcingSearchCreateSchema = z.object({
+  /**
+   * MANUAL par défaut : constituer le dossier à la main est le mode standard.
+   * AGENT déclenche la recherche automatique, qui coûte un appel modèle et
+   * jusqu'à 12 recherches web.
+   */
+  origin: sourcingSearchOriginSchema.default('MANUAL'),
   quoteRequestId: z.string().min(1).max(64).optional(),
   partRequestId: z.string().min(1).max(64).optional(),
   /** Écrase le libellé issu de la demande (ops qui reformule la requête). */
@@ -111,6 +119,37 @@ export const sourcingSearchCreateSchema = z.object({
 
 export const sourcingSearchParamsSchema = z.object({ id: z.string().min(1).max(64) })
 export const sourcingOfferParamsSchema = z.object({ id: z.string().min(1).max(64) })
+
+/**
+ * Saisie manuelle d'une offre relevée par un opérateur. Seul le nom du
+ * fournisseur est obligatoire : on préfère une offre incomplète mais réelle à
+ * une fiche bloquée faute d'un champ que la page ne donnait pas.
+ */
+export const offerCreateSchema = z.object({
+  supplierName: z.string().min(1).max(200),
+  channel: sourcingChannelSchema.default('MARKETPLACE_INTL'),
+  country: z.string().max(80).optional(),
+  city: z.string().max(80).optional(),
+  url: z.string().url('Lien invalide').max(2000).optional(),
+  title: z.string().max(300).optional(),
+  brand: z.string().max(120).optional(),
+  oemReference: z.string().max(120).optional(),
+  conditionLabel: z.string().max(80).optional(),
+  priceAmount: z.number().nonnegative().max(1_000_000_000).optional(),
+  priceCurrency: z.string().min(3).max(8).optional(),
+  /** Vrai quand le prix a été obtenu du vendeur, pas seulement lu sur une page. */
+  priceConfirmed: z.boolean().default(false),
+  shippingAmount: z.number().nonnegative().max(1_000_000_000).optional(),
+  moq: z.number().int().positive().max(100_000).optional(),
+  leadTimeDays: z.number().int().min(0).max(365).optional(),
+  weightKg: z.number().positive().max(5_000).optional(),
+  availability: z.string().max(200).optional(),
+  contactPhone: z.string().max(60).optional(),
+  contactEmail: z.string().max(160).optional(),
+  contactWhatsapp: z.string().max(60).optional(),
+  chosenMode: logisticsModeSchema.optional(),
+  opsNote: z.string().max(2000).optional(),
+})
 
 export const offerUpdateSchema = z.object({
   status: sourcingOfferStatusSchema.optional(),
@@ -126,6 +165,7 @@ export const offerUpdateSchema = z.object({
 
 export const adminSourcingListQuerySchema = z.object({
   status: sourcingSearchStatusSchema.optional(),
+  origin: sourcingSearchOriginSchema.optional(),
   quoteRequestId: z.string().max(64).optional(),
   q: z.string().max(120).optional(),
   page: z.number().int().min(1).default(1),
@@ -200,6 +240,7 @@ export const shipmentPublicLookupSchema = z.object({ t: z.string().min(16).max(1
 export type SourcingOfferOutput = z.infer<typeof sourcingOfferOutputSchema>
 export type SourcingOffersOutput = z.infer<typeof sourcingOffersOutputSchema>
 export type SourcingSearchCreateInput = z.infer<typeof sourcingSearchCreateSchema>
+export type OfferCreateInput = z.infer<typeof offerCreateSchema>
 export type OfferUpdateInput = z.infer<typeof offerUpdateSchema>
 export type AdminSourcingListQuery = z.infer<typeof adminSourcingListQuerySchema>
 export type CreatePurchaseOrderFromOfferInput = z.infer<typeof createPurchaseOrderFromOfferSchema>

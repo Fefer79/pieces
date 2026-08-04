@@ -2279,6 +2279,14 @@ enum SourcingSearchStatus {
   FAILED
 }
 
+/// Comment le dossier a été constitué. MANUAL est le mode standard : un
+/// opérateur saisit lui-même les offres qu'il a relevées. AGENT est la
+/// recherche automatique, activée au cas par cas.
+enum SourcingSearchOrigin {
+  MANUAL
+  AGENT
+}
+
 enum SourcingOfferStatus {
   CANDIDATE
   SHORTLISTED
@@ -2334,6 +2342,7 @@ model SourcingSearch {
   vehicleYear  Int?    @map("vehicle_year")
   quantity     Int     @default(1)
 
+  origin     SourcingSearchOrigin @default(MANUAL)
   status     SourcingSearchStatus @default(PENDING)
   model      String?
   startedAt  DateTime?            @map("started_at")
@@ -2392,11 +2401,15 @@ model SourcingOffer {
   contactEmail    String? @map("contact_email")
   contactWhatsapp String? @map("contact_whatsapp")
 
-  confidence Float               @default(0)
-  status     SourcingOfferStatus @default(CANDIDATE)
-  opsNote    String?             @map("ops_note")
+  confidence      Float               @default(0)
+  /// Saisie par un opérateur (lien relevé à la main) plutôt que rapportée par
+  /// l'agent. Le distinguer évite de juger de la même façon deux offres qui
+  /// n'ont pas la même provenance.
+  enteredManually Boolean             @default(false) @map("entered_manually")
+  status          SourcingOfferStatus @default(CANDIDATE)
+  opsNote         String?             @map("ops_note")
   /// Clé LOGISTICS_MODES forcée par l'ops — sinon déduite du pays.
-  chosenMode String?             @map("chosen_mode")
+  chosenMode      String?             @map("chosen_mode")
 
   purchaseOrderId String?        @map("purchase_order_id")
   purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)

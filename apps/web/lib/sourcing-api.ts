@@ -59,6 +59,7 @@ export const shipmentFetch = <T = unknown>(path: string, init?: RequestInit) =>
 // ---------------------------------------------------------------------------
 
 export type SourcingSearchStatus = 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED'
+export type SourcingSearchOrigin = 'MANUAL' | 'AGENT'
 export type SourcingOfferStatus =
   | 'CANDIDATE'
   | 'SHORTLISTED'
@@ -111,6 +112,11 @@ export const OFFER_STATUS_LABEL: Record<SourcingOfferStatus, string> = {
   ORDERED: 'Commandée',
 }
 
+export const ORIGIN_LABEL: Record<SourcingSearchOrigin, string> = {
+  MANUAL: 'Saisie manuelle',
+  AGENT: 'Recherche automatique',
+}
+
 export const CHANNEL_LABEL: Record<SourcingChannel, string> = {
   MARKETPLACE_INTL: 'Marketplace internationale',
   DISTRIBUTOR_REGIONAL: 'Distributeur régional',
@@ -145,6 +151,7 @@ export interface SourcingOffer {
   contactEmail: string | null
   contactWhatsapp: string | null
   confidence: number
+  enteredManually: boolean
   status: SourcingOfferStatus
   opsNote: string | null
   chosenMode: LogisticsMode | null
@@ -159,6 +166,7 @@ export interface SourcingSearchRow {
   vehicleModel: string | null
   vehicleYear: number | null
   quantity: number
+  origin: SourcingSearchOrigin
   status: SourcingSearchStatus
   error: string | null
   createdAt: string

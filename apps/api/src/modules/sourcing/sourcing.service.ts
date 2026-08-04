@@ -13,6 +13,7 @@ import { createPurchaseOrder } from '../stock/stock.service.js'
 import { draftSupplierMessage as draftSupplierMessageAgent } from './sourcing.agent.js'
 import {
   sourcingSearchCreateSchema,
+  offerCreateSchema,
   offerUpdateSchema,
   adminSourcingListQuerySchema,
   createPurchaseOrderFromOfferSchema,
@@ -82,10 +83,13 @@ export function mapCondition(label: string | null | undefined): PartCondition | 
 // ---------------------------------------------------------------------------
 
 /**
- * Crée la recherche et enqueue son exécution. Une recherche coûte un appel
- * Claude + jusqu'à 12 recherches web : on refuse d'en lancer une seconde tant
- * qu'une est en attente ou en cours sur la même demande (point d'attention n°1
- * du plan).
+ * Ouvre un dossier de sourcing pour une demande.
+ *
+ * Deux origines, et le défaut compte : `MANUAL` ouvre un dossier vide que
+ * l'opérateur remplit lui-même avec les liens qu'il a relevés — c'est le mode
+ * standard. `AGENT` déclenche en plus la recherche automatique, qui coûte un
+ * appel modèle et jusqu'à 12 recherches web ; on refuse alors d'en lancer une
+ * seconde tant qu'une est en attente ou en cours sur la même demande.
  */
 export async function createSearch(raw: unknown, actorUserId: string) {
   const input = sourcingSearchCreateSchema.parse(raw)
@@ -157,36 +161,142 @@ export async function createSearch(raw: unknown, actorUserId: string) {
     })
   }
 
-  const inFlight = await prisma.sourcingSearch.findFirst({
-    where: {
-      status: { in: ['PENDING', 'RUNNING'] },
-      ...(input.quoteRequestId
-        ? { quoteRequestId: input.quoteRequestId }
-        : input.partRequestId
-          ? { partRequestId: input.partRequestId }
-          : { partName: snapshot.partName }),
-    },
-    select: { id: true },
-  })
-  if (inFlight) {
-    throw new AppError('SOURCING_SEARCH_IN_FLIGHT', 409, {
-      message: 'Une recherche est déjà en cours pour cette demande',
-      searchId: inFlight.id,
+  if (input.origin === 'AGENT') {
+    const inFlight = await prisma.sourcingSearch.findFirst({
+      where: {
+        origin: 'AGENT',
+        status: { in: ['PENDING', 'RUNNING'] },
+        ...(input.quoteRequestId
+          ? { quoteRequestId: input.quoteRequestId }
+          : input.partRequestId
+            ? { partRequestId: input.partRequestId }
+            : { partName: snapshot.partName }),
+      },
+      select: { id: true },
     })
+    if (inFlight) {
+      throw new AppError('SOURCING_SEARCH_IN_FLIGHT', 409, {
+        message: 'Une recherche automatique est déjà en cours pour cette demande',
+        searchId: inFlight.id,
+      })
+    }
   }
 
   const search = await prisma.sourcingSearch.create({
     data: {
+      origin: input.origin,
       quoteRequestId: input.quoteRequestId ?? null,
       partRequestId: input.partRequestId ?? null,
       ...snapshot,
+      // Un dossier manuel n'attend aucun traitement : il est ouvert, point.
+      // Le laisser en PENDING laisserait croire qu'un travail est en cours.
+      ...(input.origin === 'MANUAL' ? { status: 'DONE' as const, finishedAt: new Date() } : {}),
       createdById: actorUserId,
     },
   })
 
-  await enqueue('SOURCING_SEARCH_RUN', { searchId: search.id }, { maxAttempts: 1 })
+  if (input.origin === 'AGENT') {
+    await enqueue('SOURCING_SEARCH_RUN', { searchId: search.id }, { maxAttempts: 1 })
+  }
 
   return search
+}
+
+// ---------------------------------------------------------------------------
+// Saisie manuelle d'une offre
+// ---------------------------------------------------------------------------
+
+/**
+ * Ajoute au dossier une offre relevée par un opérateur — le chemin standard :
+ * on tombe sur une annonce, on la saisit, elle entre dans l'arbitrage.
+ *
+ * La conversion en FCFA suit exactement la même règle que pour les offres de
+ * l'agent, pour que les deux provenances restent comparables dans la matrice.
+ */
+export async function createOffer(searchId: string, raw: unknown) {
+  const input = offerCreateSchema.parse(raw)
+
+  const search = await prisma.sourcingSearch.findUnique({
+    where: { id: searchId },
+    select: { id: true },
+  })
+  if (!search) {
+    throw new AppError('SOURCING_SEARCH_NOT_FOUND', 404, { message: 'Dossier introuvable' })
+  }
+
+  const currency = input.priceCurrency?.toUpperCase() ?? null
+  if (input.priceAmount != null && currency && currencyRate(currency, currencyOverridesFromEnv()) == null) {
+    throw new AppError('SOURCING_UNKNOWN_CURRENCY', 422, {
+      message: `Devise inconnue : ${currency}. Saisissez le prix en FCFA, ou demandez l'ajout du taux.`,
+    })
+  }
+
+  return prisma.sourcingOffer.create({
+    data: {
+      searchId,
+      enteredManually: true,
+      supplierName: input.supplierName,
+      channel: input.channel,
+      country: input.country ?? null,
+      city: input.city ?? null,
+      url: input.url ?? null,
+      sourceSite: hostOf(input.url),
+      title: input.title ?? null,
+      brand: input.brand ?? null,
+      oemReference: input.oemReference ?? null,
+      conditionLabel: input.conditionLabel ?? null,
+      condition: mapCondition(input.conditionLabel),
+      priceAmount: input.priceAmount ?? null,
+      priceCurrency: currency,
+      priceFcfa: offerPriceFcfa(input.priceAmount, currency),
+      priceConfirmed: input.priceConfirmed,
+      shippingAmount: input.shippingAmount ?? null,
+      moq: input.moq ?? null,
+      leadTimeDays: input.leadTimeDays ?? null,
+      weightKg: input.weightKg ?? null,
+      availability: input.availability ?? null,
+      contactPhone: input.contactPhone ?? null,
+      contactEmail: input.contactEmail ?? null,
+      contactWhatsapp: input.contactWhatsapp ?? null,
+      chosenMode: input.chosenMode ?? null,
+      opsNote: input.opsNote ?? null,
+      // Une offre saisie par un humain qui a ouvert la page vaut mieux qu'une
+      // offre lue automatiquement : la confiance part au maximum.
+      confidence: 1,
+    },
+  })
+}
+
+/** Nom d'hôte d'une URL, pour afficher « ebay.com » sous l'offre. */
+function hostOf(url: string | null | undefined): string | null {
+  if (!url) return null
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Supprime une offre. Réservé aux erreurs de saisie : une offre déjà commandée
+ * est le pivot d'un bon de commande, la supprimer romprait la traçabilité.
+ * Pour écarter une offre de l'arbitrage, utiliser le statut REJECTED.
+ */
+export async function deleteOffer(id: string) {
+  const offer = await prisma.sourcingOffer.findUnique({
+    where: { id },
+    select: { id: true, status: true, purchaseOrderId: true },
+  })
+  if (!offer) {
+    throw new AppError('SOURCING_OFFER_NOT_FOUND', 404, { message: 'Offre introuvable' })
+  }
+  if (offer.status === 'ORDERED' || offer.purchaseOrderId) {
+    throw new AppError('SOURCING_OFFER_LOCKED', 409, {
+      message: 'Offre commandée : elle ne peut plus être supprimée',
+    })
+  }
+  await prisma.sourcingOffer.delete({ where: { id } })
+  return { id }
 }
 
 // ---------------------------------------------------------------------------
@@ -286,6 +396,7 @@ export async function adminListSearches(rawQuery: unknown) {
 
   const where: Prisma.SourcingSearchWhereInput = {
     ...(query.status && { status: query.status }),
+    ...(query.origin && { origin: query.origin }),
     ...(query.quoteRequestId && { quoteRequestId: query.quoteRequestId }),
     ...(query.q && {
       OR: [

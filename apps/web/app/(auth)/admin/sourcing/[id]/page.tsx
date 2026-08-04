@@ -7,6 +7,7 @@ import {
   sourcingFetch,
   fmtFcfa,
   SEARCH_STATUS_LABEL,
+  ORIGIN_LABEL,
   OFFER_STATUS_LABEL,
   CHANNEL_LABEL,
   type SourcingSearchDetail,
@@ -17,6 +18,7 @@ import {
 } from '@/lib/sourcing-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { Chip, ConditionChip, type ChipVariant } from '@/components/ui/chip'
+import { OfferForm } from '@/components/logistique/offer-form'
 
 const OFFER_CHIP: Record<SourcingOfferStatus, ChipVariant> = {
   CANDIDATE: 'plain',
@@ -105,6 +107,23 @@ export default function AdminSourcingDetailPage() {
     [load],
   )
 
+  const removeOffer = useCallback(
+    async (offerId: string) => {
+      if (!window.confirm('Supprimer cette offre ? Pour la sortir de l\'arbitrage sans la perdre, utilisez plutôt « Écarter ».')) {
+        return
+      }
+      setBusy(offerId)
+      const res = await sourcingFetch(`/offers/${offerId}`, { method: 'DELETE' })
+      setBusy(null)
+      if (!res.ok) {
+        setError(res.message)
+        return
+      }
+      await load()
+    },
+    [load],
+  )
+
   const requestDraft = useCallback(async (offerId: string) => {
     setBusy(offerId)
     const res = await sourcingFetch<{
@@ -161,9 +180,24 @@ export default function AdminSourcingDetailPage() {
               {` · quantité ${search.quantity}`}
             </p>
           </div>
-          <Chip variant={search.status === 'DONE' ? 'status-ok' : search.status === 'FAILED' ? 'status-err' : 'status-warn'}>
-            {SEARCH_STATUS_LABEL[search.status]}
-          </Chip>
+          <div className="flex flex-wrap items-center gap-2">
+            <Chip variant={search.origin === 'MANUAL' ? 'oem' : 'plain'}>
+              {ORIGIN_LABEL[search.origin]}
+            </Chip>
+            {search.origin === 'AGENT' && (
+              <Chip
+                variant={
+                  search.status === 'DONE'
+                    ? 'status-ok'
+                    : search.status === 'FAILED'
+                      ? 'status-err'
+                      : 'status-warn'
+                }
+              >
+                {SEARCH_STATUS_LABEL[search.status]}
+              </Chip>
+            )}
+          </div>
         </div>
         {search.quoteRequest && (
           <p className="mt-3 text-sm text-muted">
@@ -190,9 +224,12 @@ export default function AdminSourcingDetailPage() {
       {error && <p className="mt-3 text-sm text-error-fg">{error}</p>}
 
       {/* --- Offres --- */}
-      <h2 className="mt-6 font-display text-lg text-ink">
-        Offres trouvées ({search.offers.length})
-      </h2>
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <h2 className="flex-1 font-display text-lg text-ink">
+          Offres ({search.offers.length})
+        </h2>
+        <OfferForm searchId={search.id} onAdded={() => void load()} />
+      </div>
       <div className="mt-2 overflow-x-auto rounded-md border border-border">
         <Table>
           <Thead>
@@ -211,6 +248,11 @@ export default function AdminSourcingDetailPage() {
               <Tr key={offer.id}>
                 <Td>
                   <span className="font-semibold text-ink">{offer.supplierName}</span>
+                  {offer.enteredManually && (
+                    <Chip variant="plain" className="ml-2">
+                      Saisie
+                    </Chip>
+                  )}
                   <p className="text-[11px] text-muted-2">
                     {CHANNEL_LABEL[offer.channel]}
                     {offer.country && ` · ${offer.country}`}
@@ -292,6 +334,13 @@ export default function AdminSourcingDetailPage() {
                           Message
                         </button>
                         <button
+                          onClick={() => void removeOffer(offer.id)}
+                          disabled={busy === offer.id}
+                          className={btnCls}
+                        >
+                          Supprimer
+                        </button>
+                        <button
                           onClick={() => void createPo(offer.id)}
                           disabled={busy === offer.id || offer.priceAmount == null}
                           title={
@@ -319,7 +368,9 @@ export default function AdminSourcingDetailPage() {
             ))}
             {search.offers.length === 0 && (
               <Tr hover={false}>
-                <Td className="text-muted">Aucune offre pour cette recherche.</Td>
+                <Td className="text-muted">
+                  Aucune offre. Cliquez « Ajouter une offre » pour saisir un lien relevé.
+                </Td>
               </Tr>
             )}
           </Tbody>

@@ -5,8 +5,10 @@ import Link from 'next/link'
 import {
   sourcingFetch,
   SEARCH_STATUS_LABEL,
+  ORIGIN_LABEL,
   type SourcingSearchRow,
   type SourcingSearchStatus,
+  type SourcingSearchOrigin,
 } from '@/lib/sourcing-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { Chip, type ChipVariant } from '@/components/ui/chip'
@@ -44,6 +46,7 @@ export default function AdminSourcingPage() {
   const [data, setData] = useState<ListResponse | null>(null)
   const [stats, setStats] = useState<StatsResponse | null>(null)
   const [status, setStatus] = useState<SourcingSearchStatus | ''>('')
+  const [origin, setOrigin] = useState<SourcingSearchOrigin | ''>('')
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
@@ -51,6 +54,7 @@ export default function AdminSourcingPage() {
   const load = useCallback(() => {
     const params = new URLSearchParams()
     if (status) params.set('status', status)
+    if (origin) params.set('origin', origin)
     if (q) params.set('q', q)
     params.set('page', String(page))
     sourcingFetch<ListResponse>(`/searches?${params}`).then((res) => {
@@ -61,7 +65,7 @@ export default function AdminSourcingPage() {
         setError(res.message)
       }
     })
-  }, [status, q, page])
+  }, [status, origin, q, page])
 
   useEffect(() => {
     load()
@@ -80,26 +84,26 @@ export default function AdminSourcingPage() {
       <div className="mb-4">
         <h1 className="font-display text-2xl text-ink">Sourcing</h1>
         <p className="mt-1 text-sm text-muted">
-          Recherche d&apos;offres réelles sur les sites de vente internationaux, puis arbitrage au
-          coût rendu Abidjan. Les prix restent indicatifs tant qu&apos;un opérateur ne les a pas
-          confirmés.
+          Dossiers de comparaison d&apos;offres pour les pièces à faire venir. Vous saisissez les
+          annonces relevées, la matrice les classe au coût réel rendu Abidjan. Les prix restent
+          indicatifs tant qu&apos;un opérateur ne les a pas confirmés auprès du vendeur.
         </p>
       </div>
 
       {stats && (
         <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-md border border-border bg-card p-3">
-            <div className={labelCls}>Recherches</div>
+            <div className={labelCls}>Dossiers</div>
             <div className="mt-1 text-2xl font-semibold text-ink">{stats.searches}</div>
           </div>
           <div className="rounded-md border border-border bg-card p-3">
-            <div className={labelCls}>En cours</div>
+            <div className={labelCls}>Recherches auto en cours</div>
             <div className="mt-1 text-2xl font-semibold text-ink">
               {(stats.byStatus.PENDING ?? 0) + (stats.byStatus.RUNNING ?? 0)}
             </div>
           </div>
           <div className="rounded-md border border-border bg-card p-3">
-            <div className={labelCls}>Offres trouvées</div>
+            <div className={labelCls}>Offres</div>
             <div className="mt-1 text-2xl font-semibold text-ink">{stats.offers}</div>
           </div>
           <div className="rounded-md border border-border bg-card p-3">
@@ -114,7 +118,25 @@ export default function AdminSourcingPage() {
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div>
-          <label className={`block ${labelCls}`}>Statut</label>
+          <label className={`block ${labelCls}`}>Provenance</label>
+          <select
+            value={origin}
+            onChange={(e) => {
+              setOrigin(e.target.value as SourcingSearchOrigin | '')
+              setPage(1)
+            }}
+            className={`mt-1 ${inputCls}`}
+          >
+            <option value="">Toutes</option>
+            {Object.entries(ORIGIN_LABEL).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className={`block ${labelCls}`}>Statut recherche auto</label>
           <select
             value={status}
             onChange={(e) => {
@@ -154,9 +176,9 @@ export default function AdminSourcingPage() {
               <Th>Pièce</Th>
               <Th>Véhicule</Th>
               <Th>Cotation</Th>
-              <Th>Statut</Th>
+              <Th>Provenance</Th>
               <Th align="right">Offres</Th>
-              <Th>Lancée le</Th>
+              <Th>Ouvert le</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -187,7 +209,16 @@ export default function AdminSourcingPage() {
                   )}
                 </Td>
                 <Td>
-                  <Chip variant={STATUS_CHIP[row.status]}>{SEARCH_STATUS_LABEL[row.status]}</Chip>
+                  <Chip variant={row.origin === 'MANUAL' ? 'oem' : 'plain'}>
+                    {ORIGIN_LABEL[row.origin]}
+                  </Chip>
+                  {row.origin === 'AGENT' && (
+                    <p className="mt-1">
+                      <Chip variant={STATUS_CHIP[row.status]}>
+                        {SEARCH_STATUS_LABEL[row.status]}
+                      </Chip>
+                    </p>
+                  )}
                   {row.status === 'FAILED' && row.error && (
                     <p className="mt-1 text-[11px] text-error-fg">{row.error}</p>
                   )}
@@ -201,7 +232,7 @@ export default function AdminSourcingPage() {
             {data && data.items.length === 0 && (
               <Tr hover={false}>
                 <Td className="text-muted">
-                  Aucune recherche. Lancez-en une depuis une demande de cotation.
+                  Aucun dossier. Ouvrez-en un depuis une demande de cotation.
                 </Td>
               </Tr>
             )}

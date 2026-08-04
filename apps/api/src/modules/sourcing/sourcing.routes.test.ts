@@ -14,7 +14,9 @@ const mockCreateSearch = vi.fn()
 const mockGetSearch = vi.fn()
 const mockAdminListSearches = vi.fn()
 const mockAdminSearchStats = vi.fn()
+const mockCreateOffer = vi.fn()
 const mockUpdateOffer = vi.fn()
+const mockDeleteOffer = vi.fn()
 const mockBuildOfferMatrix = vi.fn()
 const mockCreatePoFromOffer = vi.fn()
 const mockDraftMessage = vi.fn()
@@ -58,7 +60,9 @@ vi.mock('./sourcing.service.js', () => ({
   getSearch: (...a: unknown[]) => mockGetSearch(...a),
   adminListSearches: (...a: unknown[]) => mockAdminListSearches(...a),
   adminSearchStats: (...a: unknown[]) => mockAdminSearchStats(...a),
+  createOffer: (...a: unknown[]) => mockCreateOffer(...a),
   updateOffer: (...a: unknown[]) => mockUpdateOffer(...a),
+  deleteOffer: (...a: unknown[]) => mockDeleteOffer(...a),
   buildOfferMatrix: (...a: unknown[]) => mockBuildOfferMatrix(...a),
   createPurchaseOrderFromOffer: (...a: unknown[]) => mockCreatePoFromOffer(...a),
   draftMessageForOffer: (...a: unknown[]) => mockDraftMessage(...a),
@@ -131,8 +135,8 @@ describe('Sourcing routes', () => {
     )
   })
 
-  it('répond 202 au lancement d\'une recherche (traitement asynchrone)', async () => {
-    mockCreateSearch.mockResolvedValueOnce({ id: 's1', partName: 'Plaquettes' })
+  it('répond 201 à l\'ouverture d\'un dossier manuel (rien à attendre)', async () => {
+    mockCreateSearch.mockResolvedValueOnce({ id: 's1', partName: 'Plaquettes', origin: 'MANUAL' })
     const app = buildApp()
     const res = await app.inject({
       method: 'POST',
@@ -140,8 +144,75 @@ describe('Sourcing routes', () => {
       headers: mockAuth(),
       payload: { quoteRequestId: 'q1' },
     })
+    expect(res.statusCode).toBe(201)
+    expect(mockCreateSearch).toHaveBeenCalledWith(
+      expect.objectContaining({ quoteRequestId: 'q1', origin: 'MANUAL' }),
+      'prisma-admin-1',
+    )
+  })
+
+  it('répond 202 quand une recherche automatique est mise en file', async () => {
+    mockCreateSearch.mockResolvedValueOnce({ id: 's1', partName: 'Plaquettes', origin: 'AGENT' })
+    const app = buildApp()
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/admin/sourcing/searches',
+      headers: mockAuth(),
+      payload: { quoteRequestId: 'q1', origin: 'AGENT' },
+    })
     expect(res.statusCode).toBe(202)
-    expect(mockCreateSearch).toHaveBeenCalledWith({ quoteRequestId: 'q1' }, 'prisma-admin-1')
+  })
+
+  it('crée une offre saisie à la main', async () => {
+    mockCreateOffer.mockResolvedValueOnce({ id: 'o1', supplierName: 'Al Nahda' })
+    const app = buildApp()
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/admin/sourcing/searches/s1/offers',
+      headers: mockAuth(),
+      payload: { supplierName: 'Al Nahda', priceAmount: 100, priceCurrency: 'EUR' },
+    })
+    expect(res.statusCode).toBe(201)
+    expect(mockCreateOffer).toHaveBeenCalledWith(
+      's1',
+      expect.objectContaining({ supplierName: 'Al Nahda' }),
+    )
+  })
+
+  it('rejette une offre manuelle sans fournisseur', async () => {
+    const app = buildApp()
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/admin/sourcing/searches/s1/offers',
+      headers: mockAuth(),
+      payload: { priceAmount: 100 },
+    })
+    expect(res.statusCode).toBe(422)
+    expect(mockCreateOffer).not.toHaveBeenCalled()
+  })
+
+  it('rejette un lien qui n\'est pas une URL', async () => {
+    const app = buildApp()
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/admin/sourcing/searches/s1/offers',
+      headers: mockAuth(),
+      payload: { supplierName: 'X', url: 'pas-une-url' },
+    })
+    expect(res.statusCode).toBe(422)
+    expect(mockCreateOffer).not.toHaveBeenCalled()
+  })
+
+  it('supprime une offre', async () => {
+    mockDeleteOffer.mockResolvedValueOnce({ id: 'o1' })
+    const app = buildApp()
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/admin/sourcing/offers/o1',
+      headers: mockAuth(),
+    })
+    expect(res.statusCode).toBe(200)
+    expect(mockDeleteOffer).toHaveBeenCalledWith('o1')
   })
 
   it('rejette un statut d\'offre inconnu', async () => {

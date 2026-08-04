@@ -11,6 +11,8 @@ const mockSearchUpdate = vi.fn()
 const mockOfferFindUnique = vi.fn()
 const mockOfferUpdate = vi.fn()
 const mockOfferCreateMany = vi.fn()
+const mockOfferCreate = vi.fn()
+const mockOfferDelete = vi.fn()
 const mockSupplierFindFirst = vi.fn()
 const mockSupplierCreate = vi.fn()
 const mockLeadFindUnique = vi.fn()
@@ -29,6 +31,8 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...a: unknown[]) => mockOfferFindUnique(...a),
       update: (...a: unknown[]) => mockOfferUpdate(...a),
       createMany: (...a: unknown[]) => mockOfferCreateMany(...a),
+      create: (...a: unknown[]) => mockOfferCreate(...a),
+      delete: (...a: unknown[]) => mockOfferDelete(...a),
     },
     supplier: {
       findFirst: (...a: unknown[]) => mockSupplierFindFirst(...a),
@@ -53,6 +57,8 @@ vi.mock('./sourcing.agent.js', () => ({
 
 const {
   createSearch,
+  createOffer,
+  deleteOffer,
   persistSearchResults,
   updateOffer,
   buildOfferMatrix,
@@ -174,9 +180,6 @@ describe('createSearch', () => {
     mockSearchCreate.mockImplementation(({ data }: { data: Record<string, unknown> }) =>
       Promise.resolve({ id: 's1', ...data }),
     )
-  })
-
-  it('prend le snapshot de la cotation et enqueue le job', async () => {
     mockLeadFindUnique.mockResolvedValue({
       partName: 'Plaquettes avant',
       oemReference: '04465-02220',
@@ -185,11 +188,29 @@ describe('createSearch', () => {
       vehicleYear: 2018,
       quantity: 2,
     })
+  })
 
+  it('ouvre un dossier manuel par défaut, sans job ni attente', async () => {
+    const search = await createSearch({ quoteRequestId: 'q1' }, 'admin-1')
+
+    expect(search.origin).toBe('MANUAL')
+    expect(search.status).toBe('DONE')
+    expect(mockEnqueue).not.toHaveBeenCalled()
+  })
+
+  it('prend le snapshot de la cotation', async () => {
     const search = await createSearch({ quoteRequestId: 'q1' }, 'admin-1')
 
     expect(search.partName).toBe('Plaquettes avant')
     expect(search.quantity).toBe(2)
+    expect(search.oemReference).toBe('04465-02220')
+  })
+
+  it('enqueue le job seulement pour une recherche automatique', async () => {
+    const search = await createSearch({ quoteRequestId: 'q1', origin: 'AGENT' }, 'admin-1')
+
+    expect(search.origin).toBe('AGENT')
+    expect(search.status).toBeUndefined()
     expect(mockEnqueue).toHaveBeenCalledWith(
       'SOURCING_SEARCH_RUN',
       { searchId: 's1' },
@@ -197,28 +218,106 @@ describe('createSearch', () => {
     )
   })
 
-  it('refuse une seconde recherche tant qu\'une est en cours', async () => {
-    mockLeadFindUnique.mockResolvedValue({
-      partName: 'Plaquettes',
-      oemReference: null,
-      vehicleBrand: null,
-      vehicleModel: null,
-      vehicleYear: null,
-      quantity: 1,
-    })
+  it("refuse une seconde recherche automatique tant qu'une est en cours", async () => {
     mockSearchFindFirst.mockResolvedValue({ id: 's-existing' })
 
-    await expect(createSearch({ quoteRequestId: 'q1' }, 'admin-1')).rejects.toMatchObject({
-      code: 'SOURCING_SEARCH_IN_FLIGHT',
-      statusCode: 409,
-    })
+    await expect(
+      createSearch({ quoteRequestId: 'q1', origin: 'AGENT' }, 'admin-1'),
+    ).rejects.toMatchObject({ code: 'SOURCING_SEARCH_IN_FLIGHT', statusCode: 409 })
     expect(mockEnqueue).not.toHaveBeenCalled()
   })
 
-  it('refuse une recherche sans nom de pièce exploitable', async () => {
+  it("un dossier manuel n'est jamais bloqué par une recherche automatique en cours", async () => {
+    mockSearchFindFirst.mockResolvedValue({ id: 's-existing' })
+
+    const search = await createSearch({ quoteRequestId: 'q1' }, 'admin-1')
+    expect(search.id).toBe('s1')
+  })
+
+  it('refuse un dossier sans nom de pièce exploitable', async () => {
     await expect(createSearch({ partName: undefined }, 'admin-1')).rejects.toMatchObject({
       code: 'SOURCING_SEARCH_EMPTY',
     })
+  })
+})
+
+describe('createOffer', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockSearchFindUnique.mockResolvedValue({ id: 's1' })
+    mockOfferCreate.mockImplementation(({ data }: { data: unknown }) => Promise.resolve(data))
+  })
+
+  it('marque la provenance et convertit le prix comme pour une offre agent', async () => {
+    const data = (await createOffer('s1', {
+      supplierName: 'Al Nahda',
+      priceAmount: 100,
+      priceCurrency: 'eur',
+      conditionLabel: 'Neuf',
+    })) as Record<string, unknown>
+
+    expect(data.enteredManually).toBe(true)
+    expect(data.priceCurrency).toBe('EUR')
+    expect(data.priceFcfa).toBe(65_596)
+    expect(data.condition).toBe('NEW')
+    // Un humain a ouvert la page : la confiance ne se discute pas.
+    expect(data.confidence).toBe(1)
+  })
+
+  it("déduit le site source de l'URL", async () => {
+    const data = (await createOffer('s1', {
+      supplierName: 'X',
+      url: 'https://www.ebay.com/itm/12345',
+    })) as Record<string, unknown>
+    expect(data.sourceSite).toBe('ebay.com')
+  })
+
+  it('accepte une offre sans prix — une piste à chiffrer reste utile', async () => {
+    const data = (await createOffer('s1', { supplierName: 'X' })) as Record<string, unknown>
+    expect(data.priceFcfa).toBeNull()
+    expect(data.priceConfirmed).toBe(false)
+  })
+
+  it('conserve le prix confirmé quand il vient du vendeur', async () => {
+    const data = (await createOffer('s1', {
+      supplierName: 'X',
+      priceAmount: 50,
+      priceCurrency: 'EUR',
+      priceConfirmed: true,
+    })) as Record<string, unknown>
+    expect(data.priceConfirmed).toBe(true)
+  })
+
+  it('refuse une devise dont on ne connaît pas le taux', async () => {
+    await expect(
+      createOffer('s1', { supplierName: 'X', priceAmount: 10, priceCurrency: 'ZZZ' }),
+    ).rejects.toMatchObject({ code: 'SOURCING_UNKNOWN_CURRENCY' })
+  })
+
+  it('refuse un dossier inexistant', async () => {
+    mockSearchFindUnique.mockResolvedValue(null)
+    await expect(createOffer('s1', { supplierName: 'X' })).rejects.toMatchObject({
+      code: 'SOURCING_SEARCH_NOT_FOUND',
+    })
+  })
+})
+
+describe('deleteOffer', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockOfferDelete.mockResolvedValue({})
+  })
+
+  it('supprime une offre saisie par erreur', async () => {
+    mockOfferFindUnique.mockResolvedValue({ id: 'o1', status: 'CANDIDATE', purchaseOrderId: null })
+    await deleteOffer('o1')
+    expect(mockOfferDelete).toHaveBeenCalledWith({ where: { id: 'o1' } })
+  })
+
+  it('refuse de supprimer une offre commandée', async () => {
+    mockOfferFindUnique.mockResolvedValue({ id: 'o1', status: 'ORDERED', purchaseOrderId: 'po1' })
+    await expect(deleteOffer('o1')).rejects.toMatchObject({ code: 'SOURCING_OFFER_LOCKED' })
+    expect(mockOfferDelete).not.toHaveBeenCalled()
   })
 })
 

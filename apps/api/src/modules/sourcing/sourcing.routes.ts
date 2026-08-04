@@ -3,6 +3,7 @@ import {
   sourcingSearchCreateSchema,
   sourcingSearchParamsSchema,
   sourcingOfferParamsSchema,
+  offerCreateSchema,
   offerUpdateSchema,
   adminSourcingListQuerySchema,
   createPurchaseOrderFromOfferSchema,
@@ -15,7 +16,9 @@ import {
   getSearch,
   adminListSearches,
   adminSearchStats,
+  createOffer,
   updateOffer,
+  deleteOffer,
   buildOfferMatrix,
   createPurchaseOrderFromOffer,
   draftMessageForOffer,
@@ -58,7 +61,8 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
     {
       schema: {
         tags: ['Sourcing'],
-        description: 'Lancer une recherche d\'offres (exécutée en tâche de fond)',
+        description:
+          'Ouvrir un dossier de sourcing. origin=MANUAL (défaut) crée un dossier vide à remplir à la main ; origin=AGENT lance en plus la recherche automatique en tâche de fond.',
         body: zodToFastify(sourcingSearchCreateSchema),
         security: [{ BearerAuth: [] }],
       },
@@ -78,9 +82,10 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
         action: 'SOURCING_SEARCH_CREATED',
         targetType: 'SourcingSearch',
         targetId: search.id,
-        payload: { partName: search.partName },
+        payload: { partName: search.partName, origin: search.origin },
       }).catch(() => {})
-      return reply.status(202).send({ data: search })
+      // 202 seulement quand un traitement de fond a réellement été mis en file.
+      return reply.status(search.origin === 'AGENT' ? 202 : 201).send({ data: search })
     },
   )
 
@@ -118,6 +123,31 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
     },
   )
 
+  fastify.post(
+    '/searches/:id/offers',
+    {
+      schema: {
+        tags: ['Sourcing'],
+        description: 'Saisir manuellement une offre relevée par un opérateur',
+        params: zodToFastify(sourcingSearchParamsSchema),
+        body: zodToFastify(offerCreateSchema),
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const offer = await createOffer(id, request.body)
+      request.log.info({
+        event: 'SOURCING_OFFER_CREATED',
+        adminId: request.user.id,
+        searchId: id,
+        offerId: offer.id,
+      })
+      return reply.status(201).send({ data: offer })
+    },
+  )
+
   fastify.patch(
     '/offers/:id',
     {
@@ -133,6 +163,23 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { id } = request.params as { id: string }
       return reply.status(200).send({ data: await updateOffer(id, request.body) })
+    },
+  )
+
+  fastify.delete(
+    '/offers/:id',
+    {
+      schema: {
+        tags: ['Sourcing'],
+        description: 'Supprimer une offre saisie par erreur (impossible si commandée)',
+        params: zodToFastify(sourcingOfferParamsSchema),
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      return reply.status(200).send({ data: await deleteOffer(id) })
     },
   )
 
