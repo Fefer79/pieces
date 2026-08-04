@@ -11,6 +11,12 @@ export async function cors(fastify: FastifyInstance) {
       'https://pieces.ci',
       'https://flotte.pieces.ci',
       'https://logistique.pieces.ci',
+      // La console ERP appelle l'API via le proxy Next (même origine), donc
+      // CORS ne la concerne pas aujourd'hui. Elle est listée quand même : les
+      // modules /admin restent joignables depuis ce domaine (passe-droit du
+      // lot 1) et certains téléversent en direct pour la même raison que les
+      // vitrines. Sans cette ligne, la panne serait silencieuse et lointaine.
+      'https://erp.pieces.ci',
       'http://localhost:3000',
     ],
     credentials: true,

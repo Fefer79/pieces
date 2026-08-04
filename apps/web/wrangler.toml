@@ -4,10 +4,12 @@ compatibility_date = "2026-03-31"
 compatibility_flags = ["nodejs_compat"]
 
 # Custom domains gérés côté dashboard Cloudflare
-# (pieces.ci + flotte.pieces.ci + logistique.pieces.ci).
+# (pieces.ci + flotte.pieces.ci + logistique.pieces.ci + erp.pieces.ci).
 # Le routing par hostname est dans middleware.ts : flotte.* réécrit la racine
 # vers /entreprises, logistique.* réécrit la liste de slugs de
-# lib/logistique-routes.ts vers /logistique/*.
+# lib/logistique-routes.ts vers /logistique/*, erp.* réécrit TOUT vers /erp/*
+# sauf la liste noire de lib/erp-routes.ts (authentification, pages légales et
+# /admin tant que les modules n'ont pas migré).
 # Ajout d'un domaine : Workers & Pages → pieces → Domains & Routes →
 # Add custom domain (le CNAME proxifié est créé automatiquement).
 
