@@ -6,6 +6,7 @@ import { rateLimit } from './plugins/rateLimit.js'
 import { swagger } from './plugins/swagger.js'
 import { setupErrorHandler } from './plugins/errorHandler.js'
 import { auth } from './plugins/auth.js'
+import { erpAuth } from './plugins/erpAuth.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { userRoutes } from './modules/user/user.routes.js'
 import { consentRoutes } from './modules/consent/consent.routes.js'
@@ -40,6 +41,7 @@ import {
   adminLogisticsRoutes,
 } from './modules/logistics/logistics.routes.js'
 import { sourcingRoutes } from './modules/sourcing/sourcing.routes.js'
+import { erpRoutes } from './modules/erp/erp.routes.js'
 import {
   shipmentRoutes,
   publicShipmentRoutes,
@@ -79,6 +81,7 @@ export function buildApp() {
   fastify.register(rateLimit)
   fastify.register(swagger)
   fastify.register(auth)
+  fastify.register(erpAuth)
   fastify.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } })
   setupErrorHandler(fastify)
 
@@ -120,6 +123,7 @@ export function buildApp() {
   fastify.register(enterpriseLogisticsRoutes, { prefix: '/api/v1/enterprises' })
   fastify.register(adminLogisticsRoutes, { prefix: '/api/v1/admin/logistics' })
   fastify.register(sourcingRoutes, { prefix: '/api/v1/admin/sourcing' })
+  fastify.register(erpRoutes, { prefix: '/api/v1/erp' })
   fastify.register(shipmentRoutes, { prefix: '/api/v1/admin/shipments' })
   // Suivi client d'une expédition — même hôte public que le suivi de cotation.
   fastify.register(publicShipmentRoutes, { prefix: '/api/v1/logistics' })

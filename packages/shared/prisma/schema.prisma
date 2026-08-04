@@ -64,6 +64,7 @@ model User {
   sourcingSearches       SourcingSearch[]        @relation("SourcingSearchCreator")
   shipments              Shipment[]              @relation("ShipmentCreator")
   shipmentEvents         ShipmentEvent[]         @relation("ShipmentEventActor")
+  staffMember            StaffMember?
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -2493,4 +2494,53 @@ model ShipmentEvent {
 
   @@index([shipmentId, occurredAt], name: "idx_shipment_events_shipment")
   @@map("shipment_events")
+}
+
+// ---------------------------------------------------------------------------
+// ERP interne — socle (erp.pieces.ci)
+// ---------------------------------------------------------------------------
+
+/// Métiers internes. Sans rapport avec `Role`, qui décrit les espaces client.
+enum StaffRole {
+  DIRECTION
+  COMMERCIAL
+  COMPTABLE
+  ACHETEUR
+  MAGASINIER
+  OPS_LOGISTIQUE
+  SUPPORT
+}
+
+/// Lignes d'activité de l'entreprise.
+enum BusinessUnit {
+  MARKETPLACE
+  FLOTTE
+  LOGISTIQUE
+}
+
+/// Rattachement d'un compte Pièces à l'équipe interne.
+///
+/// Deux dimensions cohabitent volontairement : `User.roles` ouvre les espaces
+/// client, `StaffMember.staffRole` ouvre les sections de l'ERP. Un membre de
+/// l'équipe est d'abord un utilisateur normal ; on ne duplique pas son identité.
+model StaffMember {
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  staffRole StaffRole @map("staff_role")
+  /// Lignes d'activité suivies. Informatif au lot 1 : le filtre du cockpit s'y
+  /// appuiera quand la ligne d'activité sera portée par les modèles métier.
+  businessUnits BusinessUnit[] @map("business_units")
+  title         String?
+  /// Un membre désactivé perd toutes ses capacités sans perdre son historique.
+  active        Boolean        @default(true)
+  hiredAt       DateTime?      @map("hired_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([staffRole], name: "idx_staff_members_role")
+  @@index([active], name: "idx_staff_members_active")
+  @@map("staff_members")
 }

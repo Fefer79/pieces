@@ -332,3 +332,22 @@ export type {
   ShipmentTransitionInput,
   AdminShipmentsQuery,
 } from './sourcing'
+export {
+  staffRoleSchema,
+  businessUnitSchema,
+  staffListQuerySchema,
+  staffCandidatesQuerySchema,
+  staffCreateSchema,
+  staffUpdateSchema,
+  staffParamsSchema,
+  erpSearchKindSchema,
+  erpSearchQuerySchema,
+} from './erp'
+export type {
+  StaffListQuery,
+  StaffCandidatesQuery,
+  StaffCreateInput,
+  StaffUpdateInput,
+  ErpSearchQuery,
+  ErpSearchKind,
+} from './erp'

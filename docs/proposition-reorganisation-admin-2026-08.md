@@ -191,13 +191,18 @@ Application de la matrice de capacités du socle ERP à la nouvelle carte. ● s
 | **Ventes** | ● | ◐ | ● | — | — | ◐ | ◐ |
 | **Achats** | ● | — | ◐ | ● | ◐ | ◐ | — |
 | **Stock** | ● | ◐ | — | ◐ | ● | ◐ | — |
-| **Logistique** | ● | — | — | — | ◐ | ● | — |
-| **Catalogue** | ● | ◐ | — | ◐ | ◐ | — | ◐ |
+| **Logistique** | ● | ◐ | ◐ | ◐ | ◐ | ● | ◐ |
+| **Catalogue** | ● | ◐ | — | ◐ | ◐ | ◐ | — |
 | **Comptabilité** | ● | — | ● | — | — | — | — |
-| **Paramètres** | ● | — | — | — | — | — | — |
-| **Sections visibles** | **9** | **5** | **5** | **5** | **5** | **6** | **4** |
+| **Paramètres** | ● | ◐ | ◐ | ◐ | ◐ | ◐ | ◐ |
+| **Sections visibles** | **9** | **7** | **7** | **7** | **6** | **8** | **5** |
 
-Une console de neuf sections se présente donc, en pratique, comme une console de quatre à six sections. C'est ce qui rend la structure supportable.
+Une console de neuf sections se présente donc, en pratique, comme une console de cinq à huit sections selon le métier. Seule la direction a la carte complète.
+
+<div class="callout">
+<p class="lead">Ces chiffres sont ceux du <strong>code, pas d'une intention</strong>.</p>
+<p>La première version de ce tableau annonçait quatre à six sections ; l'implémentation du lot 1 a montré que c'était optimiste. Deux sections rayonnent plus large que prévu : <strong>Logistique</strong>, parce qu'une expédition se suit avec <code>purchase:read</code> et une livraison avec <code>sales:read</code> — presque tout le monde a l'une des deux, et c'est légitime (un support qui répond « où est ma pièce ? » en a besoin) ; et <strong>Paramètres</strong>, parce que la liste de l'équipe est ouverte à tous, seule sa modification étant réservée. Le tableau ci-dessus est vérifié par un test unitaire sur l'arbre de navigation.</p>
+</div>
 
 ## Schéma d'adresses
 
@@ -218,7 +223,7 @@ Quatre lots, livrables indépendamment. Aucun ne coupe le service : `/admin/*` r
 
 | Lot | Contenu | Effet visible |
 |---|---|---|
-| **1 — Structure** | Fusion du socle ERP, neuf sections, filtrage par capacité, badges, recherche globale, redirections `/admin/*` → `/erp/*` | La console change de forme, aucun écran ne change |
+| **1 — Structure** ✅ | Socle ERP, neuf sections, filtrage par capacité, badges, recherche globale, routage du sous-domaine | La console change de forme, aucun écran ne change |
 | **2 — Ma journée** | La file unique, alimentée par les compteurs existants | Le gain le plus fort pour l'équipe |
 | **3 — Dédoublonnage** | Comptes unifiés, fusion Liaisons + Équipe, renommages | Quatre annuaires deviennent un |
 | **4 — Trous** | Commandes, Livraisons, Réceptions, Inventaires, Journal d'audit | La couverture devient complète |

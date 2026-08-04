@@ -5,6 +5,7 @@ import {
   isLogistiqueSlug,
   toLogistiqueInternalPath,
 } from './lib/logistique-routes'
+import { isErpHost, isErpPassthrough, toErpInternalPath } from './lib/erp-routes'
 
 const PROTECTED_PATHS = [
   '/dashboard',
@@ -14,6 +15,7 @@ const PROTECTED_PATHS = [
   '/vendors',
   '/rider',
   '/admin',
+  '/erp',
   '/onboarding',
   '/enterprise',
   '/liaison',
@@ -56,6 +58,34 @@ export async function middleware(request: NextRequest) {
   }
 
   const host = (request.headers.get('host') ?? '').split(':')[0] ?? ''
+
+  // Sous-domaine erp.pieces.ci : console d'administration interne.
+  //
+  // ⚠ ORDRE : avant la redirection racine → dashboard, pour la même raison que
+  // la vitrine logistique — le cookie d'auth est scopé `.pieces.ci`, donc tout
+  // utilisateur déjà connecté serait sinon renvoyé sur /dashboard et
+  // n'atteindrait jamais la console.
+  //
+  // Réécriture TOTALE sauf liste noire (voir lib/erp-routes.ts) : la console
+  // comptera des dizaines d'écrans, une liste blanche serait une fabrique à
+  // 404 silencieux. `/admin/*` est en passe-droit tant que les modules n'ont
+  // pas migré sous `/erp/*`.
+  if (isErpHost(host)) {
+    // ⚠ Le passe-droit est testé AVANT la garde d'authentification : `/login`
+    // est lui-même en passe-droit. L'inverse renverrait un visiteur non
+    // connecté de /login vers /login — boucle infinie.
+    if (isErpPassthrough(request.nextUrl.pathname)) {
+      return response
+    }
+    if (!isAuthed) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('returnTo', request.nextUrl.pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    return NextResponse.rewrite(
+      new URL(toErpInternalPath(request.nextUrl.pathname), request.url),
+    )
+  }
 
   // Sous-domaine logistique.pieces.ci : vitrine + parcours de cotation.
   //
