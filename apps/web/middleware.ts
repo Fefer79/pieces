@@ -70,6 +70,21 @@ export async function middleware(request: NextRequest) {
     )
   }
 
+  // Sous-domaine erp.pieces.ci : back-office interne. Il n'a pas de vitrine —
+  // la racine mène au login puis directement au cockpit d'administration.
+  //
+  // ⚠ Doit passer AVANT la redirection racine → /dashboard : le cookie est
+  // scopé `.pieces.ci`, donc un admin déjà connecté atterrirait sinon sur
+  // l'espace Achat au lieu de /admin.
+  if (host.startsWith('erp.') && request.nextUrl.pathname === '/') {
+    if (!isAuthed) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('returnTo', '/admin')
+      return NextResponse.redirect(loginUrl)
+    }
+    return NextResponse.redirect(new URL('/admin', request.url))
+  }
+
   // Sous-domaine flotte.pieces.ci : portail entreprise dédié.
   const isFlotte = host.startsWith('flotte.')
 

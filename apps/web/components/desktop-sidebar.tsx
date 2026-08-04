@@ -7,6 +7,7 @@ import { useCart } from '@/lib/cart'
 import { ContextSwitcher } from './context-switcher'
 import { useEnterprise } from '@/lib/enterprise-context'
 import { can, type FleetAction, type FleetRole } from '@/lib/enterprise-roles'
+import { useCollapsed } from '@/lib/use-collapsed'
 
 type Icon = (p: { className?: string }) => React.ReactNode
 interface NavItem {
@@ -144,6 +145,7 @@ export function DesktopSidebar() {
   // entrées gatées n'existent que dans la section Flotte, donc sans effet.
   const { role: fleetRole } = useEnterprise()
   const isAdmin = user?.roles?.includes('ADMIN') ?? false
+  const [collapsed, toggleCollapsed] = useCollapsed('pieces.sidebar.collapsed')
 
   if (!isAuthenticated) {
     return (
@@ -168,44 +170,80 @@ export function DesktopSidebar() {
   )
 
   return (
-    <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:bg-ink lg:text-white">
-      {/* Logo */}
-      <div className="flex h-16 items-center px-5">
-        <Link href="/" className="font-display text-2xl text-white">
-          Pièces<span className="text-accent">.</span>
-        </Link>
+    <aside
+      className={`hidden lg:flex lg:flex-col lg:bg-ink lg:text-white ${
+        collapsed ? 'lg:w-[60px]' : 'lg:w-60'
+      }`}
+    >
+      {/* Logo + repli */}
+      <div className={`flex h-16 items-center ${collapsed ? 'justify-center px-2' : 'px-5'}`}>
+        {!collapsed && (
+          <Link href="/" className="flex-1 font-display text-2xl text-white">
+            Pièces<span className="text-accent">.</span>
+          </Link>
+        )}
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? 'Déplier le menu' : 'Replier le menu'}
+          aria-expanded={!collapsed}
+          title={collapsed ? 'Déplier le menu' : 'Replier le menu'}
+          className="flex h-8 w-8 items-center justify-center rounded-md text-white/55 transition-colors hover:bg-white/[0.08] hover:text-white"
+        >
+          <ChevronsIcon className={`h-[18px] w-[18px] ${collapsed ? 'rotate-180' : ''}`} />
+        </button>
       </div>
 
       {/* Context switcher */}
-      <div className="px-3 pb-1">
-        <ContextSwitcher variant="dark" />
-      </div>
+      {!collapsed && (
+        <div className="px-3 pb-1">
+          <ContextSwitcher variant="dark" />
+        </div>
+      )}
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-3">
+      <nav className={`flex-1 overflow-y-auto py-3 ${collapsed ? 'px-2' : 'px-3'}`}>
         {sections.map((section) => (
           <div key={section.title} className="mt-4 first:mt-1">
-            <h4 className="px-2.5 pb-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
-              {section.title}
-            </h4>
+            {collapsed ? (
+              <div className="mx-2 mb-1.5 h-px bg-white/12" />
+            ) : (
+              <h4 className="px-2.5 pb-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
+                {section.title}
+              </h4>
+            )}
             {section.items.map(({ href, label, icon: Icon, badge }) => {
               const active = pathname === href || pathname.startsWith(href + '/')
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-3 rounded-md border-l-[3px] px-2.5 py-2.5 text-[13.5px] font-medium transition-colors ${
+                  title={collapsed ? label : undefined}
+                  className={`relative flex items-center rounded-md border-l-[3px] py-2.5 text-[13.5px] font-medium transition-colors ${
+                    collapsed ? 'justify-center px-0' : 'gap-3 px-2.5'
+                  } ${
                     active
                       ? 'border-accent bg-white/[0.09] text-white'
                       : 'border-transparent text-white/72 hover:bg-white/[0.06] hover:text-white'
                   }`}
                 >
-                  <Icon className="h-[18px] w-[18px]" />
-                  <span className="flex-1">{label}</span>
-                  {badge != null && badge > 0 && (
-                    <span className="flex h-[19px] min-w-[19px] items-center justify-center rounded-full bg-accent px-1.5 font-mono text-[11px] text-white">
-                      {badge > 99 ? '99+' : badge}
-                    </span>
+                  <Icon className="h-[18px] w-[18px] shrink-0" />
+                  {collapsed ? (
+                    <>
+                      <span className="sr-only">{label}</span>
+                      {badge != null && badge > 0 && (
+                        <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent" />
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1">{label}</span>
+                      {badge != null && badge > 0 && (
+                        <span className="flex h-[19px] min-w-[19px] items-center justify-center rounded-full bg-accent px-1.5 font-mono text-[11px] text-white">
+                          {badge > 99 ? '99+' : badge}
+                        </span>
+                      )}
+                    </>
                   )}
                 </Link>
               )
@@ -215,17 +253,32 @@ export function DesktopSidebar() {
       </nav>
 
       {/* Account + logout */}
-      <div className="mt-auto flex items-center gap-2.5 border-t border-white/12 px-4 py-3">
-        <Link href="/profile" className="flex min-w-0 flex-1 items-center gap-2.5 text-white/75 hover:text-white">
+      <div
+        className={`mt-auto flex items-center border-t border-white/12 py-3 ${
+          collapsed ? 'flex-col gap-3 px-2' : 'gap-2.5 px-4'
+        }`}
+      >
+        <Link
+          href="/profile"
+          title={collapsed ? 'Mon profil' : undefined}
+          className={`flex min-w-0 items-center text-white/75 hover:text-white ${
+            collapsed ? '' : 'flex-1 gap-2.5'
+          }`}
+        >
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/12 text-[11px]">
             <UserIcon className="h-4 w-4" />
           </span>
-          <span className="truncate text-[13px]">Mon profil</span>
+          {collapsed ? (
+            <span className="sr-only">Mon profil</span>
+          ) : (
+            <span className="truncate text-[13px]">Mon profil</span>
+          )}
         </Link>
         <button
           type="button"
           onClick={logout}
           aria-label="Se déconnecter"
+          title={collapsed ? 'Se déconnecter' : undefined}
           className="text-white/50 hover:text-white"
         >
           <LogoutIcon className="h-[18px] w-[18px]" />
@@ -257,4 +310,5 @@ const CardIcon: Icon = ({ className }) => sv({ className, children: <><rect x="2
 const WheelIcon: Icon = ({ className }) => sv({ className, children: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" /><line x1="12" y1="9" x2="12" y2="3" /><line x1="9.5" y1="13.5" x2="4.5" y2="17" /><line x1="14.5" y1="13.5" x2="19.5" y2="17" /></> })
 const ChartIcon: Icon = ({ className }) => sv({ className, children: <><line x1="3" y1="21" x2="21" y2="21" /><rect x="6" y="11" width="3" height="7" /><rect x="11" y="6" width="3" height="12" /><rect x="16" y="14" width="3" height="4" /></> })
 const ContactBookIcon: Icon = ({ className }) => sv({ className, children: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></> })
+const ChevronsIcon: Icon = ({ className }) => sv({ className, children: <><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></> })
 const LogoutIcon: Icon = ({ className }) => sv({ className, children: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></> })

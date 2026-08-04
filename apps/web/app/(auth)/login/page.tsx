@@ -40,7 +40,10 @@ function LoginForm() {
     } catch {
       // ignore
     }
-    const dest = returnTo || sessionStorage.getItem('auth_return_to') || '/browse'
+    // Sur erp.pieces.ci il n'y a pas d'espace Achat : le back-office est la
+    // seule destination utile quand aucun returnTo n'a été transmis.
+    const fallback = window.location.hostname.startsWith('erp.') ? '/admin' : '/browse'
+    const dest = returnTo || sessionStorage.getItem('auth_return_to') || fallback
     sessionStorage.removeItem('auth_return_to')
     window.location.href = dest
   }
