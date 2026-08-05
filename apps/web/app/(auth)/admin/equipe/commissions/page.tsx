@@ -19,6 +19,7 @@ import {
   recentPeriodes,
 } from '@/lib/equipe-utils'
 import { Chip } from '@/components/ui/chip'
+import { Modal } from '@/components/ui/modal'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 
 const PERIODES = recentPeriodes(12)
@@ -328,45 +329,38 @@ function EditCommissionDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 sm:items-center">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-lg">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg text-ink">Modifier la commission</h2>
-          <button onClick={onClose} className="text-muted hover:text-ink">
-            ✕
-          </button>
-        </div>
-        <p className="mb-3 text-sm text-muted">
-          {commission.agent?.name ?? 'Membre'} · {formatPeriode(commission.periode)} · base{' '}
-          <span className="font-mono">{fmtFcfa(commission.baseFcfa)}</span> ×{' '}
-          <span className="font-mono">{commission.tauxPct} %</span>
-        </p>
-        <form onSubmit={submit} className="space-y-3">
-          <label className="block text-xs text-muted">
-            Montant FCFA
-            <input
-              value={montant}
-              onChange={(e) => setMontant(e.target.value)}
-              inputMode="numeric"
-              className="mt-1 w-full rounded-sm border border-border-strong bg-surface px-3 py-2 font-mono text-sm"
-            />
-          </label>
+    <Modal
+      open
+      onClose={onClose}
+      title="Modifier la commission"
+      size="sm"
+      description={`${commission.agent?.name ?? 'Membre'} · ${formatPeriode(commission.periode)} · base ${fmtFcfa(commission.baseFcfa)} × ${commission.tauxPct} %`}
+    >
+      <form onSubmit={submit} className="space-y-3">
+        <label className="block text-xs text-muted">
+          Montant FCFA
           <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Note (prime, ajustement, motif…)"
-            className="w-full rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm"
+            value={montant}
+            onChange={(e) => setMontant(e.target.value)}
+            inputMode="numeric"
+            className="mt-1 w-full rounded-sm border border-border-strong bg-surface px-3 py-2 font-mono text-sm"
           />
-          {error && <p className="text-xs text-error-fg">{error}</p>}
-          <button
-            type="submit"
-            disabled={busy || !montantValid}
-            className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-40"
-          >
-            {busy ? 'Enregistrement…' : 'Enregistrer'}
-          </button>
-        </form>
-      </div>
-    </div>
+        </label>
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Note (prime, ajustement, motif…)"
+          className="w-full rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm"
+        />
+        {error && <p className="text-xs text-error-fg">{error}</p>}
+        <button
+          type="submit"
+          disabled={busy || !montantValid}
+          className="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-40"
+        >
+          {busy ? 'Enregistrement…' : 'Enregistrer'}
+        </button>
+      </form>
+    </Modal>
   )
 }

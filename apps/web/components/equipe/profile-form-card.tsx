@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { equipeFetch, type TeamMemberProfile } from '@/lib/equipe-api'
+import { TextInput, Select, DateInput } from '@/components/ui/field'
 import {
   STAFF_ROLES,
   STAFF_ROLE_LABELS,
@@ -79,55 +80,49 @@ export function ProfileFormCard({
           </button>
         )}
       </div>
-      <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
-        <label className="text-xs text-muted">
-          Rôle métier
-          <select
-            value={staffRole}
-            onChange={(e) => setStaffRole(e.target.value as StaffRoleKey | '')}
-            className="ml-1 rounded-sm border border-border-strong bg-surface px-2 py-2 text-sm text-ink"
-          >
-            <option value="">Aucun (pas d’accès back-office)</option>
-            {STAFF_ROLES.map((role) => (
-              <option key={role} value={role}>
-                {STAFF_ROLE_LABELS[role]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <input
+      <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
+        <Select
+          label="Rôle métier"
+          value={staffRole}
+          onChange={(e) => setStaffRole(e.target.value as StaffRoleKey | '')}
+          className="min-w-[180px]"
+        >
+          <option value="">Aucun (pas d’accès back-office)</option>
+          {STAFF_ROLES.map((role) => (
+            <option key={role} value={role}>
+              {STAFF_ROLE_LABELS[role]}
+            </option>
+          ))}
+        </Select>
+        <TextInput
+          label="Fonction"
           value={fonction}
           onChange={(e) => setFonction(e.target.value)}
-          placeholder="Fonction (ex. Liaison terrain — Abidjan Nord)"
-          className="min-w-[220px] flex-1 rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm"
+          placeholder="Liaison terrain — Abidjan Nord"
+          className="min-w-[220px] flex-1"
         />
-        <label className="text-xs text-muted">
-          Taux %
-          <input
-            value={taux}
-            onChange={(e) => setTaux(e.target.value)}
-            inputMode="numeric"
-            aria-label="Taux de commission en pourcent"
-            className="ml-1 w-20 rounded-sm border border-border-strong bg-surface px-2 py-2 text-center font-mono text-sm"
-          />
-        </label>
-        <label className="text-xs text-muted">
-          Embauche
-          <input
-            type="date"
-            value={embaucheLe}
-            onChange={(e) => setEmbaucheLe(e.target.value)}
-            className="ml-1 rounded-sm border border-border-strong bg-surface px-2 py-2 text-sm"
-          />
-        </label>
-        <label className="flex items-center gap-1.5 pb-2 text-sm text-ink">
+        <TextInput
+          label="Taux %"
+          value={taux}
+          onChange={(e) => setTaux(e.target.value)}
+          inputMode="numeric"
+          error={tauxValid ? null : 'Entre 0 et 100'}
+          className="w-28"
+        />
+        <DateInput
+          label="Embauche"
+          value={embaucheLe}
+          onChange={(e) => setEmbaucheLe(e.target.value)}
+          className="w-44"
+        />
+        <label className="flex items-center gap-1.5 pb-2.5 text-sm text-ink">
           <input type="checkbox" checked={actif} onChange={(e) => setActif(e.target.checked)} />
           Actif
         </label>
         <button
           type="submit"
           disabled={busy || !tauxValid}
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-40"
+          className="mb-0.5 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-40"
         >
           {busy ? 'Enregistrement…' : 'Enregistrer le profil'}
         </button>
