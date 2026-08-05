@@ -53,6 +53,8 @@ Each module follows: `module.routes.ts` (Fastify routes + Zod schema) → `modul
 
 OTP via Supabase → Bearer token → `requireAuth` preHandler validates via Supabase and upserts User. Guards: `requireAuth`, `requireConsent`, `requireRole('SELLER', 'ADMIN')`. The user's `activeContext` determines which role is checked.
 
+**Back-office capabilities** — a second, independent dimension for `/admin`. `Role` drives the client-facing spaces; `TeamMemberProfile.staffRole` drives the internal back-office. The capability matrix is pure code shared API ↔ web: `packages/shared/constants/erp-rbac.ts` (7 staff roles → `domaine:action` capabilities). API side, `requireCapability('stock:read')` from `src/plugins/erpAuth.ts` replaces `requireRole('ADMIN')` on back-office routes and decorates `request.staff`. Web side, `apps/web/lib/admin-nav.ts` filters the `/admin` nav with the same matrix, so the menu never shows a screen the API will refuse. `Role.ADMIN` implies every capability (bootstrap), so admins are unaffected.
+
 ### Validation Pattern
 
 Single source of truth: Zod schemas in `packages/shared/validators/`. Convert to Fastify/OpenAPI via `zodToFastify()` from `src/lib/zodSchema.ts`. Schemas used in route definitions AND as TypeScript types via `z.infer<>`.

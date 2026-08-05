@@ -234,6 +234,10 @@ export async function upsertProfile(userId: string, body: unknown) {
     create: {
       userId,
       fonction: parsed.data.fonction ?? null,
+      ...(parsed.data.staffRole !== undefined && { staffRole: parsed.data.staffRole }),
+      ...(parsed.data.businessUnits !== undefined && {
+        businessUnits: parsed.data.businessUnits,
+      }),
       ...(parsed.data.tauxCommissionPct !== undefined && {
         tauxCommissionPct: parsed.data.tauxCommissionPct,
       }),
@@ -244,6 +248,10 @@ export async function upsertProfile(userId: string, body: unknown) {
     },
     update: {
       ...(parsed.data.fonction !== undefined && { fonction: parsed.data.fonction }),
+      ...(parsed.data.staffRole !== undefined && { staffRole: parsed.data.staffRole }),
+      ...(parsed.data.businessUnits !== undefined && {
+        businessUnits: parsed.data.businessUnits,
+      }),
       ...(parsed.data.tauxCommissionPct !== undefined && {
         tauxCommissionPct: parsed.data.tauxCommissionPct,
       }),

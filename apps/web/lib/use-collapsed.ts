@@ -1,11 +1,12 @@
 'use client'
 
-import { useCallback, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useSyncExternalStore } from 'react'
 
 const listeners = new Set<() => void>()
 // Repli de secours quand localStorage est inaccessible (navigation privée) :
 // sans lui, le bouton n'aurait aucun effet.
 const memory = new Map<string, boolean>()
+const setMemory = new Map<string, string>()
 
 function emit() {
   for (const listener of listeners) listener()
@@ -54,6 +55,53 @@ export function useCollapsed(key: string, defaultValue = false): [boolean, () =>
     }
     emit()
   }, [key, collapsed])
+
+  return [collapsed, toggle]
+}
+
+/**
+ * Variante pour un ensemble de clés repliées (une par section de menu), rangée
+ * dans une seule entrée localStorage séparée par des virgules.
+ *
+ * On stocke les sections REPLIÉES, pas les dépliées : une section ajoutée au
+ * menu apparaît donc ouverte par défaut, sans migration de la valeur stockée.
+ */
+export function useCollapsedSet(key: string): [ReadonlySet<string>, (item: string) => void] {
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => {
+      try {
+        const stored = window.localStorage.getItem(key)
+        if (stored !== null) return stored
+      } catch {
+        // ignore
+      }
+      return setMemory.get(key) ?? ''
+    },
+    () => '',
+  )
+
+  const collapsed = useMemo(
+    () => new Set(raw.split(',').filter(Boolean)),
+    [raw],
+  )
+
+  const toggle = useCallback(
+    (item: string) => {
+      const next = new Set(collapsed)
+      if (next.has(item)) next.delete(item)
+      else next.add(item)
+      const serialized = [...next].join(',')
+      setMemory.set(key, serialized)
+      try {
+        window.localStorage.setItem(key, serialized)
+      } catch {
+        // ignore
+      }
+      emit()
+    },
+    [key, collapsed],
+  )
 
   return [collapsed, toggle]
 }

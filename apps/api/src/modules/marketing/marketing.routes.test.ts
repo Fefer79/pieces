@@ -33,6 +33,8 @@ vi.mock('../../lib/supabase.js', () => ({
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
+    // Contexte staff chargé par requireCapability sur toute route back-office.
+    teamMemberProfile: { findUnique: vi.fn().mockResolvedValue(null) },
     user: {
       upsert: (...args: unknown[]) => mockUserUpsert(...args),
       findUnique: vi.fn(),

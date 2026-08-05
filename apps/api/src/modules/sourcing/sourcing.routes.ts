@@ -10,7 +10,8 @@ import {
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { recordActivity } from '../../lib/activityLog.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireCapability } from '../../plugins/erpAuth.js'
 import {
   createSearch,
   getSearch,
@@ -26,7 +27,7 @@ import {
 
 /** Monté sous /api/v1/admin/sourcing — back-office uniquement. */
 export async function sourcingRoutes(fastify: FastifyInstance) {
-  const guard = [requireAuth, requireRole('ADMIN')]
+  const guard = [requireAuth, requireCapability('purchase:read')]
 
   fastify.get(
     '/stats',

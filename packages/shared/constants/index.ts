@@ -84,3 +84,16 @@ export {
   canTransitionShipment,
 } from './carriers'
 export type { ShipmentCarrierKey, CarrierSpec, ShipmentStatusKey } from './carriers'
+export {
+  STAFF_ROLES,
+  STAFF_ROLE_LABELS,
+  BUSINESS_UNITS,
+  BUSINESS_UNIT_LABELS,
+  ERP_CAPABILITIES,
+  ERP_CAPABILITIES_LIST,
+  ERP_CAPABILITY_LABELS,
+  capabilitiesFor,
+  hasCapability,
+  hasAnyCapability,
+} from './erp-rbac'
+export type { StaffRoleKey, BusinessUnitKey, ErpCapability } from './erp-rbac'

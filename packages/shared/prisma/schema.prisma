@@ -2211,16 +2211,40 @@ enum AgentCommissionStatus {
   ANNULEE
 }
 
+// Métier interne d'un membre de l'équipe. Dimension indépendante de `Role`,
+// qui pilote les espaces côté client : un COMPTABLE reste un BUYER dans
+// l'application, son rôle staff ne débloque que le back-office.
+enum StaffRole {
+  DIRECTION
+  COMMERCIAL
+  COMPTABLE
+  ACHETEUR
+  MAGASINIER
+  OPS_LOGISTIQUE
+  SUPPORT
+}
+
+// Lignes d'activité — dimension analytique, pas trois systèmes séparés.
+enum BusinessUnit {
+  MARKETPLACE
+  FLOTTE
+  LOGISTIQUE
+}
+
 model TeamMemberProfile {
-  id                String    @id @default(uuid())
-  userId            String    @unique @map("user_id")
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String         @id @default(uuid())
+  userId            String         @unique @map("user_id")
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   fonction          String?
-  tauxCommissionPct Int       @default(10) @map("taux_commission_pct")
-  actif             Boolean   @default(true)
-  embaucheLe        DateTime? @map("embauche_le")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  // `fonction` reste le libellé libre affiché (« Chargé de compte Yopougon ») ;
+  // `staffRole` est ce que lit la matrice de capacités.
+  staffRole         StaffRole?     @map("staff_role")
+  businessUnits     BusinessUnit[] @map("business_units")
+  tauxCommissionPct Int            @default(10) @map("taux_commission_pct")
+  actif             Boolean        @default(true)
+  embaucheLe        DateTime?      @map("embauche_le")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
 
   @@map("team_member_profiles")
 }

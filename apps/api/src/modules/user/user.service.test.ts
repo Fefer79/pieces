@@ -8,6 +8,7 @@ vi.stubEnv('PORT', '3001')
 
 const mockFindUnique = vi.fn()
 const mockUpdate = vi.fn()
+const mockTeamProfileFindUnique = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: { auth: { getUser: vi.fn() } },
@@ -15,6 +16,8 @@ vi.mock('../../lib/supabase.js', () => ({
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
+    // Contexte staff chargé par requireCapability sur toute route back-office.
+    teamMemberProfile: { findUnique: (...args: unknown[]) => mockTeamProfileFindUnique(...args) },
     user: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
       update: (...args: unknown[]) => mockUpdate(...args),
@@ -44,7 +47,46 @@ describe('getProfile', () => {
       phone: '+2250700000000',
       roles: ['BUYER'],
       activeContext: 'BUYER',
+      // Contexte back-office : vide pour un acheteur sans fiche d'équipe.
+      staffRole: null,
+      businessUnits: [],
+      capabilities: [],
     })
+  })
+
+  it('expose les capacités back-office du rôle métier', async () => {
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'user-2',
+      phone: '+2250700000001',
+      roles: ['BUYER'],
+      activeContext: 'BUYER',
+    })
+    mockTeamProfileFindUnique.mockResolvedValueOnce({
+      id: 'staff-1',
+      staffRole: 'COMPTABLE',
+      businessUnits: ['MARKETPLACE'],
+      fonction: 'Comptable',
+      actif: true,
+    })
+
+    const result = await getProfile('user-2')
+    expect(result.staffRole).toBe('COMPTABLE')
+    expect(result.businessUnits).toEqual(['MARKETPLACE'])
+    expect(result.capabilities).toContain('accounting:post')
+    expect(result.capabilities).not.toContain('stock:read')
+  })
+
+  it('donne toutes les capacités à un ADMIN plateforme sans fiche', async () => {
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'user-3',
+      phone: '+2250700000002',
+      roles: ['ADMIN'],
+      activeContext: 'BUYER',
+    })
+
+    const result = await getProfile('user-3')
+    expect(result.capabilities).toContain('erp:admin')
+    expect(result.capabilities).toContain('stock:adjust')
   })
 
   it('throws 404 when user not found', async () => {

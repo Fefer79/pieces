@@ -20,6 +20,8 @@ const userUpsert = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
+    // Contexte staff chargé par requireCapability sur toute route back-office.
+    teamMemberProfile: { findUnique: vi.fn().mockResolvedValue(null) },
     logisticsQuoteRequest: {
       create: (...a: unknown[]) => leadCreate(...a),
       findFirst: (...a: unknown[]) => leadFindFirst(...a),

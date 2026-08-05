@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { switchContextSchema, selectRoleSchema, updateRolesSchema } from 'shared/validators'
 import type { Role } from 'shared/types'
+import { loadStaffContext } from '../../plugins/erpAuth.js'
 
 export async function getProfile(userId: string) {
   const user = await prisma.user.findUnique({
@@ -13,7 +14,17 @@ export async function getProfile(userId: string) {
     throw new AppError('USER_NOT_FOUND', 404)
   }
 
-  return user
+  // Contexte back-office : la navigation /admin s'en sert pour n'afficher que
+  // les sections que l'API acceptera. Vide pour l'écrasante majorité des
+  // comptes (aucune fiche d'équipe, aucun rôle ADMIN).
+  const staff = await loadStaffContext(user.id, user.roles)
+
+  return {
+    ...user,
+    staffRole: staff.staffRole,
+    businessUnits: staff.businessUnits,
+    capabilities: staff.capabilities,
+  }
 }
 
 export async function updateProfile(userId: string, data: { name?: string; email?: string; phone?: string }) {

@@ -7,7 +7,8 @@ import {
   enterpriseLogisticsListQuerySchema,
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireCapability } from '../../plugins/erpAuth.js'
 import {
   createQuoteRequest,
   addQuoteRequestPhoto,
@@ -192,7 +193,7 @@ export async function adminLogisticsRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/quote-requests',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
       schema: {
         tags: ['Admin'],
         description: 'File des demandes de cotation logistique',
@@ -209,7 +210,7 @@ export async function adminLogisticsRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/quote-requests/stats',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
       schema: {
         tags: ['Admin'],
         description: 'Entonnoir des cotations logistique',
@@ -225,7 +226,7 @@ export async function adminLogisticsRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/quote-requests/:id',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
       schema: {
         tags: ['Admin'],
         description: 'Détail d\'une demande de cotation logistique',
@@ -242,7 +243,7 @@ export async function adminLogisticsRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/quote-requests/:id',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
       schema: {
         tags: ['Admin'],
         description: 'Mettre à jour le statut / la note ops d\'une cotation',

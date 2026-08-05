@@ -6,7 +6,8 @@ import {
   financeExportQuerySchema,
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireCapability } from '../../plugins/erpAuth.js'
 import {
   getFinanceOverview,
   getFinanceMonthly,
@@ -28,7 +29,7 @@ function sendCsv(reply: FastifyReply, filename: string, csv: string) {
 // Module 100 % lecture seule : aucun recordActivity, aucune écriture.
 // Les routes restent minces — tout le métier est dans finance.service.ts.
 export async function financeRoutes(fastify: FastifyInstance) {
-  const guard = [requireAuth, requireRole('ADMIN')]
+  const guard = [requireAuth, requireCapability('accounting:read')]
 
   // -------------------------------------------------------------------------
   // Cockpit

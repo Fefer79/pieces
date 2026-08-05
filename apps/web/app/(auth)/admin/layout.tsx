@@ -4,31 +4,11 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { useCollapsed } from '@/lib/use-collapsed'
+import { useCollapsed, useCollapsedSet } from '@/lib/use-collapsed'
+import { navForCapabilities, activeNavHref, type AdminNavSection } from '@/lib/admin-nav'
+import type { ErpCapability } from 'shared/constants'
 
 type SupabaseClient = ReturnType<typeof createClient>
-
-const NAV = [
-  { href: '/admin', label: 'Tableau de bord' },
-  { href: '/admin/finances', label: 'Modélisation' },
-  { href: '/admin/parts', label: 'Pièces' },
-  { href: '/admin/enrichments', label: 'Fiches terrain' },
-  { href: '/admin/vendors', label: 'Vendeurs' },
-  { href: '/admin/clients', label: 'Clients' },
-  { href: '/admin/crm', label: 'CRM' },
-  { href: '/admin/marketing', label: 'Marketing' },
-  { href: '/admin/support', label: 'SAV' },
-  { href: '/admin/stock', label: 'Stock & achats' },
-  { href: '/admin/finance', label: 'Finance' },
-  { href: '/admin/enterprises', label: 'Entreprises' },
-  { href: '/admin/liaisons', label: 'Liaisons' },
-  { href: '/admin/equipe', label: 'Équipe' },
-  { href: '/admin/prospection', label: 'Prospection' },
-  { href: '/admin/logistique', label: 'Cotations logistique' },
-  { href: '/admin/sourcing', label: 'Sourcing' },
-  { href: '/admin/expeditions', label: 'Expéditions' },
-  { href: '/admin/external-imports', label: 'Imports externes' },
-]
 
 const svg = (p: { className?: string; children: React.ReactNode }) => (
   <svg
@@ -70,17 +50,19 @@ function abbreviate(label: string): string {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
-  // Deux replis indépendants : le rail entier, et la liste des sections sous
-  // le titre « Administration ».
+  // Replis indépendants : le rail entier d'un côté, chaque section métier de
+  // l'autre.
   const [railCollapsed, toggleRail] = useCollapsed('pieces.adminRail.collapsed')
-  const [navCollapsed, toggleNav] = useCollapsed('pieces.adminNav.collapsed')
+  const [collapsedSections, toggleSection] = useCollapsedSet('pieces.adminNav.sections')
   const supabaseRef = useRef<SupabaseClient | null>(null)
   function getSupabase() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     return supabaseRef.current
   }
+  const activeHref = activeNavHref(pathname)
   const [checking, setChecking] = useState(true)
   const [forbidden, setForbidden] = useState(false)
+  const [sections, setSections] = useState<AdminNavSection[]>([])
 
   const guard = useCallback(async () => {
     try {
@@ -98,8 +80,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return
       }
       const body = await res.json()
-      const roles = (body.data?.roles ?? []) as string[]
-      if (!roles.includes('ADMIN')) {
+      // L'accès ne dépend plus du seul rôle ADMIN : un membre de l'équipe avec
+      // un rôle métier entre, et ne voit que ses sections. L'API garde les
+      // mêmes capacités route par route — ce filtre évite le 403, il ne
+      // protège rien.
+      const capabilities = (body.data?.capabilities ?? []) as ErpCapability[]
+      const isPlatformAdmin = ((body.data?.roles ?? []) as string[]).includes('ADMIN')
+      const visible = navForCapabilities(capabilities, { isPlatformAdmin })
+      setSections(visible)
+      if (visible.length === 0) {
         setForbidden(true)
       }
     } finally {
@@ -118,7 +107,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="text-lg font-semibold text-ink">Accès refusé</h1>
-        <p className="mt-2 text-sm text-muted">Cette zone est réservée aux administrateurs.</p>
+        <p className="mt-2 text-sm text-muted">
+          Cette zone est réservée à l’équipe Pièces. Demandez à la direction de vous attribuer un
+          rôle métier.
+        </p>
       </div>
     )
   }
@@ -153,65 +145,79 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
         <nav className={`flex-1 overflow-y-auto py-3 ${railCollapsed ? 'px-1.5' : 'px-3'}`}>
-          {railCollapsed ? (
-            <div className="mx-1.5 mb-2 h-px bg-white/12" />
-          ) : (
-            <button
-              type="button"
-              onClick={toggleNav}
-              aria-expanded={!navCollapsed}
-              className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white/70"
-            >
-              <ChevronDownIcon
-                className={`h-3 w-3 transition-transform ${navCollapsed ? '-rotate-90' : ''}`}
-              />
-              <span>Administration</span>
-              {navCollapsed && <span className="ml-auto normal-case">{NAV.length}</span>}
-            </button>
-          )}
-          {(railCollapsed || !navCollapsed) &&
-            NAV.map((n) => {
-              const active =
-                pathname === n.href || (n.href !== '/admin' && pathname.startsWith(n.href + '/'))
-              return (
-                <Link
-                  key={n.href}
-                  href={n.href}
-                  title={railCollapsed ? n.label : undefined}
-                  className={`flex items-center rounded-md border-l-[3px] py-2.5 text-[13.5px] font-medium transition-colors ${
-                    railCollapsed ? 'justify-center px-0' : 'gap-3 px-2.5'
-                  } ${
-                    active
-                      ? 'border-accent bg-white/[0.09] text-white'
-                      : 'border-transparent text-white/72 hover:bg-white/[0.06] hover:text-white'
-                  }`}
-                >
-                  {railCollapsed ? (
-                    <>
-                      <span aria-hidden className="font-mono text-[11px] tracking-tight">
-                        {abbreviate(n.label)}
-                      </span>
-                      <span className="sr-only">{n.label}</span>
-                    </>
-                  ) : (
-                    n.label
-                  )}
-                </Link>
-              )
-            })}
+          {sections.map((section) => {
+            // Rail replié : plus de place pour les titres, un filet sépare les
+            // sections et chaque entrée se réduit à son sigle.
+            const sectionCollapsed = !railCollapsed && collapsedSections.has(section.key)
+            return (
+              <div key={section.key} className="mt-3 first:mt-0">
+                {railCollapsed ? (
+                  <div className="mx-1.5 mb-2 h-px bg-white/12" />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(section.key)}
+                    aria-expanded={!sectionCollapsed}
+                    className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white/70"
+                  >
+                    <ChevronDownIcon
+                      className={`h-3 w-3 transition-transform ${sectionCollapsed ? '-rotate-90' : ''}`}
+                    />
+                    <span>{section.label}</span>
+                    {sectionCollapsed && (
+                      <span className="ml-auto normal-case">{section.items.length}</span>
+                    )}
+                  </button>
+                )}
+                {!sectionCollapsed &&
+                  section.items.map((item) => {
+                    const active = activeHref === item.href
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={railCollapsed ? item.label : undefined}
+                        className={`flex items-center rounded-md border-l-[3px] py-2.5 text-[13.5px] font-medium transition-colors ${
+                          railCollapsed ? 'justify-center px-0' : 'gap-3 px-2.5'
+                        } ${
+                          active
+                            ? 'border-accent bg-white/[0.09] text-white'
+                            : 'border-transparent text-white/72 hover:bg-white/[0.06] hover:text-white'
+                        }`}
+                      >
+                        {railCollapsed ? (
+                          <>
+                            <span aria-hidden className="font-mono text-[11px] tracking-tight">
+                              {abbreviate(item.label)}
+                            </span>
+                            <span className="sr-only">{item.label}</span>
+                          </>
+                        ) : (
+                          item.label
+                        )}
+                      </Link>
+                    )
+                  })}
+              </div>
+            )
+          })}
         </nav>
       </aside>
       <main className="flex-1">
         <div className="border-b border-border bg-card px-4 py-2 lg:hidden">
           <select
-            value={pathname}
+            value={activeHref ?? ''}
             onChange={(e) => router.push(e.target.value)}
             className="w-full rounded-sm border border-border-strong bg-surface px-2 py-2 text-sm"
           >
-            {NAV.map((n) => (
-              <option key={n.href} value={n.href}>
-                {n.label}
-              </option>
+            {sections.map((section) => (
+              <optgroup key={section.key} label={section.label}>
+                {section.items.map((item) => (
+                  <option key={item.href} value={item.href}>
+                    {item.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>

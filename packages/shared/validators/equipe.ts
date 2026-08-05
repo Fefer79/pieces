@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { STAFF_ROLES, BUSINESS_UNITS } from '../constants/erp-rbac'
 
 // ---------------------------------------------------------------------------
 // ERP — Équipe & commissions
@@ -38,6 +39,10 @@ export const equipeMemberParamsSchema = z.object({
 
 export const upsertTeamProfileSchema = z.object({
   fonction: z.string().max(120).optional().nullable(),
+  // Rôle métier : ce qui débloque les sections du back-office (matrice
+  // shared/constants/erp-rbac). `null` retire l'accès au membre.
+  staffRole: z.enum(STAFF_ROLES).optional().nullable(),
+  businessUnits: z.array(z.enum(BUSINESS_UNITS)).optional(),
   tauxCommissionPct: z.number().int().min(0).max(100).optional(),
   actif: z.boolean().optional(),
   embaucheLe: z.string().datetime().optional().nullable(),

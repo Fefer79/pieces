@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireCapability } from '../../plugins/erpAuth.js'
 import {
   getAdminDashboardStats,
   getAdminUsers,
@@ -67,7 +68,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/dashboard',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Tableau de bord admin', security: [{ BearerAuth: [] }] },
     },
     async (_request, reply) => {
@@ -80,7 +81,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/users',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Liste des utilisateurs (admin)', security: [{ BearerAuth: [] }] },
     },
     async (request, reply) => {
@@ -94,7 +95,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/orders',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Liste des commandes (admin)', security: [{ BearerAuth: [] }] },
     },
     async (request, reply) => {
@@ -112,7 +113,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/vendors',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Liste des vendeurs (admin)', security: [{ BearerAuth: [] }] },
     },
     async (request, reply) => {
@@ -126,7 +127,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/catalog',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Liste des annonces (admin)', security: [{ BearerAuth: [] }] },
     },
     async (request, reply) => {
@@ -140,7 +141,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/catalog/:id',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Détail d\'une annonce (admin)', security: [{ BearerAuth: [] }] },
     },
     async (request, reply) => {
@@ -154,7 +155,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/catalog/:id',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Modifie une annonce (admin)',
@@ -173,7 +174,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.delete(
     '/catalog/:id',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Supprime définitivement une annonce (admin)' },
     },
     async (request, reply) => {
@@ -188,7 +189,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/catalog/:id/photos',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Ajoute une photo (max 3) à une annonce (admin)',
@@ -212,7 +213,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.delete(
     '/catalog/:id/photos/:photoId',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Supprime une photo d\'une annonce (admin)' },
     },
     async (request, reply) => {
@@ -227,7 +228,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/catalog/:id/photos/reorder',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Réordonne les photos d\'une annonce (admin)',
@@ -248,7 +249,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.put(
     '/catalog/:id/fitments',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Remplace les compatibilités véhicule d\'une annonce (admin)',
@@ -268,7 +269,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/overview',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'KPIs + revenu mensuel + top vendeurs', security: [{ BearerAuth: [] }] },
     },
     async (_request, reply) => {
@@ -280,7 +281,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/catalog/list',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Liste catalogue paginée + recherche + filtres',
@@ -296,7 +297,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/catalog/suggest',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Autocomplétion catalogue : suggestions pièces / marques / vendeurs',
@@ -313,7 +314,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/suggest',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Autocomplétion des listes admin (clients, entreprises, vendeurs, imports externes)',
@@ -333,7 +334,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/external-imports/list',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Liste paginée des CatalogItems issus de sources externes (scrapers)',
@@ -349,7 +350,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/external-imports/stats',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Compteurs par source externe (total, withOem, lastImportAt)' },
     },
     async (_request, reply) => {
@@ -361,7 +362,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/vendors/list',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Liste vendeurs paginée + recherche',
@@ -377,7 +378,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/vendors/:id/detail',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Détail vendeur + transactions + commissions' },
     },
     async (request, reply) => {
@@ -390,7 +391,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/vendors/:id',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Modifie le contact d\'un vendeur (admin)',
@@ -408,7 +409,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/clients/list',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Liste clients (utilisateurs) paginée + recherche',
@@ -424,7 +425,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/clients/register-whatsapp',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Enregistre manuellement un utilisateur WhatsApp (téléphone + nom optionnel)',
@@ -441,7 +442,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/clients/:id/detail',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Détail client + commandes' },
     },
     async (request, reply) => {
@@ -454,7 +455,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/enterprises/list',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Liste entreprises paginée + recherche',
@@ -470,7 +471,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/enterprises/:id/detail',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Détail entreprise + membres + parc + commandes' },
     },
     async (request, reply) => {
@@ -483,7 +484,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/vendors/:id/recompute-score',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Recalcule le score agrégé d\'un vendeur' },
     },
     async (request, reply) => {
@@ -497,7 +498,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/vendors/recompute-scores',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Recalcule tous les scores vendeurs (batch)' },
     },
     async (request, reply) => {
@@ -511,7 +512,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/enterprises/:id/subscriptions',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Historique des abonnements d\'une entreprise' },
     },
     async (request, reply) => {
@@ -524,7 +525,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/enterprises/:id/subscription',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Abonnement actif d\'une entreprise + tarif estimé selon nb véhicules' },
     },
     async (request, reply) => {
@@ -540,7 +541,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/enterprises/:id/subscriptions',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Crée un abonnement pour une entreprise (annule l\'actif précédent)',
@@ -566,7 +567,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/subscriptions/:subscriptionId',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Modifie un abonnement (tier, status, cycle, notes)',
@@ -591,7 +592,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/export.csv',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Export CSV (entity = vendors|clients|orders|catalog)',
@@ -613,7 +614,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/liaisons',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Liste des Liaisons + stats', security: [{ BearerAuth: [] }] },
     },
     async (_request, reply) => {
@@ -625,7 +626,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/liaisons/:id',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Détail d\'un Liaison', security: [{ BearerAuth: [] }] },
     },
     async (request, reply) => {
@@ -638,7 +639,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/liaisons/:id/activity',
     {
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
       schema: { tags: ['Admin'], description: 'Journal d\'activité d\'un Liaison', security: [{ BearerAuth: [] }] },
     },
     async (request, reply) => {

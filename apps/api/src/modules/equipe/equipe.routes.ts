@@ -13,7 +13,8 @@ import {
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { recordActivity } from '../../lib/activityLog.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireCapability } from '../../plugins/erpAuth.js'
 import {
   getEquipeOverview,
   listMembers,
@@ -30,7 +31,7 @@ import {
 } from './equipe.service.js'
 
 export async function equipeRoutes(fastify: FastifyInstance) {
-  const guard = [requireAuth, requireRole('ADMIN')]
+  const guard = [requireAuth, requireCapability('erp:admin')]
 
   // -------------------------------------------------------------------------
   // Cockpit

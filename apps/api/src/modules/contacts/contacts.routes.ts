@@ -13,6 +13,7 @@ import { zodToFastify } from '../../lib/zodSchema.js'
 import { recordActivity } from '../../lib/activityLog.js'
 import { AppError } from '../../lib/appError.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireCapability } from '../../plugins/erpAuth.js'
 import { scrapeUrl } from './scrape.service.js'
 import {
   listContacts,
@@ -77,7 +78,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         description: 'Prévisualise les leads importables depuis les sources internes (OSM, marketplaces)',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
     },
     async (_request, reply) => {
       const result = await runRadarImport({ dryRun: true })
@@ -93,7 +94,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         description: 'Importe les nouveaux leads (OSM, marketplaces) comme prospects dédupliqués',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
     },
     async (request, reply) => {
       const result = await runRadarImport({ dryRun: false })
@@ -110,7 +111,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         description: 'Statistiques de prospection (funnel par statut, liaison, commune)',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
     },
     async (_request, reply) => {
       const result = await getProspectionStats()
@@ -272,7 +273,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         body: zodToFastify(assignContactSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }

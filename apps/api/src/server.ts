@@ -6,6 +6,7 @@ import { rateLimit } from './plugins/rateLimit.js'
 import { swagger } from './plugins/swagger.js'
 import { setupErrorHandler } from './plugins/errorHandler.js'
 import { auth } from './plugins/auth.js'
+import { erpAuth } from './plugins/erpAuth.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { userRoutes } from './modules/user/user.routes.js'
 import { consentRoutes } from './modules/consent/consent.routes.js'
@@ -79,6 +80,7 @@ export function buildApp() {
   fastify.register(rateLimit)
   fastify.register(swagger)
   fastify.register(auth)
+  fastify.register(erpAuth)
   fastify.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } })
   setupErrorHandler(fastify)
 

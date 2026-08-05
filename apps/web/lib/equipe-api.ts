@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase'
 import { fmtFcfa } from '@/lib/admin-api'
+import type { StaffRoleKey, BusinessUnitKey } from 'shared/constants'
 
 // fmtFcfa est réexporté pour que les pages équipe n'aient qu'une seule source
 // d'imports utilitaires.
@@ -67,6 +68,9 @@ export interface TeamMemberProfile {
   id: string
   userId: string
   fonction: string | null
+  /** Rôle métier : ce qui débloque les sections du back-office. */
+  staffRole: StaffRoleKey | null
+  businessUnits: BusinessUnitKey[]
   tauxCommissionPct: number
   actif: boolean
   embaucheLe: string | null

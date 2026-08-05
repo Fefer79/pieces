@@ -2,10 +2,21 @@
 
 import { useState } from 'react'
 import { equipeFetch, type TeamMemberProfile } from '@/lib/equipe-api'
+import {
+  STAFF_ROLES,
+  STAFF_ROLE_LABELS,
+  capabilitiesFor,
+  ERP_CAPABILITY_LABELS,
+  type StaffRoleKey,
+} from 'shared/constants'
 
 /**
  * Formulaire de profil membre partagé (création ou édition — l'API upserte) :
- * fonction, taux de commission, date d'embauche, activation.
+ * rôle métier, fonction, taux de commission, date d'embauche, activation.
+ *
+ * Le rôle métier est ce qui ouvre le back-office : on affiche donc en clair ce
+ * qu'il autorise, plutôt que de laisser deviner les conséquences d'un choix
+ * dans une liste déroulante.
  */
 export function ProfileFormCard({
   userId,
@@ -19,6 +30,7 @@ export function ProfileFormCard({
   onClose?: () => void
 }) {
   const [fonction, setFonction] = useState(initial?.fonction ?? '')
+  const [staffRole, setStaffRole] = useState<StaffRoleKey | ''>(initial?.staffRole ?? '')
   const [taux, setTaux] = useState(String(initial?.tauxCommissionPct ?? 10))
   const [embaucheLe, setEmbaucheLe] = useState(initial?.embaucheLe?.slice(0, 10) ?? '')
   const [actif, setActif] = useState(initial?.actif ?? true)
@@ -35,6 +47,7 @@ export function ProfileFormCard({
       method: 'PUT',
       body: JSON.stringify({
         fonction: fonction.trim() || null,
+        staffRole: staffRole || null,
         tauxCommissionPct: tauxNum,
         actif,
         embaucheLe: embaucheLe ? new Date(`${embaucheLe}T00:00:00Z`).toISOString() : null,
@@ -51,6 +64,9 @@ export function ProfileFormCard({
   const tauxNum = Number.parseInt(taux, 10)
   const tauxValid = Number.isInteger(tauxNum) && tauxNum >= 0 && tauxNum <= 100
 
+  // Aperçu des droits ouverts par le rôle choisi, en clair.
+  const capabilities = staffRole ? capabilitiesFor({ staffRole, active: actif }) : []
+
   return (
     <div className="mb-4 rounded-md border border-border bg-card p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -64,6 +80,21 @@ export function ProfileFormCard({
         )}
       </div>
       <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
+        <label className="text-xs text-muted">
+          Rôle métier
+          <select
+            value={staffRole}
+            onChange={(e) => setStaffRole(e.target.value as StaffRoleKey | '')}
+            className="ml-1 rounded-sm border border-border-strong bg-surface px-2 py-2 text-sm text-ink"
+          >
+            <option value="">Aucun (pas d’accès back-office)</option>
+            {STAFF_ROLES.map((role) => (
+              <option key={role} value={role}>
+                {STAFF_ROLE_LABELS[role]}
+              </option>
+            ))}
+          </select>
+        </label>
         <input
           value={fonction}
           onChange={(e) => setFonction(e.target.value)}
@@ -101,6 +132,23 @@ export function ProfileFormCard({
           {busy ? 'Enregistrement…' : 'Enregistrer le profil'}
         </button>
       </form>
+      {capabilities.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
+          {capabilities.map((c) => (
+            <span
+              key={c}
+              className="rounded-full bg-surface px-2 py-0.5 font-mono text-[10px] text-muted"
+            >
+              {ERP_CAPABILITY_LABELS[c]}
+            </span>
+          ))}
+        </div>
+      )}
+      {staffRole && !actif && (
+        <p className="mt-2 text-xs text-muted">
+          Profil désactivé : le rôle est conservé mais n’ouvre aucun accès.
+        </p>
+      )}
       {error && <p className="mt-2 text-xs text-error-fg">{error}</p>}
     </div>
   )
