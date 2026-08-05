@@ -10,6 +10,7 @@ const invoiceFindUnique = vi.fn()
 const invoiceFindMany = vi.fn()
 const invoiceCreate = vi.fn()
 const invoiceCount = vi.fn()
+const queryRaw = vi.fn()
 const orderFindUnique = vi.fn()
 const enterpriseFindUnique = vi.fn()
 const enterpriseMemberFindUnique = vi.fn()
@@ -17,6 +18,8 @@ const monthlyUpsert = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
+    // Numérotation atomique : `nextSequence` passe par $queryRaw.
+    $queryRaw: (...a: unknown[]) => queryRaw(...a),
     invoice: {
       findUnique: (...a: unknown[]) => invoiceFindUnique(...a),
       findMany: (...a: unknown[]) => invoiceFindMany(...a),
@@ -49,6 +52,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   invoiceFindMany.mockResolvedValue([])
   invoiceCount.mockResolvedValue(0)
+  queryRaw.mockResolvedValue([{ next_value: 2 }])
   enterpriseFindUnique.mockResolvedValue({
     id: ENTERPRISE,
     name: 'Transports Yopougon SARL',
@@ -196,5 +200,54 @@ describe('getOrCreateInvoiceForOrder', () => {
     // La somme doit retomber exactement sur ce que le client a payé.
     expect(invoice.subtotalHt + invoice.tvaAmount).toBe(100000)
     expect(invoice.totalTtc).toBe(100000)
+  })
+
+  // Régression : la numérotation faisait `invoice.count() + 1`. Deux commandes
+  // payées en même temps lisaient le même compte, produisaient le même
+  // `invoiceNumber` (contraint @unique), et la seconde facture n'était jamais
+  // émise — pour un client qui avait pourtant payé.
+  describe('numérotation', () => {
+    function orderPaid(id: string) {
+      return { id, enterpriseId: ENTERPRISE, totalAmount: 100000, paidAt: new Date() }
+    }
+
+    beforeEach(() => {
+      invoiceFindUnique.mockResolvedValue(null)
+      invoiceCreate.mockImplementation((args: { data: Record<string, unknown> }) => args.data)
+    })
+
+    it('tire son numéro du compteur atomique, jamais d’un count()', async () => {
+      orderFindUnique.mockResolvedValue(orderPaid('ord-1'))
+      queryRaw.mockResolvedValueOnce([{ next_value: 43 }])
+
+      const invoice = (await getOrCreateInvoiceForOrder('ord-1')) as unknown as {
+        invoiceNumber: string
+      }
+
+      expect(invoice.invoiceNumber).toMatch(/^PCS-\d{6}-00042$/)
+      expect(invoiceCount).not.toHaveBeenCalled()
+    })
+
+    it('donne deux numéros distincts à deux émissions concurrentes', async () => {
+      orderFindUnique.mockImplementation(({ where }: { where: { id: string } }) =>
+        Promise.resolve(orderPaid(where.id)),
+      )
+      // Le verrou de ligne Postgres sérialise les deux INSERT … ON CONFLICT :
+      // la base rend deux valeurs consécutives, jamais la même.
+      queryRaw
+        .mockResolvedValueOnce([{ next_value: 2 }])
+        .mockResolvedValueOnce([{ next_value: 3 }])
+
+      const [a, b] = (await Promise.all([
+        getOrCreateInvoiceForOrder('ord-1'),
+        getOrCreateInvoiceForOrder('ord-2'),
+      ])) as unknown as Array<{ invoiceNumber: string }>
+
+      expect(a.invoiceNumber).not.toBe(b.invoiceNumber)
+      expect([a.invoiceNumber, b.invoiceNumber].map((n) => n.slice(-5)).sort()).toEqual([
+        '00001',
+        '00002',
+      ])
+    })
   })
 })

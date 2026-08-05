@@ -1,6 +1,7 @@
 import PDFDocument from 'pdfkit'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
+import { nextSequence, formatDocumentNumber } from '../../lib/sequence.js'
 import { assertMember } from './enterprise.service.js'
 import { FINANCE_ROLES, ACCOUNTING_ROLES } from './roles.js'
 
@@ -16,12 +17,6 @@ function fcfa(n: number): string {
 
 function dateFr(d: Date): string {
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-}
-
-function invoiceNumberFor(now: Date, seq: number): string {
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  return `PCS-${y}${m}-${String(seq).padStart(5, '0')}`
 }
 
 /**
@@ -53,13 +48,15 @@ export async function getOrCreateInvoiceForOrder(orderId: string) {
   const totalTtc = order.totalAmount
   const { ht, tva } = splitTtc(totalTtc)
 
-  // Sequence: count invoices issued this year+month + 1
+  // Numérotation : compteur atomique, jamais un count() + 1.
+  //
+  // Deux commandes payées simultanément lisaient le même compte et
+  // construisaient le même `invoiceNumber` (contraint @unique) : la seconde
+  // création échouait et la facture n'était jamais émise. `nextSequence` fait
+  // l'incrément dans une seule requête, sous verrou de ligne.
   const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const countThisMonth = await prisma.invoice.count({
-    where: { issuedAt: { gte: startOfMonth } },
-  })
-  const invoiceNumber = invoiceNumberFor(now, countThisMonth + 1)
+  const seq = await nextSequence('INVOICE', now)
+  const invoiceNumber = formatDocumentNumber('PCS', now, seq)
 
   return prisma.invoice.create({
     data: {

@@ -575,6 +575,28 @@ model SubscriptionPayment {
   @@map("subscription_payments")
 }
 
+/// Compteur de numérotation atomique (factures, avoirs, bons de commande,
+/// réceptions, écritures…).
+///
+/// ⚠ Le seul accès autorisé est `nextSequence()` (apps/api/src/lib/sequence.ts),
+/// qui fait un `INSERT … ON CONFLICT DO UPDATE … RETURNING`. Ne jamais lire
+/// puis écrire en deux requêtes : c'est exactement la course que ce modèle
+/// vient corriger (l'ancien `invoice.count() + 1` pouvait attribuer deux fois
+/// le même numéro de facture).
+///
+/// `year`/`month` à 0 pour les compteurs non périodiques.
+model Sequence {
+  id        String   @id @default(uuid())
+  key       String
+  year      Int
+  month     Int
+  nextValue Int      @default(1) @map("next_value")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([key, year, month], name: "uq_sequence_key_period")
+  @@map("sequences")
+}
+
 model Invoice {
   id                  String      @id @default(uuid())
   orderId             String      @unique @map("order_id")
