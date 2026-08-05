@@ -49,6 +49,8 @@ import {
   type BillingCycle,
 } from '../enterprise/subscription.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
+import { cockpitQuerySchema } from 'shared/validators'
+import { getCockpit } from './cockpit.service.js'
 import {
   adminListQuerySchema,
   adminSuggestQuerySchema,
@@ -274,6 +276,27 @@ export async function adminRoutes(fastify: FastifyInstance) {
     },
     async (_request, reply) => {
       const data = await getAdminOverview()
+      return reply.status(200).send({ data })
+    },
+  )
+
+  // Cockpit : lecture des trois lignes d'activité. `erp:read` et non
+  // `erp:admin` — c'est l'écran d'accueil du back-office, tout membre de
+  // l'équipe doit pouvoir l'ouvrir. Les statistiques marketplace détaillées
+  // (/admin/overview) restent réservées à `erp:admin`.
+  fastify.get(
+    '/cockpit',
+    {
+      preHandler: [requireAuth, requireCapability('erp:read')],
+      schema: {
+        tags: ['Admin'],
+        security: [{ BearerAuth: [] }],
+        description: 'Cockpit — marketplace, flotte et logistique du mois',
+        querystring: zodToFastify(cockpitQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const data = await getCockpit(cockpitQuerySchema.parse(request.query))
       return reply.status(200).send({ data })
     },
   )

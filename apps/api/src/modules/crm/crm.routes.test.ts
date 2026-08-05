@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createPrismaMock } from '../../test/prismaMock.js'
 
 vi.stubEnv('DATABASE_URL', 'postgresql://localhost:5432/pieces')
 vi.stubEnv('SUPABASE_URL', 'https://test.supabase.co')
@@ -9,7 +10,11 @@ vi.stubEnv('PORT', '3001')
 const U1 = '11111111-2222-4333-8444-555555555555'
 
 const mockGetUser = vi.fn()
-const mockUserUpsert = vi.fn()
+// Mock Prisma complet : `buildApp()` monte tous les modules, donc toute
+// requête peut toucher n'importe quel modèle (ici `teamMemberProfile`, lu par
+// la garde de capacité). Énumérer les modèles à la main rendait ces fichiers
+// cassables par une modification sans rapport.
+const { prismaMock, model, resetAll } = createPrismaMock()
 
 const mockGetCrmOverview = vi.fn()
 const mockGetCrmTimeline = vi.fn()
@@ -35,18 +40,7 @@ vi.mock('../../lib/supabase.js', () => ({
   },
 }))
 
-vi.mock('../../lib/prisma.js', () => ({
-  prisma: {
-    // Contexte staff chargé par requireCapability sur toute route back-office.
-    teamMemberProfile: { findUnique: vi.fn().mockResolvedValue(null) },
-    user: {
-      upsert: (...args: unknown[]) => mockUserUpsert(...args),
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-    vendor: { findUnique: vi.fn() },
-  },
-}))
+vi.mock('../../lib/prisma.js', () => ({ prisma: prismaMock }))
 
 vi.mock('../../lib/activityLog.js', () => ({
   recordActivity: vi.fn().mockResolvedValue(undefined),
@@ -75,7 +69,7 @@ function mockAuth(roles: string[] = ['ADMIN'], activeContext = 'ADMIN') {
     data: { user: { id: 'sup-1', phone: '+2250700000000' } },
     error: null,
   })
-  mockUserUpsert.mockResolvedValueOnce({
+  model('user').upsert.mockResolvedValueOnce({
     id: 'prisma-admin-1',
     phone: '+2250700000000',
     roles,
@@ -88,6 +82,7 @@ function mockAuth(roles: string[] = ['ADMIN'], activeContext = 'ADMIN') {
 describe('CRM Routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    resetAll()
   })
 
   it('returns 401 without auth', async () => {

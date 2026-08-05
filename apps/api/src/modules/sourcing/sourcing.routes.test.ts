@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createPrismaMock } from '../../test/prismaMock.js'
 
 vi.stubEnv('DATABASE_URL', 'postgresql://localhost:5432/pieces')
 vi.stubEnv('SUPABASE_URL', 'https://test.supabase.co')
@@ -7,7 +8,11 @@ vi.stubEnv('PINO_LOG_LEVEL', 'error')
 vi.stubEnv('PORT', '3001')
 
 const mockGetUser = vi.fn()
-const mockUserUpsert = vi.fn()
+// Mock Prisma complet : `buildApp()` monte tous les modules, donc toute
+// requête peut toucher n'importe quel modèle (ici `teamMemberProfile`, lu par
+// la garde de capacité). Énumérer les modèles à la main rendait ces fichiers
+// cassables par une modification sans rapport.
+const { prismaMock, model, resetAll } = createPrismaMock()
 const mockRecordActivity = vi.fn().mockResolvedValue(undefined)
 
 const mockCreateSearch = vi.fn()
@@ -40,18 +45,7 @@ vi.mock('../../lib/supabase.js', () => ({
   },
 }))
 
-vi.mock('../../lib/prisma.js', () => ({
-  prisma: {
-    // Contexte staff chargé par requireCapability sur toute route back-office.
-    teamMemberProfile: { findUnique: vi.fn().mockResolvedValue(null) },
-    user: {
-      upsert: (...args: unknown[]) => mockUserUpsert(...args),
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-    vendor: { findUnique: vi.fn() },
-  },
-}))
+vi.mock('../../lib/prisma.js', () => ({ prisma: prismaMock }))
 
 vi.mock('../../lib/activityLog.js', () => ({
   recordActivity: (...args: unknown[]) => mockRecordActivity(...args),
@@ -89,7 +83,7 @@ function mockAuth(roles: string[] = ['ADMIN'], activeContext = 'ADMIN') {
     data: { user: { id: 'sup-1', phone: '+2250700000000' } },
     error: null,
   })
-  mockUserUpsert.mockResolvedValueOnce({
+  model('user').upsert.mockResolvedValueOnce({
     id: 'prisma-admin-1',
     phone: '+2250700000000',
     roles,
@@ -102,6 +96,7 @@ function mockAuth(roles: string[] = ['ADMIN'], activeContext = 'ADMIN') {
 describe('Sourcing routes', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    resetAll()
     mockRecordActivity.mockResolvedValue(undefined)
   })
 
@@ -258,6 +253,7 @@ describe('Sourcing routes', () => {
 describe('Shipment routes', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    resetAll()
     mockRecordActivity.mockResolvedValue(undefined)
   })
 

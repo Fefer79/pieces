@@ -332,3 +332,5 @@ export type {
   ShipmentTransitionInput,
   AdminShipmentsQuery,
 } from './sourcing'
+export { businessUnitSchema, cockpitQuerySchema } from './admin'
+export type { CockpitQuery } from './admin'
