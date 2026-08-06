@@ -19,15 +19,6 @@ export interface AdminNavItem {
   label: string
   /** Capacité requise. `erp:read` = visible par toute l'équipe. */
   capability: ErpCapability
-  /**
-   * Écran dont l'API exige encore le rôle plateforme `ADMIN` : son module
-   * n'est pas converti aux capacités (garde mixte LIAISON/SELLER/ADMIN, qu'on
-   * ne peut pas basculer sans toucher aux parcours client).
-   *
-   * Sans ce drapeau, un membre DIRECTION sans rôle ADMIN verrait l'entrée et
-   * récolterait un 403 — exactement ce que la matrice doit éviter.
-   */
-  adminOnly?: boolean
 }
 
 export interface AdminNavSection {
@@ -60,9 +51,9 @@ export const ADMIN_NAV: AdminNavSection[] = [
     label: 'CRM',
     items: [
       { href: '/admin/crm', label: 'CRM', capability: 'crm:read' },
-      { href: '/admin/clients', adminOnly: true, label: 'Clients', capability: 'erp:admin' },
-      { href: '/admin/vendors', adminOnly: true, label: 'Vendeurs', capability: 'erp:admin' },
-      { href: '/admin/enterprises', adminOnly: true, label: 'Entreprises', capability: 'erp:admin' },
+      { href: '/admin/clients', label: 'Clients', capability: 'erp:admin' },
+      { href: '/admin/vendors', label: 'Vendeurs', capability: 'erp:admin' },
+      { href: '/admin/enterprises', label: 'Entreprises', capability: 'erp:admin' },
       { href: '/admin/prospection', label: 'Prospection', capability: 'crm:read' },
       { href: '/admin/marketing', label: 'Marketing', capability: 'crm:read' },
       { href: '/admin/support', label: 'SAV', capability: 'crm:read' },
@@ -82,7 +73,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     label: 'Logistique',
     items: [
       { href: '/admin/logistique', label: 'Cotations logistique', capability: 'crm:read' },
-      { href: '/admin/liaisons', adminOnly: true, label: 'Liaisons', capability: 'erp:admin' },
+      { href: '/admin/liaisons', label: 'Liaisons', capability: 'erp:admin' },
     ],
   },
   {
@@ -98,17 +89,10 @@ export const ADMIN_NAV: AdminNavSection[] = [
  * Une section sans aucune entrée visible disparaît entièrement — pas de titre
  * orphelin dans la sidebar.
  */
-export function navForCapabilities(
-  capabilities: readonly ErpCapability[],
-  options: { isPlatformAdmin?: boolean } = {},
-): AdminNavSection[] {
+export function navForCapabilities(capabilities: readonly ErpCapability[]): AdminNavSection[] {
   return ADMIN_NAV.map((section) => ({
     ...section,
-    items: section.items.filter(
-      (item) =>
-        hasCapability(capabilities, item.capability) &&
-        (!item.adminOnly || options.isPlatformAdmin === true),
-    ),
+    items: section.items.filter((item) => hasCapability(capabilities, item.capability)),
   })).filter((section) => section.items.length > 0)
 }
 

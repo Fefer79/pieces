@@ -22,6 +22,7 @@ import {
 
 export async function marketingRoutes(fastify: FastifyInstance) {
   const guard = [requireAuth, requireCapability('crm:read')]
+  const writeGuard = [requireAuth, requireCapability('crm:write')]
 
   // -------------------------------------------------------------------------
   // Cockpit & audiences
@@ -109,7 +110,7 @@ export async function marketingRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createCampaignSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const result = await createCampaign(request.body, request.user.id)
@@ -159,7 +160,7 @@ export async function marketingRoutes(fastify: FastifyInstance) {
         params: zodToFastify(marketingCampaignParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -192,7 +193,7 @@ export async function marketingRoutes(fastify: FastifyInstance) {
         params: zodToFastify(marketingCampaignParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }

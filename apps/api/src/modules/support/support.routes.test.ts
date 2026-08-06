@@ -91,6 +91,66 @@ describe('Support Routes', () => {
     expect(response.statusCode).toBe(401)
   })
 
+  // Séparation lecture / écriture : le rôle SUPPORT consulte les litiges mais
+  // ne les tranche pas. Sans ce test, la garde d'écriture serait invisible —
+  // tous les autres cas s'authentifient en ADMIN, qui a toutes les capacités.
+  function asStaff(staffRole: string) {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: 'staff-user', phone: '+2250700000009' } },
+      error: null,
+    })
+    model('user').upsert.mockResolvedValueOnce({
+      id: 'prisma-staff-1',
+      phone: '+2250700000009',
+      roles: ['BUYER'],
+      activeContext: 'BUYER',
+      consentedAt: new Date(),
+    })
+    model('teamMemberProfile').findUnique.mockResolvedValue({
+      id: 'staff-1',
+      staffRole,
+      businessUnits: [],
+      fonction: null,
+      actif: true,
+    })
+    return { authorization: 'Bearer test-token' }
+  }
+
+  it('un rôle SUPPORT consulte les litiges', async () => {
+    mockListDisputes.mockResolvedValueOnce({ items: [], total: 0 })
+    const app = buildApp()
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/admin/support/disputes',
+      headers: asStaff('SUPPORT'),
+    })
+    expect(response.statusCode).toBe(200)
+  })
+
+  it('un rôle SUPPORT ne tranche pas un litige — crm:write lui manque', async () => {
+    const app = buildApp()
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/v1/admin/support/disputes/${D1}/resolve`,
+      headers: asStaff('SUPPORT'),
+      payload: { inFavorOf: 'buyer', resolution: 'Remboursement intégral' },
+    })
+    expect(response.statusCode).toBe(403)
+    expect(mockResolveDispute).not.toHaveBeenCalled()
+  })
+
+  it('un rôle COMMERCIAL tranche, lui', async () => {
+    mockResolveDispute.mockResolvedValueOnce({ id: D1 })
+    const app = buildApp()
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/v1/admin/support/disputes/${D1}/resolve`,
+      headers: asStaff('COMMERCIAL'),
+      payload: { inFavorOf: 'buyer', resolution: 'Remboursement intégral' },
+    })
+    expect(response.statusCode).not.toBe(403)
+  })
+
   it('returns 403 for a non-ADMIN user', async () => {
     const app = buildApp()
     const response = await app.inject({

@@ -36,6 +36,8 @@ type SubjectParams = { subject: 'USER' | 'VENDOR'; subjectId: string }
 
 export async function crmRoutes(fastify: FastifyInstance) {
   const guard = [requireAuth, requireCapability('crm:read')]
+  // Écritures : consulter le CRM et le modifier sont deux droits distincts.
+  const writeGuard = [requireAuth, requireCapability('crm:write')]
 
   fastify.get(
     '/overview',
@@ -82,7 +84,7 @@ export async function crmRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createCrmInteractionSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const result = await addCrmInteraction(request.user.id, request.body)
@@ -131,7 +133,7 @@ export async function crmRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createCrmTaskSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const result = await createCrmTask(request.user.id, request.body)
@@ -164,7 +166,7 @@ export async function crmRoutes(fastify: FastifyInstance) {
         body: zodToFastify(updateCrmTaskSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -207,7 +209,7 @@ export async function crmRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createCrmTagSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const result = await createCrmTag(request.body)
@@ -225,7 +227,7 @@ export async function crmRoutes(fastify: FastifyInstance) {
         params: zodToFastify(crmTagParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -263,7 +265,7 @@ export async function crmRoutes(fastify: FastifyInstance) {
         body: zodToFastify(crmTagAssignSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -297,7 +299,7 @@ export async function crmRoutes(fastify: FastifyInstance) {
         body: zodToFastify(crmTagAssignSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -316,7 +318,7 @@ export async function crmRoutes(fastify: FastifyInstance) {
         body: zodToFastify(crmRelanceWhatsAppSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const body = request.body as { subject: 'USER' | 'VENDOR'; subjectId: string }

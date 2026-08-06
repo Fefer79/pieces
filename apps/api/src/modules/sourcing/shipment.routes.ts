@@ -26,6 +26,7 @@ import {
 /** Monté sous /api/v1/admin/shipments. */
 export async function shipmentRoutes(fastify: FastifyInstance) {
   const guard = [requireAuth, requireCapability('purchase:read')]
+  const writeGuard = [requireAuth, requireCapability('purchase:order')]
 
   fastify.get(
     '/stats',
@@ -63,7 +64,7 @@ export async function shipmentRoutes(fastify: FastifyInstance) {
         body: zodToFastify(shipmentCreateSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const shipment = await createShipment(request.body, request.user.id)
@@ -112,7 +113,7 @@ export async function shipmentRoutes(fastify: FastifyInstance) {
         body: zodToFastify(shipmentUpdateSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -130,7 +131,7 @@ export async function shipmentRoutes(fastify: FastifyInstance) {
         body: zodToFastify(shipmentTransitionSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -154,7 +155,7 @@ export async function shipmentRoutes(fastify: FastifyInstance) {
         params: zodToFastify(shipmentParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }

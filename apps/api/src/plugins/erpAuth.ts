@@ -9,6 +9,7 @@ import {
   type StaffRoleKey,
   type BusinessUnitKey,
 } from 'shared/constants'
+import type { Role } from 'shared/types'
 
 // Garde du back-office interne (/admin).
 //
@@ -93,6 +94,39 @@ export function requireCapability(capability: ErpCapability) {
 
     if (!hasCapability(staff.capabilities, capability)) {
       throw new AppError('ERP_FORBIDDEN', 403, {
+        message: "Vous n'avez pas accès à cette partie du back-office",
+        required: capability,
+      })
+    }
+  }
+}
+
+/**
+ * preHandler : laisse passer soit un rôle plateforme, soit une capacité.
+ *
+ * Pour les modules à double public — `/admin/liaisons` et l'espace LIAISON
+ * partagent les mêmes routes, par exemple. Basculer ces gardes sur la seule
+ * capacité fermerait la porte aux liaisons, qui n'ont pas de fiche d'équipe ;
+ * les laisser sur le seul rôle interdirait le back-office à un membre DIRECTION
+ * sans `Role.ADMIN`. On accepte donc les deux.
+ *
+ * `request.staff` n'est décoré que si le contexte a été chargé — un LIAISON
+ * passé par le rôle n'en a pas.
+ */
+export function requireRoleOrCapability(roles: Role[], capability: ErpCapability) {
+  return async function (request: FastifyRequest) {
+    if (!request.user) {
+      throw new AppError('AUTH_MISSING_TOKEN', 401)
+    }
+
+    const userRoles = request.user.roles ?? []
+    if (roles.some((role) => userRoles.includes(role))) return
+
+    const staff = await loadStaffContext(request.user.id, userRoles)
+    request.staff = staff
+
+    if (!hasCapability(staff.capabilities, capability)) {
+      throw new AppError('AUTH_INSUFFICIENT_ROLE', 403, {
         message: "Vous n'avez pas accès à cette partie du back-office",
         required: capability,
       })

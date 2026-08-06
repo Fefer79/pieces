@@ -1,7 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import { switchContextSchema, selectRoleSchema, updateRolesSchema } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireCapability } from '../../plugins/erpAuth.js'
 import { getProfile, updateProfile, switchContext, selectRole, updateRoles } from './user.service.js'
 
 export async function userRoutes(fastify: FastifyInstance) {
@@ -91,7 +92,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         description: 'Mettre à jour les rôles d\'un utilisateur (admin only)',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRole('ADMIN')],
+      preHandler: [requireAuth, requireCapability('erp:admin')],
     },
     async (request, reply) => {
       const { userId } = request.params as { userId: string }

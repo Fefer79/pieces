@@ -9,7 +9,8 @@ import {
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { recordActivity } from '../../lib/activityLog.js'
 import { AppError } from '../../lib/appError.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireRoleOrCapability } from '../../plugins/erpAuth.js'
 import {
   createVendorByLiaison,
   listLiaisonVendors,
@@ -28,7 +29,7 @@ import {
 } from './liaison.service.js'
 
 export async function liaisonRoutes(fastify: FastifyInstance) {
-  const guard = [requireAuth, requireRole('LIAISON', 'ADMIN')]
+  const guard = [requireAuth, requireRoleOrCapability(['LIAISON'], 'crm:read')]
 
   fastify.get(
     '/dashboard',

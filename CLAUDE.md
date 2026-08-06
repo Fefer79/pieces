@@ -53,7 +53,15 @@ Each module follows: `module.routes.ts` (Fastify routes + Zod schema) → `modul
 
 OTP via Supabase → Bearer token → `requireAuth` preHandler validates via Supabase and upserts User. Guards: `requireAuth`, `requireConsent`, `requireRole('SELLER', 'ADMIN')`. The user's `activeContext` determines which role is checked.
 
-**Back-office capabilities** — a second, independent dimension for `/admin`. `Role` drives the client-facing spaces; `TeamMemberProfile.staffRole` drives the internal back-office. The capability matrix is pure code shared API ↔ web: `packages/shared/constants/erp-rbac.ts` (7 staff roles → `domaine:action` capabilities). API side, `requireCapability('stock:read')` from `src/plugins/erpAuth.ts` replaces `requireRole('ADMIN')` on back-office routes and decorates `request.staff`. Web side, `apps/web/lib/admin-nav.ts` filters the `/admin` nav with the same matrix, so the menu never shows a screen the API will refuse. `Role.ADMIN` implies every capability (bootstrap), so admins are unaffected.
+**Back-office capabilities** — a second, independent dimension for `/admin`. `Role` drives the client-facing spaces; `TeamMemberProfile.staffRole` drives the internal back-office. The capability matrix is pure code shared API ↔ web: `packages/shared/constants/erp-rbac.ts` (7 staff roles → `domaine:action` capabilities). `Role.ADMIN` implies every capability (bootstrap), so admins are unaffected.
+
+Guards live in `src/plugins/erpAuth.ts` and decorate `request.staff`:
+- `requireCapability('stock:read')` — replaces `requireRole('ADMIN')` on back-office routes.
+- `requireRoleOrCapability(['LIAISON'], 'crm:read')` — for modules with two audiences (the LIAISON space and `/admin` share routes). A liaison passes on its platform role, a DIRECTION staff member on its capability.
+
+**Read and write are separate capabilities.** A module declares `guard` for GETs and a `writeGuard` for the rest — `crm:read` vs `crm:write`, `purchase:read` vs `purchase:order`. Stock splits further (`stock:adjust` for the location référentiel and inventory gaps, `stock:move` for receipts, `purchase:order` for suppliers and POs), because the matrix encodes separation of duties: the buyer orders, the direction approves. When adding a route, pick the capability by what the route *does*, not by which module it sits in.
+
+Web side, `apps/web/lib/admin-nav.ts` filters the `/admin` nav with the same matrix, so the menu never shows a screen the API will refuse. The invariant is nav ⊆ API: a nav entry may be stricter than its route, never looser.
 
 ### Validation Pattern
 

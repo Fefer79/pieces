@@ -6,7 +6,8 @@ import {
 } from 'shared/validators'
 import type { CreateVendorContractInput, AcceptVendorContractInput } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireRoleOrCapability } from '../../plugins/erpAuth.js'
 import {
   createVendorContract,
   getVendorContractByToken,
@@ -25,7 +26,7 @@ export async function vendorContractRoutes(fastify: FastifyInstance) {
         description: 'Générer un lien de contrat d’adhésion pour un vendeur',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRole('ADMIN', 'LIAISON')],
+      preHandler: [requireAuth, requireRoleOrCapability(['LIAISON'], 'crm:read')],
     },
     async (request, reply) => {
       const result = await createVendorContract(

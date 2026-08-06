@@ -24,6 +24,7 @@ import {
 
 export async function supportRoutes(fastify: FastifyInstance) {
   const guard = [requireAuth, requireCapability('crm:read')]
+  const writeGuard = [requireAuth, requireCapability('crm:write')]
 
   // -------------------------------------------------------------------------
   // Cockpit
@@ -93,7 +94,7 @@ export async function supportRoutes(fastify: FastifyInstance) {
         params: zodToFastify(supportIdParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -121,7 +122,7 @@ export async function supportRoutes(fastify: FastifyInstance) {
         body: zodToFastify(supportResolveDisputeSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -153,7 +154,7 @@ export async function supportRoutes(fastify: FastifyInstance) {
         params: zodToFastify(supportIdParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -220,7 +221,7 @@ export async function supportRoutes(fastify: FastifyInstance) {
         body: zodToFastify(supportTransitionReturnSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }

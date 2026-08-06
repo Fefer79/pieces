@@ -13,7 +13,8 @@ vi.mock('../lib/prisma.js', () => ({
   },
 }))
 
-const { loadStaffContext, requireCapability, requireStaffId } = await import('./erpAuth.js')
+const { loadStaffContext, requireCapability, requireRoleOrCapability, requireStaffId } =
+  await import('./erpAuth.js')
 
 /** Requête minimale : la garde ne lit que `user`, et décore `staff`. */
 function fakeRequest(user: { id: string; roles: string[] } | null) {
@@ -106,6 +107,54 @@ describe('requireCapability', () => {
     mockFindUnique.mockResolvedValueOnce(null)
     const request = fakeRequest({ id: 'u9', roles: ['ADMIN'] })
     await expect(requireCapability('stock:adjust')(request)).resolves.toBeUndefined()
+  })
+})
+
+describe('requireRoleOrCapability', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('laisse passer sur le rôle plateforme, sans interroger la base', async () => {
+    // Une liaison n'a pas de fiche d'équipe : basculer ces routes sur la seule
+    // capacité lui fermerait la porte de son propre espace.
+    const request = fakeRequest({ id: 'u1', roles: ['LIAISON'] })
+    await expect(requireRoleOrCapability(['LIAISON'], 'crm:read')(request)).resolves.toBeUndefined()
+    expect(mockFindUnique).not.toHaveBeenCalled()
+  })
+
+  it('laisse passer un membre DIRECTION dépourvu du rôle plateforme', async () => {
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'staff-1',
+      staffRole: 'DIRECTION',
+      businessUnits: [],
+      fonction: null,
+      actif: true,
+    })
+    const request = fakeRequest({ id: 'u2', roles: ['BUYER'] })
+    await expect(requireRoleOrCapability(['LIAISON'], 'crm:read')(request)).resolves.toBeUndefined()
+    expect(request.staff.staffRole).toBe('DIRECTION')
+  })
+
+  it('refuse qui n’a ni le rôle ni la capacité', async () => {
+    mockFindUnique.mockResolvedValueOnce(null)
+    const request = fakeRequest({ id: 'u3', roles: ['BUYER'] })
+    await expect(requireRoleOrCapability(['LIAISON'], 'crm:read')(request)).rejects.toMatchObject({
+      code: 'AUTH_INSUFFICIENT_ROLE',
+      statusCode: 403,
+    })
+  })
+
+  it('refuse un magasinier sur une route CRM — sa capacité ne couvre pas', async () => {
+    mockFindUnique.mockResolvedValueOnce({
+      id: 'staff-2',
+      staffRole: 'MAGASINIER',
+      businessUnits: [],
+      fonction: null,
+      actif: true,
+    })
+    const request = fakeRequest({ id: 'u4', roles: ['BUYER'] })
+    await expect(requireRoleOrCapability(['LIAISON'], 'crm:read')(request)).rejects.toMatchObject({
+      statusCode: 403,
+    })
   })
 })
 

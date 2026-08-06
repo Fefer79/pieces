@@ -6,7 +6,8 @@ import {
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { AppError } from '../../lib/appError.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireCapability, requireRoleOrCapability } from '../../plugins/erpAuth.js'
 import {
   createEnrichment,
   getEnrichment,
@@ -28,8 +29,8 @@ function actorOf(request: FastifyRequest): EnrichmentActor {
 }
 
 export async function enrichmentRoutes(fastify: FastifyInstance) {
-  const guard = [requireAuth, requireRole('LIAISON', 'SELLER', 'ADMIN')]
-  const adminGuard = [requireAuth, requireRole('ADMIN')]
+  const guard = [requireAuth, requireRoleOrCapability(['LIAISON', 'SELLER'], 'erp:admin')]
+  const adminGuard = [requireAuth, requireCapability('erp:admin')]
 
   // POST / — photos (2–4) → fiche brouillon en < 10 s (passe 1, vision seule).
   // Les compatibilités (passe 2) arrivent en tâche de fond pendant la saisie
@@ -111,7 +112,7 @@ export async function enrichmentRoutes(fastify: FastifyInstance) {
         description: 'Évaluation qualité Pièces d\'une pièce publiée (clients flotte)',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRole('ENTERPRISE', 'ADMIN')],
+      preHandler: [requireAuth, requireRoleOrCapability(['ENTERPRISE'], 'erp:admin')],
     },
     async (request, reply) => {
       const { partId } = request.params as { partId: string }
@@ -168,7 +169,7 @@ export async function enrichmentRoutes(fastify: FastifyInstance) {
         body: zodToFastify(enrichmentModerateSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRole('LIAISON', 'ADMIN')],
+      preHandler: [requireAuth, requireRoleOrCapability(['LIAISON'], 'crm:read')],
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }

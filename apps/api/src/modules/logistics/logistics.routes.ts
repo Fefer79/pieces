@@ -243,7 +243,7 @@ export async function adminLogisticsRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/quote-requests/:id',
     {
-      preHandler: [requireAuth, requireCapability('crm:read')],
+      preHandler: [requireAuth, requireCapability('crm:write')],
       schema: {
         tags: ['Admin'],
         description: 'Mettre à jour le statut / la note ops d\'une cotation',

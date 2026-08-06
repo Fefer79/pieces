@@ -20,18 +20,19 @@ describe('ADMIN_NAV', () => {
 })
 
 describe('navForCapabilities', () => {
-  it('montre tout à un ADMIN plateforme', () => {
-    const nav = navForCapabilities(ALL, { isPlatformAdmin: true })
+  it('montre tout à qui a toutes les capacités', () => {
+    const nav = navForCapabilities(ALL)
     expect(nav.flatMap((s) => s.items)).toHaveLength(19)
   })
 
-  it('masque les écrans encore gardés par Role.ADMIN à un membre non-ADMIN', () => {
-    const hrefs = navForCapabilities(ALL).flatMap((s) => s.items.map((i) => i.href))
-    // Modules à garde mixte (LIAISON/SELLER/ADMIN) non convertis aux capacités.
-    expect(hrefs).not.toContain('/admin/vendors')
-    expect(hrefs).not.toContain('/admin/liaisons')
-    // Le reste, converti, reste visible.
-    expect(hrefs).toContain('/admin/stock')
+  it('ouvre les écrans à double public à un membre DIRECTION sans Role.ADMIN', () => {
+    // Ces modules ont une garde mixte (LIAISON/SELLER + capacité) : le rôle
+    // plateforme n'est plus nécessaire pour les atteindre depuis le back-office.
+    const hrefs = navForCapabilities(
+      capabilitiesFor({ staffRole: 'DIRECTION', active: true }),
+    ).flatMap((s) => s.items.map((i) => i.href))
+    expect(hrefs).toContain('/admin/vendors')
+    expect(hrefs).toContain('/admin/liaisons')
     expect(hrefs).toContain('/admin/prospection')
   })
 
@@ -72,9 +73,7 @@ describe('navForCapabilities', () => {
   })
 
   it('un ADMIN plateforme sans fiche d’équipe voit tout', () => {
-    const nav = navForCapabilities(capabilitiesFor({ isPlatformAdmin: true }), {
-      isPlatformAdmin: true,
-    })
+    const nav = navForCapabilities(capabilitiesFor({ isPlatformAdmin: true }))
     expect(nav.flatMap((s) => s.items)).toHaveLength(19)
   })
 })

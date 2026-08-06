@@ -85,8 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       // mêmes capacités route par route — ce filtre évite le 403, il ne
       // protège rien.
       const capabilities = (body.data?.capabilities ?? []) as ErpCapability[]
-      const isPlatformAdmin = ((body.data?.roles ?? []) as string[]).includes('ADMIN')
-      const visible = navForCapabilities(capabilities, { isPlatformAdmin })
+      const visible = navForCapabilities(capabilities)
       setSections(visible)
       if (visible.length === 0) {
         setForbidden(true)

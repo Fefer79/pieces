@@ -45,6 +45,14 @@ import {
 
 export async function stockRoutes(fastify: FastifyInstance) {
   const guard = [requireAuth, requireCapability('stock:read')]
+  // Séparation des tâches, telle que la matrice la définit :
+  //   stock:adjust  → référentiel des emplacements et écarts d'inventaire
+  //   stock:move    → réceptions, qui déplacent de la marchandise
+  //   purchase:order → fournisseurs et bons de commande (l'acheteur commande,
+  //                    il n'approuve pas — purchase:approve reste à la direction)
+  const adjustGuard = [requireAuth, requireCapability('stock:adjust')]
+  const receiveGuard = [requireAuth, requireCapability('stock:move')]
+  const orderGuard = [requireAuth, requireCapability('purchase:order')]
 
   // -------------------------------------------------------------------------
   // Vue d'ensemble
@@ -95,7 +103,7 @@ export async function stockRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createStockLocationSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: adjustGuard,
     },
     async (request, reply) => {
       const result = await createStockLocation(request.body)
@@ -127,7 +135,7 @@ export async function stockRoutes(fastify: FastifyInstance) {
         body: zodToFastify(updateStockLocationSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: adjustGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -172,7 +180,7 @@ export async function stockRoutes(fastify: FastifyInstance) {
         body: zodToFastify(stockAdjustmentSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: adjustGuard,
     },
     async (request, reply) => {
       const body = request.body as { catalogItemId: string; locationId: string; delta: number }
@@ -267,7 +275,7 @@ export async function stockRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createSupplierSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: orderGuard,
     },
     async (request, reply) => {
       const result = await createSupplier(request.body)
@@ -317,7 +325,7 @@ export async function stockRoutes(fastify: FastifyInstance) {
         body: zodToFastify(updateSupplierSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: orderGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -384,7 +392,7 @@ export async function stockRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createPurchaseOrderSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: orderGuard,
     },
     async (request, reply) => {
       const result = await createPurchaseOrder(request.user.id, request.body)
@@ -439,7 +447,7 @@ export async function stockRoutes(fastify: FastifyInstance) {
         body: zodToFastify(updatePurchaseOrderSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: orderGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -473,7 +481,7 @@ export async function stockRoutes(fastify: FastifyInstance) {
         body: zodToFastify(receivePurchaseOrderSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: receiveGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }

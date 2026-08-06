@@ -12,8 +12,8 @@ import {
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { recordActivity } from '../../lib/activityLog.js'
 import { AppError } from '../../lib/appError.js'
-import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { requireCapability } from '../../plugins/erpAuth.js'
+import { requireAuth } from '../../plugins/auth.js'
+import { requireCapability, requireRoleOrCapability } from '../../plugins/erpAuth.js'
 import { scrapeUrl } from './scrape.service.js'
 import {
   listContacts,
@@ -34,7 +34,9 @@ import {
 import { runRadarImport } from './radar.service.js'
 
 export async function contactsRoutes(fastify: FastifyInstance) {
-  const guard = [requireAuth, requireRole('LIAISON', 'ADMIN')]
+  const guard = [requireAuth, requireRoleOrCapability(['LIAISON'], 'crm:read')]
+  // Une liaison saisit ses propres contacts : elle garde l'écriture par son rôle.
+  const writeGuard = [requireAuth, requireRoleOrCapability(['LIAISON'], 'crm:write')]
 
   fastify.get(
     '/',
@@ -94,7 +96,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         description: 'Importe les nouveaux leads (OSM, marketplaces) comme prospects dédupliqués',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireCapability('crm:read')],
+      preHandler: [requireAuth, requireCapability('crm:write')],
     },
     async (request, reply) => {
       const result = await runRadarImport({ dryRun: false })
@@ -146,7 +148,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createVendorContactSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const result = await createContact(request.user.id, request.body)
@@ -178,7 +180,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         body: zodToFastify(updateVendorContactSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -208,7 +210,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         params: zodToFastify(vendorContactParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -246,7 +248,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createContactActivitySchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -273,7 +275,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         body: zodToFastify(assignContactSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireCapability('crm:read')],
+      preHandler: [requireAuth, requireCapability('crm:write')],
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -300,7 +302,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         body: zodToFastify(convertContactSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -328,7 +330,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         body: zodToFastify(linkVendorContactSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -355,7 +357,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         },
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -376,7 +378,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         ),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id, linkId } = request.params as { id: string; linkId: string }
@@ -400,7 +402,7 @@ export async function contactsRoutes(fastify: FastifyInstance) {
         },
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { url } = request.body as { url: string }

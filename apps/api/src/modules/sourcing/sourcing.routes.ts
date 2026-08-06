@@ -28,6 +28,8 @@ import {
 /** Monté sous /api/v1/admin/sourcing — back-office uniquement. */
 export async function sourcingRoutes(fastify: FastifyInstance) {
   const guard = [requireAuth, requireCapability('purchase:read')]
+  // Lancer une recherche ou retenir une offre engage un achat.
+  const writeGuard = [requireAuth, requireCapability('purchase:order')]
 
   fastify.get(
     '/stats',
@@ -67,7 +69,7 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
         body: zodToFastify(sourcingSearchCreateSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const search = await createSearch(request.body, request.user.id)
@@ -134,7 +136,7 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
         body: zodToFastify(offerCreateSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -159,7 +161,7 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
         body: zodToFastify(offerUpdateSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -176,7 +178,7 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
         params: zodToFastify(sourcingOfferParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -193,7 +195,7 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
         params: zodToFastify(sourcingOfferParamsSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
@@ -211,7 +213,7 @@ export async function sourcingRoutes(fastify: FastifyInstance) {
         body: zodToFastify(createPurchaseOrderFromOfferSchema),
         security: [{ BearerAuth: [] }],
       },
-      preHandler: guard,
+      preHandler: writeGuard,
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
