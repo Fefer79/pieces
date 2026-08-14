@@ -87,6 +87,7 @@ export type { ShipmentCarrierKey, CarrierSpec, ShipmentStatusKey } from './carri
 export {
   STAFF_ROLES,
   STAFF_ROLE_LABELS,
+  STAFF_ROLE_HINTS,
   BUSINESS_UNITS,
   BUSINESS_UNIT_LABELS,
   ERP_CAPABILITIES,
@@ -95,5 +96,7 @@ export {
   capabilitiesFor,
   hasCapability,
   hasAnyCapability,
+  isStaffRole,
+  isBusinessUnit,
 } from './erp-rbac'
 export type { StaffRoleKey, BusinessUnitKey, ErpCapability } from './erp-rbac'

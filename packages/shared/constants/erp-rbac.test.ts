@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   STAFF_ROLES,
   STAFF_ROLE_LABELS,
+  STAFF_ROLE_HINTS,
   BUSINESS_UNITS,
   BUSINESS_UNIT_LABELS,
   ERP_CAPABILITIES,
@@ -10,6 +11,8 @@ import {
   capabilitiesFor,
   hasCapability,
   hasAnyCapability,
+  isStaffRole,
+  isBusinessUnit,
 } from './erp-rbac'
 
 describe('erp-rbac — intégrité de la matrice', () => {
@@ -17,6 +20,7 @@ describe('erp-rbac — intégrité de la matrice', () => {
     for (const role of STAFF_ROLES) {
       expect(ERP_CAPABILITIES[role], `rôle sans capacités : ${role}`).toBeDefined()
       expect(STAFF_ROLE_LABELS[role]).toBeTruthy()
+      expect(STAFF_ROLE_HINTS[role], `rôle sans explication : ${role}`).toBeTruthy()
     }
     expect(Object.keys(ERP_CAPABILITIES).sort()).toEqual([...STAFF_ROLES].sort())
   })
@@ -42,6 +46,12 @@ describe('erp-rbac — intégrité de la matrice', () => {
     for (const role of STAFF_ROLES) {
       expect(ERP_CAPABILITIES[role], role).toContain('erp:read')
     }
+  })
+
+  it('accorde à la direction toute capacité existante', () => {
+    // Verrouille le spread : si quelqu'un réécrit DIRECTION en liste manuelle,
+    // le premier ajout à ERP_CAPABILITIES_LIST fera tomber ce test.
+    expect([...ERP_CAPABILITIES.DIRECTION].sort()).toEqual([...ERP_CAPABILITIES_LIST].sort())
   })
 
   it('réserve erp:admin à la direction', () => {
@@ -118,5 +128,14 @@ describe('hasCapability / hasAnyCapability', () => {
 
   it('n’exige rien quand la liste demandée est vide', () => {
     expect(hasAnyCapability([], [])).toBe(true)
+  })
+})
+
+describe('gardes de type', () => {
+  it('reconnaît les rôles et lignes valides', () => {
+    expect(isStaffRole('COMPTABLE')).toBe(true)
+    expect(isStaffRole('PLOMBIER')).toBe(false)
+    expect(isBusinessUnit('FLOTTE')).toBe(true)
+    expect(isBusinessUnit('AUTRE')).toBe(false)
   })
 })

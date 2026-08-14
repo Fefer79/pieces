@@ -45,6 +45,17 @@ export const STAFF_ROLE_LABELS: Record<StaffRoleKey, string> = {
   SUPPORT: 'Support',
 }
 
+/** Une ligne d'explication par métier, affichée sous le sélecteur de rôle. */
+export const STAFF_ROLE_HINTS: Record<StaffRoleKey, string> = {
+  DIRECTION: 'Accès complet, y compris clôture comptable et administration de l’ERP.',
+  COMMERCIAL: 'CRM en écriture, lecture des ventes et du catalogue. Pas d’accès comptable.',
+  COMPTABLE: 'Factures, encaissements, écritures et clôture de période.',
+  ACHETEUR: 'Sourcing et bons de commande. L’approbation reste à la direction.',
+  MAGASINIER: 'Mouvements de stock, inventaires et réceptions.',
+  OPS_LOGISTIQUE: 'Cotations, suivi des expéditions et des livraisons.',
+  SUPPORT: 'Lecture seule sur le CRM et les ventes, plus le SAV.',
+}
+
 /**
  * Capacités atomiques. Convention `domaine:action`.
  *
@@ -93,7 +104,7 @@ export const ERP_CAPABILITY_LABELS: Record<ErpCapability, string> = {
   'purchase:read': 'Consulter les achats',
   'purchase:order': 'Créer des bons de commande',
   'purchase:approve': 'Approuver les bons de commande',
-  'stock:read': 'Consulter le stock',
+  'stock:read': 'Consulter le stock et le catalogue',
   'stock:move': 'Enregistrer des mouvements de stock',
   'stock:adjust': 'Ajuster le stock et valider les inventaires',
 }
@@ -108,25 +119,11 @@ export const ERP_CAPABILITY_LABELS: Record<ErpCapability, string> = {
  * seul à compter, mais la clôture comptable lui échappe).
  */
 export const ERP_CAPABILITIES: Record<StaffRoleKey, readonly ErpCapability[]> = {
-  DIRECTION: [
-    'erp:read',
-    'erp:admin',
-    'crm:read',
-    'crm:write',
-    'crm:assign',
-    'sales:read',
-    'sales:invoice',
-    'sales:payment',
-    'accounting:read',
-    'accounting:post',
-    'accounting:close',
-    'purchase:read',
-    'purchase:order',
-    'purchase:approve',
-    'stock:read',
-    'stock:move',
-    'stock:adjust',
-  ],
+  // Spread volontaire plutôt qu'une liste manuelle : toute capacité ajoutée à
+  // ERP_CAPABILITIES_LIST est accordée d'office à la direction, qui est par
+  // définition le rôle sans restriction. Une liste écrite à la main se
+  // désynchronise en silence au premier ajout.
+  DIRECTION: [...ERP_CAPABILITIES_LIST],
   COMMERCIAL: ['erp:read', 'crm:read', 'crm:write', 'sales:read', 'stock:read'],
   COMPTABLE: [
     'erp:read',
@@ -195,4 +192,12 @@ export function hasAnyCapability(
 ): boolean {
   if (required.length === 0) return true
   return required.some((c) => hasCapability(capabilities, c))
+}
+
+export function isStaffRole(value: string): value is StaffRoleKey {
+  return (STAFF_ROLES as readonly string[]).includes(value)
+}
+
+export function isBusinessUnit(value: string): value is BusinessUnitKey {
+  return (BUSINESS_UNITS as readonly string[]).includes(value)
 }
