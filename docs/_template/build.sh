@@ -84,6 +84,8 @@ DOCS=(
   "manuel-marketing-campagnes-2026-08|Manuel utilisateur|Marketing — campagnes WhatsApp · v1.0 · Août 2026"
   "manuel-support-sav-2026-08|Manuel utilisateur|Support & SAV — litiges & retours · v1.0 · Août 2026"
   "manuel-sourcing-expeditions-2026-08|Manuel utilisateur|Sourcing & Expéditions — Admin · v1.0 · Août 2026"
+  "manuel-erp-crm-console-2026-08|Document interne|Console ERP & CRM — erp.pieces.ci · v1.1 · 14 août 2026"
+  "proposition-reorganisation-admin-2026-08|Proposition interne|Réorganisation de l'administration — ERP & CRM · v1.1 · 14 août 2026"
   "logistique-familles-pieces-2026-07|Référentiel logistique|17 familles de pièces — poids & volumes · logistique.pieces.ci · Juillet 2026"
 )
 
@@ -147,9 +149,25 @@ build_one() {
     --include-before-body="$header"
 
   # PDF — WeasyPrint preferred (renders footer), Chrome headless as fallback.
+  #
+  # WeasyPrint is a Python package but needs native glib/pango; `command -v`
+  # finding it proves nothing about whether it runs. Without glib it dies at
+  # import time, and under `set -e` that used to abort the whole build midway,
+  # leaving stale PDFs next to freshly built .docx — silently contradictory
+  # documents. So we try it and fall back on any non-zero exit.
+  local built=0
   if [[ -n "${WEASYPRINT:-}" ]]; then
-    "$WEASYPRINT" "$html" "$DOCS_DIR/$slug.pdf"
-  else
+    if "$WEASYPRINT" "$html" "$DOCS_DIR/$slug.pdf" 2>/dev/null; then
+      built=1
+    else
+      echo "  !! WeasyPrint failed on $slug — falling back to Chrome (no footer)" >&2
+    fi
+  fi
+  if [[ $built -eq 0 ]]; then
+    if [[ ! -x "$CHROME" ]]; then
+      echo "  !! no working PDF engine for $slug" >&2
+      return 1
+    fi
     "$CHROME" --headless --disable-gpu --no-pdf-header-footer \
       --print-to-pdf="$DOCS_DIR/$slug.pdf" \
       --print-to-pdf-no-header \
