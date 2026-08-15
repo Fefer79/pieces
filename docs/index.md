@@ -106,6 +106,8 @@ Analyses détaillées exhaustives de zones spécifiques :
 ### Opérationnel
 
 - [Templates WhatsApp](./whatsapp-templates.md) — Templates de messages WhatsApp Business
+- [Campagne vidéo humour — Facebook & TikTok](./campagne-video-humour-2026-08.md) ([PDF](./campagne-video-humour-2026-08.pdf)) — Stratégie créative et plan de production 100 % IA : 3 campagnes (grand public « Il va savoir s'envoyer », VTC, logistique.pieces.ci), scripts, prompts de génération, diffusion et garde-fous — Rédigée 2026-08-14
+- [Prompts Seedance 2.0 — cahier de production](./campagne-video-prompts-seedance-2026-08.md) ([PDF](./campagne-video-prompts-seedance-2026-08.pdf)) — Prompts prêts à coller dans seevio.ai pour les 14 films de la campagne : banque de références, réglages, prompt plan par plan, ordre de production — Rédigée 2026-08-15
 - [Brochure commerciale Pièces](./brochure-commerciale-pieces.md) — Présentation tous publics des services (mécanicien, propriétaire, vendeur, livreur, entreprise, WhatsApp) et comment y accéder — Rédigée 2026-05-27
 - [Brochure commerciale Entreprises](./brochure-commerciale-entreprises-2026-06-03.md) — Présentation B2B dédiée aux gestionnaires de flotte (5 à 100+ véhicules) : Pro Flotte 3 niveaux + chauffeurs, pain points, ROI, dashboard, workflow approbation, cas d'usage, démarrage — Édition 2026-06-03
 - [Note de partenariat Yango](./pitch-partenariat-yango-2026-06.md) — Pitch B2B2C au réseau partenaires Yango : disponibilité flotte = volume de courses, coût caché de l'immobilisation, 3 formes de collaboration (référencement / co-marketing / intégration), proposition de pilote 60 j — Juin 2026 ([PDF](./pitch-partenariat-yango-2026-06.pdf))
