@@ -20,7 +20,7 @@
 9. [Partager la commande avec le propriétaire](#9-partager-la-commande-avec-le-propriétaire)
 10. [Suivi des commandes](#10-suivi-des-commandes)
 11. [Suivi des livraisons](#11-suivi-des-livraisons)
-12. [Paiements et escrow](#12-paiements-et-escrow)
+12. [Paiements](#12-paiements)
 13. [Évaluer un vendeur](#13-évaluer-un-vendeur)
 14. [Évaluer une livraison](#14-évaluer-une-livraison)
 15. [Ouvrir un litige](#15-ouvrir-un-litige)
@@ -532,49 +532,38 @@ Les coordonnées GPS du livreur (`riderLat`, `riderLng`) sont mises à jour en t
 
 ---
 
-## 12. Paiements et escrow
+## 12. Paiements
 
 ### Comment fonctionne le paiement
 
-Le paiement est effectué par le **propriétaire du véhicule**, pas par le mécanicien. Le système d'escrow (séquestre) protège les deux parties :
+Le paiement est effectué par le **propriétaire du véhicule**, pas par le mécanicien. Il choisit le moment qui l'arrange, et aucun fonds n'est bloqué :
 
 ```
-Propriétaire paie
-       │
-       ▼
-   ┌─────────┐
-   │  HELD   │ ← Fonds retenus en séquestre
-   └────┬────┘
-        │
-   ┌────┴────────────────┐
-   │                     │
-   ▼                     ▼
-┌──────────┐      ┌───────────┐
-│ RELEASED │      │ REFUNDED  │
-│ (vendeur)│      │ (proprio) │
-└──────────┘      └───────────┘
+Propriétaire                Pièces                     Vendeur
+
+Paie en ligne ────────────► Encaissé ────────────────► Payé immédiatement
+   OU                                                  (commission déduite)
+Paie au livreur ──────────► Encaissé à la remise ────► Payé immédiatement
+   │
+   └── ne paie pas ───────► Pas de remise ───────────► La pièce lui revient
 ```
 
-| Statut | Signification |
-|--------|--------------|
-| **HELD** | Paiement reçu, fonds en séquestre |
-| **RELEASED** | Fonds libérés au vendeur après livraison réussie |
-| **REFUNDED** | Fonds remboursés au propriétaire (litige) |
+| Moment du paiement | Comment | Ce qui se passe |
+|---|---|---|
+| **En ligne, à la commande** | Orange Money, MTN MoMo, Wave, carte | Le vendeur est payé dès l'encaissement |
+| **À la remise, au livreur** | Espèces (≤ 75 000 F) ou mobile money | Le vendeur est payé à la remise |
 
-### Libération automatique
+**La règle qui protège tout le monde** : aucune pièce n'est remise sans être payée. Si le propriétaire ne paie pas, la pièce repart chez le vendeur — vous ne montez rien qui n'ait pas été réglé.
 
-Les fonds sont libérés automatiquement **48 heures** après la livraison confirmée, sauf si un litige est ouvert.
+### Paiement à la remise
 
-### Paiement COD (Cash on Delivery)
+- Montant maximum en espèces : **75 000 FCFA**
+- Le livreur encaisse au moment où il donne la pièce
+- Au-delà de 75 000 F, le propriétaire paie en ligne
 
-Pour les commandes en **COD** (paiement à la livraison) :
-- Montant maximum : **75 000 FCFA**
-- Le statut passe directement à **PAID** sans escrow
-- Le livreur collecte le montant en espèces à la livraison
+### Vérifier le statut de paiement
 
-### Vérifier le statut escrow
-
-Vous pouvez consulter le statut du paiement de chaque commande : montant, statut (HELD/RELEASED/REFUNDED), dates.
+Vous pouvez consulter le statut du paiement de chaque commande : montant, encaissement, date de versement au vendeur.
 
 ---
 
@@ -760,7 +749,7 @@ Voici le parcours complet d'une commande du point de vue du mécanicien :
      ▼
 ÉTAPE 4 : Paiement reçu
 ┌──────┐
-│ PAID │ Fonds en escrow — Le vendeur est notifié
+│ PAID │ Commande payée — Le vendeur est notifié
 └──┬───┘
    │ Le vendeur confirme sous 45 minutes
    ▼
@@ -859,7 +848,7 @@ Voici le parcours complet d'une commande du point de vue du mécanicien :
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/api/v1/deliveries/order/:orderId` | Suivi livraison (public) |
-| GET | `/api/v1/orders/:id/escrow` | Statut escrow (authentifié) |
+| GET | `/api/v1/orders/:id/escrow` | Statut du paiement (authentifié) |
 
 ### Évaluations et litiges (authentifié)
 
@@ -904,7 +893,7 @@ Voici le parcours complet d'une commande du point de vue du mécanicien :
 | `REVIEW_ORDER_NOT_COMPLETED` | 400 | Commande non terminée |
 | `REVIEW_INVALID_RATING` | 400 | Note invalide (doit être 1-5) |
 | `DISPUTE_NOT_ORDER_PARTY` | 403 | Non autorisé à voir/créer ce litige |
-| `ESCROW_NOT_FOUND` | 404 | Transaction escrow introuvable |
+| `ESCROW_NOT_FOUND` | 404 | Transaction de paiement introuvable |
 | `FILE_TOO_LARGE` | 422 | Photo dépasse 5 Mo |
 | `INVALID_FILE_TYPE` | 422 | Format photo non accepté |
 
@@ -963,9 +952,9 @@ Maximum **5 véhicules** dans votre garage. Pour en ajouter un nouveau au-delà 
 
 Oui. Le lien de paiement nécessite une **connexion** sur Pièces. Le propriétaire devra créer un compte (connexion par téléphone + OTP) s'il n'en a pas encore.
 
-### Q12 : Quand les fonds sont-ils libérés au vendeur ?
+### Q12 : Quand le vendeur est-il payé ?
 
-Les fonds sont libérés automatiquement **48 heures** après la livraison confirmée. Si un litige est ouvert pendant ce délai, les fonds restent en séquestre jusqu'à la résolution.
+**Dès l'encaissement**, commission déduite — à la commande si le propriétaire paie en ligne, à la remise s'il paie au livreur. Aucun fonds n'est bloqué et il n'y a pas de délai d'attente. En cas de litige, la pièce est reprise et le remboursement est traité par Pièces avec le vendeur.
 
 ---
 

@@ -288,16 +288,15 @@ GET /api/v1/orders/share/{shareToken}
 3. Préparez le montant exact
 4. Payez le livreur à la réception des pièces
 
-### Protection escrow
+### Comment votre paiement est protégé
 
-Que vous payiez par Mobile Money ou en espèces, vos fonds sont **protégés par le système escrow** :
+Vous choisissez **quand** payer : en ligne au moment de la commande, ou au livreur à la remise. Rien n'est bloqué chez Pièces — la protection tient à la règle de remise :
 
 ```
-Votre paiement ──► Fonds BLOQUÉS (HELD) ──► Livraison ──► Fonds LIBÉRÉS (RELEASED)
-                                                │
-                                          Si problème
-                                                │
-                                         ──► REMBOURSÉ (REFUNDED)
+Vous payez en ligne ──────► Encaissé ──────► Le vendeur est payé immédiatement
+Vous payez au livreur ────► Encaissé à la remise, après que vous ayez vu la pièce
+Vous ne payez pas ────────► Le livreur ne vous remet rien : la pièce repart
+Pièce non conforme ───────► Retour sous 48 h, Pièces reprend et rembourse
 ```
 
 ### Endpoint API
@@ -772,7 +771,7 @@ Tout nouveau compte reçoit le rôle **MECHANIC**, qui donne accès à :
 
 ### Q : Le lien de paiement est-il sécurisé ?
 
-**R :** Oui. Le lien utilise un **token unique** (shareToken) impossible à deviner. De plus, votre paiement est protégé par le système **escrow** qui bloque les fonds jusqu'à la livraison.
+**R :** Oui. Le lien utilise un **token unique** (shareToken) impossible à deviner. Et vous n'êtes pas obligé de payer d'avance : vous pouvez choisir de régler au livreur, au moment où il vous remet la pièce.
 
 ### Q : Puis-je voir le catalogue sans créer de compte ?
 
@@ -800,7 +799,7 @@ Tout nouveau compte reçoit le rôle **MECHANIC**, qui donne accès à :
 
 ### Q : Pourquoi le catalogue n'est-il pas visible sur la page d'accueil ?
 
-**R :** Pièces est conçu comme un **marketplace fermé** pour garantir la qualité des transactions. L'inscription gratuite permet de vérifier les utilisateurs et de protéger les acheteurs via le système escrow. Le flux de paiement par lien partagé est la solution pour les utilisateurs occasionnels qui ne souhaitent pas s'inscrire.
+**R :** Pièces est conçu comme un **marketplace fermé** pour garantir la qualité des transactions. L'inscription gratuite permet de vérifier les utilisateurs, donc de protéger acheteurs et vendeurs. Le flux de paiement par lien partagé est la solution pour les utilisateurs occasionnels qui ne souhaitent pas s'inscrire.
 
 ### Q : Comment contacter le support Pièces ?
 

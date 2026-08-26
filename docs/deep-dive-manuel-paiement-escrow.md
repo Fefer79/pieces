@@ -1,9 +1,15 @@
-# Manuel technique — Système de paiement et escrow Pièces
+# Manuel technique — Système de paiement Pièces
 
 **Plateforme :** Pièces — Marketplace de pièces auto d'occasion
 **Marché :** Côte d'Ivoire (Abidjan)
 **Devise :** FCFA (XOF)
-**Version :** 1.0 — Mars 2026
+**Version :** 2.0 — Août 2026
+
+> **Changement de modèle : le séquestre est remplacé par le paiement direct.**
+>
+> Le circuit de référence est désormais celui-ci : **l'acheteur paie au choix en ligne à la commande ou au livreur au moment de la remise ; aucun fonds n'est bloqué ; aucune pièce n'est remise sans être payée ; et dès l'encaissement, la part du vendeur lui est transmise immédiatement.** C'est ce qui est annoncé aux vendeurs et aux acheteurs — voir « La bible du démarchage vendeurs ».
+>
+> **Ce document reste un manuel technique**, et le code implémente encore l'escrow (`EscrowTransaction`, états `HELD → RELEASED / REFUNDED`). Les sections qui décrivent le séquestre sont donc conservées et signalées par la mention **« circuit en retrait »** : elles documentent ce qui tourne aujourd'hui, pas ce que l'on promet. Toute évolution du code doit aller vers le paiement direct, jamais renforcer le séquestre.
 
 ---
 
@@ -20,7 +26,7 @@
 9. [Paiement Mobile Money (Orange, MTN, Wave)](#9-paiement-mobile-money-orange-mtn-wave)
 10. [Paiement en espèces (COD)](#10-paiement-en-espèces-cod)
 11. [Webhook CinetPay](#11-webhook-cinetpay)
-12. [Système escrow (séquestre)](#12-système-escrow-séquestre)
+12. [Système escrow (séquestre) — circuit en retrait](#12-système-escrow-séquestre--circuit-en-retrait)
 13. [Création de l'escrow](#13-création-de-lescrow)
 14. [Libération de l'escrow](#14-libération-de-lescrow)
 15. [Remboursement de l'escrow](#15-remboursement-de-lescrow)
@@ -47,23 +53,28 @@
 
 ## 1. Vue d'ensemble du système de paiement
 
-Le système de paiement de Pièces est conçu pour le marché ivoirien où le **Mobile Money** est le moyen de paiement dominant. Il combine :
+Le système de paiement de Pièces est conçu pour le marché ivoirien où le **Mobile Money** est le moyen de paiement dominant. Le modèle est le **paiement direct** : l'argent ne stationne pas chez Pièces.
 
-### Les 3 piliers
+### Les 3 règles du paiement direct
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
 │                    SYSTÈME DE PAIEMENT PIÈCES                 │
 │                                                               │
-│  1. PASSERELLE              2. ESCROW              3. COD     │
-│     CinetPay                   Séquestre              Espèces │
+│  1. DEUX MOMENTS     2. RIEN N'EST      3. VENDEUR PAYÉ       │
+│     D'ENCAISSEMENT      BLOQUÉ             IMMÉDIATEMENT      │
 │                                                               │
-│  Orange Money ─┐           Fonds BLOQUÉS            Paiement  │
-│  MTN MoMo ─────┼──► API ──► jusqu'à la ──► Vendeur  à la     │
-│  Wave ─────────┘           livraison         payé   livraison │
-│                                                     (≤75K F)  │
+│  En ligne à la       Aucun séquestre.   Dès l'encaissement,   │
+│  commande, OU au     Pas de pièce       la part du vendeur    │
+│  livreur à la        remise sans        part, commission      │
+│  remise.             paiement.          déduite.              │
 └───────────────────────────────────────────────────────────────┘
 ```
+
+Les deux moments d'encaissement sont **d'égale importance** : l'acheteur choisit, aucun des deux n'est un mode dégradé.
+
+- **Paiement en ligne à la commande** — Orange Money, MTN MoMo, Wave ou carte, via CinetPay. L'argent est encaissé avant l'enlèvement de la pièce.
+- **Paiement à la remise** — espèces ou mobile money remis au livreur au moment où il donne la pièce.
 
 ### Flux simplifié
 
@@ -73,22 +84,28 @@ ACHETEUR                 PIÈCES                  VENDEUR
 Choisit les pièces       Verrouille les prix
        │                 (price snapshot)
        ▼                        │
-Sélectionne le paiement         │
-(Orange/MTN/Wave/COD)           │
+Choisit quand payer             │
+(en ligne, ou à la remise)      │
        │                        │
-       ▼                        │
-Paie ──────────────────► Escrow BLOQUÉ
-                         (status: HELD)
-                                │
-                         Vendeur confirme ◄─────── Reçoit notification
-                                │                  (45 min SLA)
-                         Livraison effectuée
-                                │
-                         48h de vérification
-                                │
-                         Escrow LIBÉRÉ ──────────► Reçoit le paiement
-                         (status: RELEASED)
+       ├── en ligne ──► Encaissé ─────────────► Payé immédiatement
+       │                        │                (commission déduite)
+       │                 Vendeur confirme ◄────── Reçoit notification
+       │                        │                 (45 min SLA)
+       │                 Enlèvement de la pièce
+       │                        │
+       │                 Le livreur se présente
+       │                        │
+       └── à la remise ─► Encaissé à la ────────► Payé immédiatement
+                          remise, sinon           (commission déduite)
+                          la pièce repart
+                          chez le vendeur
 ```
+
+**Le point non négociable** : la pièce n'est jamais remise sans encaissement. S'il n'y a pas de paiement, il n'y a pas de livraison — la pièce retourne au vendeur. Il n'existe pas de troisième issue.
+
+### En cas de retour ou de litige
+
+Sans séquestre, le remboursement n'est plus un déblocage de fonds : c'est une **reprise traitée par Pièces avec le vendeur**, dans les limites du contrat d'adhésion (retour sous 48 h si la pièce ne correspond pas à l'annonce). Quand le retour est justifié, **la commission n'est pas due**.
 
 ---
 
@@ -573,9 +590,11 @@ ACHETEUR                    PIÈCES API                     LIVREUR
          │                                      POST /:id/deliver
 ```
 
-### 10.4 Pas d'escrow pour COD
+### 10.4 Pas d'escrow pour COD — c'est le modèle cible
 
-Le paiement COD **ne crée pas de transaction escrow** — le paiement est effectué directement entre l'acheteur et le livreur. Le livreur reverse ensuite le montant au vendeur selon les modalités de la plateforme.
+Le paiement à la remise **ne crée pas de transaction escrow** : l'encaissement se fait directement entre l'acheteur et le livreur, et la part du vendeur lui est transmise immédiatement, commission déduite.
+
+Ce comportement n'est plus une exception : **c'est le modèle vers lequel tout le système converge.** Le paiement en ligne doit s'aligner dessus — encaisser, puis transmettre au vendeur sans blocage — et non l'inverse.
 
 ---
 
@@ -637,11 +656,13 @@ return { status: 'ok' };
 
 ---
 
-## 12. Système escrow (séquestre)
+## 12. Système escrow (séquestre) — circuit en retrait
+
+> **Circuit en retrait.** Les sections 12 à 16 et 18.2 décrivent le séquestre tel qu'il est **encore implémenté dans le code**. Ce n'est plus le modèle annoncé : le blocage des fonds est remplacé par le paiement direct décrit en section 1. Elles restent ici parce qu'un développeur doit pouvoir lire ce qui tourne aujourd'hui — pas parce qu'il faut le maintenir.
 
 ### 12.1 Principe
 
-L'**escrow** (séquestre) protège l'acheteur en bloquant les fonds entre le paiement et la livraison. Le vendeur ne reçoit le paiement qu'après confirmation de la livraison.
+L'**escrow** (séquestre) bloquait les fonds entre le paiement et la livraison : le vendeur ne recevait le paiement qu'après confirmation de la livraison. Dans le modèle actuel, cette attente disparaît — le vendeur est payé dès l'encaissement, et la protection de l'acheteur repose sur le fait qu'**aucune pièce n'est remise sans être payée**, pas sur la rétention de son argent.
 
 ### 12.2 Les 3 états
 
@@ -676,7 +697,7 @@ L'**escrow** (séquestre) protège l'acheteur en bloquant les fonds entre le pai
 
 ---
 
-## 13. Création de l'escrow
+## 13. Création de l'escrow — circuit en retrait
 
 ### 13.1 Fonction
 
@@ -705,7 +726,7 @@ Appelé par le webhook CinetPay quand `cpm_trans_status === 'ACCEPTED'`.
 
 ---
 
-## 14. Libération de l'escrow
+## 14. Libération de l'escrow — circuit en retrait
 
 ### 14.1 Fonction
 
@@ -744,7 +765,7 @@ export async function releaseEscrow(orderId: string) {
 
 ---
 
-## 15. Remboursement de l'escrow
+## 15. Remboursement de l'escrow — circuit en retrait
 
 ### 15.1 Fonction
 
@@ -782,7 +803,7 @@ export async function refundEscrow(orderId: string) {
 
 ---
 
-## 16. Auto-libération 48 heures
+## 16. Auto-libération 48 heures — circuit en retrait
 
 ### 16.1 Principe
 

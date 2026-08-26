@@ -12,7 +12,7 @@
 Le marché ivoirien de la pièce auto est **massif, fragmenté, opaque, et 100% informel**. À Adjamé, Yopougon, Marcory, Koumassi, des milliers de vendeurs vendent des pièces neuves, d'occasion importées (Japon, Dubai), ré-usinées et aftermarket — sans catalogue, sans prix affichés, sans garantie, sans facture, sans traçabilité. Le mécanicien perd 2 à 4 heures par pièce à faire le tour des magasins. Le propriétaire paie 30 à 60% trop cher parce qu'il ne sait pas. Le gestionnaire de flotte VTC perd **30 000 à 50 000 FCFA par jour et par véhicule immobilisé**.
 
 **Pièces résout les trois douleurs avec un seul produit** :
-1. **Marketplace tripartite** (mécanicien identifie → propriétaire paie → vendeur livre) avec **escrow Mobile Money**, garantie, traçabilité.
+1. **Marketplace tripartite** (mécanicien identifie → propriétaire paie → vendeur livre) avec **paiement direct** — encaissement en ligne ou à la remise, rien n'est livré sans être payé, vendeur payé immédiatement — garantie, traçabilité.
 2. **Fleet Suite B2B** (Flotte Pro / Pro +) qui transforme l'achat de pièces en **pilotage de coût total de possession** pour les flottes VTC, BTP, logistique.
 3. **Programme Liaison** qui digitalise les vendeurs informels sans qu'ils aient besoin d'un smartphone — **agents terrain qui sont notre douve concurrentielle**.
 
@@ -84,7 +84,7 @@ Ajoute San Pedro, Bouaké, Yamoussoukro, Korhogo → **marché national ~210 Mds
 
 1. **Le réseau Liaison** — agents terrain Adjamé/Yopougon. Reproductible en 12-18 mois par un copieur bien financé, donc **on doit en avoir 80 dans 12 mois**.
 2. **La data fitments Côte d'Ivoire** — quelles pièces correspondent à quels véhicules locaux (Toyota Corolla 2008 importée Belgique vs 2012 importée Japon : pièces différentes). Sous-produit du flux IA Gemini + vérification mécanicien. **Cette base devient inattaquable à 100 000 transactions.**
-3. **L'escrow Mobile Money + garantie Pièces** — confiance institutionnelle dans un marché 100% méfiance. Difficile à copier sans capital.
+3. **Le paiement direct + garantie Pièces** — l'acheteur voit la pièce avant de payer s'il règle à la remise, le vendeur est payé immédiatement : la confiance vient du circuit lui-même, pas d'une rétention de fonds. Difficile à copier sans réseau logistique.
 4. **La conformité FNE-CI native** — premier acteur à émettre des factures normalisées DGI sur la pièce. Verrou réglementaire fort pour les flottes corporate et BTP qui doivent justifier leur TVA.
 
 ---
@@ -106,7 +106,7 @@ Ajoute San Pedro, Bouaké, Yamoussoukro, Korhogo → **marché national ~210 Mds
 Trois mots à graver dans toute communication :
 - **Transparence** (prix affiché, condition de la pièce affichée — chip neuf/occasion/ré-usinée/aftermarket/OEM **non négociable**, breakdown des frais explicite avant paiement).
 - **Vitesse** (livraison express prioritaire Flotte Pro +, livraison standard le jour ouvré suivant à Abidjan).
-- **Conformité** (escrow, garantie, facture normalisée DGI).
+- **Conformité** (traçabilité des encaissements, garantie, facture normalisée DGI).
 
 ### 4.3 Les non-négociables produit (DESIGN.md)
 
@@ -183,7 +183,7 @@ Tout ce qui s'éloigne de ces règles trahit la promesse et doit être bloqué e
 
 | Flux | Mécanique | Cible mature (an 3) |
 |---|---|---|
-| Commission marketplace | 5 à 10% côté vendeur, prélevée à l'escrow release | 45% du revenu |
+| Commission marketplace | 5 à 10% côté vendeur, prélevée sur l'encaissement | 45% du revenu |
 | Abonnement Flotte Pro | 5 000 F / véhicule / mois | 35% du revenu |
 | Abonnement Flotte Pro + | 10 000 F / véhicule / mois (livraison prioritaire, urgence) | 15% du revenu |
 | Service facturation / conformité | Forfait FNE-CI pour flottes hors abonnement, prestations sur-mesure | 5% du revenu |
@@ -432,7 +432,7 @@ Voir `DESIGN.md`. Règles d'or : transparence (chips condition), clarté (breakd
 
 ### 15.1 P0 (M0–M6) — fondations
 
-- Stabilité plateforme, fitments véhicules CI précis, escrow + COD opérationnels.
+- Stabilité plateforme, fitments véhicules CI précis, encaissement en ligne + à la remise opérationnels.
 - App Liaison v2 (mobile-first, offline-tolerant, photo + publish en 90 secondes).
 - Dashboard flotte v1 (multi-véhicules, coût par véhicule, alertes).
 - Bot WhatsApp officiel (onboarding mécanicien, recherche pièce, suivi commande).

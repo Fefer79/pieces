@@ -17,6 +17,8 @@ Le module « Support & SAV » est le **poste de commande du service après-vente
 - **Traiter avec méthode** : chaque dossier suit un chemin balisé — un litige est pris en charge, résolu par écrit, puis clôturé ; un retour avance étape par étape, sans transition impossible.
 - **Rembourser proprement** : au statut « Remboursé », le séquestre de la commande est automatiquement remboursé au client s'il était encore bloqué, et le client est prévenu par WhatsApp.
 
+> **Sous le paiement direct, le remboursement est le cas normal, pas le déblocage.** Le vendeur étant payé dès l'encaissement, il n'y a le plus souvent **rien à débloquer** : le remboursement se traite avec le vendeur, hors mécanisme de séquestre, et se trace dans la note de résolution. Le déblocage automatique décrit ci-dessous ne joue que sur les commandes anciennes dont le séquestre est encore bloqué.
+
 **Accès.** Espace **Administration** → entrée **« SAV »** dans la barre latérale. Le module est réservé aux membres de l'équipe Pièces habilités Administration. Il s'organise en deux onglets : **Litiges** et **Retours**.
 
 ## Onglet Litiges
@@ -108,7 +110,7 @@ Depuis *Demandé* (retour injustifié) ou *Inspecté* (pièce non conforme au mo
 - **La résolution s'écrit pour le client** : elle part telle quelle en WhatsApp. Relisez-la avec ses yeux avant de confirmer.
 - **Une note à chaque étape sensible** : remboursement partiel, rejet, arrangement avec le vendeur — la note de résolution est la mémoire du dossier quand un collègue le rouvrira.
 - **Ne laissez rien au statut « Demandé » plus de 24 h** : accepter ou rejeter vite, même si la suite prend du temps — le client sait que son dossier avance.
-- **Vérifiez le séquestre avant de rembourser** : l'encadré commande de la fiche l'affiche. S'il est déjà « Libéré au vendeur », le remboursement ne passera pas par la plateforme — anticipez la solution et tracez-la.
+- **Vérifiez le séquestre avant de rembourser** : l'encadré commande de la fiche l'affiche. S'il est déjà « Libéré au vendeur » — ou absent, ce qui est le cas normal en paiement direct — le remboursement ne passera pas par la plateforme : réglez-le avec le vendeur, la commission n'étant pas due sur un retour justifié, et tracez-le dans la note de résolution.
 - **Clôturez les dossiers terminés** : une liste de litiges propre se concentre sur l'ouvert et l'examen ; le clôturé reste retrouvable par le filtre.
 
 ## Limites connues

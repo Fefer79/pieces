@@ -15,7 +15,7 @@
 - **Vendeurs** — gèrent leurs catalogues de pièces, prix et zones de livraison
 - **Livreurs (Riders)** — assurent la livraison avec suivi GPS en temps réel
 
-Le système supporte un flux de commande tripartite unique : le mécanicien commande, le propriétaire paie (via un lien partagé), le vendeur confirme et expédie. Les paiements sont sécurisés via un système de séquestre (escrow).
+Le système supporte un flux de commande tripartite unique : le mécanicien commande, le propriétaire paie (via un lien partagé), le vendeur confirme et expédie. Le paiement est **direct** : le propriétaire règle en ligne à la commande ou au livreur à la remise, aucune pièce n'est remise sans être payée, et le vendeur est payé immédiatement à l'encaissement. Le séquestre (escrow) présent dans le schéma est un mécanisme hérité, en retrait.
 
 ### Caractéristiques clés
 

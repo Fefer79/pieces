@@ -21,7 +21,7 @@
 10. [Consentement ARTCI](#10-consentement-artci)
 11. [Historique des commandes](#11-historique-des-commandes)
 12. [Profil et gestion du compte](#12-profil-et-gestion-du-compte)
-13. [Paiements et escrow](#13-paiements-et-escrow)
+13. [Paiements](#13-paiements)
 14. [Cycle de vie complet de votre commande](#14-cycle-de-vie-complet-de-votre-commande)
 15. [Référence rapide](#15-référence-rapide)
 16. [FAQ propriétaire](#16-faq-propriétaire)
@@ -196,9 +196,9 @@ Un bandeau vert s'affiche :
 
 > *"Paiement confirmé — Le vendeur a 45 minutes pour confirmer la disponibilité des pièces"*
 
-### Protection des fonds (escrow)
+### Comment votre paiement est protégé
 
-Votre paiement est **sécurisé** par un système d'escrow (séquestre). Les fonds ne sont libérés au vendeur qu'après la livraison réussie. En cas de problème, vous pouvez être remboursé (voir section [Paiements et escrow](#13-paiements-et-escrow)).
+Vous choisissez **quand** payer : en ligne au moment de la commande, ou au livreur à la remise de la pièce. Si vous payez à la remise, vous voyez la pièce avant de la régler — et le livreur ne vous la laisse pas sans encaissement. Si vous avez payé en ligne et que la pièce ne correspond pas, le retour sous 48 h s'applique (voir section [Paiements](#13-paiements)).
 
 ---
 
@@ -226,7 +226,7 @@ Un bouton d'annulation est disponible sur la page de commande pour les statuts �
 
 - Le statut passe à **CANCELLED** (Annulée)
 - Un bandeau rouge s'affiche : *"Commande annulée"*
-- Si vous aviez déjà payé par mobile money, les fonds en escrow sont **remboursés**
+- Si vous aviez déjà payé en ligne, vous êtes **remboursé** ; si vous deviez payer à la remise, il n'y a simplement rien à encaisser
 
 ---
 
@@ -352,47 +352,46 @@ Le bouton **"Se déconnecter"** termine votre session et vous redirige vers la p
 
 ---
 
-## 13. Paiements et escrow
+## 13. Paiements
 
-### Le système d'escrow vous protège
+### Vous choisissez quand payer
 
-Pour votre sécurité, Pièces utilise un système d'**escrow** (séquestre). Votre argent ne va pas directement au vendeur — il est retenu en séquestre jusqu'à la livraison réussie.
+Votre argent n'est pas bloqué chez Pièces : il n'y a pas de séquestre. Vous décidez du moment du paiement, et le vendeur est payé dès l'encaissement.
+
+| Quand | Comment | Plafond |
+|-------|---------|---------|
+| **En ligne, à la commande** | Orange Money, MTN MoMo, Wave, carte | — |
+| **À la remise, au livreur** | Espèces ou mobile money | 75 000 FCFA en espèces |
 
 ```
-Vous payez
-    │
-    ▼
-┌─────────┐
-│  HELD   │ ← Vos fonds sont en séquestre (protégés)
-└────┬────┘
-     │
-     │  Livraison réussie (+ 48h sans litige)
-     │
-     ├───────────────────────┐
-     │                       │
-     ▼                       ▼
-┌──────────┐          ┌───────────┐
-│ RELEASED │          │ REFUNDED  │
-│(vendeur) │          │  (vous)   │
-└──────────┘          └───────────┘
-   Normal              En cas de
-                       litige résolu
-                       en votre faveur
+Vous                          Pièces                     Vendeur
+
+Payez en ligne ─────────────► Encaissé ────────────────► Payé immédiatement
+   OU
+Payez au livreur ───────────► Encaissé à la remise ────► Payé immédiatement
+   │
+   └── vous ne payez pas ───► Pas de remise ───────────► La pièce lui revient
 ```
 
-### Quand les fonds sont-ils libérés au vendeur ?
+### Ce qui vous protège
+
+- **Vous voyez la pièce avant de payer**, si vous avez choisi le paiement à la remise. Ce qui ne vous convient pas, vous ne le réglez pas.
+- **Le prix est verrouillé** à la commande : il ne bouge plus entre la commande et la livraison.
+- **Le retour sous 48 h** s'applique si la pièce ne correspond pas à l'annonce, et la garantie de 30 jours couvre ce qui est vendu comme fonctionnel.
+- **Si vous avez payé en ligne** et qu'il y a un problème, ouvrez un litige : Pièces reprend la pièce et traite votre remboursement.
+
+### Ce qui se passe en cas de problème
 
 | Situation | Résultat |
 |-----------|---------|
-| Livraison confirmée + 48h sans litige | Fonds **libérés** au vendeur |
-| Litige résolu en faveur du vendeur | Fonds **libérés** au vendeur |
-| Litige résolu en votre faveur | Fonds **remboursés** à vous |
-| Commande annulée | Fonds **remboursés** à vous |
+| Livraison confirmée, pas de litige sous 48 h | La vente est définitive |
+| Litige résolu en faveur du vendeur | La vente est maintenue |
+| Litige résolu en votre faveur | Pièce reprise, vous êtes remboursé |
+| Commande annulée avant l'expédition | Rien n'est encaissé, ou vous êtes remboursé |
 
-### Paiement COD (espèces à la livraison)
+### Paiement en espèces à la livraison
 
-Pour les commandes en COD :
-- Pas d'escrow — vous payez directement au livreur en espèces
+- Vous payez directement au livreur au moment où il vous remet la pièce
 - Montant maximum : **75 000 FCFA**
 - Le livreur affiche le montant exact à collecter sur son application
 
@@ -424,7 +423,7 @@ Voici tout ce qui se passe du moment où vous recevez le lien jusqu'à la fin :
      │
      ▼
 ┌──────┐
-│ PAID │ 💰 Fonds en escrow — Vendeur notifié
+│ PAID │ 💰 Commande payée — Vendeur notifié
 └──┬───┘
    │ Le vendeur confirme sous 45 minutes
    ▼
@@ -514,11 +513,11 @@ Quatre options : **Orange Money**, **MTN MoMo**, **Wave** (mobile money), ou **e
 
 ### Q3 : Mon paiement est-il sécurisé ?
 
-Oui. Vos fonds sont retenus en **escrow** (séquestre) et ne sont libérés au vendeur qu'après la livraison réussie. En cas de problème, vous pouvez être remboursé.
+Oui. Vous pouvez choisir de **payer à la remise** : le livreur ne vous laisse la pièce que contre paiement, et vous la voyez avant de la régler. Si vous payez en ligne, le prix est verrouillé et le retour sous 48 h s'applique en cas de pièce non conforme.
 
 ### Q4 : Puis-je annuler ma commande après avoir payé ?
 
-Oui, tant que les pièces n'ont pas été **expédiées**. Vous pouvez annuler aux statuts : Brouillon, En attente de paiement, Payée, et Confirmée par le vendeur. Les fonds en escrow sont alors remboursés.
+Oui, tant que les pièces n'ont pas été **expédiées**. Vous pouvez annuler aux statuts : Brouillon, En attente de paiement, Payée, et Confirmée par le vendeur. Si vous aviez payé en ligne, vous êtes remboursé.
 
 ### Q5 : Comment savoir où en est ma commande ?
 

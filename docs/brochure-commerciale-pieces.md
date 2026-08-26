@@ -16,7 +16,7 @@
 - les **livreurs** qui acheminent,
 - les **entreprises** qui gèrent une flotte complète.
 
-Le tout encadré par une protection paiement (escrow), des avis publics, et un service client en français.
+Le tout encadré par une règle simple — **aucune pièce n'est remise sans être payée, et le vendeur est payé immédiatement** — des avis publics, et un service client en français.
 
 > **Notre marché aujourd'hui :** Côte d'Ivoire — Abidjan et communes limitrophes. Toute notre logistique, nos partenaires vendeurs et nos livreurs sont locaux.
 
@@ -39,8 +39,8 @@ Le tout encadré par une protection paiement (escrow), des avis publics, et un s
 ### 🚗 Pour le propriétaire — Payer en sécurité
 
 - **Devis transparent** envoyé par le mécanicien : prix vendeur, main-d'œuvre, livraison, frais plateforme — tout est ventilé avant le paiement.
-- **Paiement mobile money** via CinetPay (Orange Money, MTN Money, Wave, carte).
-- **Escrow** : votre argent est bloqué jusqu'à confirmation de la livraison. Si la pièce ne correspond pas, vous êtes remboursé.
+- **Vous choisissez quand payer** : en ligne à la commande (Orange Money, MTN Money, Wave, carte via CinetPay), ou au livreur au moment où il vous remet la pièce. Aucun des deux n'est un mode dégradé.
+- **Vous voyez la pièce avant de payer** si vous réglez à la remise. Et si elle ne correspond pas à l'annonce, le retour sous 48 h s'applique.
 - **Notation du vendeur et du livreur** après chaque transaction.
 - **Ouverture de litige** en un clic en cas de problème.
 
@@ -53,7 +53,7 @@ Le tout encadré par une protection paiement (escrow), des avis publics, et un s
 - **Catalogue en ligne** sans frais d'entrée : vos pièces apparaissent dès qu'elles sont publiées.
 - **Photos et fiches enrichies par notre équipe** (Liaison terrain) pour que vos annonces soient propres et complètes.
 - **Commission négociée pièce par pièce** — vous savez ce que vous reversez à Pièces pour chaque vente, c'est convenu à l'avance.
-- **Paiements garantis** : l'escrow vous protège contre les acheteurs douteux. Une fois la pièce livrée et confirmée, votre argent est libéré.
+- **Payé immédiatement, jamais d'impayé** : aucune pièce n'est remise sans encaissement — pas de paiement, pas de livraison, la pièce vous revient. Et dès que le client a payé, votre part vous est transmise dans la foulée, commission déduite. Ni fonds bloqués, ni délai de reversement.
 - **Reviews publiques** : vos bonnes ventes construisent votre réputation et vous amènent plus de demandes.
 - **Notifications WhatsApp** pour ne rater aucune commande.
 - **Gestion multi-zones de livraison** : choisissez les communes où vous acceptez de livrer.
@@ -104,7 +104,7 @@ Vous préférez WhatsApp ? Envoyez :
 
 | Engagement | Comment ça marche |
 |---|---|
-| **Pièce conforme** ou remboursée | Escrow CinetPay — pas de libération de fonds tant que le client n'a pas confirmé la conformité |
+| **Pièce conforme** ou remboursée | Rien n'est remis sans être payé, et le client peut régler à la remise, après avoir vu la pièce. En cas de non-conformité, retour sous 48 h : Pièces reprend la pièce et rembourse |
 | **État de la pièce affiché clairement** | Chaque fiche porte un *condition chip* visible (Neuf / Occasion / Ré-usiné) et une étiquette de source (OEM / Aftermarket / Compatible) |
 | **Garantie vendeur** | Chaque pièce affiche une durée de garantie en mois, fixée par le vendeur |
 | **Prix transparent** | Le ventilé complet (vendeur / main-d'œuvre / livraison / frais plateforme) est affiché avant tout paiement |
@@ -185,7 +185,7 @@ Vous préférez WhatsApp ? Envoyez :
 
 ## Le mot de l'équipe
 
-> Nous construisons Pièces avec les vendeurs et les mécaniciens d'Abidjan, pas pour eux. Chaque fonctionnalité — la photo IA, l'escrow, les zones de livraison, la commission négociée — a été décidée parce que quelqu'un sur le terrain en avait besoin.
+> Nous construisons Pièces avec les vendeurs et les mécaniciens d'Abidjan, pas pour eux. Chaque fonctionnalité — la photo IA, le paiement à la remise, les zones de livraison, la commission négociée — a été décidée parce que quelqu'un sur le terrain en avait besoin.
 >
 > Si vous lisez ce document, vous faites partie de la communauté. Dites-nous ce qui manque.
 

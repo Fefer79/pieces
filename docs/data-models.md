@@ -11,6 +11,8 @@
 
 La base de données contient **16 modèles** et **15 enums** couvrant l'ensemble du domaine métier : utilisateurs multi-rôles, vendeurs avec KYC, catalogue avec IA, commandes tripartites, séquestre, livraison GPS, évaluations et litiges.
 
+> **Séquestre en retrait.** Le modèle annoncé est le **paiement direct** — encaissement en ligne à la commande ou au livreur à la remise, aucun fonds bloqué, vendeur payé immédiatement, aucune pièce remise sans paiement. Ce document décrit le **schéma réellement implémenté**, qui contient encore le séquestre : il est exact, mais le séquestre est de la dette à retirer, pas une cible. Voir le manuel technique paiement, section 1.
+
 ---
 
 ## Diagramme de relations
@@ -207,7 +209,7 @@ Audit trail immuable de chaque transition de statut.
 
 ---
 
-### EscrowTransaction (`escrow_transactions`)
+### EscrowTransaction (`escrow_transactions`) — en retrait
 
 | Champ | Type |
 |-------|------|

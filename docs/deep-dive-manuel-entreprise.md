@@ -541,9 +541,9 @@ Les exigences fonctionnelles du PRD liées au rôle Enterprise :
 
 **R :** Pas en v1. Chaque commande est payée individuellement (Orange Money, MTN, Wave ou espèces). La facturation mensuelle consolidée est prévue pour la Phase 2.
 
-### Q : Comment fonctionne l'escrow pour les entreprises ?
+### Q : Comment fonctionne le paiement pour les entreprises ?
 
-**R :** En v1, le système escrow fonctionne de la même manière que pour les autres utilisateurs : les fonds sont bloqués (HELD) jusqu'à la livraison, puis libérés automatiquement après 48h. En Phase 2, un processus de vérification supplémentaire sera ajouté pour les commandes à approbation.
+**R :** En v1, le paiement fonctionne de la même manière que pour les autres utilisateurs : le règlement se fait en ligne à la commande ou au livreur à la remise, aucun fonds n'est bloqué, et le vendeur est payé dès l'encaissement. Aucune pièce n'est remise sans être payée. En Phase 2, un processus de vérification supplémentaire sera ajouté pour les commandes à approbation.
 
 ### Q : Que se passe-t-il en cas de litige sur une commande de la flotte ?
 

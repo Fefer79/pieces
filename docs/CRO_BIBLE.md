@@ -34,12 +34,14 @@ Pièces a trois moteurs de revenu, pas un :
 
 | Flux | Déclencheur d'encaissement | Qui paie | Quand | Marge brute cible |
 |---|---|---|---|---|
-| **Commission marketplace** | Release de l'escrow à la livraison confirmée | Le vendeur (prélevée sur le montant reversé) | À chaque transaction `CONFIRMED → COMPLETED` | 80–90% |
+| **Commission marketplace** | Encaissement de la pièce à la remise | Le vendeur (prélevée sur l'encaissement avant versement) | À chaque transaction `CONFIRMED → COMPLETED` | 80–90% |
 | **Abonnement Flotte Pro** | Prélèvement Mobile Money / virement mensuel | La flotte (entreprise) | Mensuel, terme à échoir | 70–80% |
 | **Abonnement Flotte Pro +** | Prélèvement Mobile Money / virement mensuel | La flotte (entreprise) | Mensuel, terme à échoir | 60–70% |
 | **Service FNE-CI / data / prestations** | Forfait ou à l'usage | Flotte hors abonnement, corporate, tiers (assureurs) | Mensuel ou ponctuel | 50–70% |
 
-**À connaître par cœur** : le revenu marketplace n'est **reconnu** qu'au release escrow (état `COMPLETED` de la state machine — voir CTO Bible, `order.stateMachine.ts`). Une commande `PAID` mais non livrée n'est **pas** du revenu : c'est du GMV en transit. Ne jamais forecaster sur du GMV non livré.
+**À connaître par cœur** : le revenu marketplace n'est **reconnu qu'à la remise payée** — la pièce est livrée *et* encaissée (état `COMPLETED` de la state machine, voir CTO Bible `order.stateMachine.ts`). Une commande `PAID` mais non livrée n'est **pas** du revenu : c'est du GMV en transit. Ne jamais forecaster sur du GMV non livré.
+
+Le passage au paiement direct ne change pas cette règle, il la rend plus stricte. Le vendeur est payé immédiatement à l'encaissement, mais **la commission n'est acquise que si la pièce est effectivement remise** : rien n'étant livré sans paiement, une commande non remise ne produit aucun revenu, et un retour justifié annule la commission. Un prépaiement en ligne encaissé mais non livré reste du GMV en transit, jamais du revenu.
 
 ### 2.2 La formule maîtresse du revenu
 
@@ -107,7 +109,7 @@ Chaque trimestre, la part de récurrent doit monter. C'est ce qui transforme un 
 
 ### 4.1 Architecture de prix actuelle (référence)
 
-- **Commission marketplace** : 5 à 10% côté vendeur, prélevée à l'escrow release. Le floor de commission Liaison reste **server-side**, jamais affiché comme recommandation UI (voir `memory/feedback-liaison-commission.md` — règle load-bearing : on observe ce que les vendeurs acceptent, on ne suggère pas de prix).
+- **Commission marketplace** : 5 à 10% côté vendeur, prélevée sur l'encaissement à la remise. Le floor de commission Liaison reste **server-side**, jamais affiché comme recommandation UI (voir `memory/feedback-liaison-commission.md` — règle load-bearing : on observe ce que les vendeurs acceptent, on ne suggère pas de prix).
 - **Flotte Pro** : 5 000 F / véhicule / mois.
 - **Flotte Pro +** : 10 000 F / véhicule / mois (express prioritaire, urgence, support dédié).
 - **Pricing grand compte** : dégressif par volume (voir `pricing-flotte-2026-05-27.md`, `offre-vtc-6000-vehicules-2026-05.md`, `offre-btp-800-vehicules-2026-05.md`).
@@ -227,7 +229,7 @@ Lead → Qualifié (SQL) → Démo → Déploiement initial → Signé → Dépl
 
 La fuite hors-plateforme est la menace existentielle d'une marketplace. Tactiques :
 - **Garantie Pièces uniquement on-platform** : la pièce achetée hors-plateforme n'est pas garantie. La garantie est la raison de rester.
-- **Escrow + facture FNE-CI on-platform** : le propriétaire et le DAF veulent la trace fiscale et la protection paiement.
+- **Paiement tracé + facture FNE-CI on-platform** : le propriétaire et le DAF veulent la trace fiscale, et l'acheteur veut pouvoir régler à la remise après avoir vu la pièce — deux choses qu'un achat de rue ne donne pas.
 - **Historique et pilotage flotte on-platform** : la valeur du dashboard disparaît si on achète à côté.
 - **Mesure** : taux de ré-achat on-platform par mécanicien/flotte. Une chute signale du leakage à investiguer.
 
@@ -396,7 +398,7 @@ Le comp plan est le levier de management le plus puissant du CRO. Principes :
 
 ## 12. Les 10 erreurs de revenu à ne jamais commettre
 
-1. **Forecaster sur du GMV non livré.** Le revenu, c'est l'escrow released, pas la commande passée.
+1. **Forecaster sur du GMV non livré.** Le revenu, c'est la pièce remise et encaissée, pas la commande passée.
 2. **Brader la take rate ou les abonnements en early-stage.** Le prix le plus dur à remonter est celui qu'on a baissé.
 3. **Vendre du Pro + sans capacité de livraison prioritaire prouvée.** Churn garanti, marque abîmée.
 4. **Laisser les remises sans gouvernance.** La fuite la plus silencieuse et la plus durable.

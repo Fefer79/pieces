@@ -57,7 +57,7 @@ DOCS=(
   "deep-dive-manuel-liaison|Document interne|SOP Liaison · v1.0 · Mai 2026"
   "deep-dive-manuel-livreur|Manuel utilisateur|Livreur · v1.0 · Mai 2026"
   "deep-dive-manuel-mecanicien|Manuel utilisateur|Mécanicien · v1.0 · Mai 2026"
-  "deep-dive-manuel-paiement-escrow|Manuel technique|Paiement & Escrow · v1.0 · Mai 2026"
+  "deep-dive-manuel-paiement-escrow|Manuel technique|Paiement direct · v2.0 · Août 2026"
   "deep-dive-manuel-proprietaire|Manuel utilisateur|Propriétaire · v1.0 · Mai 2026"
   "deep-dive-manuel-vendeur|Manuel utilisateur|Vendeur · v1.0 · Mai 2026"
   "deep-dive-manuel-vision-ia|Manuel technique|Vision IA · v1.0 · Mai 2026"

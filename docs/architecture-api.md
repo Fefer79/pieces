@@ -138,10 +138,12 @@ Avec `CANCELLED` comme état terminal accessible depuis les étapes précoces.
 Chaque transition de commande crée un `OrderEvent` immuable :
 `{ fromStatus, toStatus, actor, note, createdAt }`
 
-### 4. Séquestre de paiement
+### 4. Séquestre de paiement — en retrait
 
 Cycle de vie : `HELD → RELEASED` (vendeur payé) ou `HELD → REFUNDED` (annulation).
 Gardes pour prévenir double release/refund.
+
+> **Séquestre en retrait.** Le modèle annoncé est le **paiement direct** — encaissement en ligne à la commande ou au livreur à la remise, aucun fonds bloqué, vendeur payé immédiatement, aucune pièce remise sans paiement. Ce document décrit le **schéma réellement implémenté**, qui contient encore le séquestre : il est exact, mais le séquestre est de la dette à retirer, pas une cible. Voir le manuel technique paiement, section 1.
 
 ### 5. RBAC composable
 

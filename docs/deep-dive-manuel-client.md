@@ -22,7 +22,7 @@
 11. [Passer une commande](#11-passer-une-commande)
 12. [Choisir une méthode de paiement](#12-choisir-une-méthode-de-paiement)
 13. [Payer la commande](#13-payer-la-commande)
-14. [Protection escrow (séquestre)](#14-protection-escrow-séquestre)
+14. [Protection de votre paiement](#14-protection-de-votre-paiement)
 15. [Suivi de la commande](#15-suivi-de-la-commande)
 16. [Livraison](#16-livraison)
 17. [Confirmer la réception](#17-confirmer-la-réception)
@@ -498,40 +498,45 @@ POST /api/v1/orders/{orderId}/pay
 
 ---
 
-## 14. Protection escrow (séquestre)
+## 14. Protection de votre paiement
 
-### Comment ça protège votre argent
+### Vous choisissez quand payer
 
-Le système **escrow** (séquestre) de Pièces retient votre paiement jusqu'à la livraison :
+Pièces vous laisse deux moments pour payer, et aucun des deux n'est un mode dégradé :
+
+| Quand | Comment |
+|-------|---------|
+| **En ligne, à la commande** | Orange Money, MTN MoMo, Wave ou carte |
+| **À la remise, au livreur** | Espèces (≤ 75 000 F) ou mobile money |
+
+### Comment votre argent est protégé
+
+Votre paiement n'est pas bloqué chez Pièces — il n'y a pas de séquestre. La protection tient à autre chose, et c'est plus simple :
 
 ```
-VOUS PAYEZ                    ESCROW                      VENDEUR
-                              (Séquestre)
+VOUS                          PIÈCES                      VENDEUR
 
-Paiement envoyé ──────────► Fonds BLOQUÉS
-                              (status: HELD)
+Commande ──────────────────► Prix verrouillés
                                     │
-                              Livraison effectuée
+                             La pièce est enlevée
+                             chez le vendeur
                                     │
-                              48h de vérification
+Le livreur se présente ─────► Vous vérifiez la pièce
+                             AVANT de payer (si vous
+                             avez choisi de payer
+                             à la remise)
                                     │
-                              Fonds LIBÉRÉS ──────────────► Paiement reçu
-                              (status: RELEASED)
+Vous payez ────────────────► Encaissé ────────────────► Payé immédiatement
+                                    │
+Vous ne payez pas ─────────► Pas de remise ──────────► La pièce lui revient
 ```
 
-### Les 3 états de l'escrow
+- **Vous voyez la pièce avant de payer** si vous avez choisi le paiement à la remise. C'est la protection la plus directe qui soit : ce qui ne vous convient pas, vous ne le payez pas.
+- **Le prix est verrouillé** à la commande. Il ne peut pas bouger entre la commande et la livraison.
+- **Le retour sous 48 h** reste acquis si la pièce ne correspond pas à l'annonce, et la garantie de bon fonctionnement de 30 jours s'applique sur ce qui est vendu comme fonctionnel.
+- **Si vous avez payé en ligne** et que la pièce ne correspond pas, ouvrez un litige : Pièces reprend la pièce et traite le remboursement avec le vendeur.
 
-| État | Signification |
-|------|---------------|
-| **HELD** | Vos fonds sont bloqués en attente de livraison |
-| **RELEASED** | Fonds libérés au vendeur après livraison confirmée |
-| **REFUNDED** | Fonds remboursés en cas d'annulation ou litige en votre faveur |
-
-### Libération automatique
-
-Les fonds sont **automatiquement libérés** au vendeur **48 heures après la livraison**, sauf si vous ouvrez un litige.
-
-### Consulter l'état de l'escrow
+### Consulter l'état de votre paiement
 
 ```
 GET /api/v1/payments/orders/{orderId}/escrow
@@ -618,10 +623,10 @@ Après réception de votre pièce :
 ### Confirmation automatique
 
 Si vous ne confirmez pas manuellement, la commande est **automatiquement confirmée après 48 heures**. Après la confirmation :
-- Les fonds escrow sont **libérés** au vendeur
+- La vente devient définitive
 - Vous pouvez toujours évaluer le vendeur et le livreur
 
-**Important :** Si la pièce ne correspond pas ou est défectueuse, **ouvrez un litige AVANT les 48 heures** pour bloquer la libération des fonds.
+**Important :** Si la pièce ne correspond pas ou est défectueuse, **ouvrez un litige AVANT les 48 heures** — c'est le délai de retour prévu au contrat.
 
 ---
 
@@ -732,12 +737,12 @@ OPEN ──► UNDER_REVIEW ──► RESOLVED_BUYER (remboursement)
 ```
 
 Un **administrateur Pièces** examine le litige et rend une décision :
-- **RESOLVED_BUYER** : Vous recevez un remboursement via l'escrow
+- **RESOLVED_BUYER** : Pièces reprend la pièce et vous rembourse
 - **RESOLVED_SELLER** : Le paiement est maintenu au vendeur
 
 ### Délai important
 
-**Ouvrez votre litige dans les 48 heures suivant la livraison.** Après ce délai, les fonds escrow sont automatiquement libérés au vendeur.
+**Ouvrez votre litige dans les 48 heures suivant la livraison.** Passé ce délai, la vente est définitive et le droit de retour ne s'applique plus.
 
 ### Endpoint API
 
@@ -851,8 +856,8 @@ Body: { whatsapp: true, sms: false, push: true }
    (PENDING_PAYMENT → PAID)           Wave / Espèces (≤75K)
               │
               ▼
-4. ESCROW (HELD)                      Vos fonds sont
-   Argent en séquestre                protégés
+4. PAIEMENT DIRECT                    Payé en ligne, ou
+   Aucun fonds bloqué                 à la remise au livreur
               │
               ▼
 5. CONFIRMATION VENDEUR               Le vendeur confirme
@@ -872,12 +877,12 @@ Body: { whatsapp: true, sms: false, push: true }
               │
               ├─── Tout OK ──────► 9. CONFIRMATION
               │                       (CONFIRMED/COMPLETED)
-              │                       Escrow → RELEASED
+              │                       Vente définitive
               │
               └─── Problème ──────► 10. LITIGE (OPEN)
-                                       Escrow bloqué
+                                       Reprise de la pièce
                                        Admin examine
-                                       → REFUNDED ou RELEASED
+                                       → remboursé ou maintenu
 ```
 
 ---
@@ -941,7 +946,7 @@ Body: { whatsapp: true, sms: false, push: true }
 
 ### Q : Mon argent est-il protégé ?
 
-**R :** Oui. Le système **escrow** bloque votre argent jusqu'à ce que vous confirmiez la réception de la pièce. Si un problème survient, vous pouvez ouvrir un litige et être remboursé.
+**R :** Oui. Vous pouvez choisir de **payer à la remise** : le livreur ne vous laisse la pièce que contre paiement, et vous la voyez avant de payer. Si vous avez payé en ligne et que la pièce ne correspond pas, ouvrez un litige sous 48 h — Pièces reprend la pièce et vous rembourse.
 
 ### Q : Puis-je payer en espèces ?
 
@@ -953,7 +958,7 @@ Body: { whatsapp: true, sms: false, push: true }
 
 ### Q : Que faire si la pièce reçue ne correspond pas ?
 
-**R :** Ouvrez un **litige** dans les 48 heures suivant la livraison. Un administrateur Pièces examinera votre cas. Si le litige est résolu en votre faveur, vous êtes remboursé via le système escrow. Vous pouvez aussi exercer votre droit de retour sous 48h (garantie RETURN_48H).
+**R :** Ouvrez un **litige** dans les 48 heures suivant la livraison. Un administrateur Pièces examinera votre cas. Si le litige est résolu en votre faveur, Pièces reprend la pièce et vous rembourse. Vous pouvez aussi exercer votre droit de retour sous 48h (garantie RETURN_48H).
 
 ### Q : Puis-je annuler une commande ?
 

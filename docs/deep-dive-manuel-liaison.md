@@ -237,7 +237,7 @@ Quand une commande arrive sur une pièce d'un vendeur que le Liaison gère, le f
 3. **Confirmation** — depuis l'interface vendeur (le Liaison se connecte avec le compte du vendeur s'il le gère), confirmer la commande pour qu'elle passe en VENDOR_CONFIRMED.
 4. **Préparation et remise au livreur** — coordonner avec le vendeur et le livreur le retrait de la pièce.
 5. **Suivi** — vérifier que la commande passe par les états DISPATCHED → IN_TRANSIT → DELIVERED → CONFIRMED.
-6. **Paiement** — une fois confirmée, l'escrow libère les fonds vers le vendeur. La commission Pièces est automatiquement prélevée.
+6. **Paiement** — le vendeur est payé dès l'encaissement, commission déduite : à la commande si l'acheteur paie en ligne, à la remise s'il paie au livreur. Aucun fonds n'est bloqué, il n'y a pas de délai de reversement.
 
 > **Note technique** : la commission enregistrée au moment de la commande (`OrderItem.commissionAmount`) est figée. Une modification ultérieure de la commission sur la fiche catalogue n'affecte pas les commandes déjà passées.
 

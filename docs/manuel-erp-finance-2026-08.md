@@ -14,7 +14,7 @@
 Le module « Finance » est le **cockpit comptable** de la marketplace. Il est strictement en **lecture seule** : il ne crée ni ne modifie aucune donnée, il se contente d'agréger ce qui existe déjà (commandes, commissions, transactions séquestre). Il répond à trois besoins :
 
 - **Piloter le mois en cours** : chiffre d'affaires (GMV), commissions plateforme, nombre de commandes, panier moyen — avec la variation par rapport au mois précédent.
-- **Suivre l'argent séquestré** : combien est actuellement bloqué en séquestre (en attente de livraison) et combien a été libéré aux vendeurs sur la période.
+- **Surveiller les reliquats de séquestre** : combien reste bloqué (mécanisme hérité, voir l'encadré ci-dessous) et combien a été libéré aux vendeurs sur la période.
 - **Nourrir la comptabilité** : exports CSV mensuels — commandes, commissions par vendeur, mouvements de séquestre — directement ouvrables dans Excel.
 
 Repères de lecture, valables dans tout le module :
@@ -22,6 +22,9 @@ Repères de lecture, valables dans tout le module :
 - **Seules les commandes terminées comptent.** Une commande en cours, annulée ou remboursée n'entre ni dans le chiffre d'affaires ni dans les commissions. La période d'une commande est sa **date de création** (bornes UTC, comme le cockpit de la page d'accueil de l'administration).
 - **Le chiffre d'affaires (GMV)** est la somme des montants totaux payés par les clients — ce n'est **pas** un revenu : le revenu de Pièces est la ligne **Commissions**.
 - **Le séquestre bloqué est un instantané** : il ne dépend pas de la période choisie (voir « Limites connues »).
+
+> **Le séquestre est en retrait.** Le modèle de paiement de Pièces est désormais le **paiement direct** : l'acheteur règle en ligne à la commande ou au livreur à la remise, aucun fonds n'est bloqué, et le vendeur est payé immédiatement à l'encaissement. Les cartes « Escrow bloqué » et la colonne « Escrow en cours » décrivent un mécanisme hérité que l'écran affiche encore. **Sous le paiement direct, ces montants doivent tendre vers zéro** : tout solde non nul est un reliquat de commandes anciennes, ou le signe qu'une commande a été encaissée sans être versée. C'est à lire comme une anomalie à résorber, plus comme un indicateur normal d'activité.
+
 
 **Accès.** Espace **Administration** → entrée **« Finance »** dans la barre latérale. Le module est réservé aux membres de l'équipe Pièces habilités Administration. Il s'organise en trois onglets : **Vue d'ensemble**, **Vendeurs** et **Exports**.
 
@@ -41,7 +44,7 @@ Le sélecteur en haut de page liste les douze derniers mois (« août 2026 », �
 - **Panier moyen** — GMV ÷ nombre de commandes. Zéro s'il n'y a aucune commande.
 - **Frais de livraison** — total des frais de livraison facturés sur la période.
 - **Main-d'œuvre** — total des prestations de montage/main-d'œuvre facturées sur la période.
-- **Escrow bloqué** — argent actuellement séquestré (commandes payées, pas encore libérées aux vendeurs). **Instantané** : cette carte ne change pas avec la période.
+- **Escrow bloqué** — argent encore séquestré (commandes payées, pas encore versées aux vendeurs). **Instantané** : cette carte ne change pas avec la période. Sous le paiement direct, elle doit tendre vers zéro.
 - **Escrow libéré** — montants libérés aux vendeurs **pendant la période** (à leur date de libération).
 
 ### La table des douze derniers mois
@@ -69,7 +72,7 @@ La pagination (flèches **←** / **→** en bas de page) avance par pages de 20
 
 - **Classement du mois** : qui sont les dix vendeurs qui font le chiffre ? Croisez avec l'onglet CRM pour planifier les visites.
 - **Vendeur en difficulté** : un gros vendeur dont les commissions s'effondrent d'un mois sur l'autre mérite un appel — rupture de stock ? concurrent ? La colonne téléphone est là pour ça.
-- **Séquestre concentré** : une forte colonne « Escrow en cours » chez un seul vendeur signifie beaucoup de commandes payées non livrées — vérifiez qu'il expédie.
+- **Séquestre concentré** : une forte colonne « Escrow en cours » chez un seul vendeur signifie des commandes encaissées et non versées — vérifiez qu'il expédie, et que le versement immédiat a bien eu lieu.
 
 ## Onglet Exports
 
@@ -123,7 +126,7 @@ Les fichiers sont pensés pour **Excel en français** — aucun réglage n'est n
 - **Un tiret « — » n'est pas un bug** : il signale un mois de comparaison à zéro (démarrage d'activité, mois creux) — la variation est tout simplement incalculable.
 - **Exportez en début de mois**, une fois les commandes du mois écoulé stabilisées : une commande créée le 31 août et terminée le 2 septembre compte pour **août** (date de création).
 - **Ne confondez jamais GMV et revenu** dans vos présentations : le revenu de Pièces est la ligne **Commissions** — le GMV est l'argent des vendeurs et des prestations qui transite.
-- **Surveillez le séquestre comme une dette** : l'« Escrow bloqué » appartient aux clients tant que la livraison n'est pas confirmée.
+- **Surveillez le séquestre comme une dette à éteindre** : sous le paiement direct, l'« Escrow bloqué » ne devrait plus se remplir. Ce qui y reste est dû — au client si la pièce n'a pas été remise, au vendeur si elle l'a été.
 
 ## Limites connues
 

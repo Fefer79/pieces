@@ -18,7 +18,7 @@
 7. [Zones de livraison](#7-zones-de-livraison)
 8. [Gestion des commandes](#8-gestion-des-commandes)
 9. [Suivi des livraisons](#9-suivi-des-livraisons)
-10. [Paiements et escrow](#10-paiements-et-escrow)
+10. [Paiements](#10-paiements)
 11. [Avis clients et réputation](#11-avis-clients-et-réputation)
 12. [Litiges](#12-litiges)
 13. [Notifications](#13-notifications)
@@ -431,52 +431,46 @@ Si la commande est en **COD** (paiement à la livraison), le livreur collecte le
 
 ---
 
-## 10. Paiements et escrow
+## 10. Paiements
 
-### Système d'escrow (séquestre)
+### Le paiement direct
 
-Pour protéger acheteurs et vendeurs, les paiements sont gérés via un système d'escrow :
+Votre argent ne stationne pas chez Pièces. Le principe tient en trois phrases :
+
+- **L'acheteur paie au choix** : en ligne au moment de la commande, ou au livreur à la remise de la pièce. Les deux modes sont proposés, aucun n'est un mode dégradé.
+- **Aucune pièce n'est remise sans être payée.** Pas de paiement, pas de livraison : la pièce vous revient. Il n'y a pas de troisième issue.
+- **Vous êtes payé immédiatement**, dès l'encaissement, commission déduite. Il n'y a ni fonds bloqués, ni délai de reversement, ni attente de 48 heures.
 
 ```
-Paiement acheteur
-       │
-       ▼
-   ┌─────────┐
-   │  HELD   │ ← Fonds en séquestre
-   └────┬────┘
-        │
-   ┌────┴────────────────┐
-   │                     │
-   ▼                     ▼
-┌──────────┐      ┌───────────┐
-│ RELEASED │      │ REFUNDED  │
-│ (vendeur)│      │ (acheteur)│
-└──────────┘      └───────────┘
+Acheteur                    Pièces                     Vous
+
+Paie en ligne ────────────► Encaissé ────────────────► Payé immédiatement
+   OU                                                  (commission déduite)
+Paie au livreur ──────────► Encaissé à la remise ────► Payé immédiatement
+   │
+   └── ne paie pas ───────► Pas de remise ───────────► La pièce vous revient
 ```
 
-| Statut | Signification |
-|--------|--------------|
-| **HELD** | Paiement reçu, fonds retenus en séquestre |
-| **RELEASED** | Fonds libérés en votre faveur après livraison réussie |
-| **REFUNDED** | Fonds remboursés à l'acheteur (en cas de litige) |
+### Quand suis-je payé ?
 
-### Quand les fonds sont-ils libérés ?
-
-- **Automatiquement** : 48 heures après la livraison confirmée, si aucun litige n'est ouvert
-- **Manuellement** : Par un administrateur en cas de résolution de litige en votre faveur
+Dès l'encaissement. Si l'acheteur paie en ligne à la commande, votre part part à ce moment-là ; s'il paie au livreur, elle part à la remise. Aucun délai d'attente ne s'intercale.
 
 ### Méthodes de paiement acceptées
 
-| Méthode | Type |
-|---------|------|
-| **Orange Money** | Mobile money |
-| **MTN MoMo** | Mobile money |
-| **Wave** | Mobile money |
-| **COD** | Paiement à la livraison (max 75 000 FCFA) |
+| Méthode | Type | Moment de l'encaissement |
+|---------|------|--------------------------|
+| **Orange Money** | Mobile money | En ligne à la commande, ou au livreur |
+| **MTN MoMo** | Mobile money | En ligne à la commande, ou au livreur |
+| **Wave** | Mobile money | En ligne à la commande, ou au livreur |
+| **Espèces** | Paiement à la remise (max 75 000 FCFA) | Au livreur |
 
-### Consulter le statut escrow
+### En cas de retour ou de litige
 
-Vous pouvez vérifier le statut du paiement d'une commande : montant, statut (HELD/RELEASED/REFUNDED), dates de libération ou remboursement.
+Il n'y a pas de fonds à débloquer : le remboursement est une **reprise traitée par Pièces avec vous**, dans les limites du contrat d'adhésion — retour sous 48 h si la pièce ne correspond pas à l'annonce. Quand le retour est justifié, **la commission n'est pas due**.
+
+### Consulter le statut de paiement
+
+Vous pouvez vérifier à tout moment le statut du paiement d'une commande : montant, encaissement, date de versement de votre part.
 
 ---
 
@@ -519,8 +513,8 @@ Les litiges sont résolus par un **administrateur** qui tranche en faveur de l'u
 
 | Résolution | Effet |
 |-----------|-------|
-| **RESOLVED_BUYER** | En faveur de l'acheteur → remboursement (escrow → REFUNDED) |
-| **RESOLVED_SELLER** | En faveur du vendeur → fonds libérés (escrow → RELEASED) |
+| **RESOLVED_BUYER** | En faveur de l'acheteur → reprise de la pièce et remboursement, commission non due |
+| **RESOLVED_SELLER** | En faveur du vendeur → la vente est définitive, votre paiement reste acquis |
 
 ### Statuts d'un litige
 
@@ -655,12 +649,12 @@ Voici le parcours complet d'une commande du point de vue du vendeur :
      ▼
 ÉTAPE 8 : Confirmé puis complété
 ┌───────────┐     ┌───────────┐
-│ CONFIRMED │ ──► │ COMPLETED │ → Fonds escrow libérés en votre faveur 💰
+│ CONFIRMED │ ──► │ COMPLETED │ → Vente définitive (vous avez déjà été payé) 💰
 └───────────┘     └───────────┘
 
 ❌ ANNULATION possible à tout moment avant DISPATCHED
 ┌───────────┐
-│ CANCELLED │ → Fonds escrow remboursés à l'acheteur
+│ CANCELLED │ → Aucun encaissement, ou remboursement de l'acheteur
 └───────────┘
 ```
 
@@ -704,7 +698,7 @@ Voici le parcours complet d'une commande du point de vue du vendeur :
 |---------|----------|-------------|
 | POST | `/api/v1/orders/:id/confirm` | Confirmer une commande |
 | GET | `/api/v1/orders/:id` | Détail d'une commande |
-| GET | `/api/v1/orders/:id/escrow` | Statut du paiement escrow |
+| GET | `/api/v1/orders/:id/escrow` | Statut du paiement de la commande |
 | GET | `/api/v1/deliveries/order/:id` | Suivi de la livraison |
 
 ### Endpoints profil
@@ -763,7 +757,7 @@ Vous disposez de **45 minutes** après réception de la notification pour confir
 
 ### Q7 : Quand vais-je recevoir mon paiement ?
 
-Les fonds sont retenus en escrow (séquestre) jusqu'à la livraison. Ils sont libérés automatiquement **48 heures** après la livraison confirmée, sauf si un litige est ouvert. En cas de litige résolu en votre faveur, les fonds sont libérés par l'administrateur.
+**Immédiatement à l'encaissement**, commission déduite. Si l'acheteur paie en ligne à la commande, vous êtes payé à ce moment-là ; s'il paie au livreur, à la remise de la pièce. Aucun fonds n'est bloqué et il n'y a pas de délai d'attente. Et si l'acheteur ne paie pas, la pièce ne lui est pas remise : elle vous revient.
 
 ### Q8 : Puis-je vendre en dehors d'Abidjan ?
 

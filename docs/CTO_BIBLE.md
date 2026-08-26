@@ -14,9 +14,11 @@ Pièces est une **marketplace de pièces auto d'occasion à Abidjan** (Côte d'I
 **Flux tripartite (cœur du produit)** :
 1. Un **mécanicien** identifie une pièce (photo + IA Gemini, ou recherche manuelle).
 2. Il crée une commande avec un `shareToken`.
-3. Le **propriétaire** du véhicule paie via le lien partagé (Mobile Money escrow CinetPay, ou COD).
-4. Un **livreur** récupère chez le **vendeur** et livre.
-5. La confirmation libère l'escrow (ou auto-release à 48h après livraison).
+3. Le **propriétaire** du véhicule paie via le lien partagé — au choix **en ligne à la commande** (Mobile Money / carte via CinetPay) ou **au livreur à la remise**.
+4. Un **livreur** récupère chez le **vendeur** et livre. **Aucune pièce n'est remise sans encaissement.**
+5. Le vendeur est payé **immédiatement à l'encaissement**, commission déduite.
+
+> **Modèle cible : le paiement direct remplace le séquestre.** Le code contient encore `EscrowTransaction` (`HELD → RELEASED / REFUNDED`) et le cron d'auto-release à 48 h : c'est de la dette, à retirer et non à étendre. Toute évolution du paiement doit converger vers l'encaissement direct décrit ci-dessus — voir le manuel technique paiement, section 1.
 
 **6 + 1 rôles** : `MECHANIC` (défaut), `OWNER`, `SELLER`, `RIDER`, `ADMIN`, `ENTERPRISE`, plus `LIAISON` (agent terrain qui onboard les vendeurs informels). Un user peut cumuler plusieurs rôles ; `activeContext` détermine le rôle actif côté UI/API.
 
@@ -367,7 +369,7 @@ Schéma complet : [`packages/shared/prisma/schema.prisma`](../packages/shared/pr
 | Service | Module | Env vars | Notes |
 |---|---|---|---|
 | **Supabase Auth** | `auth`, `lib/supabase.ts`, `plugins/auth.ts` | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Upsert User à chaque requête. Merge sur email si conflit P2002. |
-| **CinetPay** | `payment` | `CINETPAY_API_KEY`, `CINETPAY_SITE_ID` | Webhook : `POST /api/v1/webhooks/cinetpay`. Crée `EscrowTransaction(status=HELD)` sur paiement confirmé. |
+| **CinetPay** | `payment` | `CINETPAY_API_KEY`, `CINETPAY_SITE_ID` | Webhook : `POST /api/v1/webhooks/cinetpay`. Crée encore `EscrowTransaction(status=HELD)` sur paiement confirmé — comportement hérité, à faire converger vers le versement immédiat au vendeur. |
 | **WhatsApp Cloud API v18** | `whatsapp`, `notification` | `WHATSAPP_PHONE_ID`, `WHATSAPP_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | HMAC SHA-256 vérifié sur raw body. Templates documentés dans [`docs/whatsapp-templates.md`](whatsapp-templates.md). |
 | **Google Gemini 2.0 Flash** | `vision`, `queue` | `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_QUOTA_ALERT_THRESHOLD` | Seuils confiance : ≥0.7 identifié, 0.3–0.7 désambiguïsation, <0.3 échec. |
 | **Cloudflare R2** | `catalog`, `queue`, `lib/r2.ts` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` | S3-compatible. Upload direct + 4 variants Sharp (thumb/small/medium/large). |
@@ -443,7 +445,7 @@ Si tu n'aimes pas BMAD, tu peux ignorer — rien ne casse. Mais les stories ouve
 7. **Ne PAS amender les migrations Prisma déjà déployées**. Crée une nouvelle migration.
 8. **Variables `NEXT_PUBLIC_*`** : injectées au **build** Next.js, pas au runtime. Si tu changes une var sur Cloudflare, il faut redéployer.
 9. **Tarifs `--no-verify` et `--force` interdits** sauf cas explicitement justifié.
-10. **Cron escrow auto-release 48h** : si le worker plante, escrow restera HELD. Surveiller `Job.status='FAILED'` dans le dashboard admin.
+10. **Cron escrow auto-release 48h** : hérité du séquestre, et c'est justement le piège — si le worker plante, l'escrow reste HELD et le vendeur n'est pas payé, alors qu'on lui promet un versement immédiat. Surveiller `Job.status='FAILED'` dans le dashboard admin jusqu'au retrait du séquestre.
 
 ---
 
@@ -507,7 +509,7 @@ pnpm -F shared exec prisma db execute --file scripts/foo.sql --schema packages/s
 Dans [`docs/`](.) :
 - [`project-overview.md`](project-overview.md), [`architecture-api.md`](architecture-api.md), [`architecture-web.md`](architecture-web.md), [`data-models.md`](data-models.md), [`integration-architecture.md`](integration-architecture.md), [`api-contracts.md`](api-contracts.md)
 - [`development-guide.md`](development-guide.md), [`source-tree-analysis.md`](source-tree-analysis.md)
-- Manuels deep-dive par persona : mécanicien, vendeur, propriétaire, livreur, admin, entreprise, liaison, paiement escrow, vision IA, bot WhatsApp, visiteur.
+- Manuels deep-dive par persona : mécanicien, vendeur, propriétaire, livreur, admin, entreprise, liaison, paiement, vision IA, bot WhatsApp, visiteur.
 - Brochures commerciales B2B (VTC, BTP, flotte) — docs/marketing.
 
 Et à la racine :

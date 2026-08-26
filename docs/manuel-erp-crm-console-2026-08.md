@@ -315,7 +315,7 @@ Trois écrans qui se suivent dans le temps.
 
 ### Support &amp; SAV
 
-Deux onglets, **Litiges** et **Retours**. Un litige est pris en charge, résolu par écrit, puis clôturé. Un retour avance étape par étape sans transition impossible. Au statut « Remboursé », le séquestre de la commande est automatiquement remboursé au client s'il était encore bloqué, et le client est prévenu par WhatsApp.
+Deux onglets, **Litiges** et **Retours**. Un litige est pris en charge, résolu par écrit, puis clôturé. Un retour avance étape par étape sans transition impossible. Au statut « Remboursé », le séquestre de la commande est automatiquement remboursé au client s'il était encore bloqué, et le client est prévenu par WhatsApp. Sous le paiement direct, le vendeur étant payé dès l'encaissement, il n'y a en général rien à débloquer : le remboursement se règle avec le vendeur et se trace dans la note de résolution.
 
 → Manuel complet : `manuel-support-sav-2026-08`.
 

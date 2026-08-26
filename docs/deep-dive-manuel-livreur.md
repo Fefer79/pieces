@@ -486,7 +486,7 @@ PRÉPARATION (par l'administrateur)
      │ Le client confirme la réception (ou auto-confirmation 48h)
      ▼
 ┌───────────┐
-│ CONFIRMED │ Fonds escrow libérés au vendeur 💰
+│ CONFIRMED │ Vente définitive — le vendeur a été payé à l'encaissement 💰
 └───────────┘
 ```
 

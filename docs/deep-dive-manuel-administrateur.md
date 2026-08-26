@@ -29,7 +29,7 @@ Ce manuel décrit l'ensemble des écrans et des leviers dont dispose un administ
 11. [Gestion des commandes](#11-gestion-des-commandes)
 12. [Gestion des livraisons](#12-gestion-des-livraisons)
 13. [Retours et litiges](#13-retours-et-litiges)
-14. [Paiements et escrow](#14-paiements-et-escrow)
+14. [Paiements](#14-paiements)
 15. [Notifications et messagerie](#15-notifications-et-messagerie)
 16. [Exports CSV et données](#16-exports-csv-et-données)
 17. [Référence API admin](#17-référence-api-admin)
@@ -574,7 +574,7 @@ CONFIRMED
 COMPLETED
 
 Any non-terminal state can transition to:
-CANCELLED (with refund of escrow)
+CANCELLED (remboursement si déjà encaissé)
 ```
 
 `canTransition(from, to)` est appelé avant toute mise à jour DB pour rejeter les transitions invalides.
@@ -594,7 +594,7 @@ CANCELLED (with refund of escrow)
 | `deliveryFee` | Frais livraison |
 | `platformFee` | Frais Pièces (TVA incl. si applicable) |
 | `paymentMethod` | ORANGE_MONEY / MTN_MOMO / WAVE / COD |
-| `escrowStatus` | HELD / RELEASED / REFUNDED |
+| `escrowStatus` | HELD / RELEASED / REFUNDED — champ hérité du séquestre, en retrait |
 
 ### Modèle OrderItem
 
@@ -667,9 +667,15 @@ Workflow :
 
 ---
 
-## 14. Paiements et escrow
+## 14. Paiements
 
-### Modèle EscrowTransaction
+### Le modèle annoncé : le paiement direct
+
+L'acheteur paie **au choix en ligne à la commande ou au livreur à la remise**. Aucun fonds n'est bloqué, aucune pièce n'est remise sans encaissement, et la part du vendeur lui est transmise **immédiatement**, commission déduite. En cas de retour justifié, la pièce est reprise, l'acheteur remboursé, et la commission n'est pas due.
+
+> **Écart connu docs/code.** Le schéma décrit ci-dessous (`EscrowTransaction`, `HELD → RELEASED / REFUNDED`) est **encore celui du code**. Il est conservé ici pour que l'administration sache lire ce qu'elle voit en base, mais il est en retrait : toute évolution doit aller vers le paiement direct. Voir le manuel technique paiement, section 1.
+
+### Modèle EscrowTransaction — circuit en retrait
 
 | Champ | Rôle |
 |---|---|
@@ -838,7 +844,7 @@ Liste exhaustive des modèles Prisma (`packages/shared/prisma/schema.prisma`). T
 ### Commandes
 - `Order` + `OrderItem` + `OrderEvent`
 - `Delivery`
-- `EscrowTransaction`
+- `EscrowTransaction` (hérité du séquestre, en retrait)
 - `Dispute`
 - `ReturnOrder` (nouveau mai 2026)
 - `SellerReview` + `DeliveryReview`
