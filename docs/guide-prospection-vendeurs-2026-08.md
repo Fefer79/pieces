@@ -36,20 +36,21 @@ Les quatre ont une réponse. Elles sont en section 6.
 
 ## 2. Notre promesse, en une phrase
 
-> **« Un agent vient chez vous, photographie votre stock, le publie en ligne. Nous vous apportons les commandes déjà payées, et c'est nous qui livrons. Vous ne changez rien à votre façon de travailler. »**
+> **« Un agent vient chez vous, photographie votre stock, le publie en ligne. Nous passons prendre la pièce, nous encaissons le client à la livraison, et nous vous transmettons votre argent immédiatement. »**
 
 Cette phrase se dit à la porte du magasin, avant tout le reste. Les cinq preuves qui la soutiennent :
 
 - **Aucun frais d'entrée, aucun abonnement.** Pièces ne facture rien au vendeur pour être présent sur la plateforme.
 - **La saisie de départ est faite par nous.** Un agent Liaison passe, photographie, décrit, publie : le vendeur ne tape rien. C'est vrai **au démarrage**, et c'est là qu'il faut être exact — notre agent lance le catalogue, puis **c'est un de ses employés à lui qui prend le relais** pour les arrivages suivants. Nous le formons sur place, en une demi-heure, sur son propre téléphone.
 - **La commission est fixée par le vendeur, pièce par pièce.** Il la choisit lui-même à la publication et l'accepte explicitement.
-- **Le paiement est sécurisé.** L'acheteur paie Pièces, l'argent est conservé sous séquestre, et reversé au vendeur après confirmation de livraison. Le vendeur ne court pas après son client.
-- **Il n'y a aucun client à gérer.** Le client ne l'appelle pas, ne vient pas au comptoir, ne négocie pas. **C'est Pièces qui transmet la commande — déjà payée, avec la référence et le véhicule — et c'est Pièces qui livre.** Le vendeur prépare la pièce, nous faisons le reste. Rien à installer : la commande arrive par WhatsApp.
+- **La pièce n'est jamais remise sans être payée.** C'est le cœur de la proposition, et il faut le dire dans cet ordre exact : nous passons **prendre la pièce**, notre livreur **encaisse le client au moment de la remise**, et **votre argent vous est transmis immédiatement**. Pas de livraison à crédit, pas de « je vous règle la semaine prochaine », pas de délai de reversement à attendre. Si le client ne paie pas, il n'a pas la pièce : elle revient chez vous.
+- **Il n'y a aucun client à gérer.** Le client ne l'appelle pas, ne vient pas au comptoir, ne négocie pas. **C'est Pièces qui transmet la commande — référence et véhicule vérifiés — et c'est Pièces qui l'enlève, l'encaisse et la livre.** Le vendeur prépare la pièce, nous faisons le reste. Rien à installer : la commande arrive par WhatsApp.
 
-**Deux formulations à bannir**, parce qu'elles créent une déception à la première commande :
+**Trois formulations à bannir**, parce qu'elles créent une déception à la première commande :
 
 - « vous recevrez vos clients sur WhatsApp » — non : le client ne le contacte jamais. Nous lui faisons parvenir la commande, et nous assurons la livraison.
 - « un agent passera à chaque arrivage » — non : l'agent lance le catalogue, l'équipe du magasin l'entretient ensuite.
+- « la commande est déjà payée quand on vient chercher la pièce » — non, et c'est important : **l'encaissement a lieu à la livraison**, pas à l'enlèvement. Ce qui est vrai, et suffit largement, c'est que **rien ne part chez le client sans être payé** et que **le vendeur est payé dans la foulée**.
 
 ## 3. Préparer la visite
 
@@ -117,8 +118,8 @@ Vingt-cinq questions, six blocs. On ne les pose pas toutes : on suit le fil et o
 | Question | Ce qu'on cherche à savoir |
 |---|---|
 | Vos prix sont fixes ou vous négociez ? | Détermine si le prix affiché en ligne sera tenable |
-| Vous acceptez le mobile money, ou seulement le cash ? | Condition pratique du reversement |
-| Vous faites du crédit à certains mécaniciens ? Vous êtes payés à temps ? | **Le point de douleur le plus exploitable** : il ouvre directement sur le paiement sécurisé |
+| Vous acceptez le mobile money, ou seulement le cash ? | Par quel canal on lui transmettra son argent après l'encaissement |
+| Vous faites du crédit à certains mécaniciens ? Vous êtes payés à temps ? | **Le point de douleur le plus exploitable** : il ouvre directement sur « rien ne part sans être payé, et vous êtes payé tout de suite » |
 | Une pièce vendue et rendue, ça se passe comment chez vous ? | Prépare la conversation sur le retour 48 h et la garantie 30 jours |
 
 <div class="callout">
@@ -132,11 +133,11 @@ Quatre accroches, à choisir selon ce que la découverte a révélé. Une seule 
 
 **Si le stock dort** — « Vous avez de l'argent immobilisé dans des rayons que personne ne voit. En ligne, votre stock est visible 24 h sur 24 par tous les mécaniciens d'Abidjan qui cherchent exactement cette référence. On ne vous demande pas de bouger vos prix : juste de vous montrer. »
 
-**Si le client se plaint des impayés** — « Chez nous, l'acheteur paie avant que la pièce ne parte. L'argent est conservé, et vous est reversé une fois la livraison confirmée. Vous ne courez plus après personne. »
+**Si le client se plaint des impayés** — « Chez nous, aucune pièce n'est remise sans être payée : notre livreur encaisse avant de la lâcher, et votre argent vous est transmis immédiatement. Vous ne courez plus après personne, et vous n'attendez pas la fin du mois. »
 
 **Si le client sert des flottes** — « Le parc VTC d'Abidjan tourne autour de 30 000 véhicules, et chacun consomme de l'ordre de 1,3 million de francs de pièces par an. Ces gestionnaires-là cherchent un fournisseur fiable et traçable. C'est le type de client que nous vous amenons. »
 
-**Si le client est déjà en ligne** — « Vous savez donc déjà que la publicité amène des curieux, pas des commandes. Nous, on ne vous amène pas un curieux : on vous amène une commande déjà payée, pour une référence choisie et vérifiée sur le véhicule. Vous sortez la pièce, on passe la prendre, on livre. »
+**Si le client est déjà en ligne** — « Vous savez donc déjà que la publicité amène des curieux, pas des commandes. Nous, on ne vous amène pas un curieux : on vous amène une commande ferme, pour une référence choisie et vérifiée sur le véhicule. Vous sortez la pièce, on passe la prendre, on encaisse à la livraison et on vous paie. »
 
 Les chiffres autorisés en visite sont ceux-là et uniquement ceux-là : **~30 000 véhicules VTC**, **~1,3 M FCFA de pièces par véhicule et par an**, **24 à 48 h d'immobilisation** pour une pièce manquante. Ils viennent de notre étude sectorielle. On ne les arrondit pas vers le haut.
 
@@ -149,10 +150,11 @@ La méthode est toujours la même en trois temps : **reformuler** (montrer qu'on
 | « Ça va faire baisser mes prix » | *Reformuler :* vous craignez la guerre des prix. *Prouver :* l'acheteur ne compare pas que le prix — il compare l'état de la pièce, la garantie et le délai. Un vendeur noté, avec des photos réelles, vend plus cher qu'une annonce anonyme. *Relancer :* aujourd'hui, sur quoi vos clients vous choisissent, le prix ou la confiance ? |
 | « Mes concurrents vont voir mon stock » | Ils voient déjà votre magasin, il est sur la rue. Ce qu'ils ne voient pas, c'est votre carnet de clients — et ça, ça reste chez vous. *Relancer :* qu'est-ce qui vous gênerait le plus qu'ils sachent ? |
 | « Je n'ai pas le temps de saisir tout ça » | C'est notre agent qui saisit au démarrage : il vient, photographie, décrit, publie, vous validez. Ensuite, pour vos nouveaux arrivages, on forme un de vos employés — une demi-heure, sur son téléphone, il photographie et publie lui-même. *Relancer :* qui, chez vous, pourrait prendre ça en main ? On commence par dix références ? |
-| « Et si le client ne paie pas ? » | Il paie avant. L'argent est conservé par Pièces et vous est reversé après confirmation de livraison. Le risque d'impayé disparaît de votre côté. |
+| « Et si le client ne paie pas ? » | Alors il n'a pas la pièce. Notre livreur ne la remet jamais sans encaisser : pas de paiement, pas de livraison — la pièce vous revient. Et dès qu'il paie, votre part vous est transmise immédiatement. *Relancer :* aujourd'hui, combien de clients ont votre pièce et pas encore votre argent ? |
+| « Vous partez avec ma pièce sans me payer » | C'est exact, et c'est nous qui portons ce risque, pas vous : la pièce est tracée à l'enlèvement et sous notre responsabilité jusqu'à la remise. À l'arrivée, il n'y a que deux issues — soit elle est payée et vous recevez votre argent tout de suite, soit elle vous revient. Il n'y a pas de troisième cas. |
 | « Vous prenez combien ? » | C'est vous qui fixez la commission, pièce par pièce, au moment de la publication. Nous ne l'imposons pas et il n'y a pas de montant minimum. Elle est prélevée uniquement quand la vente est faite et livrée. *Relancer :* sur une pièce à 25 000 F, vous mettriez combien pour un client que vous n'auriez pas eu autrement ? |
 | « Je ne suis pas en règle, je n'ai pas de RCCM » | On accepte les vendeurs formels comme informels : une pièce d'identité suffit pour démarrer. La régularisation, on en reparle plus tard, quand le volume la justifie. |
-| « J'ai déjà Facebook, ça ne marche pas » | Facebook vous amène des gens qui demandent le prix et disparaissent. Chez nous, ce n'est pas un curieux qui vous appelle : c'est une commande déjà payée qui vous arrive, référence et véhicule vérifiés. Et vous n'avez ni à discuter avec le client, ni à le livrer. |
+| « J'ai déjà Facebook, ça ne marche pas » | Facebook vous amène des gens qui demandent le prix et disparaissent. Chez nous, ce n'est pas un curieux qui vous appelle : c'est une commande ferme, référence et véhicule vérifiés, encaissée à la livraison par notre livreur. Et vous n'avez ni à discuter avec le client, ni à le livrer. |
 | « Je ne veux pas être exclusif » | Le contrat est explicitement non exclusif. Vous continuez à vendre à votre comptoir, sur Facebook, à vos habitués, exactement comme aujourd'hui. |
 | « Mes clients me doivent de l'argent, je ne peux pas arrêter le crédit » | Personne ne vous le demande. Gardez le crédit pour vos habitués, et servez-vous de la plateforme pour les clients que vous ne connaissez pas — ceux à qui vous n'auriez jamais fait crédit. |
 | « Et si le client rend la pièce ? » | Retour sous 48 h uniquement si la pièce ne correspond pas à l'annonce, et garantie de bon fonctionnement 30 jours sur ce qui est vendu comme fonctionnel. Une annonce honnête sur l'état vous protège : c'est pour ça que l'état est affiché en gros sur chaque fiche. |
@@ -167,7 +169,7 @@ La méthode est toujours la même en trois temps : **reformuler** (montrer qu'on
 
 - **Aucun frais d'entrée, aucun abonnement vendeur.** Nous ne facturons pas l'accès.
 - **La commission est fixée librement par le vendeur** à la publication de chaque pièce, sans montant minimum. Elle est figée au moment où la commande est créée : un changement ultérieur n'affecte pas les commandes déjà passées.
-- **Elle est prélevée au reversement**, après livraison confirmée — jamais d'avance.
+- **Elle est prélevée sur l'encaissement**, au moment où le client paie à la livraison — jamais d'avance. Le solde part vers le vendeur immédiatement.
 - **En cas de retour ou de litige justifié, la commission n'est pas due.**
 - **Le contrat est non exclusif**, et résiliable.
 
@@ -214,7 +216,7 @@ En prélancement, deux interdits s'ajoutent : **aucune promesse de ventes ou de 
 | Gestion du stock | Cahier, tableur, logiciel, rien |
 | Employé désigné pour la saisie | Nom et téléphone de celui qui publiera les arrivages après le passage de l'agent |
 | Livre-t-il ? Vend-il déjà en ligne ? | Effort d'intégration |
-| Moyens de paiement acceptés | Condition du reversement |
+| Moyens de paiement acceptés | Par quel canal on lui transmet son argent après l'encaissement |
 | Objections entendues | Textuellement, dans ses mots — c'est ce qui fait progresser ce guide |
 | Commission évoquée | Uniquement si **lui** a avancé un chiffre |
 | Niveau d'engagement obtenu | Dix références pour l'ouverture / mandat Liaison / contrat signé / nouveau rendez-vous / refus |
@@ -230,7 +232,7 @@ En prélancement, deux interdits s'ajoutent : **aucune promesse de ventes ou de 
 
 Le relais opérationnel se prend en quatre gestes, dans cet ordre : **création de la fiche vendeur** (statut « activation en attente »), **KYC** (RCCM ou pièce d'identité), **passage de l'agent Liaison** pour la saisie des premières pièces, puis **formation de l'employé désigné** par le vendeur, qui publiera les arrivages suivants. Le nom de cet employé se note dès la visite : sans lui, le catalogue s'arrête au jour du passage de l'agent. Le contrat d'adhésion se signe en ligne, par lien, avec le nom du signataire et une case d'acceptation — il n'y a rien à imprimer.
 
-À partir de là, Pièces lui transmet ses commandes par WhatsApp — déjà payées — il confirme et prépare la pièce ; nous l'enlevons, nous livrons le client, et il est reversé après confirmation de livraison. Notre travail commercial n'est pas fini pour autant : **la première vente est l'événement qui convertit vraiment**. Avant l'ouverture, le seul indicateur qui compte est le **nombre de références réellement en ligne** par vendeur signé ; après l'ouverture, c'est la **première vente sous quinze jours** — un vendeur qui ne l'a pas faite est un vendeur perdu.
+À partir de là, Pièces lui transmet ses commandes par WhatsApp ; il confirme et prépare la pièce, nous venons l'enlever, notre livreur encaisse le client à la remise, et l'argent du vendeur lui est transmis dans la foulée. Si le client ne paie pas, la pièce lui revient. Notre travail commercial n'est pas fini pour autant : **la première vente est l'événement qui convertit vraiment**. Avant l'ouverture, le seul indicateur qui compte est le **nombre de références réellement en ligne** par vendeur signé ; après l'ouverture, c'est la **première vente sous quinze jours** — un vendeur qui ne l'a pas faite est un vendeur perdu.
 
 ---
 
