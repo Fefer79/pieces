@@ -156,7 +156,7 @@ export async function acceptVendorContract(
 ) {
   const contract = await prisma.vendorContract.findUnique({
     where: { token },
-    select: { id: true, status: true },
+    select: { id: true, status: true, vendorId: true },
   })
   if (!contract) {
     throw new AppError('CONTRACT_NOT_FOUND', 404, { message: 'Contrat introuvable' })
@@ -190,5 +190,42 @@ export async function acceptVendorContract(
     },
   })
 
-  return updated
+  const vendorActivated = contract.vendorId
+    ? await activateVendorOnSignature(contract.vendorId)
+    : false
+
+  return { ...updated, vendorActivated }
+}
+
+/**
+ * La signature du contrat vaut activation du vendeur.
+ *
+ * Le contrat porte lui-même les garanties acheteur (article 6 : retour 48 h,
+ * garantie 30 jours) — les mêmes que celles signées depuis l'espace vendeur via
+ * `signGuarantees`. Sans cette bascule, un vendeur onboardé sur le terrain
+ * resterait en attente d'activation indéfiniment et ses pièces ne sortiraient
+ * jamais dans la recherche, qui exige un vendeur ACTIVE.
+ *
+ * Idempotent : on ne touche qu'un vendeur en attente, et les signatures de
+ * garanties sont créées en `skipDuplicates` (contrainte unique vendeur+type).
+ */
+async function activateVendorOnSignature(vendorId: string): Promise<boolean> {
+  const vendor = await prisma.vendor.findUnique({
+    where: { id: vendorId },
+    select: { id: true, status: true },
+  })
+  if (!vendor || vendor.status !== 'PENDING_ACTIVATION') return false
+
+  await prisma.$transaction(async (tx) => {
+    await tx.vendorGuaranteeSignature.createMany({
+      data: [
+        { vendorId: vendor.id, guaranteeType: 'RETURN_48H' },
+        { vendorId: vendor.id, guaranteeType: 'WARRANTY_30D' },
+      ],
+      skipDuplicates: true,
+    })
+    await tx.vendor.update({ where: { id: vendor.id }, data: { status: 'ACTIVE' } })
+  })
+
+  return true
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
@@ -86,6 +86,14 @@ export default function VendorDetailPage() {
       else setError(v.message)
       if (p.ok) setParts(p.data)
       setLoading(false)
+    })
+  }, [id])
+
+  // La signature du contrat active le vendeur côté API : on relit la fiche pour
+  // que le statut affiché cesse de dire « en attente d'activation ».
+  const refreshVendor = useCallback(() => {
+    liaisonFetch<VendorDetail>(`/vendors/${id}`).then((v) => {
+      if (v.ok) setVendor(v.data)
     })
   }, [id])
 
@@ -196,6 +204,7 @@ export default function VendorDetailPage() {
         shopName={vendor.shopName}
         contactName={vendor.contactName}
         phone={vendor.phone}
+        onSigned={refreshVendor}
       />
 
       {(() => {

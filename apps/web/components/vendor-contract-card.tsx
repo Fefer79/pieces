@@ -23,6 +23,9 @@ interface Props {
   shopName: string
   contactName?: string | null
   phone?: string | null
+  /** Appelé quand un contrat signé est découvert : le vendeur vient d'être
+   *  activé côté API, la fiche doit se recharger pour le refléter. */
+  onSigned?: () => void
 }
 
 function formatSignedAt(iso: string): string {
@@ -33,7 +36,7 @@ function formatSignedAt(iso: string): string {
   })
 }
 
-export function VendorContractCard({ vendorId, shopName, contactName, phone }: Props) {
+export function VendorContractCard({ vendorId, shopName, contactName, phone, onSigned }: Props) {
   const [contract, setContract] = useState<VendorContractSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -49,13 +52,15 @@ export function VendorContractCard({ vendorId, shopName, contactName, phone }: P
         if (r.ok) {
           // Un contrat signé prime sur un lien en attente émis avant lui ; à
           // défaut, le plus récent (tri serveur).
-          setContract(r.data.find((c) => c.status === 'ACCEPTED') ?? r.data[0] ?? null)
+          const latest = r.data.find((c) => c.status === 'ACCEPTED') ?? r.data[0] ?? null
+          setContract(latest)
+          if (latest?.status === 'ACCEPTED') onSigned?.()
         } else {
           setError(r.message)
         }
         setLoading(false)
       }),
-    [vendorId],
+    [vendorId, onSigned],
   )
 
   useEffect(() => {

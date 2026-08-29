@@ -117,7 +117,11 @@ export async function vendorContractRoutes(fastify: FastifyInstance) {
         request.body as AcceptVendorContractInput,
         { ip: clientIp, userAgent: request.headers['user-agent'] },
       )
-      request.log.info({ event: 'VENDOR_CONTRACT_ACCEPTED', token })
+      request.log.info({
+        event: 'VENDOR_CONTRACT_ACCEPTED',
+        token,
+        vendorActivated: result.vendorActivated,
+      })
       return reply.status(200).send({ data: result })
     },
   )

@@ -13,9 +13,20 @@ const mockContractFindUnique = vi.fn()
 const mockContractFindFirst = vi.fn()
 const mockContractFindMany = vi.fn()
 const mockContractUpdate = vi.fn()
+const mockVendorUpdate = vi.fn()
+const mockGuaranteeCreateMany = vi.fn()
+const mockTransaction = vi.fn(async (fn: (tx: unknown) => unknown) =>
+  fn({
+    vendor: { update: (...args: unknown[]) => mockVendorUpdate(...args) },
+    vendorGuaranteeSignature: {
+      createMany: (...args: unknown[]) => mockGuaranteeCreateMany(...args),
+    },
+  }),
+)
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
+    $transaction: (fn: (tx: unknown) => unknown) => mockTransaction(fn),
     vendor: {
       findUnique: (...args: unknown[]) => mockVendorFindUnique(...args),
     },
@@ -193,6 +204,58 @@ describe('vendorContract.service', () => {
       const updateArg = mockContractUpdate.mock.calls[0][0]
       expect(updateArg.data.acceptedIp).toBe('1.2.3.4')
       expect(updateArg.data.signedName).toBe('Koffi Yao')
+    })
+
+    it('active le vendeur rattaché et enregistre ses garanties', async () => {
+      // Sans cette bascule, un vendeur onboardé sur le terrain resterait « en
+      // attente d'activation » et ses pièces ne sortiraient jamais en recherche.
+      mockContractFindUnique.mockResolvedValue({ id: 'c1', status: 'PENDING', vendorId: 'v1' })
+      mockContractUpdate.mockResolvedValue({
+        token: 'tok', status: 'ACCEPTED', signedName: 'Koffi Yao',
+        signedAt: new Date(), contractVersion: VENDOR_CONTRACT_VERSION,
+      })
+      mockVendorFindUnique.mockResolvedValue({ id: 'v1', status: 'PENDING_ACTIVATION' })
+
+      const result = await acceptVendorContract('tok', { signedName: 'Koffi Yao', accepted: true }, {})
+
+      expect(result.vendorActivated).toBe(true)
+      expect(mockVendorUpdate).toHaveBeenCalledWith({
+        where: { id: 'v1' },
+        data: { status: 'ACTIVE' },
+      })
+      const guarantees = mockGuaranteeCreateMany.mock.calls[0][0]
+      expect(guarantees.skipDuplicates).toBe(true)
+      expect(guarantees.data.map((g: { guaranteeType: string }) => g.guaranteeType)).toEqual([
+        'RETURN_48H',
+        'WARRANTY_30D',
+      ])
+    })
+
+    it('ne retouche pas un vendeur déjà actif', async () => {
+      mockContractFindUnique.mockResolvedValue({ id: 'c1', status: 'PENDING', vendorId: 'v1' })
+      mockContractUpdate.mockResolvedValue({
+        token: 'tok', status: 'ACCEPTED', signedName: 'X',
+        signedAt: new Date(), contractVersion: VENDOR_CONTRACT_VERSION,
+      })
+      mockVendorFindUnique.mockResolvedValue({ id: 'v1', status: 'ACTIVE' })
+
+      const result = await acceptVendorContract('tok', { signedName: 'X', accepted: true }, {})
+
+      expect(result.vendorActivated).toBe(false)
+      expect(mockTransaction).not.toHaveBeenCalled()
+    })
+
+    it('ne cherche aucun vendeur pour un contrat de prospect', async () => {
+      mockContractFindUnique.mockResolvedValue({ id: 'c1', status: 'PENDING', vendorId: null })
+      mockContractUpdate.mockResolvedValue({
+        token: 'tok', status: 'ACCEPTED', signedName: 'X',
+        signedAt: new Date(), contractVersion: VENDOR_CONTRACT_VERSION,
+      })
+
+      const result = await acceptVendorContract('tok', { signedName: 'X', accepted: true }, {})
+
+      expect(result.vendorActivated).toBe(false)
+      expect(mockVendorFindUnique).not.toHaveBeenCalled()
     })
 
     it('refuse de re-signer un contrat déjà accepté', async () => {
