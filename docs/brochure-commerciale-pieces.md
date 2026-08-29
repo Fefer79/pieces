@@ -106,7 +106,8 @@ Vous préférez WhatsApp ? Envoyez :
 |---|---|
 | **Pièce conforme** ou remboursée | Rien n'est remis sans être payé, et le client peut régler à la remise, après avoir vu la pièce. En cas de non-conformité, retour sous 48 h : Pièces reprend la pièce et rembourse |
 | **État de la pièce affiché clairement** | Chaque fiche porte un *condition chip* visible (Neuf / Occasion / Ré-usiné) et une étiquette de source (OEM / Aftermarket / Compatible) |
-| **Garantie vendeur** | Chaque pièce affiche une durée de garantie en mois, fixée par le vendeur |
+| **Garantie vendeur** | Chaque pièce affiche la garantie fixée par le vendeur — une durée, ou aucune. C'est annoncé avant l'achat, jamais découvert après |
+| **Reprise garantie, même sans garantie** | Livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité signalée sous 48 h : Pièces reprend la pièce et rembourse |
 | **Prix transparent** | Le ventilé complet (vendeur / main-d'œuvre / livraison / frais plateforme) est affiché avant tout paiement |
 | **Protection des données (ARTCI)** | Conformité loi n°2013-450 de Côte d'Ivoire ; consentement explicite à la première connexion |
 | **Litiges suivis** | Toute commande peut être contestée ; un médiateur Pièces tranche sous 72h |
@@ -157,7 +158,7 @@ Vous préférez WhatsApp ? Envoyez :
 1. Soit un **Liaison Pièces** vient vous voir sur place (le plus simple — il s'occupe de tout).
 2. Soit vous vous inscrivez vous-même sur `pieces.ci/onboarding/new` :
    - Renseigner votre boutique, contact, KYC (RCCM ou CNI), coordonnées GPS, zones de livraison.
-   - Signer les garanties vendeur.
+   - Accepter le socle de reprise (vous restez libre de la garantie que vous donnez sur chaque pièce).
    - Publier vos premières pièces depuis votre espace.
 3. L'équipe Pièces valide votre KYC sous 24-48h. Votre boutique passe en statut **ACTIVE**.
 

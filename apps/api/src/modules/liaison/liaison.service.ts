@@ -3,7 +3,7 @@ import { AppError } from '../../lib/appError.js'
 import { uploadToR2 } from '../../lib/r2.js'
 import { processVariants } from '../../lib/imageProcessor.js'
 import { scanOemLabel } from '../../lib/oemScan.js'
-import { subcategoryOf } from 'shared/constants'
+import { subcategoryOf, resolveWarranty } from 'shared/constants'
 import {
   liaisonCreateVendorSchema,
   liaisonUpdateVendorSchema,
@@ -308,8 +308,7 @@ export async function createPartForVendor(
       vehicleCompatibility: parsed.data.vehicleCompatibility,
       price: parsed.data.price,
       condition: parsed.data.condition,
-      warrantyValue: parsed.data.warrantyValue,
-      warrantyUnit: parsed.data.warrantyUnit,
+      ...resolveWarranty(parsed.data),
       commissionAmount,
       // Quantité fournie : inStock dérivé (>0), sinon toggle manuel du formulaire.
       stockQuantity: parsed.data.stockQuantity,
@@ -431,8 +430,7 @@ export async function createPartWithQuickVendor(liaisonId: string, body: unknown
         vehicleCompatibility: partInput.vehicleCompatibility,
         price: partInput.price,
         condition: partInput.condition,
-        warrantyValue: partInput.warrantyValue,
-        warrantyUnit: partInput.warrantyUnit,
+        ...resolveWarranty(partInput),
         commissionAmount,
         // Même règle que createPartForVendor : quantité fournie → inStock dérivé.
         stockQuantity: partInput.stockQuantity,
@@ -563,7 +561,13 @@ export async function updatePartForVendor(
       vendorId,
       vendor: { managedByLiaisonId: liaisonId },
     },
-    select: { id: true, price: true, commissionAmount: true },
+    select: {
+      id: true,
+      price: true,
+      commissionAmount: true,
+      warrantyValue: true,
+      warrantyUnit: true,
+    },
   })
 
   if (!part) {
@@ -582,8 +586,15 @@ export async function updatePartForVendor(
   if (d.oemReference !== undefined) updateData.oemReference = d.oemReference
   if (d.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = d.vehicleCompatibility
   if (d.condition !== undefined) updateData.condition = d.condition
-  if (d.warrantyValue !== undefined) updateData.warrantyValue = d.warrantyValue
-  if (d.warrantyUnit !== undefined) updateData.warrantyUnit = d.warrantyUnit
+  // Garantie normalisée sur le couple final (voir catalog.service).
+  if (d.warrantyValue !== undefined || d.warrantyUnit !== undefined) {
+    const resolved = resolveWarranty({
+      warrantyValue: d.warrantyValue !== undefined ? d.warrantyValue : part.warrantyValue,
+      warrantyUnit: d.warrantyUnit !== undefined ? d.warrantyUnit : part.warrantyUnit,
+    })
+    updateData.warrantyValue = resolved.warrantyValue
+    updateData.warrantyUnit = resolved.warrantyUnit
+  }
   if (d.inStock !== undefined) updateData.inStock = d.inStock
   if (d.isUniversallyCompatible !== undefined) updateData.isUniversallyCompatible = d.isUniversallyCompatible
   if (d.stockQuantity !== undefined) {

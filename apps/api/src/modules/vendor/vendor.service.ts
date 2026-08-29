@@ -97,8 +97,10 @@ export async function signGuarantees(userId: string) {
     await tx.vendorGuaranteeSignature.createMany({
       data: [
         { vendorId: vendor.id, guaranteeType: 'RETURN_48H' },
-        { vendorId: vendor.id, guaranteeType: 'WARRANTY_30D' },
+        { vendorId: vendor.id, guaranteeType: 'DELIVERY_REFUSAL' },
       ],
+      // Le contrat d'adhésion signé sur le terrain a pu déjà les enregistrer.
+      skipDuplicates: true,
     })
 
     await tx.vendor.update({
@@ -165,21 +167,33 @@ export async function getGuaranteeStatus(userId: string) {
     shopName: vendor.shopName,
     vendorType: vendor.vendorType,
     status: vendor.status,
+    // Socle de reprise du contrat v1.2 : ce que doit tout vendeur, même sur une
+    // pièce vendue sans garantie. La garantie commerciale, elle, se décide
+    // pièce par pièce à la publication.
     guarantees: [
       {
+        type: 'DELIVERY_REFUSAL',
+        label:
+          'Reprise à la livraison : livraison non effectuée ou pièce refusée pour non-conformité — remboursement intégral',
+        signed: vendor.guaranteeSignatures.some((s) => s.guaranteeType === 'DELIVERY_REFUSAL'),
+        signedAt:
+          vendor.guaranteeSignatures.find((s) => s.guaranteeType === 'DELIVERY_REFUSAL')?.signedAt ?? null,
+      },
+      {
         type: 'RETURN_48H',
-        label: 'Garantie retour pièce incorrecte : reprise sous 48h, remboursement intégral',
+        label:
+          'Retour sous 48 h : pièce non conforme à l’annonce signalée après la livraison — reprise et remboursement',
         signed: vendor.guaranteeSignatures.some((s) => s.guaranteeType === 'RETURN_48H'),
         signedAt: vendor.guaranteeSignatures.find((s) => s.guaranteeType === 'RETURN_48H')?.signedAt ?? null,
       },
-      {
-        type: 'WARRANTY_30D',
-        label: 'Garantie pièces d\'occasion : fonctionnement minimum 30 jours',
-        signed: vendor.guaranteeSignatures.some((s) => s.guaranteeType === 'WARRANTY_30D'),
-        signedAt: vendor.guaranteeSignatures.find((s) => s.guaranteeType === 'WARRANTY_30D')?.signedAt ?? null,
-      },
     ],
-    allSigned: vendor.guaranteeSignatures.length >= 2,
+    // Les vendeurs de la v1.1 ont signé RETURN_48H + WARRANTY_30D : leur socle
+    // est couvert, on ne les renvoie pas signer.
+    allSigned:
+      vendor.guaranteeSignatures.some((s) => s.guaranteeType === 'RETURN_48H') &&
+      vendor.guaranteeSignatures.some(
+        (s) => s.guaranteeType === 'DELIVERY_REFUSAL' || s.guaranteeType === 'WARRANTY_30D',
+      ),
   }
 }
 

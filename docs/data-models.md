@@ -52,7 +52,7 @@ SearchSynonym (standalone)
 | `VendorStatus` | PENDING_ACTIVATION, ACTIVE, PAUSED |
 | `VendorType` | FORMAL, INFORMAL |
 | `KycType` | RCCM, CNI |
-| `GuaranteeType` | RETURN_48H, WARRANTY_30D |
+| `GuaranteeType` | RETURN_48H, DELIVERY_REFUSAL, WARRANTY_30D *(historique, contrat v1.1)* |
 | `CatalogItemStatus` | DRAFT, PUBLISHED, ARCHIVED |
 | `OrderStatus` | DRAFT, PENDING_PAYMENT, PAID, VENDOR_CONFIRMED, DISPATCHED, IN_TRANSIT, DELIVERED, CONFIRMED, COMPLETED, CANCELLED |
 | `PaymentMethod` | ORANGE_MONEY, MTN_MOMO, WAVE, COD |

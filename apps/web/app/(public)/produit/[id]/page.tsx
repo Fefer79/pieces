@@ -13,7 +13,14 @@ import { useCart } from '@/lib/cart'
 import { useSelectedVehicle, type SelectedVehicle } from '@/lib/selected-vehicle'
 import { apiFetch } from '@/lib/enterprise-api'
 import { createClient } from '@/lib/supabase'
-import { ABIDJAN_COMMUNES, computeDeliveryFee, formatWarranty, type WarrantyUnit } from 'shared/constants'
+import {
+  ABIDJAN_COMMUNES,
+  computeDeliveryFee,
+  formatWarranty,
+  warrantyLabel,
+  RETURN_POLICY,
+  type WarrantyUnit,
+} from 'shared/constants'
 
 const WA_NUMBER = '2250706846268'
 
@@ -291,7 +298,9 @@ export default function ProductPage() {
   }
 
   const warrantyText = formatWarranty(item?.warrantyValue, item?.warrantyUnit)
-  const warrantyLabel = warrantyText ? `Garantie : ${warrantyText}` : 'Garantie : 7J'
+  // La garantie est décidée par le vendeur, pièce par pièce : sans garantie, on
+  // le dit — plus de « Garantie : 7J » par défaut, qui n'engageait personne.
+  const warranty = warrantyLabel(item?.warrantyValue, item?.warrantyUnit)
 
   return (
     <div className="min-h-dvh bg-surface pb-24 lg:pb-8">
@@ -401,8 +410,14 @@ export default function ProductPage() {
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {item.condition && <ConditionChip condition={item.condition} />}
                 {item.partSource && <PartSourceChip source={item.partSource} />}
-                <span className="inline-flex items-center rounded-full bg-success-bg px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-[0.04em] leading-tight text-success-fg">
-                  {warrantyLabel}
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-[0.04em] leading-tight ${
+                    warranty.hasWarranty
+                      ? 'bg-success-bg text-success-fg'
+                      : 'bg-surface text-muted ring-1 ring-border'
+                  }`}
+                >
+                  {warranty.text}
                 </span>
                 {!item.inStock && (
                   <span className="rounded-sm bg-surface px-2 py-1 text-xs font-medium text-muted">
@@ -507,22 +522,33 @@ export default function ProductPage() {
               </Button>
 
               {/* Caractéristiques */}
-              {(item.oemReference || warrantyText) && (
-                <dl className="mt-6 divide-y divide-border rounded-md border border-border bg-card text-sm">
-                  {item.oemReference && (
-                    <div className="flex justify-between gap-4 px-4 py-2.5">
-                      <dt className="text-muted">Référence OEM</dt>
-                      <dd className="font-mono text-ink">{item.oemReference}</dd>
-                    </div>
-                  )}
-                  {warrantyText && (
-                    <div className="flex justify-between gap-4 px-4 py-2.5">
-                      <dt className="text-muted">Garantie</dt>
-                      <dd className="text-ink">{warrantyText}</dd>
-                    </div>
-                  )}
-                </dl>
-              )}
+              <dl className="mt-6 divide-y divide-border rounded-md border border-border bg-card text-sm">
+                {item.oemReference && (
+                  <div className="flex justify-between gap-4 px-4 py-2.5">
+                    <dt className="text-muted">Référence OEM</dt>
+                    <dd className="font-mono text-ink">{item.oemReference}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between gap-4 px-4 py-2.5">
+                  <dt className="text-muted">Garantie</dt>
+                  <dd className="text-ink">
+                    {warrantyText ?? 'Aucune — fixée par le vendeur'}
+                  </dd>
+                </div>
+              </dl>
+
+              {/* Socle de reprise : ce que l'acheteur obtient même sans garantie. */}
+              <div className="mt-3 rounded-md border border-border bg-card p-4">
+                <p className="text-sm font-medium text-ink">{RETURN_POLICY.title}</p>
+                <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-muted">
+                  {RETURN_POLICY.points.map((point) => (
+                    <li key={point} className="flex gap-2">
+                      <span aria-hidden className="text-success-fg">✓</span>
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
               {/* Compatibilité véhicule */}
               {(item.fitments.length > 0 || item.vehicleCompatibility) && (

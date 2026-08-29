@@ -12,7 +12,7 @@
 1. [Accès et connexion](#1-accès-et-connexion)
 2. [Consentement ARTCI](#2-consentement-artci)
 3. [Inscription vendeur (onboarding KYC)](#3-inscription-vendeur-onboarding-kyc)
-4. [Signature des garanties et activation](#4-signature-des-garanties-et-activation)
+4. [Socle de reprise et activation](#4-socle-de-reprise-et-activation)
 5. [Tableau de bord vendeur](#5-tableau-de-bord-vendeur)
 6. [Gestion du catalogue](#6-gestion-du-catalogue)
 7. [Zones de livraison](#7-zones-de-livraison)
@@ -111,40 +111,46 @@ Toute incohérence sera rejetée avec l'erreur : *"Le type KYC doit correspondre
 
 - Votre profil vendeur est créé avec le statut **PENDING_ACTIVATION** (en attente d'activation)
 - Vous ne pouvez **pas encore** publier de pièces ni recevoir de commandes
-- Vous êtes redirigé vers votre profil pour procéder à la signature des garanties
+- Vous êtes redirigé vers votre profil pour accepter le socle de reprise
 
 ---
 
-## 4. Signature des garanties et activation
+## 4. Socle de reprise et activation
 
-Avant de pouvoir vendre sur Pièces, vous devez signer deux garanties obligatoires qui protègent les acheteurs.
+La garantie commerciale, c'est **vous** qui la fixez, pièce par pièce, au moment de la publication : une durée en jours, semaines ou mois, ou aucune garantie. Aucune famille de pièces n'est imposée ni exclue.
 
-### Les deux garanties
+Ce que vous acceptez avant de vendre est le **socle de reprise** : le minimum dû sur toute pièce, y compris celles vendues sans garantie.
 
-| Garantie | Engagement |
+### Les deux engagements du socle
+
+| Engagement | Ce que vous acceptez |
 |----------|-----------|
-| **RETURN_48H** — Garantie retour pièce incorrecte | Reprise sous 48 heures, remboursement intégral si la pièce ne correspond pas |
-| **WARRANTY_30D** — Garantie pièces d'occasion | Fonctionnement minimum garanti pendant 30 jours |
+| **DELIVERY_REFUSAL** — Reprise à la livraison | La livraison n'a pas pu être effectuée, ou l'acheteur refuse la pièce à la livraison parce qu'elle ne correspond pas à l'annonce : reprise et remboursement intégral |
+| **RETURN_48H** — Retour sous 48 h | Non-conformité à l'annonce signalée dans les 48 heures suivant la livraison : reprise et remboursement intégral |
 
-### Comment signer
+Dans les deux cas, la pièce vous revient et **la commission n'est pas due**.
 
-1. Accéder à la page **Garanties** (`/vendors/guarantees`)
+### Comment accepter
+
+1. Accéder à la page **Socle de reprise** (`/vendors/guarantees`)
 2. Lire les deux engagements affichés sous forme de cartes
-3. Appuyer sur **"Signer les garanties et activer mon profil"**
-4. Les deux garanties sont signées simultanément avec horodatage
+3. Appuyer sur **"Accepter le socle et activer mon profil"**
+4. Les deux engagements sont signés simultanément avec horodatage
+
+Si votre contrat d'adhésion a été signé sur le terrain avec un commercial ou une liaison, cette étape est déjà faite : le contrat porte le même socle, et votre profil est activé à la signature.
 
 ### Résultat
 
 - Votre statut passe de **PENDING_ACTIVATION** → **ACTIVE**
 - Vous pouvez maintenant ajouter des pièces à votre catalogue
-- La date de signature est affichée sur chaque garantie (format JJ/MM/AAAA)
-- Les garanties signées apparaissent en vert avec la mention *"Signée le..."*
+- La date de signature est affichée sur chaque engagement (format JJ/MM/AAAA)
+- Les engagements signés apparaissent en vert avec la mention *"Signée le..."*
 
 ### Si vous refusez
 
 - Un bouton **"Refuser"** est disponible — il vous ramène à votre profil
 - Votre profil restera **inactif** : vous ne pourrez pas recevoir de commandes
-- Vous pourrez revenir signer les garanties à tout moment
+- Vous pourrez revenir accepter le socle à tout moment
 
 ---
 
@@ -169,7 +175,7 @@ Le tableau de bord propose 3 raccourcis :
 
 - **"Mon catalogue →"** — Accès direct à la liste de vos pièces
 - **"Zones de livraison (N commune(s)) →"** — Configuration de vos zones de couverture
-- **"Garanties →"** — Consultation de vos garanties signées
+- **"Garanties →"** — Consultation du socle de reprise accepté
 
 ### Section "Commandes & paiements"
 
@@ -185,7 +191,7 @@ La gestion du catalogue est le cœur de votre activité sur Pièces. Le processu
 
 **Page :** `/vendors/catalog/upload`
 
-**Prérequis :** Votre profil vendeur doit être **ACTIVE** (garanties signées).
+**Prérequis :** Votre profil vendeur doit être **ACTIVE** (socle de reprise accepté).
 
 **Étapes :**
 
@@ -466,7 +472,7 @@ Dès l'encaissement. Si l'acheteur paie en ligne à la commande, votre part part
 
 ### En cas de retour ou de litige
 
-Il n'y a pas de fonds à débloquer : le remboursement est une **reprise traitée par Pièces avec vous**, dans les limites du contrat d'adhésion — retour sous 48 h si la pièce ne correspond pas à l'annonce. Quand le retour est justifié, **la commission n'est pas due**.
+Il n'y a pas de fonds à débloquer : le remboursement est une **reprise traitée par Pièces avec vous**, dans les limites du contrat d'adhésion — socle de reprise : livraison échouée, refus à la livraison, ou non-conformité signalée sous 48 h. Quand le retour est justifié, **la commission n'est pas due**.
 
 ### Consulter le statut de paiement
 
@@ -675,8 +681,8 @@ Voici le parcours complet d'une commande du point de vue du vendeur :
 |---------|----------|-------------|
 | POST | `/api/v1/vendors` | Créer profil vendeur (onboarding) |
 | GET | `/api/v1/vendors/me` | Consulter mon profil vendeur |
-| POST | `/api/v1/vendors/me/signature` | Signer les garanties |
-| GET | `/api/v1/vendors/me/guarantees` | Voir le statut des garanties |
+| POST | `/api/v1/vendors/me/signature` | Accepter le socle de reprise |
+| GET | `/api/v1/vendors/me/guarantees` | Voir le statut du socle |
 | GET | `/api/v1/vendors/me/delivery-zones` | Consulter mes zones |
 | PUT | `/api/v1/vendors/me/delivery-zones` | Modifier mes zones |
 | GET | `/api/v1/vendors/me/dashboard` | Tableau de bord |
@@ -715,7 +721,7 @@ Voici le parcours complet d'une commande du point de vue du vendeur :
 |------|------|--------------|
 | `VENDOR_NOT_FOUND` | 404 | Profil vendeur introuvable |
 | `VENDOR_ALREADY_EXISTS` | 409 | Un profil vendeur existe déjà |
-| `VENDOR_ALREADY_ACTIVE` | 409 | Les garanties sont déjà signées |
+| `VENDOR_ALREADY_ACTIVE` | 409 | Le socle est déjà accepté et le profil actif |
 | `VENDOR_INVALID_STATUS` | 422 | Action incompatible avec le statut actuel |
 | `VENDOR_INVALID_DATA` | 422 | Incohérence type vendeur / type KYC |
 | `VENDOR_NOT_ACTIVE` | 403 | Profil non activé (garanties non signées) |
@@ -733,11 +739,13 @@ Voici le parcours complet d'une commande du point de vue du vendeur :
 
 ### Q1 : Comment devenir vendeur sur Pièces ?
 
-Contactez un agent terrain Pièces ou accédez directement à la page d'inscription (`/onboarding/new`). Remplissez le formulaire KYC avec votre document d'identité (CNI pour les vendeurs informels, RCCM pour les commerces enregistrés), puis signez les deux garanties obligatoires pour activer votre profil.
+Contactez un agent terrain Pièces ou accédez directement à la page d'inscription (`/onboarding/new`). Remplissez le formulaire KYC avec votre document d'identité (CNI pour les vendeurs informels, RCCM pour les commerces enregistrés), puis acceptez le socle de reprise pour activer votre profil.
 
-### Q2 : Pourquoi dois-je signer des garanties ?
+### Q2 : Quelle garantie dois-je donner ?
 
-Les garanties protègent les acheteurs et renforcent la confiance dans la plateforme. La **garantie retour 48h** assure le remboursement si la pièce ne correspond pas. La **garantie 30 jours** garantit le fonctionnement minimum de la pièce d'occasion.
+Celle que vous voulez. Depuis le contrat v1.2, **vous fixez la garantie pièce par pièce** — une durée en jours, semaines ou mois, ou aucune garantie. Aucune famille de pièces n'est imposée ni exclue : vous décidez sur toutes. La garantie retenue est affichée à l'acheteur avant l'achat et figée sur la commande.
+
+Ce que vous acceptez à l'activation est le **socle de reprise**, dû sur toute pièce même sans garantie : livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité à l'annonce signalée sous 48 h. Dans ces cas, la pièce vous revient et la commission n'est pas due.
 
 ### Q3 : Comment l'IA identifie-t-elle mes pièces ?
 
@@ -773,7 +781,7 @@ L'acheteur peut ouvrir un litige. Un administrateur examine la situation et tran
 - Décrivez vos pièces avec précision
 - Assurez-vous que les pièces correspondent à la description
 - Maintenez votre stock à jour
-- Respectez les garanties signées (retour 48h, fonctionnement 30j)
+- Respectez la garantie que vous avez annoncée sur chaque pièce, et le socle de reprise dans tous les cas
 
 ---
 

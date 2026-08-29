@@ -278,7 +278,10 @@ export default function VendorOnboardingPage() {
         </div>
 
         <div className="rounded-md border border-occasion-fg/20 bg-occasion-bg p-3.5 text-[13px] leading-relaxed text-occasion-fg">
-          🛡️ En créant votre profil vendeur, vous acceptez les garanties obligatoires : retour sous 48h et garantie 30 jours sur les pièces vendues.
+          🛡️ Vous fixez librement la garantie de chaque pièce, ou n&apos;en donnez aucune.
+          En créant votre profil, vous acceptez seulement le socle de reprise : reprise si la
+          livraison échoue, si l&apos;acheteur refuse la pièce à la livraison, ou en cas de
+          non-conformité signalée sous 48 h.
         </div>
 
         {error && (

@@ -377,7 +377,7 @@ Payez au livreur ───────────► Encaissé à la remise ─
 
 - **Vous voyez la pièce avant de payer**, si vous avez choisi le paiement à la remise. Ce qui ne vous convient pas, vous ne le réglez pas.
 - **Le prix est verrouillé** à la commande : il ne bouge plus entre la commande et la livraison.
-- **Le retour sous 48 h** s'applique si la pièce ne correspond pas à l'annonce, et la garantie de 30 jours couvre ce qui est vendu comme fonctionnel.
+- **Le socle de reprise** s'applique : livraison non effectuée, refus à la livraison, ou non-conformité signalée sous 48 h. Au-delà, c'est la garantie annoncée par le vendeur sur la pièce qui joue — elle est affichée avant le paiement.
 - **Si vous avez payé en ligne** et qu'il y a un problème, ouvrez un litige : Pièces reprend la pièce et traite votre remboursement.
 
 ### Ce qui se passe en cas de problème

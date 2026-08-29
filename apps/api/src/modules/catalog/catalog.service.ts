@@ -3,7 +3,7 @@ import { uploadToR2 } from '../../lib/r2.js'
 import { MAX_FILE_SIZE, processVariants } from '../../lib/imageProcessor.js'
 import { enqueue } from '../queue/queueService.js'
 import { AppError } from '../../lib/appError.js'
-import { subcategoryOf } from 'shared/constants'
+import { subcategoryOf, resolveWarranty } from 'shared/constants'
 import type { CatalogItemStatus } from '@prisma/client'
 import { MAX_PHOTOS_PER_ITEM, createCatalogItemSchema } from 'shared/validators'
 
@@ -95,8 +95,7 @@ export async function uploadPartImage(
       ...(extras.category && { category: extras.category, subcategory: subcategoryOf(extras.category) }),
       ...(extras.vehicleCompatibility && { vehicleCompatibility: extras.vehicleCompatibility }),
       ...(extras.condition && { condition: extras.condition }),
-      ...(extras.warrantyValue !== undefined && { warrantyValue: extras.warrantyValue }),
-      ...(extras.warrantyUnit !== undefined && { warrantyUnit: extras.warrantyUnit }),
+      ...resolveWarranty(extras),
       ...(serialPhotoUrl && { serialPhotoUrl }),
       photos: {
         create: {
@@ -243,8 +242,7 @@ export async function createItem(userId: string, body: unknown) {
       price: parsed.data.price,
       condition: parsed.data.condition,
       partSource: parsed.data.partSource,
-      warrantyValue: parsed.data.warrantyValue,
-      warrantyUnit: parsed.data.warrantyUnit,
+      ...resolveWarranty(parsed.data),
       commissionAmount,
       commissionAcceptedAt: new Date(),
       lowStockThreshold: parsed.data.lowStockThreshold,
@@ -464,8 +462,16 @@ export async function updateItem(
   if (data.vehicleCompatibility !== undefined) updateData.vehicleCompatibility = data.vehicleCompatibility
   if (data.condition !== undefined) updateData.condition = data.condition
   if (data.partSource !== undefined) updateData.partSource = data.partSource
-  if (data.warrantyValue !== undefined) updateData.warrantyValue = data.warrantyValue
-  if (data.warrantyUnit !== undefined) updateData.warrantyUnit = data.warrantyUnit
+  // Garantie : normalisée sur le couple final (durée + unité), pour qu'une
+  // durée sans unité — ou l'inverse — ne laisse pas une garantie bancale.
+  if (data.warrantyValue !== undefined || data.warrantyUnit !== undefined) {
+    const resolved = resolveWarranty({
+      warrantyValue: data.warrantyValue !== undefined ? data.warrantyValue : item.warrantyValue,
+      warrantyUnit: data.warrantyUnit !== undefined ? data.warrantyUnit : item.warrantyUnit,
+    })
+    updateData.warrantyValue = resolved.warrantyValue
+    updateData.warrantyUnit = resolved.warrantyUnit
+  }
   if (data.lowStockThreshold !== undefined) updateData.lowStockThreshold = data.lowStockThreshold
   if (data.inStock !== undefined) updateData.inStock = data.inStock
   if (data.isUniversallyCompatible !== undefined) updateData.isUniversallyCompatible = data.isUniversallyCompatible

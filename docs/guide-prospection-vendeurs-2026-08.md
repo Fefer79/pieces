@@ -111,7 +111,7 @@ Vingt-cinq questions, six blocs. On ne les pose pas toutes : on suit le fil et o
 | Vous livrez, ou le client vient toujours chercher ? | S'il livre déjà, il connaît le coût réel et la contrainte |
 | Jusqu'où vous acceptez de livrer dans Abidjan ? | Alimente les zones de livraison de sa fiche vendeur |
 | Combien de temps entre la commande et la remise de la pièce ? | Le délai est notre argument produit numéro un |
-| Vous avez déjà eu des problèmes de pièce cassée ou perdue en route ? | Prépare le sujet des garanties |
+| Vous avez déjà eu des problèmes de pièce cassée ou perdue en route ? | Prépare le sujet de la reprise et de la garantie |
 
 ### Bloc 6 — Prix, marge et paiement
 
@@ -120,7 +120,7 @@ Vingt-cinq questions, six blocs. On ne les pose pas toutes : on suit le fil et o
 | Vos prix sont fixes ou vous négociez ? | Détermine si le prix affiché en ligne sera tenable |
 | Vous acceptez le mobile money, ou seulement le cash ? | Par quel canal on lui transmettra son argent après l'encaissement |
 | Vous faites du crédit à certains mécaniciens ? Vous êtes payés à temps ? | **Le point de douleur le plus exploitable** : il ouvre directement sur « rien ne part sans être payé, et vous êtes payé tout de suite » |
-| Une pièce vendue et rendue, ça se passe comment chez vous ? | Prépare la conversation sur le retour 48 h et la garantie 30 jours |
+| Une pièce vendue et rendue, ça se passe comment chez vous ? | Prépare la conversation sur le socle de reprise et sur la garantie qu'il choisira d'accorder |
 
 <div class="callout">
 <p class="lead">Trois réponses suffisent à qualifier une fiche en A : <strong>une réserve séparée, un patron qui décide sur place, et du stock qui dort</strong>.</p>
@@ -157,8 +157,8 @@ La méthode est toujours la même en trois temps : **reformuler** (montrer qu'on
 | « J'ai déjà Facebook, ça ne marche pas » | Facebook vous amène des gens qui demandent le prix et disparaissent. Chez nous, ce n'est pas un curieux qui vous appelle : c'est une commande ferme, référence et véhicule vérifiés, encaissée à la livraison par notre livreur. Et vous n'avez ni à discuter avec le client, ni à le livrer. |
 | « Je ne veux pas être exclusif » | Le contrat est explicitement non exclusif. Vous continuez à vendre à votre comptoir, sur Facebook, à vos habitués, exactement comme aujourd'hui. |
 | « Mes clients me doivent de l'argent, je ne peux pas arrêter le crédit » | Personne ne vous le demande. Gardez le crédit pour vos habitués, et servez-vous de la plateforme pour les clients que vous ne connaissez pas — ceux à qui vous n'auriez jamais fait crédit. |
-| « Et si le client rend la pièce ? » | Retour sous 48 h uniquement si la pièce ne correspond pas à l'annonce, et garantie de bon fonctionnement 30 jours sur ce qui est vendu comme fonctionnel. Une annonce honnête sur l'état vous protège : c'est pour ça que l'état est affiché en gros sur chaque fiche. |
-| « Vos garanties, c'est un risque pour moi » | Le risque, c'est de vendre une pièce mal décrite. Si la description est juste, le retour n'arrive pas. Et quand un retour est justifié, la commission n'est pas due non plus. |
+| « Et si le client rend la pièce ? » | Trois cas seulement : la livraison n'a pas pu se faire, le client refuse la pièce à la livraison parce qu'elle ne correspond pas à l'annonce, ou il signale la non-conformité dans les 48 h. En dehors de ça, il n'y a de retour que si **vous** avez accordé une garantie. Une annonce honnête sur l'état vous protège : c'est pour ça que l'état est affiché en gros sur chaque fiche. |
+| « Vos garanties, c'est un risque pour moi » | Nous ne vous en imposons aucune : **c'est vous qui décidez de la garantie, pièce par pièce**, et vous pouvez n'en donner aucune. Le seul minimum, c'est la reprise quand la livraison échoue ou que la pièce ne correspond pas à l'annonce. Le risque, c'est de vendre une pièce mal décrite : si la description est juste, le retour n'arrive pas. Et quand un retour est justifié, la commission n'est pas due non plus. |
 | « Si tout passe par vous, je deviens dépendant » | Vous gardez vos clients, votre magasin, vos prix et votre stock. Nous ne sommes qu'un canal de plus — et vous pouvez le couper quand vous voulez. |
 | « Et la livraison, c'est moi qui la fais ? » | Non. Vous préparez la pièce, nous venons la prendre et nous livrons le client. Vous n'avez ni livreur à payer, ni course à faire, ni rendez-vous à honorer. *Relancer :* aujourd'hui, combien vous coûte une course pour porter une pièce à Yopougon ? |
 | « Je ne vous connais pas, vous n'existez pas encore » | C'est exact, et c'est justement le moment : nous ouvrons dans les trente jours. Les vendeurs qui entrent maintenant sont ceux dont le stock est en ligne le premier jour, quand toute la demande arrive sur un catalogue encore court. Ceux qui viendront après entreront dans un catalogue déjà rempli. *Relancer :* vous préférez être parmi les premiers, ou attendre de voir la place que les autres auront prise ? |
@@ -192,7 +192,7 @@ On ne sort jamais d'un magasin sans un de ces trois oui. Du plus facile au plus 
 |---|---|---|
 | 1 | **Dix références pour l'ouverture** — le vendeur choisit dix pièces, on les publie, elles sont dans le catalogue du premier jour | « On prend dix pièces que vous voulez faire bouger, on les met en ligne cette semaine : elles seront là le jour de l'ouverture, dans le premier catalogue que les acheteurs verront. On commence par lesquelles ? » |
 | 2 | **Mandat Liaison** — un agent vient photographier et décrire une partie du stock | « Je vous envoie un agent jeudi matin, il reste deux heures, il photographie ce que vous lui montrez. Jeudi ou vendredi ? » |
-| 3 | **Contrat d'adhésion signé** — KYC, garanties acceptées, compte vendeur actif | « On ouvre votre compte aujourd'hui : il me faut votre pièce d'identité ou votre RCCM, et vous signez en ligne en deux minutes. On le fait maintenant ? » |
+| 3 | **Contrat d'adhésion signé** — KYC, socle de reprise accepté, compte vendeur actif | « On ouvre votre compte aujourd'hui : il me faut votre pièce d'identité ou votre RCCM, et vous signez en ligne en deux minutes. On le fait maintenant ? » |
 
 Le niveau 1 est le bon objectif par défaut à la première visite. Un vendeur qui refuse dix références refusera un contrat. Et comme il n'y a rien à montrer avant l'ouverture, la relance qu'on programme n'est pas « on se revoit pour voir les résultats » : c'est **l'appel du jour de la mise en ligne**, puis celui du lancement.
 

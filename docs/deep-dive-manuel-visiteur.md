@@ -787,7 +787,7 @@ Tout nouveau compte reçoit le rôle **MECHANIC**, qui donne accès à :
 
 ### Q : Que se passe-t-il si la pièce est défectueuse ?
 
-**R :** Si vous avez payé via un lien partagé sans compte, vous pouvez tout de même bénéficier de la garantie vendeur (**RETURN_48H** : retour sous 48h, **WARRANTY_30D** : garantie 30 jours). Pour ouvrir un litige formel dans l'application, vous devrez créer un compte. Contactez votre mécanicien ou le support Pièces en attendant.
+**R :** Si vous avez payé via un lien partagé sans compte, vous bénéficiez du **socle de reprise** au même titre qu'un client inscrit : livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité signalée sous 48 h. La garantie commerciale, elle, est celle qu'annonçait la fiche de la pièce au moment de l'achat. Pour ouvrir un litige formel dans l'application, vous devrez créer un compte. Contactez votre mécanicien ou le support Pièces en attendant.
 
 ### Q : Mes données sont-elles protégées sans compte ?
 

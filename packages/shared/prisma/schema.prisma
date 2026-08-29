@@ -112,7 +112,14 @@ enum KycType {
 }
 
 enum GuaranteeType {
-  RETURN_48H
+  // Socle de reprise du contrat v1.2, signé par tout vendeur à son activation.
+  RETURN_48H       // Non-conformité à l'annonce signalée sous 48 h.
+  DELIVERY_REFUSAL // Livraison non effectuée ou refusée pour non-conformité.
+
+  // Historique : garantie de fonctionnement 30 jours imposée par le contrat
+  // v1.1. Depuis la v1.2, la garantie est décidée par le vendeur pièce par
+  // pièce (CatalogItem.warrantyValue). Valeur conservée pour ne pas réécrire
+  // ce qu'ont signé les vendeurs de la v1.1.
   WARRANTY_30D
 }
 
@@ -1096,6 +1103,13 @@ model OrderItem {
   imageThumbUrl    String?        @map("image_thumb_url")
   condition        PartCondition? // snapshot de la condition à la commande
   partSource       PartSource?    @map("part_source")
+  // Snapshot de la garantie commerciale accordée par le vendeur sur cette
+  // pièce (contrat v1.2 : le vendeur la fixe pièce par pièce). Figée à la
+  // commande, comme le prix : une modification ultérieure de l'annonce ne
+  // change pas ce qui a été acheté. Nulle = vendue sans garantie ; le socle de
+  // reprise s'applique quand même.
+  warrantyValue    Int?           @map("warranty_value")
+  warrantyUnit     WarrantyUnit?  @map("warranty_unit")
   commissionAmount Int?           @map("commission_amount")
   createdAt        DateTime       @default(now()) @map("created_at")
 

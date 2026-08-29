@@ -300,7 +300,7 @@ Opération coûteuse — à lancer hors heures de pointe. Service : `apps/api/sr
 
 Un vendeur créé par un Liaison ou via auto-onboarding est en statut `PENDING_ACTIVATION`. Pour le passer en `ACTIVE` :
 
-1. Vérifier la signature des deux garanties (`RETURN_48H` et `WARRANTY_30D`) dans `vendor_guarantee_signatures`
+1. Vérifier l'acceptation du socle de reprise (`RETURN_48H` et `DELIVERY_REFUSAL`, ou `WARRANTY_30D` pour un vendeur signataire du contrat v1.1) dans `vendor_guarantee_signatures`
 2. Vérifier que le KYC est rempli (`vendor_kyc`) et que `isPublic = true` si formel
 3. Update : `UPDATE vendors SET status = 'ACTIVE' WHERE id = '...'`
 
@@ -1106,7 +1106,7 @@ SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 200;
 On pourra ajouter `GET /api/v1/admin/activity` si le besoin se confirme.
 
 **Q. Un vendeur est en PENDING_ACTIVATION depuis 3 semaines. Pourquoi ?**
-R. Soit le KYC n'a pas été validé, soit les garanties ne sont pas signées (`vendor_guarantee_signatures` doit avoir 2 lignes : RETURN_48H et WARRANTY_30D). Vérifier sur la page détail vendeur (`/admin/vendors/:id/detail`).
+R. Soit le KYC n'a pas été validé, soit le socle de reprise n'est pas accepté (`vendor_guarantee_signatures` doit avoir 2 lignes : `RETURN_48H` et `DELIVERY_REFUSAL` — ou `WARRANTY_30D` pour un vendeur venu du contrat v1.1). Vérifier sur la page détail vendeur (`/admin/vendors/:id/detail`). Un contrat d'adhésion signé sur le terrain active le vendeur et écrit ces lignes automatiquement.
 
 **Q. Le webhook CinetPay ne marque pas la commande comme PAID.**
 R. Vérifier (1) que l'URL `CINETPAY_NOTIFY_URL` pointe bien vers `https://pieces.ci/api/v1/payment/webhook`, (2) que la signature HMAC est valide, (3) que `paymentRef` n'a pas déjà été traité (idempotence). Logs : `event: PAYMENT_WEBHOOK_RECEIVED`.

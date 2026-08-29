@@ -1,53 +1,16 @@
-/**
- * Source de vérité unique du contrat d'adhésion vendeur (CGU).
- * Consommé par la page d'acceptation web ET le générateur de PDF API,
- * pour garantir que le vendeur signe exactement le texte qu'il lit.
- *
- * Toute modification de fond DOIT incrémenter VENDOR_CONTRACT_VERSION, archiver
- * le texte sortant dans son propre fichier (`vendor-membership-v<x_y>.ts`) et
- * l'inscrire dans VENDOR_CONTRACT_VERSIONS : la version est figée sur chaque
- * acceptation, et le PDF d'un contrat signé doit rejouer le texte de SA version
- * — pas le texte courant.
- */
-import {
-  VENDOR_CONTRACT_1_1,
-  VENDOR_CONTRACT_VERSION_1_1,
-  VENDOR_CONTRACT_EFFECTIVE_DATE_1_1,
-} from './vendor-membership-v1_1.js'
+// ARCHIVE — contrat d'adhésion vendeur, version 1.1 (en vigueur du 2026-07-02
+// au 2026-08-29). NE PAS MODIFIER : ce texte est celui qu'ont signé les
+// vendeurs dont `VendorContract.contractVersion` vaut « 1.1 ». Le PDF et la
+// page de consultation le rejouent tel quel pour eux — la preuve de
+// consentement porte sur le texte lu, pas sur la version courante.
 
-export const VENDOR_CONTRACT_VERSION = '1.2'
+import type { VendorContract } from './vendor-membership.js'
 
-/** Date d'entrée en vigueur de la présente version (affichée et figée). */
-export const VENDOR_CONTRACT_EFFECTIVE_DATE = '2026-08-29'
+export const VENDOR_CONTRACT_VERSION_1_1 = '1.1'
 
-export interface ContractArticle {
-  /** Numéro d'article (1-indexé). */
-  number: number
-  title: string
-  /** Paragraphes de prose. */
-  paragraphs: string[]
-  /** Puces optionnelles affichées sous les paragraphes. */
-  bullets?: string[]
-}
+export const VENDOR_CONTRACT_EFFECTIVE_DATE_1_1 = '2026-07-02'
 
-export interface VendorContract {
-  title: string
-  /** Sous-titre / accroche affiché sous le titre. */
-  subtitle: string
-  /** Identité de l'éditeur de la plateforme. */
-  editor: {
-    name: string
-    description: string
-    contact: string
-  }
-  /** Préambule (paragraphes introductifs). */
-  preamble: string[]
-  articles: ContractArticle[]
-  /** Mentions de clôture (droit applicable, etc.). */
-  closing: string[]
-}
-
-export const VENDOR_CONTRACT: VendorContract = {
+export const VENDOR_CONTRACT_1_1: VendorContract = {
   title: 'Conditions générales d’adhésion vendeur',
   subtitle:
     'Contrat de commercialisation des pièces sur la marketplace Pièces — Côte d’Ivoire',
@@ -87,7 +50,7 @@ export const VENDOR_CONTRACT: VendorContract = {
       number: 3,
       title: 'Annonces et obligation de transparence',
       paragraphs: [
-        'Le Vendeur est seul responsable de l’exactitude de ses annonces : désignation, référence OEM, compatibilité véhicule, prix, durée de garantie et photographies réelles de la pièce.',
+        'Le Vendeur est seul responsable de l’exactitude de ses annonces : désignation, référence OEM, compatibilité véhicule, prix et photographies réelles de la pièce.',
         'L’état de chaque pièce doit être déclaré sans ambiguïté parmi les catégories de la Plateforme : Neuf, Occasion importée, Ré-usiné, Aftermarket ou OEM. Toute fausse déclaration de l’état engage la responsabilité du Vendeur et peut entraîner le remboursement de l’acheteur et la suspension du compte.',
         'Le Vendeur garantit qu’il détient les pièces qu’il met en vente, qu’elles sont licites et qu’elles ne proviennent ni de vol, ni de recel, ni de contrefaçon.',
       ],
@@ -107,33 +70,23 @@ export const VENDOR_CONTRACT: VendorContract = {
       paragraphs: [
         'Les paiements des acheteurs sont encaissés par Pièces via son prestataire de paiement (CinetPay) et conservés sous séquestre (escrow) jusqu’à la confirmation de la bonne livraison de la pièce.',
         'Après confirmation de livraison et expiration du délai de retour, Pièces reverse au Vendeur le prix de vente diminué de la commission. Le reversement est effectué par les moyens de paiement convenus (mobile money ou virement).',
-        'En cas de litige, de retour ou d’annulation, le reversement peut être suspendu jusqu’à résolution conformément aux articles 6, 7 et 9.',
+        'En cas de litige, de retour ou d’annulation, le reversement peut être suspendu jusqu’à résolution conformément aux articles 6 et 8.',
       ],
     },
     {
       number: 6,
-      title: 'Garantie commerciale : le Vendeur décide, pièce par pièce',
+      title: 'Garanties, retours et conformité',
       paragraphs: [
-        'Le Vendeur fixe librement la garantie commerciale de chaque pièce qu’il met en vente : une durée en jours, en semaines ou en mois, ou aucune garantie. La durée retenue est affichée à l’acheteur sur l’annonce avant l’achat et figée sur la commande ; elle court à compter de la livraison.',
-        'Ce choix vaut pour toutes les pièces sans exception, quelle que soit leur nature : la Plateforme n’impose aucune garantie minimale et n’en interdit aucune. Une pièce d’usure ou un consommable peut donc être vendu sans garantie comme être couvert par le Vendeur qui le souhaite.',
-        'Une pièce vendue sans garantie n’est pas une pièce vendue sans obligation : l’annonce doit rester exacte, et le socle de reprise s’applique dans tous les cas.',
+        'Le Vendeur s’engage à respecter les garanties standard de la Plateforme, présentées à l’acheteur au moment de l’achat :',
+      ],
+      bullets: [
+        'Retour sous 48 heures si la pièce livrée ne correspond pas à l’annonce (référence, état ou compatibilité erronés).',
+        'Garantie de bon fonctionnement de 30 jours pour les pièces vendues comme fonctionnelles, sauf mention contraire explicite dans l’annonce.',
+        'En cas de non-conformité avérée, le Vendeur prend en charge le remboursement ou l’échange ; la commission correspondante n’est pas due.',
       ],
     },
     {
       number: 7,
-      title: 'Socle de reprise — applicable même sans garantie',
-      paragraphs: [
-        'Quelle que soit la garantie choisie, y compris lorsque la pièce est vendue sans garantie, le Vendeur s’engage à reprendre la pièce et à rembourser l’acheteur dans les cas suivants :',
-      ],
-      bullets: [
-        'La livraison n’a pas pu être effectuée, pour une cause tenant au Vendeur, à la pièce ou à son acheminement.',
-        'L’acheteur a refusé la pièce au moment de la livraison pour non-conformité constatée : pièce différente de l’annonce, référence, état ou compatibilité erronés.',
-        'La non-conformité à l’annonce est signalée dans les 48 heures suivant l’acceptation de la livraison.',
-        'Dans ces cas, la pièce est restituée au Vendeur et la commission correspondante n’est pas due.',
-      ],
-    },
-    {
-      number: 8,
       title: 'Livraison',
       paragraphs: [
         'Le Vendeur prépare la pièce dans les délais convenus et la remet au livreur mandaté ou l’expédie selon le mode choisi pour la commande. Le Vendeur s’engage à un emballage soigné préservant l’intégrité de la pièce.',
@@ -141,7 +94,7 @@ export const VENDOR_CONTRACT: VendorContract = {
       ],
     },
     {
-      number: 9,
+      number: 8,
       title: 'Litiges entre Vendeur et acheteur',
       paragraphs: [
         'En cas de litige, Pièces met à disposition un mécanisme de médiation interne. Le Vendeur s’engage à répondre de bonne foi et dans un délai raisonnable aux demandes ouvertes.',
@@ -149,7 +102,7 @@ export const VENDOR_CONTRACT: VendorContract = {
       ],
     },
     {
-      number: 10,
+      number: 9,
       title: 'Obligations et bonne conduite du Vendeur',
       paragraphs: ['Le Vendeur s’engage à :'],
       bullets: [
@@ -160,7 +113,7 @@ export const VENDOR_CONTRACT: VendorContract = {
       ],
     },
     {
-      number: 11,
+      number: 10,
       title: 'Protection des données personnelles',
       paragraphs: [
         'Les données collectées (identité, contact, coordonnées de paiement) sont traitées pour l’exécution du présent Contrat, conformément à la loi ivoirienne n° 2013-450 relative à la protection des données à caractère personnel.',
@@ -168,7 +121,7 @@ export const VENDOR_CONTRACT: VendorContract = {
       ],
     },
     {
-      number: 12,
+      number: 11,
       title: 'Durée, suspension et résiliation',
       paragraphs: [
         'Le Contrat est conclu pour une durée indéterminée à compter de son acceptation.',
@@ -177,14 +130,14 @@ export const VENDOR_CONTRACT: VendorContract = {
       ],
     },
     {
-      number: 13,
+      number: 12,
       title: 'Évolution des conditions',
       paragraphs: [
         'Pièces peut faire évoluer les présentes conditions. Toute nouvelle version est identifiée par un numéro de version. Le Vendeur en est informé et peut être invité à accepter à nouveau la version mise à jour pour continuer à vendre.',
       ],
     },
     {
-      number: 14,
+      number: 13,
       title: 'Droit applicable et juridiction',
       paragraphs: [
         'Le présent Contrat est régi par le droit ivoirien. À défaut de résolution amiable, tout litige relatif à sa validité, son interprétation ou son exécution relève de la compétence des juridictions d’Abidjan.',
@@ -194,44 +147,4 @@ export const VENDOR_CONTRACT: VendorContract = {
   closing: [
     'Fait pour valoir ce que de droit. L’acceptation électronique du présent Contrat est horodatée et conservée par Pièces à titre de preuve.',
   ],
-}
-
-/**
- * Registre des versions publiées.
- *
- * La version acceptée est figée sur chaque signature : on doit pouvoir rejouer
- * le texte exact qu'un vendeur a lu, et non le texte courant. Toute nouvelle
- * version archive la précédente dans son propre fichier et l'inscrit ici.
- */
-export const VENDOR_CONTRACT_VERSIONS: Record<
-  string,
-  { contract: VendorContract; effectiveDate: string }
-> = {
-  [VENDOR_CONTRACT_VERSION_1_1]: {
-    contract: VENDOR_CONTRACT_1_1,
-    effectiveDate: VENDOR_CONTRACT_EFFECTIVE_DATE_1_1,
-  },
-  [VENDOR_CONTRACT_VERSION]: {
-    contract: VENDOR_CONTRACT,
-    effectiveDate: VENDOR_CONTRACT_EFFECTIVE_DATE,
-  },
-}
-
-/**
- * Texte d'une version donnée. Une version inconnue (contrat émis par un code
- * plus récent, base restaurée…) retombe sur la version courante plutôt que de
- * casser l'affichage ou le PDF.
- */
-export function getVendorContractVersion(version: string | null | undefined): {
-  contract: VendorContract
-  effectiveDate: string
-  version: string
-} {
-  const known = version ? VENDOR_CONTRACT_VERSIONS[version] : undefined
-  if (known) return { ...known, version: version as string }
-  return {
-    contract: VENDOR_CONTRACT,
-    effectiveDate: VENDOR_CONTRACT_EFFECTIVE_DATE,
-    version: VENDOR_CONTRACT_VERSION,
-  }
 }

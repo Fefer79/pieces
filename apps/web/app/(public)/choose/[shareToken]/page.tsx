@@ -8,6 +8,7 @@ import { Price } from '@/components/ui/price'
 import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
 import { PartThumb } from '@/components/ui/part-thumb'
 import { useAuth } from '@/lib/auth-context'
+import { warrantyLabel, RETURN_POLICY, type WarrantyUnit } from 'shared/constants'
 
 interface OrderItem {
   id: string
@@ -18,6 +19,9 @@ interface OrderItem {
   imageThumbUrl: string | null
   vendorShopName: string
   vendorId: string
+  /** Garantie figée à la commande — nulle = vendue sans garantie. */
+  warrantyValue: number | null
+  warrantyUnit: WarrantyUnit | null
 }
 
 interface Order {
@@ -223,10 +227,34 @@ export default function OwnerChoicePage() {
                         {item.category ? ` · ${item.category}` : ''}
                         {item.quantity > 1 ? ` · x${item.quantity}` : ''}
                       </p>
+                      {/* La garantie se décide pièce par pièce : on l'annonce
+                          article par article, sans promesse par défaut. */}
+                      <p
+                        className={`mt-0.5 truncate text-xs ${
+                          warrantyLabel(item.warrantyValue, item.warrantyUnit).hasWarranty
+                            ? 'text-success-fg'
+                            : 'text-muted-2'
+                        }`}
+                      >
+                        {warrantyLabel(item.warrantyValue, item.warrantyUnit).text}
+                      </p>
                     </div>
                     <Price amount={item.priceSnapshot} currency={false} className="text-sm" />
                   </div>
                 ))}
+              </div>
+
+              {/* Ce que l'acheteur obtient même sur une pièce sans garantie. */}
+              <div className="rounded-md border border-border bg-card p-4">
+                <p className="text-sm font-medium text-ink">{RETURN_POLICY.title}</p>
+                <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-muted">
+                  {RETURN_POLICY.points.map((point) => (
+                    <li key={point} className="flex gap-2">
+                      <span aria-hidden className="text-success-fg">✓</span>
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 

@@ -22,7 +22,15 @@ export {
   buildMaintenanceSearchHref,
 } from './maintenance-parts'
 export type { MaintenanceKindKey, MaintenancePartHint } from './maintenance-parts'
-export { WARRANTY_UNITS, warrantyToDays, formatWarranty, isWarrantyUnit } from './warranty'
+export {
+  WARRANTY_UNITS,
+  warrantyToDays,
+  formatWarranty,
+  isWarrantyUnit,
+  resolveWarranty,
+  warrantyLabel,
+  RETURN_POLICY,
+} from './warranty'
 export type { WarrantyUnit } from './warranty'
 export {
   DOWNTIME_COST_PER_DAY,

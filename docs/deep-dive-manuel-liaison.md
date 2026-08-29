@@ -118,7 +118,7 @@ Avant d'aller voir un nouveau vendeur, rassembler les informations suivantes :
 
 L'activation est l'étape qui passe le vendeur du statut PENDING_ACTIVATION à **ACTIVE**. Elle requiert :
 
-- La **signature des garanties vendeur** (responsabilité produit, délais, conditions de retour).
+- L'**acceptation du socle de reprise** (reprise si la livraison échoue, si l'acheteur refuse la pièce à la livraison, ou en cas de non-conformité signalée sous 48 h). La garantie commerciale, elle, reste au choix du vendeur, pièce par pièce.
 - La validation du KYC par un administrateur Pièces.
 
 Tant que le vendeur n'est pas ACTIVE, ses pièces peuvent être ajoutées au catalogue mais les **commandes ne pourront pas être finalisées**.
@@ -250,7 +250,7 @@ Le tableau de bord Liaison (`/liaison`) affiche 4 indicateurs clés :
 | Indicateur | Action attendue |
 |---|---|
 | **Vendeurs** (total) | Voir la croissance du portefeuille |
-| **Vendeurs en attente** | Relancer la signature des garanties / activation KYC |
+| **Vendeurs en attente** | Faire signer le contrat d'adhésion (il active le vendeur) / relancer le KYC |
 | **Pièces saisies** | Voir le rythme d'enrichissement du catalogue |
 | **Commissions à agréer** | **Prioritaire** — faire valider les commissions en attente lors de la prochaine visite |
 

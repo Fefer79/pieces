@@ -7,6 +7,7 @@ import { liaisonFetch, liaisonUpload } from '@/lib/liaison-api'
 import { catalogFetch, catalogUpload } from '@/lib/catalog-api'
 import {
   WARRANTY_UNITS,
+  RETURN_POLICY,
   type WarrantyUnit,
   ABIDJAN_COMMUNES,
   PART_CATALOG,
@@ -888,7 +889,10 @@ export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, 
         </button>
       </Field>
 
-      <Field label="Garantie">
+      <Field
+        label="Garantie"
+        hint="Optionnel — vous fixez la durée sur chaque pièce, ou vous n’accordez aucune garantie."
+      >
         <div className="flex gap-2">
           <input
             type="number"
@@ -910,6 +914,16 @@ export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, 
               <option key={u.value} value={u.value}>{u.label}</option>
             ))}
           </select>
+        </div>
+        {/* Le socle vaut même sans garantie : le vendeur doit le voir au moment
+            où il décide de ne pas en accorder. */}
+        <div className="mt-2 rounded-md border border-border bg-surface p-3">
+          <p className="text-[13px] font-medium text-ink">{RETURN_POLICY.title}</p>
+          <ul className="mt-1.5 space-y-1 text-[12.5px] leading-relaxed text-muted">
+            {RETURN_POLICY.points.map((point) => (
+              <li key={point}>· {point}</li>
+            ))}
+          </ul>
         </div>
       </Field>
 

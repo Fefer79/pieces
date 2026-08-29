@@ -402,11 +402,16 @@ Quelle que soit la méthode de recherche utilisée, les résultats s'affichent s
 
 Sur la page de résultats par véhicule, vous pouvez filtrer par **catégorie** pour affiner les résultats.
 
-### Garanties vendeur
+### Garantie et reprise
 
-Tous les vendeurs actifs sur Pièces ont signé deux garanties obligatoires :
-- **RETURN_48H** : Retour possible dans les 48 heures si la pièce ne convient pas
-- **WARRANTY_30D** : Garantie de fonctionnement pendant 30 jours
+La **garantie commerciale est fixée par le vendeur, pièce par pièce** : une durée en jours, semaines ou mois, ou aucune. Elle est affichée sur la fiche produit et sur le récapitulatif avant paiement — jamais découverte après coup. Une pièce sans garantie l'annonce clairement : « Sans garantie commerciale ».
+
+Quelle que soit cette garantie, le **socle de reprise** vaut sur toute pièce :
+- La livraison n'a pas pu être effectuée
+- Vous refusez la pièce à la livraison parce qu'elle ne correspond pas à l'annonce
+- Vous signalez la non-conformité dans les 48 heures suivant la livraison
+
+Dans ces trois cas, Pièces reprend la pièce et vous rembourse.
 
 ---
 
@@ -533,7 +538,7 @@ Vous ne payez pas ─────────► Pas de remise ─────�
 
 - **Vous voyez la pièce avant de payer** si vous avez choisi le paiement à la remise. C'est la protection la plus directe qui soit : ce qui ne vous convient pas, vous ne le payez pas.
 - **Le prix est verrouillé** à la commande. Il ne peut pas bouger entre la commande et la livraison.
-- **Le retour sous 48 h** reste acquis si la pièce ne correspond pas à l'annonce, et la garantie de bon fonctionnement de 30 jours s'applique sur ce qui est vendu comme fonctionnel.
+- **Le socle de reprise** reste acquis : livraison non effectuée, refus à la livraison, ou non-conformité signalée sous 48 h. Au-delà, seule s'applique la garantie que le vendeur a annoncée sur la pièce.
 - **Si vous avez payé en ligne** et que la pièce ne correspond pas, ouvrez un litige : Pièces reprend la pièce et traite le remboursement avec le vendeur.
 
 ### Consulter l'état de votre paiement
@@ -914,8 +919,9 @@ Body: { whatsapp: true, sms: false, push: true }
 | SLA confirmation vendeur | 45 minutes |
 | Auto-confirmation livraison | 48 heures |
 | Évaluation | 1 à 5 étoiles |
-| Garantie retour | 48 heures (RETURN_48H) |
-| Garantie fonctionnement | 30 jours (WARRANTY_30D) |
+| Socle — reprise à la livraison | Livraison échouée ou refus pour non-conformité (DELIVERY_REFUSAL) |
+| Socle — retour après livraison | 48 heures (RETURN_48H) |
+| Garantie commerciale | Fixée par le vendeur sur chaque pièce, ou aucune |
 
 ### Méthodes de paiement
 
@@ -940,9 +946,9 @@ Body: { whatsapp: true, sms: false, push: true }
 
 ### Q : Les pièces sont-elles garanties ?
 
-**R :** Oui. Tous les vendeurs sur Pièces ont signé deux garanties obligatoires :
-- **RETURN_48H** : Retour gratuit sous 48h si la pièce ne convient pas
-- **WARRANTY_30D** : Garantie de fonctionnement 30 jours
+**R :** Cela dépend de la pièce, et c'est annoncé avant l'achat. Chaque vendeur fixe la garantie qu'il accorde sur chacune de ses pièces — une durée, ou aucune. La fiche produit et le récapitulatif avant paiement affichent toujours ce qu'il en est.
+
+Ce qui ne dépend d'aucun vendeur, c'est le **socle de reprise**, valable sur toute pièce : livraison non effectuée, pièce refusée à la livraison parce qu'elle ne correspond pas à l'annonce, ou non-conformité signalée dans les 48 heures. Dans ces cas, Pièces reprend la pièce et vous rembourse.
 
 ### Q : Mon argent est-il protégé ?
 
@@ -958,7 +964,7 @@ Body: { whatsapp: true, sms: false, push: true }
 
 ### Q : Que faire si la pièce reçue ne correspond pas ?
 
-**R :** Ouvrez un **litige** dans les 48 heures suivant la livraison. Un administrateur Pièces examinera votre cas. Si le litige est résolu en votre faveur, Pièces reprend la pièce et vous rembourse. Vous pouvez aussi exercer votre droit de retour sous 48h (garantie RETURN_48H).
+**R :** Ouvrez un **litige** dans les 48 heures suivant la livraison. Un administrateur Pièces examinera votre cas. Si le litige est résolu en votre faveur, Pièces reprend la pièce et vous rembourse. Vous pouvez aussi exercer votre droit de retour sous 48 h, qui fait partie du socle de reprise dû par tout vendeur.
 
 ### Q : Puis-je annuler une commande ?
 

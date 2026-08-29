@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { VENDOR_CONTRACT, VENDOR_CONTRACT_VERSION } from 'shared/contracts'
+import { VENDOR_CONTRACT_VERSION, getVendorContractVersion } from 'shared/contracts'
 import type { CreateVendorContractInput, AcceptVendorContractInput } from 'shared/validators'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
@@ -141,7 +141,9 @@ export async function getVendorContractByToken(token: string) {
   return {
     ...contract,
     url: contractUrl(token),
-    content: VENDOR_CONTRACT,
+    // Le texte affiché est celui de la version figée sur le contrat : un lien
+    // émis avant une mise à jour se lit et se signe dans sa version d'origine.
+    content: getVendorContractVersion(contract.contractVersion).contract,
   }
 }
 
@@ -200,9 +202,9 @@ export async function acceptVendorContract(
 /**
  * La signature du contrat vaut activation du vendeur.
  *
- * Le contrat porte lui-même les garanties acheteur (article 6 : retour 48 h,
- * garantie 30 jours) — les mêmes que celles signées depuis l'espace vendeur via
- * `signGuarantees`. Sans cette bascule, un vendeur onboardé sur le terrain
+ * Le contrat porte lui-même le socle de reprise (article 7 : livraison non
+ * effectuée, refus à la livraison, non-conformité signalée sous 48 h) — le même
+ * que celui signé depuis l'espace vendeur via `signGuarantees`. Sans cette bascule, un vendeur onboardé sur le terrain
  * resterait en attente d'activation indéfiniment et ses pièces ne sortiraient
  * jamais dans la recherche, qui exige un vendeur ACTIVE.
  *
@@ -220,7 +222,7 @@ async function activateVendorOnSignature(vendorId: string): Promise<boolean> {
     await tx.vendorGuaranteeSignature.createMany({
       data: [
         { vendorId: vendor.id, guaranteeType: 'RETURN_48H' },
-        { vendorId: vendor.id, guaranteeType: 'WARRANTY_30D' },
+        { vendorId: vendor.id, guaranteeType: 'DELIVERY_REFUSAL' },
       ],
       skipDuplicates: true,
     })

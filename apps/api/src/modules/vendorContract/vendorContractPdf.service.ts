@@ -1,5 +1,5 @@
 import PDFDocument from 'pdfkit'
-import { VENDOR_CONTRACT, VENDOR_CONTRACT_EFFECTIVE_DATE } from 'shared/contracts'
+import { getVendorContractVersion } from 'shared/contracts'
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 
@@ -18,9 +18,12 @@ function dateFr(d: Date): string {
 }
 
 /**
- * Génère le PDF du contrat d'adhésion vendeur depuis la source unique
- * (`VENDOR_CONTRACT`). Si le contrat est signé, le bloc signature est rempli ;
- * sinon il reste vierge (à signer en ligne ou à la main).
+ * Génère le PDF du contrat d'adhésion vendeur depuis la source unique.
+ *
+ * Le texte rejoué est celui de la version FIGÉE sur le contrat, pas la version
+ * courante : le PDF d'un contrat signé doit refléter ce que le vendeur a lu.
+ * Si le contrat est signé, le bloc signature est rempli ; sinon il reste vierge
+ * (à signer en ligne ou à la main).
  */
 export async function generateVendorContractPdf(token: string): Promise<Buffer> {
   const contract = await prisma.vendorContract.findUnique({
@@ -40,6 +43,9 @@ export async function generateVendorContractPdf(token: string): Promise<Buffer> 
   if (!contract) {
     throw new AppError('CONTRACT_NOT_FOUND', 404, { message: 'Contrat introuvable' })
   }
+
+  const { contract: VENDOR_CONTRACT, effectiveDate: VENDOR_CONTRACT_EFFECTIVE_DATE } =
+    getVendorContractVersion(contract.contractVersion)
 
   return new Promise<Buffer>((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: MARGIN, bufferPages: true })

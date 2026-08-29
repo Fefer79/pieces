@@ -134,10 +134,17 @@ export default function VendorGuaranteesPage() {
         <div className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
           Vendeur · {data.vendorType === 'FORMAL' ? 'Formel' : 'Informel'}
         </div>
-        <h1 className="mt-1 font-display text-3xl text-ink">Garanties obligatoires</h1>
+        <h1 className="mt-1 font-display text-3xl text-ink">Socle de reprise</h1>
       </div>
-      <p className="mb-6 text-sm text-muted">
-        {data.shopName} — retour sous 48h + garantie 30 jours sur toute pièce vendue. C&apos;est la contrepartie de la confiance que les acheteurs vous accordent.
+      <p className="mb-4 text-sm text-muted">
+        {data.shopName} — la garantie, c&apos;est vous qui la fixez, pièce par pièce, à la
+        publication. Ce que vous acceptez ici est le minimum dû sur toute pièce, y compris
+        celles vendues sans garantie.
+      </p>
+      <p className="mb-6 rounded-md border border-border bg-card p-3 text-[13px] leading-relaxed text-muted">
+        Aucune pièce n&apos;est imposée ni exclue : vous pouvez garantir ce que vous voulez,
+        et vendre sans garantie ce que vous voulez. Le socle ci-dessous s&apos;applique dans
+        tous les cas.
       </p>
 
       <div className="space-y-2.5">
@@ -176,7 +183,7 @@ export default function VendorGuaranteesPage() {
       {isPending && !data.allSigned && (
         <div className="mt-6 space-y-3">
           <Button variant="accent" size="lg" block onClick={handleSign} disabled={signing}>
-            {signing ? 'Signature en cours…' : 'Signer les garanties et activer mon profil'}
+            {signing ? 'Signature en cours…' : 'Accepter le socle et activer mon profil'}
           </Button>
           <Button variant="secondary" block onClick={() => router.push('/profile')}>
             Refuser — mon profil restera inactif
@@ -189,7 +196,7 @@ export default function VendorGuaranteesPage() {
 
       {data.allSigned && (
         <div className="mt-6 rounded-md border border-success-fg/20 bg-success-bg p-4 text-center text-sm font-medium text-success-fg">
-          🛡️ Toutes les garanties sont signées. Votre profil est actif.
+          🛡️ Socle de reprise accepté. Votre profil est actif.
         </div>
       )}
     </div>

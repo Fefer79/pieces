@@ -126,7 +126,7 @@ Depuis le 2026-05-29, le catalogue intègre **3 780 références prix de global-
 ### 4.2 Les sept leviers de pricing à tester
 
 1. **Take rate variable par catégorie de pièce** : marge plus élevée sur ré-usiné/OEM (valeur + garantie) que sur l'occasion importée bas prix. Teste 6% / 8% / 10% par segment.
-2. **Take rate variable par condition** : la garantie Pièces vaut plus cher sur du neuf/OEM. Le chip condition (DESIGN.md) est aussi un signal de pricing.
+2. **Take rate variable par condition** : une pièce neuve/OEM porte plus souvent une garantie vendeur longue, et se valorise davantage. Le chip condition (DESIGN.md) est aussi un signal de pricing.
 3. **Dégressivité abonnement par paliers de flotte** : 1–9 véhicules plein tarif, 10–49 / 50–199 / 200+ dégressifs. Optimiser le point de bascule pour maximiser le revenu total, pas le prix unitaire.
 4. **Engagement vs flexibilité** : remise pour engagement 12 mois (−15%) vs mensuel sans engagement (plein tarif). Vendre la prévisibilité.
 5. **Bundling Pro + FNE-CI** : packager la conformité dans le Pro + plutôt que la facturer à part → augmente l'ARPU et la stickiness.
@@ -228,7 +228,7 @@ Lead → Qualifié (SQL) → Démo → Déploiement initial → Signé → Dépl
 ### 6.4 Combattre le leakage marketplace (disintermediation)
 
 La fuite hors-plateforme est la menace existentielle d'une marketplace. Tactiques :
-- **Garantie Pièces uniquement on-platform** : la pièce achetée hors-plateforme n'est pas garantie. La garantie est la raison de rester.
+- **Socle de reprise uniquement on-platform** : la pièce achetée hors-plateforme n'a ni reprise en cas de non-conformité, ni garantie vendeur opposable. Acheté au comptoir, un désaccord se règle de vive voix ; acheté sur Pièces, il se règle sur pièce écrite. C'est la raison de rester.
 - **Paiement tracé + facture FNE-CI on-platform** : le propriétaire et le DAF veulent la trace fiscale, et l'acheteur veut pouvoir régler à la remise après avoir vu la pièce — deux choses qu'un achat de rue ne donne pas.
 - **Historique et pilotage flotte on-platform** : la valeur du dashboard disparaît si on achète à côté.
 - **Mesure** : taux de ré-achat on-platform par mécanicien/flotte. Une chute signale du leakage à investiguer.

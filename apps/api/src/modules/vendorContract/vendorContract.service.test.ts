@@ -227,7 +227,7 @@ describe('vendorContract.service', () => {
       expect(guarantees.skipDuplicates).toBe(true)
       expect(guarantees.data.map((g: { guaranteeType: string }) => g.guaranteeType)).toEqual([
         'RETURN_48H',
-        'WARRANTY_30D',
+        'DELIVERY_REFUSAL',
       ])
     })
 

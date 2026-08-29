@@ -200,6 +200,56 @@ describe('catalog.service', () => {
       )
     })
 
+    it('enregistre la garantie choisie par le vendeur', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+      mockCatalogItemCreate.mockResolvedValueOnce({ id: 'item-1', status: 'PUBLISHED' })
+
+      await createItem('user-1', {
+        ...validBody,
+        category: 'Démarrage & charge / Alternateur',
+        warrantyValue: 3,
+        warrantyUnit: 'MONTH',
+      })
+
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ warrantyValue: 3, warrantyUnit: 'MONTH' }),
+        }),
+      )
+    })
+
+    it('accepte une garantie sur n’importe quelle pièce, consommables compris', async () => {
+      // Contrat v1.2 art. 6 : aucune famille n'est exclue, le vendeur décide.
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+      mockCatalogItemCreate.mockResolvedValueOnce({ id: 'item-1', status: 'PUBLISHED' })
+
+      await createItem('user-1', {
+        ...validBody,
+        category: 'Filtration / Filtre à huile',
+        warrantyValue: 6,
+        warrantyUnit: 'MONTH',
+      })
+
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ warrantyValue: 6, warrantyUnit: 'MONTH' }),
+        }),
+      )
+    })
+
+    it('normalise une garantie sans unité à « sans garantie »', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1', status: 'ACTIVE' })
+      mockCatalogItemCreate.mockResolvedValueOnce({ id: 'item-1', status: 'PUBLISHED' })
+
+      await createItem('user-1', { ...validBody, warrantyValue: 0, warrantyUnit: 'MONTH' })
+
+      expect(mockCatalogItemCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ warrantyValue: null, warrantyUnit: null }),
+        }),
+      )
+    })
+
     it('throws CATALOG_ITEM_INVALID on invalid body', async () => {
       await expect(createItem('user-1', { name: 'X', condition: 'USED' }))
         .rejects.toMatchObject({ code: 'CATALOG_ITEM_INVALID', statusCode: 422 })

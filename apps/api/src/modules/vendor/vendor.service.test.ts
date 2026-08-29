@@ -206,7 +206,7 @@ describe('vendor.service', () => {
         status: 'ACTIVE',
         guaranteeSignatures: [
           { id: 'sig-1', guaranteeType: 'RETURN_48H', signedAt: new Date() },
-          { id: 'sig-2', guaranteeType: 'WARRANTY_30D', signedAt: new Date() },
+          { id: 'sig-2', guaranteeType: 'DELIVERY_REFUSAL', signedAt: new Date() },
         ],
       })
 
@@ -218,7 +218,7 @@ describe('vendor.service', () => {
         expect.objectContaining({
           data: expect.arrayContaining([
             expect.objectContaining({ guaranteeType: 'RETURN_48H' }),
-            expect.objectContaining({ guaranteeType: 'WARRANTY_30D' }),
+            expect.objectContaining({ guaranteeType: 'DELIVERY_REFUSAL' }),
           ]),
         }),
       )
@@ -258,7 +258,9 @@ describe('vendor.service', () => {
   })
 
   describe('getGuaranteeStatus', () => {
-    it('returns guarantee status with signed guarantees', async () => {
+    it('considère le socle couvert pour un vendeur signataire de la v1.1', async () => {
+      // Ces vendeurs ont signé RETURN_48H + WARRANTY_30D : on ne les renvoie pas
+      // signer un socle qu'ils ont déjà accepté sous une autre forme.
       mockVendorFindUnique.mockResolvedValueOnce({
         id: 'vendor-1',
         shopName: 'Test Shop',
@@ -267,6 +269,23 @@ describe('vendor.service', () => {
         guaranteeSignatures: [
           { id: 'sig-1', guaranteeType: 'RETURN_48H', signedAt: new Date() },
           { id: 'sig-2', guaranteeType: 'WARRANTY_30D', signedAt: new Date() },
+        ],
+      })
+
+      const result = await getGuaranteeStatus('user-1')
+
+      expect(result.allSigned).toBe(true)
+    })
+
+    it('returns guarantee status with signed guarantees', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({
+        id: 'vendor-1',
+        shopName: 'Test Shop',
+        vendorType: 'FORMAL',
+        status: 'ACTIVE',
+        guaranteeSignatures: [
+          { id: 'sig-1', guaranteeType: 'RETURN_48H', signedAt: new Date() },
+          { id: 'sig-2', guaranteeType: 'DELIVERY_REFUSAL', signedAt: new Date() },
         ],
       })
 

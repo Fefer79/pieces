@@ -106,6 +106,8 @@ async function buildOrderItems(qtyById: Map<string, number>) {
       vendorId: true,
       commissionAmount: true,
       stockQuantity: true,
+      warrantyValue: true,
+      warrantyUnit: true,
       vendor: { select: { id: true, shopName: true, status: true } },
     },
   })
@@ -140,6 +142,9 @@ async function buildOrderItems(qtyById: Map<string, number>) {
     quantity: qtyById.get(item.id) ?? 1,
     condition: item.condition,
     partSource: item.partSource,
+    // Snapshot de la garantie : ce qui a été promis à l'achat reste opposable.
+    warrantyValue: item.warrantyValue,
+    warrantyUnit: item.warrantyUnit,
     commissionAmount: item.commissionAmount,
     imageThumbUrl: item.imageThumbUrl,
   }))
