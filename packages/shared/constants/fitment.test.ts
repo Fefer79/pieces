@@ -64,14 +64,64 @@ describe('extractFitmentsFromName', () => {
     ])
   })
 
-  it('reconnaît un modèle connu du catalogue, ignore les codes inconnus', () => {
+  it('reconnaît un modèle connu du catalogue', () => {
     expect(extractFitmentsFromName('Disque Hyundai Tucson')).toEqual([
       { brand: 'HYUNDAI', model: 'Tucson', yearFrom: null, yearTo: null },
     ])
-    // « E46 » n'est pas un modèle du catalogue → marque seule.
+  })
+
+  it('résout les codes châssis BMW et les désignations Mercedes', () => {
     expect(extractFitmentsFromName('Moteur BMW E46')).toEqual([
-      { brand: 'BMW', model: null, yearFrom: null, yearTo: null },
+      { brand: 'BMW', model: 'Serie 3', yearFrom: null, yearTo: null },
     ])
+    expect(extractFitmentsFromName('Filtre à air Mercedes W203')[0]?.model).toBe('Classe C')
+    expect(extractFitmentsFromName('Filtre à Huile Mercedes C Class Court')[0]?.model).toBe('Classe C')
+    expect(extractFitmentsFromName('Volant Mercedes GLE')[0]?.model).toBe('Classe GLE')
+  })
+
+  it('ignore espaces, tirets et typos dans le nom de modèle', () => {
+    // Le modèle DOIT être trouvé : un fitment marque seule matcherait tous les
+    // modèles de la marque (une Ertiga verrait les pièces de Baleno).
+    expect(extractFitmentsFromName('Filtre à air Suzuki S presso')[0]?.model).toBe('S-PRESSO')
+    expect(extractFitmentsFromName('Filtre à huile Suzuki C Claz')[0]?.model).toBe('CIAZ')
+    expect(extractFitmentsFromName('Filtre à Air Hyundai Santafe')[0]?.model).toBe('SANTA FE')
+    expect(extractFitmentsFromName('Plaquettes avant Honda CRV 3')[0]?.model).toBe('CR-V')
+    expect(extractFitmentsFromName('Plaquettes Isuzu Dmax')[0]?.model).toBe('D-Max')
+  })
+
+  it('capture le mot qui suit la marque quand le modèle est inconnu', () => {
+    // « Obama » ne figure à aucun référentiel, mais désigne un véhicule précis :
+    // mieux vaut un fitment trop étroit qu'une pollution de tous les Toyota.
+    expect(extractFitmentsFromName('Filtre à air Toyota Obama 2kD')).toEqual([
+      { brand: 'TOYOTA', model: 'OBAMA', yearFrom: null, yearTo: null },
+    ])
+  })
+
+  it('ne devine aucun modèle sur un titre multi-marques', () => {
+    // « BAIC » et « SAMSUNG » suivent une marque mais n'en sont pas un modèle :
+    // sur une pièce annoncée pour cinq marques, le repli est désactivé.
+    expect(
+      extractFitmentsFromName("Bougie D'Allumage - TOYOTA / NISSAN / BAIC / RENAULT / SAMSUNG")
+        .every((f) => f.model === null),
+    ).toBe(true)
+  })
+
+  it('ne capture pas le vocabulaire pièce comme un modèle', () => {
+    expect(extractFitmentsFromName('Filtre à Huile Peugeot Queue Courte')[0]?.model).toBeNull()
+    expect(extractFitmentsFromName('Suzuki pièces détachées')[0]?.model).toBeNull()
+    expect(extractFitmentsFromName('Jantes Toyota 15 pouces')[0]?.model).toBeNull()
+    expect(extractFitmentsFromName('Filtre à Air Mercedes 5 Cylindres')[0]?.model).toBeNull()
+  })
+
+  it('extrait tous les modèles cités, pour chaque marque', () => {
+    expect(
+      extractFitmentsFromName('Filtre à huile Toyota 90915-YZZE1 compatible avec Corolla, Yaris, Camry et RAV4')
+        .map((f) => f.model),
+    ).toEqual(['Corolla', 'Yaris', 'Camry', 'Rav4'])
+    expect(
+      extractFitmentsFromName('FILTRE A AIR POUR FORD RANGER, MAZDA BT-50 ET TOYOTA FORTUNER')
+        .map((f) => `${f.brand}/${f.model}`),
+    ).toEqual(['FORD/Ranger', 'MAZDA/BT50', 'TOYOTA/Fortuner'])
   })
 
   it('gère les alias et fautes de frappe (Mercedes / Range Rover / Huyndai)', () => {

@@ -1,6 +1,8 @@
-// AUTO-GÉNÉRÉ — ne pas éditer à la main.
-// Catalogue véhicules figé depuis la base de données.
-// Régénérer : pnpm -F ingest export:vehicles
+// Référentiel véhicules curé — édité à la main.
+// (Anciennement auto-généré depuis la base scrapée ; `pnpm -F ingest export:vehicles`
+//  est désactivé par défaut et écraserait le curage — voir export-vehicles-data.ts.)
+// Les modèles listés ici pilotent le filtrage de compatibilité (fitments) :
+// un modèle absent du référentiel ne peut pas être reconnu dans un titre d'annonce.
 export default {
   "ALFA ROMEO": {
     "models": {
@@ -80,13 +82,29 @@ export default {
   },
   "BMW": {
     "models": {
+      "Serie 1": {
+        "years": [2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "Serie 2": {
+        "years": [2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "Serie 3": {
         "years": [1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013],
         "engines": ["316 i 1.6 102c v","316 i 1.6 16V 115c v","316 i 1.8 16V 115c v","316 i 1.8 i 16V 115c v Boite auto","316 i 1.9 i 105c v","316 i 1.9 i 105c v Boite auto","316i 1.6 i 16 V 116 cv","316i 1.6 i 16 V 116 cv Boite auto","316i 1.6 i 16 V 122 cv","316i 1.6 i 16 V 122 cv Boite auto","316ti 1.6 i 16 V 105 cv","316ti 1.6 i 16 V 115 cv","316ti 1.8 i 16 V 115 cv Boite auto","318 i 1.9 i 118c v","318 i 1.9 i 118c v Boite auto","318 i 1.9 i 16V 143c v","318 i 2.0 i 16V 136c v","318 i 2.0 i 16V 143c v","318 i 2.0 i 16V 143c v Boite auto","318 i 2.0 i 16V 150c v","318 i 2.0 i 16V 150c v Boite auto","318d 2.0 d 16V (204D1) 115 c v Boite auto","318d 2.0 d 16V (204D1) 115 cv","318d 2.0 d 16V (204D4) 115c v","318d 2.0 d 16V (204D4) 115c v Boite auto","318d 2.0 TD 16 V 115 cv","318ti 2.0 i 16 V 136 cv","318ti 2.0 i 16 V 143 cv","318ti 2.0 i 16 V 143 cv Boite auto","320d 2.0 TD 16 V 150 cv Boite auto","320d 2.0 TD 16 V BVM5 150 cv","320d 2.0 TD 16 V BVM6 150 cv","320d 2.0 TD 16V 130c v","320d 2.0 TD 16V 132c v","320d 2.0 TD 16V 136c v","320d 2.0 TD 16V 136c v Boite auto","320d 2.0 TD 16V 150c v Boite auto","320d 2.0 TD 16V BVM5 150c v","320d 2.0 TD 16V BVM6 150c v","320i 2.0 i 24V 150c v","320i 2.0 i 24V 150c v Boite auto","320i 2.2 i 24V 163c v","320i 2.2 i 24V 163c v Boite auto","320i 2.2 i 24V 170c v","320i 2.2 i 24V 170c v Boite auto","323i 2.5 i 24V 170c v","323i 2.5 i 24V 170c v Boite auto","325i 2.5 i 24V 192c v","325i 2.5 i 24V 192c v Boite auto","325i 2.5 i 24V 211 c v","325i 2.5 i 24V 211 c v Boite auto","325i 2.5 i 24V 218 c v","325i 2.5 i 24V 218 c v Boite auto","325ti 2.5 i 24 V 192 cv","325ti 2.5 i 24 V 192 cv Boite auto","325ti 2.5 i 24 V SMG 192 cv Boite auto","325xi 2.5 i 24V 192c v","325xi 2.5 i 24V 192c v Boite auto","328i 2.8 i 24V 193c v","328i 2.8 i 24V 193c v Boite auto","330d 3.0 TD 24V 163c v","330d 3.0 TD 24V 163c v Boite auto","330d 3.0 TD 24V 184c Boite auto","330d 3.0 TD 24V 184c v","330d 3.0 TD 24V 204 c v","330d 3.0 TD 24V 204 c v Boite auto","330i 3.0 i 24V 231c v","330i 3.0 i 24V 231c v Boite auto","330xd 3.0 TD 24V 184 c v","330xd 3.0 TD 24V 184 c v Boite auto","330xd 3.0 TD 24V 204 c v","330xd 3.0 TD 24V 204 c v Boite auto","330xi 3.0 i 24V 231c v","330xi 3.0 i 24V 231c v Boite auto"]
       },
+      "Serie 4": {
+        "years": [2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "Serie 5": {
         "years": [2009,2010,2011,2012,2013],
         "engines": ["520 d 2.0 d DPF 16 V 163 cv Boite auto","520 d 2.0 d DPF 16 V 184 cv Boite auto","530 d 3.0 d DPF 24 V 258 c v Boite auto","530 d 3.0 d DPF 24 V BluePerformance 258 c v Boite auto","530 d 3.0 d xDrive 24 V BluePerformance 245 c v Boite auto","530d xDrive 3.0 d DPF 24 V 258 c v Boite auto","535d 3.0 d DPF 24 V 300 c v Boite auto","535d 3.0 d DPF 24 V 313 c v Boite auto","535d 3.0 d DPF xDrive 24 V 300 c v Boite auto","535d 3.0 d DPF xDrive 24 V 313 c v Boite auto","535I 3.0 24 V 306 cv Boite auto","535I 3.0 i xDrive 24 V 306 cv Boite auto"]
+      },
+      "Serie 6": {
+        "years": [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
       },
       "Série 7": {
         "years": [2001,2002,2003,2004,2005,2006,2007,2008],
@@ -396,6 +414,10 @@ export default {
         "years": [2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
         "engines": ["1.5L Ecoboost 16V 133 KW","1.6L L4 DOHC 16V FWD","2.3i L DOHC 16V )153HP 114KW) 2261 cc"]
       },
+      "Explorer": {
+        "years": [1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "Fiesta": {
         "years": [2012,2013,2014,2015,2016,2017],
         "engines": ["1.0 SCi 12V 65 cv","1.0 SCi 12V 80 c v","1.0 SCi 12V 80 cv","1.0 SCi 12V S&S 65 c v","1.0 SCi 12V S&S 65 cv","1.0 SCi 12V S&S 80 c v","1.0 SCi 12V S&S 80 cv","1.0 SCTI EcoBosst 12V 100 c v","1.0 SCTi EcoBosst 12V 100 cv","1.0 SCTI EcoBosst 12V PowerShift (Boite pilotée) S&S 100 c v","1.0 SCTi EcoBosst 12V Powershift (boite pilotée) S&S 100 cv","1.0 SCTI EcoBosst 12V PowerShift 100 c v Boite auto","1.0 SCTi EcoBosst 12V Powershift 100 cv Boite auto","1.0 SCTI EcoBosst 12V S&S 100 c v","1.0 SCTi EcoBosst 12V S&S 100 cv","1.0 SCTI EcoBosst 12V S&S 125 c v","1.0 SCTi EcoBosst 12V S&S 125 cv","1.0 SCTi EcoBosst 12V S&S 140 cv","1.0 SCTI EcoBosst 12V S&S 140c v","1.4 16V Flexifuel 96 cv","1.5 TDCI 75 c v","1.5 TDCI 95 c v","1.5 TDCI ECOnetic S&S 95 c v","1.6 TDCi 95 cv"]
@@ -616,6 +638,10 @@ export default {
   },
   "ISUZU": {
     "models": {
+      "D-Max": {
+        "years": [2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "Pick-up": {
         "years": [1980,1981,1982,1983,1984,1985,1986,1987,1988],
         "engines": ["2.0 Vehicule commercial","2.2 D 72 cv (VU) Vehicule commercial","2.5 TD 73 cv Vehicule commercial"]
@@ -935,6 +961,14 @@ export default {
       "Classe S": {
         "years": [2013,2014,2015,2016,2017,2018,2019,2020],
         "engines": ["560 4.0 i V8 32V 4MATIC 9G-TRONIC 469 c v Boite auto","560 4.0 i V8 32V 9G-TRONIC 469 c v Boite auto","63 5.5 ti V8 4MATIC 32 Speedshift MCT 585 cv Boite auto","63 AMG 5.5 Ti V8 32V SPEEDSHIFT MCT 585 cv Boite auto"]
+      },
+      "Sprinter": {
+        "years": [1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "Vito": {
+        "years": [1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
       }
     }
   },
@@ -943,6 +977,10 @@ export default {
       "ASX": {
         "years": [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021],
         "engines": ["1.6 i MIVEC 16V 2WD 115 cv","1.6 i MIVEC 16V 2WD 115 CV","1.6 i MIVEC 16V 4WD ClearTec/AS&G 115 CV","1.8 DI-D 16V DPF HP 2WD 150 CV","1.8 DI-D 16V DPF HP 2WD CLEAR TEC/AS&G 115 CV","1.8 DI-D 16V DPF HP 2WD CLEAR TEC/AS&G 150 CV","1.8 DI-D 16V DPF HP 4WD CLEAR TEC/AS&G 115 CV","1.8 DI-D 16V DPF HP 4WD CLEAR TEC/AS&G 150 CV","1.8 i MIVEC 16V 4WD S-CVT 140 CV BOITE AUTO","1.8 i MIVEC 16V S-CVT 139 cv Boîte auto","2.0 i MIVEC 16V 2WD 150 cv","2.0 i MIVEC 16V 2WD ClearTec/AS&G 150 CV","2.0 i MIVEC 16V 4WD 150 CV","2.0 i MIVEC 16V 4WD S-CVT 150 CV BOITE AUTO","2.0 i MIVEC 16V 4WD S-CVT 150 cv Boîte auto","2.0 i S-MIVEC 16V 2WD 150 cv","2.0 i S-MIVEC 16V 2WD ASG 150 cv","2.0 i S-MIVEC 16V 2WD CVT ASG 150 cv Boîte auto","2.0 i S-MIVEC 16V 4WD CVT ASG 150 cv Boîte auto","FOURGON 1.8 DI-D 16V DPF HP 4WD 150 CV VEHICULE COMMERCIAL"]
+      },
+      "Canter": {
+        "years": [1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
       },
       "Challenger": {
         "years": [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
@@ -1224,6 +1262,14 @@ export default {
   },
   "RENAULT": {
     "models": {
+      "Captur": {
+        "years": [2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "Clio": {
+        "years": [1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "DUSTER": {
         "years": [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
         "engines": []
@@ -1236,6 +1282,10 @@ export default {
         "years": [1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009],
         "engines": ["1.2 i 16V 75CV VEHICULE COMMERCIAL","1.2 i 55 CV VEHICULE COMMERCIAL","1.2 i 55CV VEHICULE COMMERCIAL","1.2 i 58CV VEHICULE COMMERCIAL","1.2 i 60 CV VEHICULE COMMERCIAL","1.2 i 60CV VEHICULE COMMERCIAL","1.2 i 75 CV VEHICULE COMMERCIAL","1.2 i GPL 60CV VEHICULE COMMERCIAL","1.4 i 75 CV VEHICULE COMMERCIAL","1.4 i 75CV BOITE AUTO VEHICULE COMMERCIAL","1.4 i 75CV VEHICULE COMMERCIAL","1.5 DCi 57CV VEHICULE COMMERCIAL","1.5 DCi 61CV VEHICULE COMMERCIAL","1.5 DCi 65 CV VEHICULE COMMERCIAL","1.5 DCi 65CV VEHICULE COMMERCIAL","1.5 DCi 68 CV VEHICULE COMMERCIAL","1.5 DCi 80 CV VEHICULE COMMERCIAL","1.5 DCi 85 CV VEHICULE COMMERCIAL","1.5 DCi CU+ 80CV VEHICULE COMMERCIAL","1.6 i 16V 4X4 95CV VEHICULE COMMERCIAL","1.6 i 90CV VEHICULE COMMERCIAL","1.9 D 55CV VEHICULE COMMERCIAL","1.9 D 65 CV VEHICULE COMMERCIAL","1.9 D 65CV VEHICULE COMMERCIAL","1.9 DCi 4X4 80CV VEHICULE COMMERCIAL","1.9 DCi 80 CV 4X4 VEHICULE COMMERCIAL","1.9 DTi 80CV VEHICULE COMMERCIAL","1.9 DTi 82 CV VEHICULE COMMERCIAL","1.9 DTi 82CV VEHICULE COMMERCIAL","ELECT ROAD 30CV VEHICULE COMMERCIAL","ELECT ROAD 39CV VEHICULE COMMERCIAL"]
       },
+      "Kwid": {
+        "years": [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "Laguna": {
         "years": [2001,2002,2003,2004,2005],
         "engines": []
@@ -1244,9 +1294,33 @@ export default {
         "years": [2010,2011,2012,2013,2014,2015],
         "engines": ["1.5 DCi FAP 110CV","2.0 DCi FAP 16V 172 CV BOITE AUTO","2.0 DCi FAP 16V 173 CV","2.0 DCi FAP 16V 173 CV BOITE AUTO","2.0 DCi FAP 16V 178 CV","2.0 DCi FAP 16V 178 CV BOITE AUTO","2.0 DCi FAP 16V ECO2 150 CV","2.0 DCi FAP 16V S&S 150 CV","3.0 DCi FAP V6 24V 241 CV BOITE AUTO"]
       },
+      "Logan": {
+        "years": [2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "Master": {
+        "years": [1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "Megane": {
         "years": [1999,2000,2001,2002,2003,2004,2005,2006,2007,2008],
         "engines": ["1.6L L4 DOHC16V FWD","2.0 ide 16V 140cv"]
+      },
+      "Sandero": {
+        "years": [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "Scenic": {
+        "years": [1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "Symbol": {
+        "years": [1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "Trafic": {
+        "years": [1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
       }
     }
   },
@@ -1272,6 +1346,22 @@ export default {
         "years": [2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
         "engines": ["0.7 4WD 4x4 (38 KW, 52 CH) 658 cc (03/2013 - 12/2014)","1.0 (49 KW, 67 CH) 996 cc (10/2012 - ...)","1.0 (AMF310) (50 KW, 68 CH) 996 cc (01/2009 – …)","1.0 LPG (50 KW, 68 CH) 996 cc (04/2009 - ...)"]
       },
+      "APV": {
+        "years": [2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "BALENO": {
+        "years": [2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "CELERIO": {
+        "years": [2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "CIAZ": {
+        "years": [2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "DZIRE": {
         "years": [2018,2019,2020,2021,2022,2023,2024,2025,2026],
         "engines": ["1.2 K12M VVT 16V 83 CV","1.2 K12N Dualjet 16V 90 CV","1.2 K12N Dualjet CNG (gaz)","1.2 Z12E 12V 80 CV","1.3 D13A DDiS 16V 75 CV (diesel)"]
@@ -1284,6 +1374,26 @@ export default {
         "years": [2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
         "engines": ["1.9 DDiS BREAK 4WD 129 CV.","2.4 VVT 16V BREAK 4WD 166 CV","2.4 VVT 16V BREAK 4WD 166 CV BOITE AUTO","2.4 VVT 16V BREAK 4WD 166 CV BOITE AUTO.","2.4 VVT 16V BREAK 4WD 166 CV.","2.4 VVT 16V BREAK 4WD 169 CV","2.4 VVT 16V BREAK 4WD 169 CV BOITE AUTO","2.7 i V6 24V BREAK 4WD 173 CV","2.7 i V6 24V BREAK 4WD 173 CV BOITE AUTO","2.7 i V6 24V BREAK 4WD 184 CV","2.7 i V6 24V BREAK 4WD 184 CV BOITE AUTO","3.2 VVT 24V BREAK 4WD 233 CV BOITE AUTO"]
       },
+      "IGNIS": {
+        "years": [2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "JIMNY": {
+        "years": [1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "S-PRESSO": {
+        "years": [2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "SPLASH": {
+        "years": [2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "SUPER CARRY": {
+        "years": [2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "SWIFT": {
         "years": [2010,2011,2012,2013,2014,2015,2016,2017,2020,2021,2022,2023,2024,2025,2026],
         "engines": ["1.2 DUALJET 16V HYBRID SHVS ALLGRIP 83CV","1.2 VVT 16V 4WD 94 CV","1.2 VVT 4X4 16V 94 CV","1.6 VVT 16V 136 CV."]
@@ -1294,6 +1404,14 @@ export default {
       },
       "VITARA": {
         "years": [2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "WAGON R": {
+        "years": [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
+      "XL7": {
+        "years": [2019,2020,2021,2022,2023,2024,2025,2026],
         "engines": []
       }
     }
@@ -1376,6 +1494,10 @@ export default {
         "years": [1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
         "engines": ["2.8 D-4D Break 16V 177 cv","2.8 D-4D Break 16V 177 cv Boîte auto","3.0 D-4D Break 163 cv (KDJ)","3.0 D-4D Break 163 cv (KDJ) Boîte auto","3.0 D-4D Break 166 cv (KDJ)","3.0 D-4D Break 166 cv (KDJ) Boîte auto","3.0 D-4D Break 16V 204 cv","3.0 D-4D Break 16V 204 cv Boîte auto","3.0 D-4D Break 173 cv (KDJ)","3.0 D-4D Break 173 cv (KDJ) Boîte auto","3.0 D-4D Break 173-cv (KDJ)","3.0 D-4D Break 173-cv (KDJ) Boîte auto","3.0 D-4D DPF Break 16V 190 cv (KDJ)","3.0 D-4D DPF Break 16V 190 cv (KDJ) Boîte auto","3.0 D4-D Break 163cv (KDJ)","3.0 D4-D Break 163cv (KDJ) Boîte auto","3.0 TD Break 125 cv (KZJ)","3.0 TD Break 125 cv (KZJ) boîte auto","3.0 TD Break Colorado 125 cv (KZJ)","3.0 TD Break Colorado 125 cv (KZJ) boîte auto","3.4 i V6 Break 178 cv (VZJ)","3.4 i V6 Break 178 cv (VZJ) Boîte auto","3.4 i V6 Break Colorado 178 cv (VZJ) Boîte auto","4.0 VVTi Break 249 cv (GRJ) Boîte auto","4.0 VVTi V6 Break 24V 249 cv (GRJ) Boîte auto","4.0 VVTi V6 Break 24V Automatic 286 cv Boîte auto","4.5 D-4D V8 32 272 cv Boîte auto","4.5 D-4D V8 32 286 cv (VDJ) Boîte auto","4.7 VVT-i V8 32 288 cv (UZJ) Boîte auto","4.7 VVT-i V8 32V 318 cv Boîte auto","4.7 VVT-i V8 32V Automatic 275 cv Boîte auto","Van 3.0 D-4D DPF Break 16V 190 cv","Van 3.0 D-4D DPF Break 16V Automatic 190 cv Boîte auto Véhicule Commercial"]
       },
+      "Land Cruiser Prado": {
+        "years": [1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
+      },
       "MATRI X": {
         "years": [2002,2003,2004,2005,2006,2007],
         "engines": ["1.8 4WD 4x4 (91 KW, 124 CH) 1794 cc","1.8 VVTi (96 KW, 131 CH) 1794 cc","1.8 VVTi (97 KW, 132 CH) 1794 cc","1.8 ZZE137 (140 KW, 190 CH) 1796 cc"]
@@ -1391,6 +1513,10 @@ export default {
       "Proace": {
         "years": [2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
         "engines": ["1.6 D-4D MMT 95 cv Boite auto","2.0 D-4D 150 cv Boite auto","2.0 D-4D BVA6 177 cv Boite auto","L0 1.5 D-4D 102 cv","L0 1.5 D-4D 120 cv","Lo 1.5 1.6 D-4D 95 cv"]
+      },
+      "Probox": {
+        "years": [2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
       },
       "Pruis Plus": {
         "years": [2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
@@ -1439,6 +1565,10 @@ export default {
       "Golf": {
         "years": [1999,2000,2001,2002,2003,2004,2005,2006],
         "engines": ["1.6 FSi 16 V 100c v","1.6 i 1 02 c v","1.6 i 1 02 c v Boite auto","1.6 i 100c v Boite auto","1.6 i 105c v","1.6 i 16 V 105c v"]
+      },
+      "Jetta": {
+        "years": [1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],
+        "engines": []
       },
       "Multivan": {
         "years": [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2021,2022,2023,2024,2025,2026],
