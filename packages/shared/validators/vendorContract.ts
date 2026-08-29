@@ -10,6 +10,11 @@ export const createVendorContractSchema = z.object({
   vendorId: z.string().uuid().optional(),
 })
 
+/** Filtre de la liste des contrats émis. */
+export const listVendorContractsQuerySchema = z.object({
+  vendorId: z.string().uuid().optional(),
+})
+
 /** Paramètre de route : le token du lien. */
 export const vendorContractTokenParamsSchema = z.object({
   token: z.string().min(10).max(120),
@@ -24,4 +29,5 @@ export const acceptVendorContractSchema = z.object({
 })
 
 export type CreateVendorContractInput = z.infer<typeof createVendorContractSchema>
+export type ListVendorContractsQuery = z.infer<typeof listVendorContractsQuerySchema>
 export type AcceptVendorContractInput = z.infer<typeof acceptVendorContractSchema>

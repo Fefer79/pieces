@@ -10,6 +10,8 @@ vi.stubEnv('WEB_BASE_URL', 'https://pieces.ci')
 const mockVendorFindUnique = vi.fn()
 const mockContractCreate = vi.fn()
 const mockContractFindUnique = vi.fn()
+const mockContractFindFirst = vi.fn()
+const mockContractFindMany = vi.fn()
 const mockContractUpdate = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
@@ -20,20 +22,27 @@ vi.mock('../../lib/prisma.js', () => ({
     vendorContract: {
       create: (...args: unknown[]) => mockContractCreate(...args),
       findUnique: (...args: unknown[]) => mockContractFindUnique(...args),
+      findFirst: (...args: unknown[]) => mockContractFindFirst(...args),
+      findMany: (...args: unknown[]) => mockContractFindMany(...args),
       update: (...args: unknown[]) => mockContractUpdate(...args),
     },
   },
 }))
 
-const { createVendorContract, getVendorContractByToken, acceptVendorContract } = await import(
-  './vendorContract.service.js'
-)
+const {
+  createVendorContract,
+  listVendorContracts,
+  getVendorContractByToken,
+  acceptVendorContract,
+} = await import('./vendorContract.service.js')
 const { generateVendorContractPdf } = await import('./vendorContractPdf.service.js')
 const { VENDOR_CONTRACT_VERSION } = await import('shared/contracts')
 
 describe('vendorContract.service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Par défaut : aucun contrat en attente pour le vendeur visé.
+    mockContractFindFirst.mockResolvedValue(null)
   })
 
   describe('createVendorContract', () => {
@@ -95,6 +104,44 @@ describe('vendorContract.service', () => {
       })
       const result = await createVendorContract('admin-1', { sellerName: 'X', vendorId: 'v1' }, ['ADMIN'])
       expect(result.token).toBe('abcdef0123456789')
+    })
+
+    it('réutilise le lien en attente d’un vendeur au lieu d’en créer un second', async () => {
+      // Terrain : deux appuis sur « Générer le contrat » ne doivent pas laisser
+      // deux liens vivants pour la même boutique.
+      mockVendorFindUnique.mockResolvedValue({ id: 'v1', managedByLiaisonId: 'liaison-1' })
+      mockContractFindFirst.mockResolvedValue({
+        id: 'c0', token: 'deadbeefdeadbeef', contractVersion: VENDOR_CONTRACT_VERSION,
+        status: 'PENDING', vendorId: 'v1', sellerName: 'X', shopName: null, phone: null,
+        signedName: null, signedAt: null, createdAt: new Date(),
+      })
+      const result = await createVendorContract('liaison-1', { sellerName: 'X', vendorId: 'v1' }, ['LIAISON'])
+      expect(mockContractCreate).not.toHaveBeenCalled()
+      expect(result.url).toBe('https://pieces.ci/vendeur/contrat/deadbeefdeadbeef')
+    })
+  })
+
+  describe('listVendorContracts', () => {
+    it('restreint une liaison à ses contrats et à ses vendeurs', async () => {
+      mockContractFindMany.mockResolvedValue([])
+      await listVendorContracts('liaison-1', { scopeToCreator: true, vendorId: 'v1' })
+      const where = mockContractFindMany.mock.calls[0][0].where
+      expect(where.vendorId).toBe('v1')
+      expect(where.OR).toEqual([
+        { createdById: 'liaison-1' },
+        { vendor: { managedByLiaisonId: 'liaison-1' } },
+      ])
+    })
+
+    it('ne filtre pas pour un membre d’équipe habilité et expose l’URL publique', async () => {
+      mockContractFindMany.mockResolvedValue([
+        { id: 'c1', token: 'abcdef0123456789', contractVersion: VENDOR_CONTRACT_VERSION,
+          status: 'ACCEPTED', vendorId: 'v1', sellerName: 'X', shopName: null, phone: null,
+          signedName: 'X', signedAt: new Date(), createdAt: new Date() },
+      ])
+      const result = await listVendorContracts('commercial-1', { scopeToCreator: false })
+      expect(mockContractFindMany.mock.calls[0][0].where.OR).toBeUndefined()
+      expect(result[0].url).toBe('https://pieces.ci/vendeur/contrat/abcdef0123456789')
     })
   })
 

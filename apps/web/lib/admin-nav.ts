@@ -53,6 +53,11 @@ export const ADMIN_NAV: AdminNavSection[] = [
       { href: '/admin/crm', label: 'CRM', capability: 'crm:read' },
       { href: '/admin/clients', label: 'Clients', capability: 'erp:admin' },
       { href: '/admin/vendors', label: 'Vendeurs', capability: 'erp:admin' },
+      // Émission et suivi des contrats d'adhésion : outil de terrain du
+      // commercial, donc ouvert par `crm:write` — pas réservé à `erp:admin`.
+      // L'écran existe pour émettre (POST gardé par `crm:write`) ; un profil en
+      // lecture seule sur le CRM n'y ferait rien, on ne le lui montre pas.
+      { href: '/admin/contrats-vendeurs', label: 'Contrats vendeurs', capability: 'crm:write' },
       { href: '/admin/enterprises', label: 'Entreprises', capability: 'erp:admin' },
       { href: '/admin/prospection', label: 'Prospection', capability: 'crm:read' },
       { href: '/admin/marketing', label: 'Marketing', capability: 'crm:read' },

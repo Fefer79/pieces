@@ -10,8 +10,8 @@ describe('ADMIN_NAV', () => {
     expect(new Set(hrefs).size).toBe(hrefs.length)
   })
 
-  it('couvre les 19 écrans du back-office', () => {
-    expect(ADMIN_NAV.flatMap((s) => s.items)).toHaveLength(19)
+  it('couvre les 20 écrans du back-office', () => {
+    expect(ADMIN_NAV.flatMap((s) => s.items)).toHaveLength(20)
   })
 
   it('n’a pas de section vide', () => {
@@ -22,7 +22,7 @@ describe('ADMIN_NAV', () => {
 describe('navForCapabilities', () => {
   it('montre tout à qui a toutes les capacités', () => {
     const nav = navForCapabilities(ALL)
-    expect(nav.flatMap((s) => s.items)).toHaveLength(19)
+    expect(nav.flatMap((s) => s.items)).toHaveLength(20)
   })
 
   it('ouvre les écrans à double public à un membre DIRECTION sans Role.ADMIN', () => {
@@ -58,6 +58,24 @@ describe('navForCapabilities', () => {
     expect(hrefs).not.toContain('/admin/equipe')
   })
 
+  it('un commercial atteint les contrats vendeurs sans passer par erp:admin', () => {
+    const hrefs = navForCapabilities(
+      capabilitiesFor({ staffRole: 'COMMERCIAL', active: true }),
+    ).flatMap((s) => s.items.map((i) => i.href))
+    // Signature sur le terrain : l'écran ne doit pas dépendre de la direction.
+    expect(hrefs).toContain('/admin/contrats-vendeurs')
+    expect(hrefs).not.toContain('/admin/vendors')
+  })
+
+  it('cache les contrats vendeurs à un profil en lecture seule sur le CRM', () => {
+    // L'écran sert à émettre : le POST est gardé par `crm:write`, la nav suit.
+    const hrefs = navForCapabilities(
+      capabilitiesFor({ staffRole: 'SUPPORT', active: true }),
+    ).flatMap((s) => s.items.map((i) => i.href))
+    expect(hrefs).toContain('/admin/crm')
+    expect(hrefs).not.toContain('/admin/contrats-vendeurs')
+  })
+
   it('un magasinier voit le stock, pas le CRM ni la finance', () => {
     const nav = navForCapabilities(capabilitiesFor({ staffRole: 'MAGASINIER', active: true }))
     const hrefs = nav.flatMap((s) => s.items.map((i) => i.href))
@@ -74,7 +92,7 @@ describe('navForCapabilities', () => {
 
   it('un ADMIN plateforme sans fiche d’équipe voit tout', () => {
     const nav = navForCapabilities(capabilitiesFor({ isPlatformAdmin: true }))
-    expect(nav.flatMap((s) => s.items)).toHaveLength(19)
+    expect(nav.flatMap((s) => s.items)).toHaveLength(20)
   })
 })
 

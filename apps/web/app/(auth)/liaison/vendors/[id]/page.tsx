@@ -8,6 +8,7 @@ import { liaisonFetch } from '@/lib/liaison-api'
 import { CommissionBadge } from '@/components/CommissionBadge'
 import { VendorMapPicker } from '@/components/vendor-map-picker'
 import { PartThumb } from '@/components/ui/part-thumb'
+import { VendorContractCard } from '@/components/vendor-contract-card'
 
 interface VendorDetail {
   id: string
@@ -189,6 +190,13 @@ export default function VendorDetailPage() {
           {STATUS_LABELS[vendor.status] ?? vendor.status}
         </span>
       </header>
+
+      <VendorContractCard
+        vendorId={vendor.id}
+        shopName={vendor.shopName}
+        contactName={vendor.contactName}
+        phone={vendor.phone}
+      />
 
       {(() => {
         const missing = missingFields(vendor)

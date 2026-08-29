@@ -13,6 +13,21 @@ function contractUrl(token: string): string {
   return `${publicBaseUrl()}/vendeur/contrat/${token}`
 }
 
+/** Projection commune des listes / créations de contrat. */
+const CONTRACT_SUMMARY_SELECT = {
+  id: true,
+  token: true,
+  contractVersion: true,
+  status: true,
+  vendorId: true,
+  sellerName: true,
+  shopName: true,
+  phone: true,
+  signedName: true,
+  signedAt: true,
+  createdAt: true,
+} as const
+
 /**
  * Génère un lien de contrat d'adhésion pour un vendeur (existant ou prospect).
  * Émis par un admin ou une liaison ; envoyé au vendeur via WhatsApp.
@@ -39,6 +54,22 @@ export async function createVendorContract(
     }
   }
 
+  // Idempotence terrain : deux appuis sur « Générer le lien » ne doivent pas
+  // laisser deux contrats vivants pour le même vendeur. On réutilise le lien
+  // en attente de la version courante s'il existe déjà.
+  if (input.vendorId) {
+    const pending = await prisma.vendorContract.findFirst({
+      where: {
+        vendorId: input.vendorId,
+        status: 'PENDING',
+        contractVersion: VENDOR_CONTRACT_VERSION,
+      },
+      orderBy: { createdAt: 'desc' },
+      select: CONTRACT_SUMMARY_SELECT,
+    })
+    if (pending) return { ...pending, url: contractUrl(pending.token) }
+  }
+
   const token = randomBytes(16).toString('hex')
 
   const contract = await prisma.vendorContract.create({
@@ -51,19 +82,37 @@ export async function createVendorContract(
       phone: input.phone ?? null,
       createdById,
     },
-    select: {
-      id: true,
-      token: true,
-      contractVersion: true,
-      status: true,
-      sellerName: true,
-      shopName: true,
-      phone: true,
-      createdAt: true,
-    },
+    select: CONTRACT_SUMMARY_SELECT,
   })
 
   return { ...contract, url: contractUrl(contract.token) }
+}
+
+/**
+ * Liste des contrats émis — pour le suivi terrain (commercial, liaison) et le
+ * back-office.
+ *
+ * `scopeToCreator` restreint la vue à ce que l'utilisateur a émis lui-même ou
+ * aux vendeurs qu'il gère : c'est le cas d'une LIAISON, qui n'a pas à voir le
+ * portefeuille des autres. Un ADMIN ou un membre d'équipe habilité voit tout.
+ */
+export async function listVendorContracts(
+  userId: string,
+  options: { scopeToCreator: boolean; vendorId?: string; limit?: number },
+) {
+  const contracts = await prisma.vendorContract.findMany({
+    where: {
+      ...(options.vendorId ? { vendorId: options.vendorId } : {}),
+      ...(options.scopeToCreator
+        ? { OR: [{ createdById: userId }, { vendor: { managedByLiaisonId: userId } }] }
+        : {}),
+    },
+    orderBy: { createdAt: 'desc' },
+    take: options.limit ?? 100,
+    select: CONTRACT_SUMMARY_SELECT,
+  })
+
+  return contracts.map((c) => ({ ...c, url: contractUrl(c.token) }))
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { liaisonFetch } from '@/lib/liaison-api'
+import { listVendorContracts, type VendorContractStatus } from '@/lib/vendor-contract-api'
 
 interface VendorListItem {
   id: string
@@ -34,6 +35,13 @@ function missingFields(v: VendorListItem): string[] {
 
 export default function LiaisonVendorsPage() {
   const [vendors, setVendors] = useState<VendorListItem[]>([])
+  // Statut de contrat par vendeur — un signé prime sur un lien en attente.
+  // `null` tant que la liste des contrats n'est pas revenue : on n'affiche pas
+  // « à faire signer » sur un vendeur dont on ignore encore le statut.
+  const [contractByVendor, setContractByVendor] = useState<Record<
+    string,
+    VendorContractStatus
+  > | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [onlyIncomplete, setOnlyIncomplete] = useState(false)
@@ -43,6 +51,16 @@ export default function LiaisonVendorsPage() {
       if (r.ok) setVendors(r.data)
       else setError(r.message)
       setLoading(false)
+    })
+    listVendorContracts().then((r) => {
+      if (!r.ok) return
+      const map: Record<string, VendorContractStatus> = {}
+      for (const c of r.data) {
+        if (!c.vendorId) continue
+        if (map[c.vendorId] === 'ACCEPTED') continue
+        map[c.vendorId] = c.status
+      }
+      setContractByVendor(map)
     })
   }, [])
 
@@ -127,6 +145,13 @@ export default function LiaisonVendorsPage() {
                       {v.contactName} · {v.phone}
                       {v.commune ? ` · ${v.commune}` : ''}
                     </p>
+                    {contractByVendor && contractByVendor[v.id] !== 'ACCEPTED' && (
+                      <span className="mt-1 mr-1.5 inline-block rounded-full bg-warn-bg px-2 py-0.5 text-[10px] font-medium text-warn-fg">
+                        {contractByVendor[v.id] === 'PENDING'
+                          ? 'Contrat à signer'
+                          : 'Contrat à faire signer'}
+                      </span>
+                    )}
                     {missing.length > 0 && (
                       <span className="mt-1 inline-block rounded-full bg-[rgba(255,107,0,0.12)] px-2 py-0.5 text-[10px] font-medium text-accent">
                         À compléter : {missing.join(', ')}

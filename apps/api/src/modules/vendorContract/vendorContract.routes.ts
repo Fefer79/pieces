@@ -1,15 +1,21 @@
 import type { FastifyInstance } from 'fastify'
 import {
   createVendorContractSchema,
+  listVendorContractsQuerySchema,
   acceptVendorContractSchema,
   vendorContractTokenParamsSchema,
 } from 'shared/validators'
-import type { CreateVendorContractInput, AcceptVendorContractInput } from 'shared/validators'
+import type {
+  CreateVendorContractInput,
+  ListVendorContractsQuery,
+  AcceptVendorContractInput,
+} from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth } from '../../plugins/auth.js'
 import { requireRoleOrCapability } from '../../plugins/erpAuth.js'
 import {
   createVendorContract,
+  listVendorContracts,
   getVendorContractByToken,
   acceptVendorContract,
 } from './vendorContract.service.js'
@@ -26,7 +32,10 @@ export async function vendorContractRoutes(fastify: FastifyInstance) {
         description: 'Générer un lien de contrat d’adhésion pour un vendeur',
         security: [{ BearerAuth: [] }],
       },
-      preHandler: [requireAuth, requireRoleOrCapability(['LIAISON'], 'crm:read')],
+      // Émettre un contrat est une écriture CRM : `crm:write`, pas `crm:read`
+      // (lecture et écriture sont deux capacités distinctes). Le SUPPORT, en
+      // lecture seule sur le CRM, ne peut donc pas émettre de contrat.
+      preHandler: [requireAuth, requireRoleOrCapability(['LIAISON'], 'crm:write')],
     },
     async (request, reply) => {
       const result = await createVendorContract(
@@ -40,6 +49,29 @@ export async function vendorContractRoutes(fastify: FastifyInstance) {
         token: result.token,
       })
       return reply.status(201).send({ data: result })
+    },
+  )
+
+  // Suivi des contrats émis (admin / commercial / liaison).
+  // Une liaison ne voit que les siens ; un membre d'équipe habilité voit tout.
+  fastify.get(
+    '/',
+    {
+      schema: {
+        querystring: zodToFastify(listVendorContractsQuerySchema),
+        tags: ['VendorContracts'],
+        description: 'Lister les contrats d’adhésion émis',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: [requireAuth, requireRoleOrCapability(['LIAISON'], 'crm:read')],
+    },
+    async (request, reply) => {
+      const { vendorId } = request.query as ListVendorContractsQuery
+      // `request.staff` n'est chargé que si la garde est passée par la capacité :
+      // une LIAISON entrée par son rôle plateforme reste cantonnée à ses contrats.
+      const scopeToCreator = !request.staff?.capabilities?.includes('crm:read')
+      const data = await listVendorContracts(request.user.id, { scopeToCreator, vendorId })
+      return reply.status(200).send({ data })
     },
   )
 

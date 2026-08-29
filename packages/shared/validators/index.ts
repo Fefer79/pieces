@@ -36,10 +36,15 @@ export { updatePreferencesSchema, sendNotificationSchema } from './notification'
 export { liaisonCreateVendorSchema, liaisonUpdateVendorSchema, liaisonCreatePartSchema, liaisonUpdatePartSchema, liaisonQuickVendorSchema, liaisonQuickPartSchema } from './liaison'
 export {
   createVendorContractSchema,
+  listVendorContractsQuerySchema,
   vendorContractTokenParamsSchema,
   acceptVendorContractSchema,
 } from './vendorContract'
-export type { CreateVendorContractInput, AcceptVendorContractInput } from './vendorContract'
+export type {
+  CreateVendorContractInput,
+  ListVendorContractsQuery,
+  AcceptVendorContractInput,
+} from './vendorContract'
 export {
   driverStatusSchema,
   createDriverSchema,
