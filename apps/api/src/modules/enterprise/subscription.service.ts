@@ -53,8 +53,10 @@ export function tierIncludes(actual: SubscriptionTier, required: SubscriptionTie
   return TIER_RANK[actual] >= TIER_RANK[required]
 }
 
-export async function getCurrentSubscription(enterpriseId: string) {
-  const now = new Date()
+// `now` est injectable pour que les appelants qui raisonnent sur une date
+// donnée (quoteSubscriptionPayment) jugent l'expiration de l'essai avec la même
+// horloge que leur arithmétique — sinon l'état lu dépend de l'heure murale.
+export async function getCurrentSubscription(enterpriseId: string, now: Date = new Date()) {
   const sub = await prisma.enterpriseSubscription.findFirst({
     where: {
       enterpriseId,

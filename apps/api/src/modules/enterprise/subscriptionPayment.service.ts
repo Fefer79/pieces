@@ -76,7 +76,7 @@ export async function quoteSubscriptionPayment(
 
   const [vehicleCount, sub] = await Promise.all([
     prisma.vehicle.count({ where: { enterpriseId } }),
-    getCurrentSubscription(enterpriseId),
+    getCurrentSubscription(enterpriseId, now),
   ])
 
   if (vehicleCount === 0) {
