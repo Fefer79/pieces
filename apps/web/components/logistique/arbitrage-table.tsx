@@ -9,6 +9,11 @@ import { MODE_COPY } from '@/lib/logistique-content'
 // Règle DESIGN.md : aucun coût n'est agrégé sans être montré. On regroupe fret +
 // douane + livraison sous « Acheminement » mais chaque poste reste lisible en
 // info-bulle ; on n'affiche JAMAIS les tarifs internes au kilo.
+//
+// `showDowntime` : le coût d'immobilisation n'a de sens que pour une flotte, qui
+// perd une recette chaque jour où le véhicule est à l'arrêt. Sur les surfaces
+// publiques (cotation, suivi), il est masqué — et comme il ne doit alors être ni
+// agrégé ni sous-entendu, le total et le classement sont recalculés sans lui.
 
 const fmt = (n: number) => n.toLocaleString('fr-FR')
 
@@ -30,12 +35,26 @@ export function ArbitrageTable({
   result,
   showPartPrice = true,
   totalLabel = 'Coût total',
+  showDowntime = true,
 }: {
   result: ArbitrageResult
   /** Masqué quand le prix pièce est inconnu — le total devient alors un plancher. */
   showPartPrice?: boolean
   totalLabel?: string
+  /** Faux sur les surfaces publiques : l'immobilisation sort du total et du classement. */
+  showDowntime?: boolean
 }) {
+  // Sans immobilisation, le classement par coût total du calcul partagé ne
+  // correspond plus à ce qui est affiché : on retrie sur le total visible pour
+  // ne jamais montrer une colonne « Coût total » dans le désordre.
+  const total = (o: ArbitrageOption) => (showDowntime ? o.totalCost : o.totalCost - o.downtimeCost)
+  const rows = showDowntime
+    ? result.options
+    : [...result.options].sort((a, b) => total(a) - total(b))
+  const bestVisible = rows.find((o) => o.available)
+  const gapToBest = (o: ArbitrageOption) =>
+    showDowntime ? o.extraCostVsBest : bestVisible ? total(o) - total(bestVisible) : 0
+
   return (
     <div className="overflow-x-auto rounded-md border border-border bg-card">
       <table className="w-full min-w-[680px] border-collapse text-sm">
@@ -55,32 +74,40 @@ export function ArbitrageTable({
             <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
               Acheminement
             </th>
-            <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-              Immobilisation
-            </th>
+            {showDowntime && (
+              <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                Immobilisation
+              </th>
+            )}
             <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
               {totalLabel}
             </th>
           </tr>
         </thead>
         <tbody>
-          {result.options.map((o) => (
+          {rows.map((o) => (
             <tr
               key={o.mode}
               className={
                 'border-b border-border last:border-0 ' +
-                (o.recommended ? 'bg-success-bg/40' : '')
+                ((showDowntime ? o.recommended : o === bestVisible) ? 'bg-success-bg/40' : '')
               }
             >
               <td className="px-4 py-3 align-top">
                 <span
-                  className={o.recommended ? 'font-semibold text-ink' : 'text-ink'}
+                  className={
+                    (showDowntime ? o.recommended : o === bestVisible)
+                      ? 'font-semibold text-ink'
+                      : 'text-ink'
+                  }
                 >
                   {MODE_COPY[o.mode]?.publicLabel ?? o.label}
                 </span>
-                {o.recommended && (
+                {(showDowntime ? o.recommended : o === bestVisible) && (
                   <span className="ml-2 rounded-full bg-success-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.04em] text-success-fg">
-                    Recommandé
+                    {/* Sans immobilisation, l'arbitrage se réduit au prix : on
+                        annonce « le moins cher », pas une recommandation. */}
+                    {showDowntime ? 'Recommandé' : 'Le moins cher'}
                   </span>
                 )}
                 {!o.available && (
@@ -109,21 +136,25 @@ export function ArbitrageTable({
                 </span>
                 <p className="mt-0.5 text-[11px] leading-snug text-muted-2">{freightDetail(o)}</p>
               </td>
-              <td className="tabular whitespace-nowrap px-4 py-3 text-right align-top font-mono text-ink">
-                {fmt(o.downtimeCost)}
-              </td>
+              {showDowntime && (
+                <td className="tabular whitespace-nowrap px-4 py-3 text-right align-top font-mono text-ink">
+                  {fmt(o.downtimeCost)}
+                </td>
+              )}
               <td className="px-4 py-3 text-right align-top">
                 <span
                   className={
                     'tabular whitespace-nowrap font-mono ' +
-                    (o.recommended ? 'font-semibold text-ink' : 'text-ink')
+                    ((showDowntime ? o.recommended : o === bestVisible)
+                      ? 'font-semibold text-ink'
+                      : 'text-ink')
                   }
                 >
-                  {fmt(o.totalCost)}
+                  {fmt(total(o))}
                 </span>
-                {o.extraCostVsBest > 0 && (
+                {gapToBest(o) > 0 && (
                   <p className="tabular mt-0.5 font-mono text-[11px] text-error-fg">
-                    + {fmt(o.extraCostVsBest)}
+                    + {fmt(gapToBest(o))}
                   </p>
                 )}
               </td>

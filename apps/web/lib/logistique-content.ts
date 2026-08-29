@@ -583,12 +583,17 @@ export const LEAD_FORM_COPY = {
   vinNotDecoded:
     'VIN enregistré. Il n\'est pas reconnu par la base publique d\'immatriculation. C\'est fréquent pour les marques chinoises et les imports japonais, et cela ne pose aucun problème : notre équipe le décode auprès du constructeur.',
   estimateTitleWithPrice: 'Coût total estimé',
-  estimateTitleWithoutPrice: 'Coût d\'acheminement + immobilisation',
+  // Le coût d'immobilisation ne fait pas partie de l'estimation publique : il
+  // n'a de sens que pour une flotte, et il est traité sur /logistique/flottes-vtc.
+  estimateTitleWithoutPrice: 'Coût d\'acheminement estimé',
   estimateNoteWithoutPrice:
     'Hors prix de la pièce et hors droits de douane sur sa valeur. Indiquez un prix estimé pour obtenir le coût complet.',
   estimateFootnote: 'Estimation de cadrage, ± 20 %. Un devis confirmé précède toute commande.',
   downtimeAssumption:
     'Hypothèse : véhicule premium thermique, 30 000 F de recette perdue par jour. Précisez la motorisation pour affiner.',
+  fleetDowntimeTeaser:
+    'Vous gérez une flotte ? Un véhicule à l’arrêt coûte chaque jour, et cela change l’option la plus rentable.',
+  fleetDowntimeCta: 'Voir l’arbitrage au coût total réel',
   consent:
     'J\'accepte que Pièces utilise ces informations pour établir ma cotation et me recontacter.',
   submit: 'Envoyer ma demande',

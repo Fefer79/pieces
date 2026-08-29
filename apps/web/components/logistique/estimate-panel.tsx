@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import type { ArbitrageResult } from 'shared/constants'
 import { ArbitrageTable } from './arbitrage-table'
 import { LEAD_FORM_COPY, type LeadCertaintyLevel } from '@/lib/logistique-content'
@@ -18,12 +19,15 @@ export function EstimatePanel({
   hasPartPrice,
   certaintyLevel,
   downtimeAssumed,
+  showDowntime = true,
 }: {
   result: ArbitrageResult
   hasPartPrice: boolean
   certaintyLevel: LeadCertaintyLevel
   /** Vrai quand le coût d'immobilisation est une hypothèse, pas la catégorie réelle. */
   downtimeAssumed: boolean
+  /** Faux hors contexte flotte : l'immobilisation sort de l'estimation. */
+  showDowntime?: boolean
 }) {
   const title = hasPartPrice
     ? LEAD_FORM_COPY.estimateTitleWithPrice
@@ -55,15 +59,29 @@ export function EstimatePanel({
           result={result}
           showPartPrice={hasPartPrice}
           totalLabel={hasPartPrice ? 'Coût total' : 'Sous-total'}
+          showDowntime={showDowntime}
         />
       </div>
 
-      <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
-        Immobilisation retenue :{' '}
-        <span className="tabular font-mono text-ink">{fmt(result.downtimeCostPerDay)} F</span> par
-        jour d&apos;arrêt.{' '}
-        {downtimeAssumed && <span className="text-muted-2">{LEAD_FORM_COPY.downtimeAssumption}</span>}
-      </p>
+      {showDowntime ? (
+        <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+          Immobilisation retenue :{' '}
+          <span className="tabular font-mono text-ink">{fmt(result.downtimeCostPerDay)} F</span> par
+          jour d&apos;arrêt.{' '}
+          {downtimeAssumed && (
+            <span className="text-muted-2">{LEAD_FORM_COPY.downtimeAssumption}</span>
+          )}
+        </p>
+      ) : (
+        // L'argument du coût d'immobilisation vit sur la page Flottes VTC, où il
+        // s'adresse à ceux dont un véhicule à l'arrêt coûte réellement.
+        <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+          {LEAD_FORM_COPY.fleetDowntimeTeaser}{' '}
+          <Link href="/logistique/flottes-vtc" className="font-medium text-ink-2 hover:underline">
+            {LEAD_FORM_COPY.fleetDowntimeCta} →
+          </Link>
+        </p>
+      )}
       <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-2">
         {LEAD_FORM_COPY.estimateFootnote}
       </p>

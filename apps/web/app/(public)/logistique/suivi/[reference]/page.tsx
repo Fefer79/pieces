@@ -9,8 +9,6 @@ import { ArbitrageTable } from '@/components/logistique/arbitrage-table'
 import { CERTAINTY_CHIP, STATUS_LABELS, STATUS_CHIP, type FleetQuoteRow } from './_shared'
 import type { ArbitrageResult } from 'shared/constants'
 
-const fmt = (n: number) => n.toLocaleString('fr-FR')
-
 export default function SuiviPage() {
   const params = useParams<{ reference: string }>()
   const searchParams = useSearchParams()
@@ -106,20 +104,14 @@ export default function SuiviPage() {
             <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
               Estimation
             </h2>
+            {/* Même règle que la cotation publique : l'immobilisation relève du
+                contexte flotte, pas du suivi d'une demande. */}
             <ArbitrageTable
               result={estimate}
               showPartPrice={quote.partPriceHint != null}
               totalLabel={quote.partPriceHint ? 'Coût total' : 'Sous-total'}
+              showDowntime={false}
             />
-            {quote.downtimeCostPerDay && (
-              <p className="mt-3 text-[12.5px] text-muted">
-                Immobilisation retenue :{' '}
-                <span className="tabular font-mono text-ink">
-                  {fmt(quote.downtimeCostPerDay)} F
-                </span>{' '}
-                par jour.
-              </p>
-            )}
           </div>
         )}
 

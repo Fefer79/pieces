@@ -298,19 +298,22 @@ export function DevisWizard({ context }: { context: DevisContext }) {
 
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <CertaintyMeter signals={signals} />
+        {/* Le coût d'immobilisation n'est pertinent que pour une flotte : hors
+            de ce contexte, la cotation compare prix et délai, et l'arbitrage au
+            coût total réel est présenté sur /logistique/flottes-vtc. */}
         <EstimatePanel
           result={estimate}
           hasPartPrice={state.partPriceHint != null && state.partPriceHint > 0}
           certaintyLevel={certaintyLevel as LeadCertaintyLevel}
-          downtimeAssumed={
-            context.mode === 'PUBLIC' ||
-            (context.mode === 'ACCOUNT' && !state.vehicleId)
-          }
+          downtimeAssumed={!state.vehicleId}
+          showDowntime={context.mode === 'FLEET'}
         />
-        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted-2">
-          Hypothèse immobilisation : {fmt(DOWNTIME_COST_PER_DAY[economyCategory])} F/j (
-          {economyCategory.toLowerCase().replace('_', ' ')})
-        </p>
+        {context.mode === 'FLEET' && (
+          <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted-2">
+            Hypothèse immobilisation : {fmt(DOWNTIME_COST_PER_DAY[economyCategory])} F/j (
+            {economyCategory.toLowerCase().replace('_', ' ')})
+          </p>
+        )}
       </aside>
     </div>
   )
