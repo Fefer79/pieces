@@ -89,6 +89,21 @@ describe('order.service', () => {
       expect(mockOrderCreate).toHaveBeenCalled()
     })
 
+    it('persiste le choix « qui paie » du checkout (SELF par défaut, OWNER_LINK si poussée)', async () => {
+      const item = { id: 'item-1', name: 'Filtre', category: 'Filtration', price: 5000, imageThumbUrl: null, vendorId: 'v1', commissionAmount: null, vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' } }
+      mockCatalogItemFindMany.mockResolvedValueOnce([item])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }])
+
+      mockCatalogItemFindMany.mockResolvedValueOnce([item])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o2', items: [] })
+      await createOrder('user-1', [{ catalogItemId: 'item-1' }], { payerMode: 'OWNER_LINK' })
+
+      const dataOf = (i: number) => (mockOrderCreate.mock.calls[i]![0] as { data: { payerMode: string } }).data
+      expect(dataOf(0).payerMode).toBe('SELF')
+      expect(dataOf(1).payerMode).toBe('OWNER_LINK')
+    })
+
     it('throws when no valid items found', async () => {
       mockCatalogItemFindMany.mockResolvedValueOnce([])
 

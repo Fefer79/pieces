@@ -120,6 +120,7 @@ export default function PanierPage() {
         ...(vehicle ? { vehicleId: vehicle.vehicleId } : {}),
         ...(commune ? { deliveryCommune: commune } : {}),
         deliveryMode,
+        payerMode: payer,
       }),
     })
     if (res.ok) {

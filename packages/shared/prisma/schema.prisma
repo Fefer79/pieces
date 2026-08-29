@@ -1032,6 +1032,11 @@ model SearchSynonym {
   @@map("search_synonyms")
 }
 
+enum OrderPayer {
+  SELF
+  OWNER_LINK
+}
+
 model Order {
   id                String         @id @default(uuid())
   initiatorId       String         @map("initiator_id")
@@ -1044,6 +1049,10 @@ model Order {
   status            OrderStatus    @default(DRAFT)
   paymentMethod     PaymentMethod? @map("payment_method")
   shareToken        String         @unique @map("share_token")
+  // Qui paie : choix fait au checkout, pas déduit d'un rôle. SELF = l'acheteur
+  // paie lui-même ; OWNER_LINK = le lien de validation est poussé à un tiers
+  // (le propriétaire du véhicule) qui doit approuver et payer.
+  payerMode         OrderPayer     @default(SELF) @map("payer_mode")
   totalAmount       Int            @default(0) @map("total_amount")
   deliveryFee       Int            @default(0) @map("delivery_fee")
   deliveryCommune   String?        @map("delivery_commune")

@@ -10,6 +10,9 @@ export const createOrderSchema = z.object({
   vehicleId: z.string().uuid().optional(),
   deliveryCommune: z.string().max(50).optional(),
   deliveryMode: z.enum(['STANDARD', 'EXPRESS']).optional(),
+  // Qui paie ? Choix du checkout : SELF = l'acheteur paie lui-même,
+  // OWNER_LINK = le lien de validation part au propriétaire du véhicule.
+  payerMode: z.enum(['SELF', 'OWNER_LINK']).optional(),
 })
 
 export const upsertDraftSchema = z.object({

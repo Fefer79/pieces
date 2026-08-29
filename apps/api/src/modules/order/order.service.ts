@@ -156,6 +156,7 @@ export async function createOrder(
     vehicleId?: string
     deliveryCommune?: string
     deliveryMode?: DeliveryPricingMode
+    payerMode?: 'SELF' | 'OWNER_LINK'
   } = {},
 ) {
   const qtyById = qtyMapFromItems(items)
@@ -227,6 +228,7 @@ export async function createOrder(
       deliveryFee,
       deliveryCommune,
       deliveryMode,
+      payerMode: options.payerMode ?? 'SELF',
       laborCost: options.laborCost,
       vehicleId,
       enterpriseId,

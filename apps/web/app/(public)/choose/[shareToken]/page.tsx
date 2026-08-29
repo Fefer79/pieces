@@ -30,6 +30,7 @@ interface Order {
   shareToken: string
   items: OrderItem[]
   initiator?: { id: string } | null
+  payerMode?: 'SELF' | 'OWNER_LINK'
 }
 
 type PayMethodId = 'ORANGE_MONEY' | 'MTN_MOMO' | 'WAVE' | 'COD'
@@ -151,9 +152,12 @@ export default function OwnerChoicePage() {
 
   if (!order) return null
 
-  // Le viewer est-il l'auteur de la sélection (ex. propriétaire qui valide la
-  // sienne) ? Si oui, le cadrage « votre mécanicien vous demande » est faux.
-  const isSelf = !!user?.id && order.initiator?.id === user.id
+  // Le cadrage « votre mécanicien vous demande d'approuver » n'a de sens que si
+  // la commande a été poussée à un tiers : c'est le choix fait au checkout
+  // (payerMode), pas une déduction de rôle. On y ajoute le cas du viewer qui est
+  // l'auteur de la sélection — il valide la sienne, personne ne lui demande rien.
+  const pushedToOwner = order.payerMode === 'OWNER_LINK'
+  const selfFraming = !pushedToOwner || (!!user?.id && order.initiator?.id === user.id)
 
   const grandTotal = order.totalAmount + order.deliveryFee + (order.laborCost ?? 0)
 
@@ -181,10 +185,10 @@ export default function OwnerChoicePage() {
       <div className="bg-[linear-gradient(135deg,#00113A_0%,#002366_100%)] px-4 py-4 text-white md:px-10 md:py-10">
         <div className="mx-auto max-w-3xl lg:max-w-[1280px]">
           <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
-            Commande partagée · #{order.id.slice(0, 8)}
+            {selfFraming ? 'Commande' : 'Commande partagée'} · #{order.id.slice(0, 8)}
           </div>
           <h1 className="mt-1.5 font-display text-[22px] leading-tight md:mt-2 md:text-[40px]">
-            {isSelf
+            {selfFraming
               ? 'Validez et payez votre sélection'
               : 'Votre mécanicien vous demande d’approuver'}
           </h1>
