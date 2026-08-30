@@ -91,6 +91,29 @@ export interface PartLogisticsFamily {
 }
 
 export const PART_LOGISTICS_FAMILIES: PartLogisticsFamily[] = [
+  // Petites pièces — l'essentiel du volume de demandes, et le cas où une
+  // estimation trop lourde fait fuir sur le prix du fret express.
+  {
+    id: 'SMALL_ELECTRIC',
+    label: 'Petite pièce électrique / électronique',
+    weightKgMin: 0.1, weightKgMax: 1.2, volumeDm3Min: 0.5, volumeDm3Max: 4,
+    keywords: [
+      'capteur', 'sonde', 'bougie', 'ampoule', 'fusible', 'relais', 'injecteur',
+      'bobine', 'calculateur', 'ecu', 'contacteur', 'interrupteur', 'sonde lambda',
+      'papillon', 'boitier papillon', 'debitmetre',
+    ],
+  },
+  {
+    id: 'GASKET',
+    label: 'Joints, durites et petites pièces',
+    weightKgMin: 0.2, weightKgMax: 2, volumeDm3Min: 1, volumeDm3Max: 6,
+    // Les libellés composés sont explicites : « joint de culasse » doit gagner
+    // contre « culasse », qui appartient aux pièces moteur lourdes.
+    keywords: [
+      'joint', 'joint de culasse', 'joint de carter', 'joint spi', 'pochette de joints',
+      'durite', 'flexible', 'bague', 'soufflet',
+    ],
+  },
   {
     id: 'FILTER',
     label: 'Filtres',
@@ -98,23 +121,41 @@ export const PART_LOGISTICS_FAMILIES: PartLogisticsFamily[] = [
     keywords: ['filtre', 'filtration'],
   },
   {
+    id: 'WIPER_MIRROR',
+    label: 'Rétroviseur, essuie-glace, petits accessoires',
+    weightKgMin: 0.5, weightKgMax: 3, volumeDm3Min: 3, volumeDm3Max: 15,
+    keywords: ['retroviseur', 'essuie glace', 'essuie-glace', 'balai', 'poignee', 'enjoliveur'],
+  },
+  {
     id: 'BRAKE_PADS',
     label: 'Plaquettes de frein',
     weightKgMin: 1.5, weightKgMax: 4, volumeDm3Min: 2, volumeDm3Max: 4,
-    keywords: ['plaquette', 'plaquettes'],
+    keywords: ['plaquette'],
+  },
+  {
+    id: 'BELT_KIT',
+    label: 'Courroie / kit de distribution',
+    weightKgMin: 1, weightKgMax: 6, volumeDm3Min: 3, volumeDm3Max: 15,
+    keywords: ['courroie', 'kit de distribution', 'chaine de distribution', 'galet', 'tendeur'],
+  },
+  {
+    id: 'PUMP',
+    label: 'Pompe (eau, huile, carburant)',
+    weightKgMin: 2, weightKgMax: 7, volumeDm3Min: 4, volumeDm3Max: 12,
+    keywords: ['pompe'],
   },
   {
     id: 'BRAKE_DISCS',
     label: 'Disques de frein',
     weightKgMin: 8, weightKgMax: 14, volumeDm3Min: 8, volumeDm3Max: 14,
-    keywords: ['disque', 'disques'],
+    keywords: ['disque'],
   },
   {
     id: 'SHOCK_ABSORBER',
     label: 'Amortisseur',
     weightKgMin: 3, weightKgMax: 6, volumeDm3Min: 10, volumeDm3Max: 18,
     airRestricted: true, // amortisseur à gaz
-    keywords: ['amortisseur', 'suspension'],
+    keywords: ['amortisseur', 'suspension', 'ressort'],
   },
   {
     id: 'SUSPENSION_ARM',
@@ -126,13 +167,31 @@ export const PART_LOGISTICS_FAMILIES: PartLogisticsFamily[] = [
     id: 'ALTERNATOR_STARTER',
     label: 'Alternateur / démarreur',
     weightKgMin: 3, weightKgMax: 8, volumeDm3Min: 6, volumeDm3Max: 12,
-    keywords: ['alternateur', 'demarreur', 'démarreur'],
+    keywords: ['alternateur', 'demarreur'],
+  },
+  {
+    id: 'TURBO',
+    label: 'Turbocompresseur',
+    weightKgMin: 5, weightKgMax: 12, volumeDm3Min: 8, volumeDm3Max: 20,
+    keywords: ['turbo', 'turbocompresseur'],
+  },
+  {
+    id: 'AC_COMPRESSOR',
+    label: 'Compresseur de climatisation',
+    weightKgMin: 5, weightKgMax: 10, volumeDm3Min: 8, volumeDm3Max: 18,
+    keywords: ['compresseur', 'climatisation', 'clim'],
   },
   {
     id: 'CLUTCH_KIT',
     label: 'Kit embrayage',
     weightKgMin: 8, weightKgMax: 14, volumeDm3Min: 12, volumeDm3Max: 20,
-    keywords: ['embrayage', 'kit embrayage'],
+    keywords: ['embrayage', 'kit embrayage', 'volant moteur', 'butee'],
+  },
+  {
+    id: 'ENGINE_HEAVY_PART',
+    label: 'Pièce moteur lourde (culasse, vilebrequin, arbre à cames)',
+    weightKgMin: 12, weightKgMax: 45, volumeDm3Min: 25, volumeDm3Max: 80,
+    keywords: ['culasse', 'vilebrequin', 'arbre a cames', 'carter', 'bielle', 'piston'],
   },
   {
     id: 'RADIATOR',
@@ -148,10 +207,31 @@ export const PART_LOGISTICS_FAMILIES: PartLogisticsFamily[] = [
     keywords: ['phare', 'optique', 'feu', 'clignotant'],
   },
   {
+    id: 'EXHAUST',
+    label: 'Ligne d’échappement',
+    weightKgMin: 8, weightKgMax: 25, volumeDm3Min: 60, volumeDm3Max: 150,
+    keywords: ['echappement', 'silencieux', 'catalyseur', 'filtre a particules', 'fap'],
+  },
+  {
+    id: 'STEERING',
+    label: 'Direction (crémaillère, colonne)',
+    weightKgMin: 8, weightKgMax: 20, volumeDm3Min: 20, volumeDm3Max: 50,
+    keywords: ['cremaillere', 'colonne de direction', 'boitier de direction', 'direction assistee'],
+  },
+  {
+    id: 'DRIVESHAFT',
+    label: 'Transmission (cardan, arbre)',
+    weightKgMin: 8, weightKgMax: 18, volumeDm3Min: 15, volumeDm3Max: 40,
+    // « transmission » vit ici et non sur la boîte de vitesses : c'est le nom de
+    // la catégorie catalogue, et la rattacher à une boîte faisait passer un
+    // cardan de 12 kg pour un ensemble de 67 kg.
+    keywords: ['cardan', 'croisillon', 'arbre de transmission', 'transmission', 'homocinetique'],
+  },
+  {
     id: 'BUMPER',
     label: 'Pare-chocs',
     weightKgMin: 5, weightKgMax: 9, volumeDm3Min: 150, volumeDm3Max: 250,
-    keywords: ['pare-choc', 'pare choc', 'parechoc', 'bouclier'],
+    keywords: ['pare choc', 'pare-choc', 'parechoc', 'bouclier'],
   },
   {
     id: 'BODY_PANEL',
@@ -159,14 +239,14 @@ export const PART_LOGISTICS_FAMILIES: PartLogisticsFamily[] = [
     weightKgMin: 10, weightKgMax: 20, volumeDm3Min: 120, volumeDm3Max: 300,
     // Pas de « carrosserie » : c'est un nom de catégorie, trop générique — il capterait
     // les pare-chocs et les optiques, qui ont leur propre gabarit.
-    keywords: ['capot', 'aile', 'portiere', 'portière', 'hayon'],
+    keywords: ['capot', 'aile', 'portiere', 'hayon'],
   },
   {
     id: 'WINDSHIELD',
     label: 'Pare-brise / vitrage',
     weightKgMin: 12, weightKgMax: 20, volumeDm3Min: 60, volumeDm3Max: 100,
     fragile: true,
-    keywords: ['pare-brise', 'pare brise', 'parebrise', 'vitre', 'vitrage', 'lunette'],
+    keywords: ['pare brise', 'pare-brise', 'parebrise', 'vitre', 'vitrage', 'lunette'],
   },
   {
     id: 'BATTERY',
@@ -174,6 +254,12 @@ export const PART_LOGISTICS_FAMILIES: PartLogisticsFamily[] = [
     weightKgMin: 14, weightKgMax: 22, volumeDm3Min: 12, volumeDm3Max: 18,
     airRestricted: true,
     keywords: ['batterie'],
+  },
+  {
+    id: 'WHEEL',
+    label: 'Jante',
+    weightKgMin: 8, weightKgMax: 15, volumeDm3Min: 50, volumeDm3Max: 75,
+    keywords: ['jante'],
   },
   {
     id: 'TYRE',
@@ -185,20 +271,27 @@ export const PART_LOGISTICS_FAMILIES: PartLogisticsFamily[] = [
     id: 'GEARBOX',
     label: 'Boîte de vitesses',
     weightKgMin: 45, weightKgMax: 90, volumeDm3Min: 90, volumeDm3Max: 150,
-    keywords: ['boite', 'boîte', 'vitesses', 'transmission'],
+    // Uniquement des libellés qui désignent l'ensemble : « boite » seul captait
+    // « boîtier papillon », et « transmission » captait les cardans.
+    keywords: [
+      'boite de vitesses', 'boite a vitesses', 'boite automatique', 'boite manuelle',
+      'boite auto', 'bva', 'differentiel', 'pont arriere',
+    ],
   },
   {
     id: 'ENGINE',
     label: 'Moteur complet',
     weightKgMin: 120, weightKgMax: 250, volumeDm3Min: 250, volumeDm3Max: 400,
-    keywords: ['moteur complet', 'moteur'],
+    // « moteur » seul est écarté : il apparaît dans « support moteur », « volant
+    // moteur », « huile moteur » et dans le nom de la catégorie.
+    keywords: ['moteur complet', 'bloc moteur'],
   },
   {
     id: 'EV_HV_COMPONENT',
     label: 'Composant haute tension (EV)',
     weightKgMin: 5, weightKgMax: 40, volumeDm3Min: 20, volumeDm3Max: 120,
     airRestricted: true,
-    keywords: ['onduleur', 'chargeur embarque', 'chargeur embarqué', 'haute tension', 'batterie de traction', 'convertisseur'],
+    keywords: ['onduleur', 'chargeur embarque', 'haute tension', 'batterie de traction', 'convertisseur'],
   },
 ]
 
@@ -215,22 +308,55 @@ export const DEFAULT_FAMILY: PartLogisticsFamily = {
 
 const stripAccents = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 
+/** Minuscules, sans accents, ponctuation et tirets ramenés à des espaces. */
+function normalizeText(value: string): string {
+  return stripAccents(value.toLowerCase()).replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
 /**
- * Rattache un libellé libre (« Plaquettes avant », « Freinage / Disques ») à une famille.
- * Le mot-clé le plus long l'emporte, pour que « moteur complet » batte « moteur ».
+ * Cherche un mot-clé en MOTS ENTIERS (pluriel toléré).
+ *
+ * La recherche par sous-chaîne rattachait « boîtier papillon » à la boîte de
+ * vitesses et « support moteur » au moteur complet — soit 67 kg et 185 kg
+ * facturés en fret pour des pièces de quelques kilos.
  */
-export function matchLogisticsFamily(...texts: (string | null | undefined)[]): PartLogisticsFamily | null {
-  const haystack = stripAccents(texts.filter(Boolean).join(' ').toLowerCase())
+function containsKeyword(haystack: string, keyword: string): boolean {
+  const needle = normalizeText(keyword)
+  if (!needle) return false
+  return new RegExp(`(?:^| )${needle}s?(?:$| )`).test(haystack)
+}
+
+function bestFamilyIn(text: string): PartLogisticsFamily | null {
+  const haystack = normalizeText(text)
+  if (!haystack) return null
   let best: { family: PartLogisticsFamily; length: number } | null = null
   for (const family of PART_LOGISTICS_FAMILIES) {
     for (const keyword of family.keywords) {
-      const needle = stripAccents(keyword.toLowerCase())
-      if (haystack.includes(needle) && (!best || needle.length > best.length)) {
+      const needle = normalizeText(keyword)
+      if (containsKeyword(haystack, keyword) && (!best || needle.length > best.length)) {
         best = { family, length: needle.length }
       }
     }
   }
   return best?.family ?? null
+}
+
+/**
+ * Rattache un libellé libre (« Plaquettes avant », « Freinage / Disques ») à une famille.
+ *
+ * Les textes sont examinés DANS L'ORDRE reçu — nom de la pièce, puis catégorie,
+ * puis référence : le nom prime toujours, sans quoi « Moteur / Vilebrequin »
+ * partait en moteur complet à cause de sa seule catégorie. À l'intérieur d'un
+ * même texte, le mot-clé le plus long l'emporte, pour que « moteur complet »
+ * batte « bloc moteur » et « filtre à particules » batte « filtre ».
+ */
+export function matchLogisticsFamily(...texts: (string | null | undefined)[]): PartLogisticsFamily | null {
+  for (const text of texts) {
+    if (!text) continue
+    const family = bestFamilyIn(text)
+    if (family) return family
+  }
+  return null
 }
 
 // ---------------------------------------------------------------------------

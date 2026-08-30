@@ -43,6 +43,50 @@ describe('matchLogisticsFamily', () => {
     expect(matchLogisticsFamily('Avant droit', 'Carrosserie / Pare-chocs')?.id).toBe('BUMPER')
   })
 
+  it('ne fait plus passer une pièce de transmission pour une boîte de vitesses', () => {
+    // Le mot-clé « transmission » rattachait un cardan de 13 kg à une boîte de
+    // 67 kg : le fret express estimé était multiplié par cinq.
+    expect(matchLogisticsFamily('Cardan avant droit', 'Transmission / Cardan')?.id).toBe('DRIVESHAFT')
+    expect(matchLogisticsFamily('Croisillon de transmission')?.id).toBe('DRIVESHAFT')
+    expect(matchLogisticsFamily('Boîte de vitesses complète')?.id).toBe('GEARBOX')
+    expect(matchLogisticsFamily('Boîte automatique')?.id).toBe('GEARBOX')
+  })
+
+  it('exige des mots entiers : « boîtier » n’est pas une « boîte »', () => {
+    expect(matchLogisticsFamily('Boîtier papillon')?.id).toBe('SMALL_ELECTRIC')
+    expect(matchLogisticsFamily('Boîtier de direction')?.id).toBe('STEERING')
+  })
+
+  it('n’envoie au moteur complet que ce qui en est un', () => {
+    expect(matchLogisticsFamily('Moteur complet')?.id).toBe('ENGINE')
+    expect(matchLogisticsFamily('Bloc moteur')?.id).toBe('ENGINE')
+    // « support moteur » et « volant moteur » pesaient 185 kg dans l'ancienne
+    // recherche par sous-chaîne.
+    expect(matchLogisticsFamily('Support moteur')).toBeNull()
+    expect(matchLogisticsFamily('Volant moteur')?.id).toBe('CLUTCH_KIT')
+  })
+
+  it('fait primer le nom de la pièce sur sa catégorie', () => {
+    // Sans cette priorité, la catégorie « Moteur / … » emportait tout.
+    expect(matchLogisticsFamily('Vilebrequin', 'Moteur / Vilebrequin')?.id).toBe('ENGINE_HEAVY_PART')
+    expect(matchLogisticsFamily('Joint de culasse', 'Moteur / Joint de culasse')?.id).toBe('GASKET')
+  })
+
+  it('préfère le mot-clé le plus long à l’intérieur d’un même texte', () => {
+    expect(matchLogisticsFamily('Filtre à particules (FAP)')?.id).toBe('EXHAUST')
+    expect(matchLogisticsFamily('Filtre à huile')?.id).toBe('FILTER')
+  })
+
+  it('couvre les petites pièces courantes plutôt que de les laisser au gabarit générique', () => {
+    expect(matchLogisticsFamily('Capteur ABS')?.id).toBe('SMALL_ELECTRIC')
+    expect(matchLogisticsFamily('Injecteur diesel')?.id).toBe('SMALL_ELECTRIC')
+    expect(matchLogisticsFamily('Courroie de distribution')?.id).toBe('BELT_KIT')
+    expect(matchLogisticsFamily('Pompe à eau')?.id).toBe('PUMP')
+    expect(matchLogisticsFamily('Rétroviseur droit')?.id).toBe('WIPER_MIRROR')
+    expect(matchLogisticsFamily('Turbocompresseur')?.id).toBe('TURBO')
+    expect(matchLogisticsFamily('Silencieux d’échappement')?.id).toBe('EXHAUST')
+  })
+
   it('returns null when nothing matches', () => {
     expect(matchLogisticsFamily('Chose indéterminée')).toBeNull()
   })
