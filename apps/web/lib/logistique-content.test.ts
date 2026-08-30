@@ -10,6 +10,7 @@ import {
   LOGISTIQUE_FAQ,
   LOGISTIQUE_HERO,
   LOGISTIQUE_RECEIPT_OPEN,
+  LOGISTIQUE_RECEIPT,
   LOGISTIQUE_STATS,
   LOGISTIQUE_SEGMENTS,
   LOGISTIQUE_SEGMENTS_INTRO,
@@ -110,6 +111,24 @@ describe('vitrine ouverte — la home ne présuppose plus une flotte', () => {
       0,
     )
     expect(LOGISTIQUE_RECEIPT_OPEN.total.value.replace(/\D/g, '')).toBe(String(sum))
+  })
+
+  it('fait apparaître les frais Pièces à 10 % du prix pièce dans les deux reçus', () => {
+    // L'exemple de la vitrine doit facturer comme le moteur : la commission est
+    // une ligne visible, jamais fondue dans l'acheminement.
+    for (const receipt of [LOGISTIQUE_RECEIPT_OPEN, LOGISTIQUE_RECEIPT]) {
+      const num = (label: RegExp) =>
+        Number(
+          receipt.lines.find((l) => label.test(l.label))?.value.replace(/\D/g, '') ?? '0',
+        )
+      const partPrice = num(/prix pièce/i)
+      const serviceFee = num(/frais d’envoi|frais d'envoi/i)
+      expect(partPrice).toBeGreaterThan(0)
+      expect(serviceFee).toBe(Math.round(partPrice * 0.1))
+
+      const sum = receipt.lines.reduce((acc, l) => acc + Number(l.value.replace(/\D/g, '')), 0)
+      expect(receipt.total.value.replace(/\D/g, '')).toBe(String(sum))
+    }
   })
 
   it('n\'affiche plus de stat propre aux flottes dans la bande d\'accueil', () => {

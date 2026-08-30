@@ -105,9 +105,9 @@ export const LOGISTIQUE_RECEIPT_OPEN = {
     { label: 'Prix pièce (usine)', value: '32 000' },
     { label: 'Fret aérien (poids taxable 4,5 kg)', value: '46 500' },
     { label: 'Douane (20 %)', value: '15 700' },
-    { label: 'Livraison Abidjan', value: '2 000' },
+    { label: 'Frais d\'envoi Pièces (10 % du prix pièce)', value: '3 200' },
   ] as ReceiptLine[],
-  total: { label: 'Coût rendu à Abidjan', value: '96 200 FCFA' },
+  total: { label: 'Coût rendu à Abidjan', value: '97 400 FCFA' },
   note: 'Estimation de cadrage, ± 20 %. Aucun poste caché : ce que vous voyez est ce que vous payez, douane comprise.',
 }
 
@@ -220,23 +220,24 @@ export const LOGISTIQUE_RECEIPT = {
     { label: 'Prix pièce (usine)', value: '32 000' },
     { label: 'Fret aérien (poids taxable 4,5 kg)', value: '46 500' },
     { label: 'Douane (20 %)', value: '15 700' },
-    { label: 'Livraison Abidjan', value: '2 000' },
+    { label: 'Frais d\'envoi Pièces (10 % du prix pièce)', value: '3 200' },
     { label: 'Immobilisation 5 j × 30 000 F', value: '150 000', dominant: true },
   ] as ReceiptLine[],
-  total: { label: 'Coût total réel', value: '246 200 FCFA' },
+  total: { label: 'Coût total réel', value: '247 400 FCFA' },
   note: 'Estimation de cadrage, ± 20 %. L\'immobilisation représente 61 % du coût total réel. C\'est beaucoup plus que le prix de la pièce.',
 }
 
 export const VTC_STATS: Array<{ num: string; cap: string }> = [
   { num: '4 h → 45 j', cap: 'six modes d\'acheminement comparés sur la même grille' },
   { num: '30 000 F', cap: 'ce que coûte une journée d\'arrêt d\'un véhicule premium' },
-  { num: '× 42', cap: 'écart entre la pièce la moins chère et le coût total le plus élevé' },
+  { num: '× 45', cap: 'écart entre le prix de la pièce et le coût total le plus élevé' },
   { num: '17 familles', cap: 'de pièces déjà codées en poids et en volume : vous n\'avez rien à peser' },
 ]
 
 export const TOTAL_COST_FORMULA = [
   'Coût total = prix pièce',
-  '           + frais logistique (fret + douane + livraison locale)',
+  '           + fret + douane',
+  '           + frais d\'envoi Pièces (10 % du prix pièce)',
   '           + délai en jours × coût d\'immobilisation journalier',
 ]
 
