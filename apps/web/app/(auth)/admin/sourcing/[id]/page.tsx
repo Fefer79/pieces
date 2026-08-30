@@ -444,7 +444,7 @@ export default function AdminSourcingDetailPage() {
                   <Th align="right">Pièce</Th>
                   <Th align="right">Fret</Th>
                   <Th align="right">Douane</Th>
-                  <Th align="right">Livraison</Th>
+                  <Th align="right">Frais Pièces</Th>
                   <Th align="right">Immobilisation</Th>
                   <Th align="right">Coût total</Th>
                 </Tr>
@@ -493,7 +493,7 @@ export default function AdminSourcingDetailPage() {
                       {fmtFcfa(row.option.customsCost)}
                     </Td>
                     <Td align="right" className="tabular text-muted">
-                      {fmtFcfa(row.option.lastMileCost)}
+                      {fmtFcfa(row.option.serviceFee)}
                     </Td>
                     <Td align="right" className="tabular text-muted">
                       {fmtFcfa(row.option.downtimeCost)}

@@ -260,13 +260,12 @@ export const DEMO_MATRIX: {
 } = {
   vehicle: 'Bestune B70 2024, amortisseur avant',
   caption:
-    'Immobilisation 30 000 F/jour (catégorie premium thermique). Prix pièce : 45 000 F chez un vendeur d\'Abidjan, 32 000 F à l\'usine.',
-  note: 'La pièce la moins chère du tableau (32 000 F par maritime) produit le coût total le plus élevé.',
+    'Immobilisation 30 000 F/jour (catégorie premium thermique). Pièce introuvable à Abidjan, 32 000 F à l\'usine — quatre façons de la faire venir.',
+  note: 'À prix de pièce identique, le mode d\'acheminement fait tout : le maritime, le moins cher au fret, produit le coût total le plus élevé.',
   input: {
     downtimeCostPerDay: 30_000,
     // Famille résolue au rendu depuis « amortisseur » — cf. matchLogisticsFamily.
     options: [
-      { mode: 'LOCAL', partPrice: 45_000, transitDays: 2, available: true },
       { mode: 'AIR_NOW', partPrice: 32_000 },
       { mode: 'AIR_STANDARD', partPrice: 32_000 },
       { mode: 'AIR_ECONOMY', partPrice: 32_000 },
@@ -327,9 +326,13 @@ export const MODE_COPY: Record<
   },
 }
 
-/** Ordre d'affichage public — le pré-positionné n'est proposé qu'aux flottes. */
+/**
+ * Ordre d'affichage public. Le pré-positionné n'est proposé qu'aux flottes, et
+ * l'achat local ne l'est plus du tout : on fait venir une pièce précisément
+ * parce qu'elle est introuvable à Abidjan. MODE_COPY.LOCAL reste défini pour
+ * les cotations déjà émises avec ce mode.
+ */
 export const PUBLIC_MODES: LogisticsMode[] = [
-  'LOCAL',
   'AIR_NOW',
   'AIR_STANDARD',
   'AIR_ECONOMY',
@@ -587,8 +590,9 @@ export const LEAD_FORM_COPY = {
   // n'a de sens que pour une flotte, et il est traité sur /logistique/flottes-vtc.
   estimateTitleWithoutPrice: 'Coût d\'acheminement estimé',
   estimateNoteWithoutPrice:
-    'Hors prix de la pièce et hors droits de douane sur sa valeur. Indiquez un prix estimé pour obtenir le coût complet.',
-  estimateFootnote: 'Estimation de cadrage, ± 20 %. Un devis confirmé précède toute commande.',
+    'Hors prix de la pièce, hors droits de douane sur sa valeur et hors frais d\'envoi Pièces (10 % du prix). Indiquez un prix estimé pour obtenir le coût complet.',
+  estimateFootnote:
+    'Estimation de cadrage, ± 20 %. Les frais d\'envoi Pièces (10 % du prix de la pièce) couvrent la recherche du fournisseur, le dédouanement et la remise à Abidjan. Un devis confirmé précède toute commande.',
   downtimeAssumption:
     'Hypothèse : véhicule premium thermique, 30 000 F de recette perdue par jour. Précisez la motorisation pour affiner.',
   fleetDowntimeTeaser:

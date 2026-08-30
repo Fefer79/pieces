@@ -112,7 +112,6 @@ export function DevisWizard({ context }: { context: DevisContext }) {
       downtimeCostPerDay: DOWNTIME_COST_PER_DAY[economyCategory],
       family: matchLogisticsFamily(state.partName, state.partCategory, state.oemReference),
       options: [
-        { mode: 'LOCAL', partPrice: state.partPriceHint ?? 0, available: true },
         { mode: 'AIR_NOW', partPrice: state.partPriceHint ?? 0, available: true },
         { mode: 'AIR_STANDARD', partPrice: state.partPriceHint ?? 0, available: true },
         { mode: 'AIR_ECONOMY', partPrice: state.partPriceHint ?? 0, available: true },

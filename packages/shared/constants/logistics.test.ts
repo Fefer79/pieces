@@ -8,6 +8,7 @@ import {
   PART_LOGISTICS_FAMILIES,
   DEFAULT_FAMILY,
   LOGISTICS_MODES,
+  SEA_LCL_MIN_CHARGEABLE_KG,
 } from './logistics'
 
 const familyById = (id: string) => PART_LOGISTICS_FAMILIES.find((f) => f.id === id) ?? null
@@ -135,6 +136,75 @@ describe('computeArbitrageMatrix', () => {
     expect(local.totalCost).toBe(local.partPrice + local.freightCost + local.downtimeCost)
   })
 
+  it('écarte le maritime quand il est plus lent sans être moins cher', () => {
+    // Une petite pièce : le LCL n'a que ses frais fixes, il coûtait 30 000 F
+    // contre 25 000 F en aérien économique — 45 jours d'attente pour payer plus.
+    const result = computeArbitrageMatrix({
+      downtimeCostPerDay: 0,
+      family: familyById('SMALL_ELECTRIC'),
+      options: [
+        { mode: 'AIR_ECONOMY', partPrice: 0 },
+        { mode: 'SEA_LCL', partPrice: 0 },
+      ],
+    })
+
+    const [sea] = result.options.filter((o) => o.mode === 'SEA_LCL')
+    expect(sea.available).toBe(false)
+    expect(sea.warnings.join(' ')).toMatch(/non pertinent|sans être moins cher/)
+    expect(result.options.find((o) => o.recommended)?.mode).toBe('AIR_ECONOMY')
+  })
+
+  it('écarte aussi le maritime au-dessus du seuil quand il reste dominé', () => {
+    // Un rétroviseur pèse 1,75 kg en aérien (taxé au volume / 6) mais 9 kg
+    // taxables en LCL : au-dessus du seuil, et pourtant plus cher que l'aérien.
+    const result = computeArbitrageMatrix({
+      downtimeCostPerDay: 0,
+      family: familyById('WIPER_MIRROR'),
+      options: [
+        { mode: 'AIR_ECONOMY', partPrice: 0 },
+        { mode: 'SEA_LCL', partPrice: 0 },
+      ],
+    })
+
+    const [sea] = result.options.filter((o) => o.mode === 'SEA_LCL')
+    expect(sea.chargeableWeightKg).toBeGreaterThan(SEA_LCL_MIN_CHARGEABLE_KG)
+    expect(sea.available).toBe(false)
+  })
+
+  it('garde le maritime dès qu’il est réellement moins cher', () => {
+    const result = computeArbitrageMatrix({
+      downtimeCostPerDay: 0,
+      family: familyById('GEARBOX'),
+      options: [
+        { mode: 'AIR_ECONOMY', partPrice: 0 },
+        { mode: 'SEA_LCL', partPrice: 0 },
+      ],
+    })
+
+    const [sea] = result.options.filter((o) => o.mode === 'SEA_LCL')
+    expect(sea.available).toBe(true)
+    const [eco] = result.options.filter((o) => o.mode === 'AIR_ECONOMY')
+    expect(sea.freightCost).toBeLessThan(eco.freightCost)
+  })
+
+  it('ne laisse pas le coût d’immobilisation écarter une option en contexte flotte', () => {
+    // L'immobilisation écrase tout le reste : jugée sur le coût total, la moindre
+    // option lente disparaîtrait alors qu'elle reste parfaitement proposable.
+    const result = computeArbitrageMatrix({
+      downtimeCostPerDay: 30_000,
+      family: familyById('GEARBOX'),
+      options: [
+        { mode: 'AIR_NOW', partPrice: 500_000 },
+        { mode: 'AIR_STANDARD', partPrice: 500_000 },
+        { mode: 'AIR_ECONOMY', partPrice: 500_000 },
+        { mode: 'SEA_LCL', partPrice: 500_000 },
+      ],
+    })
+
+    expect(result.options.every((o) => o.available)).toBe(true)
+    expect(result.options.find((o) => o.recommended)?.mode).toBe('AIR_ECONOMY')
+  })
+
   it('makes sea freight the most expensive option despite the cheapest part', () => {
     const result = computeArbitrageMatrix({
       downtimeCostPerDay: DOWNTIME_COST_PER_DAY.PREMIUM_EV,
@@ -184,7 +254,7 @@ describe('computeArbitrageMatrix', () => {
     expect(result.options.find((o) => o.recommended)?.mode).toBe('AIR_NOW')
   })
 
-  it('applies customs duty and last mile only to imported options', () => {
+  it('n’applique douane et frais d’envoi qu’aux options importées', () => {
     const result = computeArbitrageMatrix({
       downtimeCostPerDay: DOWNTIME_COST_PER_DAY.PREMIUM_ICE,
       family: shock,
@@ -198,9 +268,36 @@ describe('computeArbitrageMatrix', () => {
     expect(local.mode).toBe('LOCAL')
     expect(air.mode).toBe('AIR_STANDARD')
     expect(local.customsCost).toBe(0)
-    expect(local.lastMileCost).toBe(0)
+    expect(local.serviceFee).toBe(0)
     expect(air.customsCost).toBeGreaterThan(0)
-    expect(air.lastMileCost).toBeGreaterThan(0)
+    // 10 % du prix de la pièce, assis sur elle seule — ni le fret ni la douane.
+    expect(air.serviceFee).toBe(3_200)
+  })
+
+  it('facture les frais d’envoi à 10 % du prix de la pièce', () => {
+    const result = computeArbitrageMatrix({
+      downtimeCostPerDay: 0,
+      family: shock,
+      options: [{ mode: 'AIR_STANDARD', partPrice: 250_000 }],
+    })
+
+    const [air] = result.options
+    expect(air.serviceFee).toBe(25_000)
+    expect(air.totalCost).toBe(
+      air.partPrice + air.freightCost + air.customsCost + air.serviceFee + air.downtimeCost,
+    )
+  })
+
+  it('n’ajoute aucun frais d’envoi quand le prix de la pièce est inconnu', () => {
+    // Le devis public tolère un prix vide : la ligne est alors à zéro et le
+    // total s'annonce comme un plancher, jamais comme un coût complet.
+    const result = computeArbitrageMatrix({
+      downtimeCostPerDay: 0,
+      family: shock,
+      options: [{ mode: 'AIR_STANDARD', partPrice: 0 }],
+    })
+
+    expect(result.options[0].serviceFee).toBe(0)
   })
 
   it('enforces the freight minimum charge on a light part', () => {

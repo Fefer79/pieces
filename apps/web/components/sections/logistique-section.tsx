@@ -9,13 +9,15 @@ import { MODE_COPY } from '@/lib/logistique-content'
 // Les délais viennent de MODE_COPY (lib/logistique-content.ts) — source unique,
 // jamais recopiés en dur ici. Le reçu est un exemple de cadrage, pas un tarif.
 
-const MODES = ['AIR_STANDARD', 'SEA_LCL', 'LOCAL'] as const
+// Trois façons de faire venir la pièce. L'achat local n'y figure plus : cette
+// section s'adresse justement à ceux pour qui aucun vendeur d'Abidjan ne l'a.
+const MODES = ['AIR_NOW', 'AIR_STANDARD', 'SEA_LCL'] as const
 
 const RECEIPT_LINES: Array<{ label: string; amount: number; dominant?: boolean }> = [
   { label: 'Prix de la pièce', amount: 310000 },
   { label: 'Acheminement aérien', amount: 96000 },
   { label: 'Douane et taxes', amount: 74500, dominant: true },
-  { label: 'Livraison Abidjan', amount: 9000 },
+  { label: 'Frais d’envoi Pièces (10 %)', amount: 31000 },
 ]
 
 const RECEIPT_TOTAL = RECEIPT_LINES.reduce((sum, line) => sum + line.amount, 0)

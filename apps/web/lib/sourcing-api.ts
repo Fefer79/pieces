@@ -199,7 +199,8 @@ export interface ArbitrageOptionView {
   partPrice: number
   freightCost: number
   customsCost: number
-  lastMileCost: number
+  /** Frais d'envoi Pièces (10 % du prix de la pièce). */
+  serviceFee: number
   downtimeCost: number
   totalCost: number
   available: boolean

@@ -152,7 +152,7 @@ export function LogisticsMatrixCard({
                   <Th align="right">Pièce</Th>
                   <Th align="right">Fret</Th>
                   <Th align="right">Douane</Th>
-                  <Th align="right">Livraison</Th>
+                  <Th align="right">Frais Pièces</Th>
                   <Th align="right">Immobilisation</Th>
                   <Th align="right">Coût total</Th>
                 </Tr>
@@ -183,7 +183,7 @@ export function LogisticsMatrixCard({
                     <Td align="right" className="tabular text-ink">{fmt(o.partPrice)}</Td>
                     <Td align="right" className="tabular text-muted">{fmt(o.freightCost)}</Td>
                     <Td align="right" className="tabular text-muted">{fmt(o.customsCost)}</Td>
-                    <Td align="right" className="tabular text-muted">{fmt(o.lastMileCost)}</Td>
+                    <Td align="right" className="tabular text-muted">{fmt(o.serviceFee)}</Td>
                     <Td align="right" className="tabular text-muted">{fmt(o.downtimeCost)}</Td>
                     <Td align="right" className={`tabular ${o.recommended ? 'font-semibold text-ink' : 'text-ink'}`}>
                       {fmt(o.totalCost)}

@@ -21,13 +21,12 @@ export const formatDelay = (days: number) =>
   days < 1 ? `${Math.round(days * 24)} h` : `${days} j`
 
 function freightTotal(o: ArbitrageOption) {
-  return o.freightCost + o.customsCost + o.lastMileCost
+  return o.freightCost + o.customsCost
 }
 
 function freightDetail(o: ArbitrageOption) {
   const parts = [`fret ${fmt(o.freightCost)} F`]
   if (o.customsCost > 0) parts.push(`douane ${fmt(o.customsCost)} F`)
-  if (o.lastMileCost > 0) parts.push(`livraison ${fmt(o.lastMileCost)} F`)
   return parts.join(' · ')
 }
 
@@ -73,6 +72,9 @@ export function ArbitrageTable({
             )}
             <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
               Acheminement
+            </th>
+            <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+              Frais Pièces
             </th>
             {showDowntime && (
               <th className="px-4 py-3 text-right font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
@@ -135,6 +137,18 @@ export function ArbitrageTable({
                   {fmt(freightTotal(o))}
                 </span>
                 <p className="mt-0.5 text-[11px] leading-snug text-muted-2">{freightDetail(o)}</p>
+              </td>
+              <td className="px-4 py-3 text-right align-top">
+                {o.serviceFee > 0 ? (
+                  <>
+                    <span className="tabular whitespace-nowrap font-mono text-ink">
+                      {fmt(o.serviceFee)}
+                    </span>
+                    <p className="mt-0.5 text-[11px] leading-snug text-muted-2">10 % du prix</p>
+                  </>
+                ) : (
+                  <span className="text-muted-2">—</span>
+                )}
               </td>
               {showDowntime && (
                 <td className="tabular whitespace-nowrap px-4 py-3 text-right align-top font-mono text-ink">

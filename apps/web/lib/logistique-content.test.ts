@@ -30,17 +30,24 @@ describe('DEMO_MATRIX — la table de la landing sort du moteur produit', () => 
     expect(result.familyId).toBe('SHOCK_ABSORBER')
   })
 
-  it('classe le maritime en dernier malgré le prix pièce le plus bas', () => {
+  it('classe le maritime en dernier malgré le fret le moins cher', () => {
     const last = result.options[result.options.length - 1]!
     expect(last.mode).toBe('SEA_LCL')
-    expect(last.partPrice).toBe(32_000)
+    const freights = result.options.map((o) => o.freightCost)
+    expect(last.freightCost).toBe(Math.min(...freights))
   })
 
-  it('démontre que la pièce la moins chère produit le coût total le plus élevé', () => {
+  it('démontre qu’à prix de pièce égal, le mode d’acheminement fait tout', () => {
+    // La démonstration ne repose plus sur un prix local plus élevé : toutes les
+    // options partent du même prix usine, seul l'acheminement les sépare.
     const sea = result.options.find((o) => o.mode === 'SEA_LCL')!
     const best = result.options.find((o) => o.recommended)!
-    expect(sea.partPrice).toBeLessThanOrEqual(best.partPrice)
-    expect(sea.totalCost).toBeGreaterThan(best.totalCost * 10)
+    expect(new Set(result.options.map((o) => o.partPrice)).size).toBe(1)
+    expect(sea.totalCost).toBeGreaterThan(best.totalCost * 2)
+  })
+
+  it('ne propose plus l’achat local : la cotation sert quand la pièce manque', () => {
+    expect(result.options.some((o) => o.mode === 'LOCAL')).toBe(false)
   })
 
   it('signale la restriction aérienne des amortisseurs à gaz', () => {

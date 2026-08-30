@@ -469,7 +469,25 @@ export const LOGISTICS_MODES: Record<LogisticsMode, LogisticsModeSpec> = {
 /** Droits de douane approximatifs sur la valeur pièce + fret (la TVA est récupérable). */
 export const CUSTOMS_DUTY_RATE = 0.2
 
-/** Livraison finale Abidjan une fois la pièce dédouanée. */
+/**
+ * Frais d'envoi Pièces : 10 % du prix de la pièce.
+ *
+ * Remplace le forfait de dernier kilomètre à 2 000 F, qui ne correspondait à
+ * rien — ni à la grille de livraison Abidjan (1 500 à 9 000 F selon zone et
+ * panier), ni au travail réel de recherche, de dédouanement et de remise. La
+ * ligne est montrée séparément dans la table : c'est notre rémunération, elle
+ * ne se cache pas dans l'acheminement (DESIGN.md, décomposition explicite).
+ */
+export const PIECES_SERVICE_RATE = 0.1
+
+/**
+ * Coût interne de l'acheminement final à Abidjan une fois la pièce dédouanée.
+ *
+ * Ce n'est PAS une ligne facturée au client — côté client, la remise est
+ * couverte par les frais d'envoi ci-dessus. Cette valeur sert au calcul du coût
+ * de revient d'un bon d'achat dans l'ERP (stock.service), où Pièces achète pour
+ * son propre compte et n'a personne à qui facturer un service.
+ */
 export const LAST_MILE_FEE = 2_000
 
 // ---------------------------------------------------------------------------
@@ -504,7 +522,8 @@ export interface ArbitrageOption {
   partPrice: number
   freightCost: number
   customsCost: number
-  lastMileCost: number
+  /** Frais d'envoi Pièces (10 % du prix de la pièce). */
+  serviceFee: number
   downtimeCost: number
   totalCost: number
   available: boolean
@@ -523,6 +542,19 @@ export interface ArbitrageResult {
   downtimeCostPerDay: number
   options: ArbitrageOption[]
 }
+
+/**
+ * Poids taxable minimal en dessous duquel le groupage maritime n'est pas proposé.
+ *
+ * Le LCL se facture au m³ : sous quelques kilos taxables, il ne reste que les
+ * frais fixes de dossier et de dédouanement, et l'option devient STRICTEMENT
+ * DOMINÉE — à 0,7 kg elle coûtait 30 000 F contre 25 000 F en aérien
+ * économique, pour 45 jours d'attente au lieu de 7. Entre 3 et 5 kg elle
+ * repasse devant de quelques milliers de francs seulement, ce qui ne paie pas
+ * 38 jours de plus. Personne ne met une bougie d'allumage en conteneur : on
+ * l'affiche indisponible plutôt que de laisser une ligne inarbitrable.
+ */
+export const SEA_LCL_MIN_CHARGEABLE_KG = 5
 
 const roundTo100 = (n: number) => Math.round(n / 100) * 100
 
@@ -548,7 +580,10 @@ export function computeArbitrageMatrix(input: ArbitrageInput): ArbitrageResult {
       ? roundTo100(Math.max(chargeable * spec.ratePerKg + spec.handlingFee, spec.minimumCharge))
       : spec.handlingFee
     const customsCost = isImport ? roundTo100(CUSTOMS_DUTY_RATE * (opt.partPrice + freightCost)) : 0
-    const lastMileCost = isImport ? LAST_MILE_FEE : 0
+    // Assis sur le prix de la pièce seul : ni le fret ni la douane ne sont
+    // notre valeur ajoutée, et les frais d'envoi n'entrent pas dans la base
+    // douanière (c'est un service, pas de la valeur transportée).
+    const serviceFee = isImport ? roundTo100(PIECES_SERVICE_RATE * opt.partPrice) : 0
     const downtimeCost = Math.round(transitDays * input.downtimeCostPerDay)
 
     const warnings: string[] = []
@@ -557,6 +592,17 @@ export function computeArbitrageMatrix(input: ArbitrageInput): ArbitrageResult {
     }
     if (family.fragile && isImport) {
       warnings.push('Pièce fragile : emballage renforcé et assurance recommandés')
+    }
+
+    // Sous le seuil, le groupage maritime n'est pas une option réelle : on le
+    // marque indisponible en disant pourquoi, plutôt que d'afficher un prix qui
+    // invite à une comparaison qui n'a pas lieu d'être.
+    const belowSeaThreshold =
+      opt.mode === 'SEA_LCL' && chargeable < SEA_LCL_MIN_CHARGEABLE_KG
+    if (belowSeaThreshold) {
+      warnings.push(
+        'Groupage maritime non pertinent à ce gabarit : les frais fixes de dédouanement dépassent un envoi aérien économique',
+      )
     }
 
     return {
@@ -568,15 +614,41 @@ export function computeArbitrageMatrix(input: ArbitrageInput): ArbitrageResult {
       partPrice: opt.partPrice,
       freightCost,
       customsCost,
-      lastMileCost,
+      serviceFee,
       downtimeCost,
-      totalCost: opt.partPrice + freightCost + customsCost + lastMileCost + downtimeCost,
-      available: opt.available ?? true,
+      totalCost: opt.partPrice + freightCost + customsCost + serviceFee + downtimeCost,
+      available: (opt.available ?? true) && !belowSeaThreshold,
       extraCostVsBest: 0,
       recommended: false,
       warnings,
     }
   })
+
+  // Options dominées : plus lentes qu'une autre option disponible, sans être
+  // moins chères. Le seuil maritime ne suffit pas à les attraper — un
+  // rétroviseur fait 1,75 kg en aérien (taxé au volume / 6) mais 9 kg taxables
+  // en LCL, donc au-dessus du seuil tout en restant plus cher que l'aérien
+  // économique. La comparaison se fait HORS immobilisation : en contexte flotte
+  // le coût d'arrêt écrase tout le reste et ferait disparaître des options
+  // parfaitement valables, seulement mal notées.
+  const landedCost = (o: ArbitrageOption) =>
+    o.partPrice + o.freightCost + o.customsCost + o.serviceFee
+  for (const option of options) {
+    if (!option.available) continue
+    const dominator = options.find(
+      (other) =>
+        other !== option &&
+        (other.available ?? true) &&
+        other.transitDays < option.transitDays &&
+        landedCost(other) <= landedCost(option),
+    )
+    if (dominator) {
+      option.available = false
+      option.warnings.push(
+        `Plus lent que « ${dominator.label} » sans être moins cher : option écartée`,
+      )
+    }
+  }
 
   options.sort((a, b) => a.totalCost - b.totalCost)
 

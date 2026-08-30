@@ -50,7 +50,10 @@ const DEDUP_WINDOW_MS = 10 * 60 * 1000
  * prospect n'a pas de stock consigné, et c'est l'option qui gagne toujours —
  * l'afficher reviendrait à annoncer un délai qu'on ne peut pas tenir.
  */
-const PUBLIC_MODES = ['LOCAL', 'AIR_NOW', 'AIR_STANDARD', 'AIR_ECONOMY', 'SEA_LCL'] as const
+// L'achat local n'est pas proposé : on ne sollicite Pièces Logistique que
+// lorsque la pièce est introuvable à Abidjan. La chercher localement est le
+// métier de la marketplace, pas celui d'une cotation d'import.
+const PUBLIC_MODES = ['AIR_NOW', 'AIR_STANDARD', 'AIR_ECONOMY', 'SEA_LCL'] as const
 
 export interface RequestContext {
   /** Utilisateur authentifié (Bearer optionnel sur la route publique). */
@@ -147,9 +150,6 @@ export function buildEstimate(input: {
   const options: ArbitrageOptionInput[] = PUBLIC_MODES.map((mode) => ({
     mode,
     partPrice,
-    // On ne prétend pas savoir si la pièce est dispo localement tant qu'un
-    // opérateur ne l'a pas vérifié : l'option locale est affichée, marquée
-    // « à confirmer » côté web.
     available: true,
   }))
 

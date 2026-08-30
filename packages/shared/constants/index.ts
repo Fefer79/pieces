@@ -42,6 +42,7 @@ export {
   chargeableWeightKg,
   LOGISTICS_MODES,
   CUSTOMS_DUTY_RATE,
+  PIECES_SERVICE_RATE,
   LAST_MILE_FEE,
   computeArbitrageMatrix,
 } from './logistics'
