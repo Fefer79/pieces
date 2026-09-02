@@ -52,7 +52,9 @@ export const ADMIN_NAV: AdminNavSection[] = [
     items: [
       { href: '/admin/crm', label: 'CRM', capability: 'crm:read' },
       { href: '/admin/clients', label: 'Clients', capability: 'erp:admin' },
-      { href: '/admin/vendors', label: 'Vendeurs', capability: 'erp:admin' },
+      // Portefeuille vendeurs = outil du commercial. La consultation suit
+      // `crm:read` ; l'édition de la fiche est gardée côté API par `crm:write`.
+      { href: '/admin/vendors', label: 'Vendeurs', capability: 'crm:read' },
       // Émission et suivi des contrats d'adhésion : outil de terrain du
       // commercial, donc ouvert par `crm:write` — pas réservé à `erp:admin`.
       // L'écran existe pour émettre (POST gardé par `crm:write`) ; un profil en

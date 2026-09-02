@@ -1,6 +1,28 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
-import { requireCapability } from '../../plugins/erpAuth.js'
+import { requireCapability, assertCapability } from '../../plugins/erpAuth.js'
+import type { ErpCapability } from 'shared/constants'
+
+// `/admin/suggest` et `/admin/export.csv` servent plusieurs entités sous une
+// seule URL : la garde de route ne peut poser que le socle, l'exigence réelle
+// dépend de l'entité demandée. Les vendeurs relèvent du CRM commercial ; le
+// reste garde son exigence d'administration ERP d'origine.
+const SUGGEST_CAPABILITY: Record<
+  'clients' | 'enterprises' | 'vendors' | 'external-imports',
+  ErpCapability
+> = {
+  vendors: 'crm:read',
+  clients: 'erp:admin',
+  enterprises: 'erp:admin',
+  'external-imports': 'erp:admin',
+}
+
+const EXPORT_CAPABILITY: Record<'vendors' | 'clients' | 'orders' | 'catalog', ErpCapability> = {
+  vendors: 'crm:read',
+  clients: 'erp:admin',
+  orders: 'erp:admin',
+  catalog: 'erp:admin',
+}
 import {
   getAdminDashboardStats,
   getAdminUsers,
@@ -112,10 +134,15 @@ export async function adminRoutes(fastify: FastifyInstance) {
   )
 
   // Admin: list vendors
+  //
+  // Le portefeuille vendeurs est l'outil de travail du commercial, pas une
+  // fonction d'administration de l'ERP : la lecture passe par `crm:read` et
+  // l'édition de la fiche par `crm:write`. `erp:admin` reste ce qu'il dit être
+  // — administrer l'ERP — et ne sert plus de garde par défaut ici.
   fastify.get(
     '/vendors',
     {
-      preHandler: [requireAuth, requireCapability('erp:admin')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
       schema: { tags: ['Admin'], description: 'Liste des vendeurs (admin)', security: [{ BearerAuth: [] }] },
     },
     async (request, reply) => {
@@ -337,7 +364,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/suggest',
     {
-      preHandler: [requireAuth, requireCapability('erp:admin')],
+      preHandler: [requireAuth, requireCapability('erp:read')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Autocomplétion des listes admin (clients, entreprises, vendeurs, imports externes)',
@@ -349,6 +376,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         entity: 'clients' | 'enterprises' | 'vendors' | 'external-imports'
         q?: string
       }
+      assertCapability(request.staff, SUGGEST_CAPABILITY[entity])
       const data = await getAdminEntitySuggest(entity, q ?? '')
       return reply.status(200).send({ data })
     },
@@ -385,7 +413,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/vendors/list',
     {
-      preHandler: [requireAuth, requireCapability('erp:admin')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Liste vendeurs paginée + recherche',
@@ -401,7 +429,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/vendors/:id/detail',
     {
-      preHandler: [requireAuth, requireCapability('erp:admin')],
+      preHandler: [requireAuth, requireCapability('crm:read')],
       schema: { tags: ['Admin'], security: [{ BearerAuth: [] }], description: 'Détail vendeur + transactions + commissions' },
     },
     async (request, reply) => {
@@ -414,7 +442,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.patch(
     '/vendors/:id',
     {
-      preHandler: [requireAuth, requireCapability('erp:admin')],
+      preHandler: [requireAuth, requireCapability('crm:write')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Modifie le contact d\'un vendeur (admin)',
@@ -615,7 +643,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/export.csv',
     {
-      preHandler: [requireAuth, requireCapability('erp:admin')],
+      preHandler: [requireAuth, requireCapability('erp:read')],
       schema: {
         tags: ['Admin'], security: [{ BearerAuth: [] }],
         description: 'Export CSV (entity = vendors|clients|orders|catalog)',
@@ -624,6 +652,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { entity } = request.query as { entity: 'vendors' | 'clients' | 'orders' | 'catalog' }
+      assertCapability(request.staff, EXPORT_CAPABILITY[entity])
       const csv = await exportCsv(entity)
       return reply
         .header('content-type', 'text/csv; charset=utf-8')

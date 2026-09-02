@@ -209,4 +209,69 @@ describe('Admin Routes', () => {
       expect(response.statusCode).toBe(403)
     })
   })
+  // Le portefeuille vendeurs a quitté `erp:admin` pour le CRM commercial :
+  // un COMMERCIAL doit y entrer, sans que ça lui ouvre le reste de l'admin.
+  describe('portefeuille vendeurs ouvert au CRM commercial', () => {
+    async function mockCommercial() {
+      const { prisma } = await import('../../lib/prisma.js')
+      vi.mocked(prisma.teamMemberProfile.findUnique).mockResolvedValue({
+        id: 'staff-1',
+        staffRole: 'COMMERCIAL',
+        businessUnits: ['MARKETPLACE'],
+        fonction: 'Chargée de compte',
+        actif: true,
+      } as never)
+      return mockAuth('BUYER')
+    }
+
+    it('laisse un COMMERCIAL lister les vendeurs', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/vendors/list',
+        headers: await mockCommercial(),
+      })
+      expect(response.statusCode).toBe(200)
+    })
+
+    it('laisse un COMMERCIAL exporter les vendeurs', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/export.csv?entity=vendors',
+        headers: await mockCommercial(),
+      })
+      expect(response.statusCode).toBe(200)
+    })
+
+    it("refuse au COMMERCIAL l'export des clients, sur la même route", async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/export.csv?entity=clients',
+        headers: await mockCommercial(),
+      })
+      expect(response.statusCode).toBe(403)
+    })
+
+    it("refuse au COMMERCIAL l'autocomplétion des imports externes", async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/suggest?entity=external-imports&q=bo',
+        headers: await mockCommercial(),
+      })
+      expect(response.statusCode).toBe(403)
+    })
+
+    it('refuse au COMMERCIAL les écrans restés en administration ERP', async () => {
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/clients/list',
+        headers: await mockCommercial(),
+      })
+      expect(response.statusCode).toBe(403)
+    })
+  })
 })

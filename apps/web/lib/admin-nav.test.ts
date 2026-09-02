@@ -64,7 +64,12 @@ describe('navForCapabilities', () => {
     ).flatMap((s) => s.items.map((i) => i.href))
     // Signature sur le terrain : l'écran ne doit pas dépendre de la direction.
     expect(hrefs).toContain('/admin/contrats-vendeurs')
-    expect(hrefs).not.toContain('/admin/vendors')
+    // Le portefeuille vendeurs est son outil de travail, pas une fonction
+    // d'administration : il suit `crm:read` depuis 2026-09.
+    expect(hrefs).toContain('/admin/vendors')
+    // Les autres écrans du bloc CRM restent en administration ERP.
+    expect(hrefs).not.toContain('/admin/clients')
+    expect(hrefs).not.toContain('/admin/enterprises')
   })
 
   it('cache les contrats vendeurs à un profil en lecture seule sur le CRM', () => {

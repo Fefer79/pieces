@@ -148,3 +148,19 @@ export function requireStaffId(staff: StaffContext): string {
   }
   return staff.staffId
 }
+
+/**
+ * Vérifie une capacité DANS un handler, quand elle dépend de la requête et non
+ * de la route : `/admin/suggest` et `/admin/export.csv` servent plusieurs
+ * entités sous une seule URL, et les vendeurs n'ont pas la même exigence que
+ * les imports externes. Le preHandler pose alors le socle (`erp:read`) et le
+ * handler tranche entité par entité.
+ */
+export function assertCapability(staff: StaffContext, capability: ErpCapability): void {
+  if (!hasCapability(staff.capabilities, capability)) {
+    throw new AppError('ERP_FORBIDDEN', 403, {
+      message: "Vous n'avez pas accès à cette partie du back-office",
+      required: capability,
+    })
+  }
+}
