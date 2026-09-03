@@ -191,6 +191,16 @@ enum DeliveryMode {
 }
 
 enum JobType {
+  // ⚠ Enum synchronisé à la main sur la base 2026-09-03 (migration Supabase
+  //    `jobtype_enum_sync`) : les valeurs `CRM_DUE_TASKS_SCAN`,
+  //    `MARKETING_CAMPAIGN_SEND` et `SOURCING_SEARCH_RUN` manquaient côté base et
+  //    faisaient échouer `queueService.dequeue()` (cast `ANY($1::"JobType"[])`),
+  //    bloquant tout le worker. Toute nouvelle valeur doit être ajoutée ICI *et*
+  //    poussée en base (ce dépôt migre la base hors de `prisma migrate`).
+  //
+  //    Dérive connue : la base porte aussi `ERP_POST_SALES_JOURNAL` (issu de
+  //    `erp_socle_lot1`), absente de ce schéma car aucun handler ne l'utilise sur
+  //    cette branche — à réintégrer quand le job comptable reviendra.
   IMAGE_PROCESS_VARIANTS
   CATALOG_AI_IDENTIFY
   MAINTENANCE_REMINDER_SCAN
