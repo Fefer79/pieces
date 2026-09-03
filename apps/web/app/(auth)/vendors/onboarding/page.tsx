@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { getPiecesSession } from '@/lib/pieces-session'
+import { compressImage } from '@/lib/logistique/compress-image'
 import { Button } from '@/components/ui/button'
 
 type SupabaseClient = ReturnType<typeof createClient>
@@ -31,8 +32,17 @@ export default function VendorOnboardingPage() {
   const [phone, setPhone] = useState('')
   const [vendorType, setVendorType] = useState<'FORMAL' | 'INFORMAL'>('INFORMAL')
   const [documentNumber, setDocumentNumber] = useState('')
+  const [idPhoto, setIdPhoto] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  const idPhotoPreview = useMemo(() => (idPhoto ? URL.createObjectURL(idPhoto) : null), [idPhoto])
+  useEffect(
+    () => () => {
+      if (idPhotoPreview) URL.revokeObjectURL(idPhotoPreview)
+    },
+    [idPhotoPreview],
+  )
 
   useEffect(() => {
     async function check() {
@@ -93,8 +103,14 @@ export default function VendorOnboardingPage() {
       setError('Nom du contact trop court')
       return
     }
-    if (documentNumber.length < 5) {
-      setError(vendorType === 'FORMAL' ? 'Numéro RCCM trop court' : 'Numéro CNI trop court')
+    // Un vendeur formel doit déclarer son RCCM. Un informel apporte le numéro de
+    // sa pièce d'identité OU sa photo — beaucoup ne savent pas dicter le numéro.
+    if (vendorType === 'FORMAL' && documentNumber.length < 5) {
+      setError('Numéro RCCM trop court')
+      return
+    }
+    if (vendorType === 'INFORMAL' && documentNumber.length < 5 && !idPhoto) {
+      setError('Indiquez votre numéro CNI ou photographiez votre pièce d’identité')
       return
     }
 
@@ -116,7 +132,9 @@ export default function VendorOnboardingPage() {
           phone: `+225${digits}`,
           vendorType,
           kycType: vendorType === 'FORMAL' ? 'RCCM' : 'CNI',
-          documentNumber: documentNumber.trim(),
+          ...(documentNumber.trim().length >= 5
+            ? { documentNumber: documentNumber.trim() }
+            : {}),
         }),
       })
 
@@ -124,6 +142,24 @@ export default function VendorOnboardingPage() {
         const body = await res.json()
         setError(body.error?.message ?? "Erreur lors de la création du profil")
         return
+      }
+
+      // La photo se rattache au vendeur : elle part après la création.
+      if (idPhoto) {
+        const form = new FormData()
+        form.append('document', await compressImage(idPhoto), 'piece-identite.jpg')
+        const photoRes = await fetch('/api/v1/vendors/me/kyc-photo', {
+          method: 'POST',
+          body: form,
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!photoRes.ok) {
+          const body = await photoRes.json().catch(() => ({}))
+          setError(
+            `Profil créé, mais la photo n'a pas pu être envoyée : ${body?.error?.message ?? 'erreur serveur'}. Reprenez-la depuis votre profil.`,
+          )
+          return
+        }
       }
 
       // Vendor created, now sign guarantees to activate
@@ -273,8 +309,61 @@ export default function VendorOnboardingPage() {
             onChange={(e) => { setDocumentNumber(e.target.value); setError('') }}
             placeholder={vendorType === 'FORMAL' ? 'Ex : CI-ABJ-2024-B-12345' : 'Ex : C001234567'}
             className={`${inputClass} font-mono`}
-            required
+            required={vendorType === 'FORMAL'}
           />
+          {vendorType === 'INFORMAL' && (
+            <p className="mt-1.5 text-[11.5px] text-muted">
+              Si vous ne connaissez pas le numéro, la photo de votre pièce suffit.
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className={labelClass}>
+            {vendorType === 'FORMAL'
+              ? 'Photo du RCCM'
+              : 'Photo de la CNI ou d’une pièce d’identité valide'}
+          </label>
+          {idPhotoPreview ? (
+            <figure className="relative overflow-hidden rounded-md border border-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={idPhotoPreview}
+                alt="Votre pièce d'identité"
+                className="max-h-56 w-full bg-surface object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => setIdPhoto(null)}
+                className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-ink backdrop-blur"
+                aria-label="Retirer la photo"
+              >
+                ×
+              </button>
+            </figure>
+          ) : (
+            <label
+              className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border-strong px-3 py-6 text-sm text-muted transition-colors hover:bg-surface"
+              style={{ minHeight: 44 }}
+            >
+              <span className="text-2xl leading-none text-muted-2">＋</span>
+              Prendre la photo
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  setIdPhoto(e.target.files?.[0] ?? null)
+                  setError('')
+                }}
+              />
+            </label>
+          )}
+          <p className="mt-1.5 text-[11.5px] text-muted">
+            CNI, passeport, permis ou attestation d’identité. Le document reste privé : il ne sert
+            qu’à vérifier votre identité.
+          </p>
         </div>
 
         <div className="rounded-md border border-occasion-fg/20 bg-occasion-bg p-3.5 text-[13px] leading-relaxed text-occasion-fg">

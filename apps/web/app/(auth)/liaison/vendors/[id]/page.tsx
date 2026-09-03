@@ -4,10 +4,11 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
-import { liaisonFetch } from '@/lib/liaison-api'
+import { liaisonFetch, liaisonUpload, liaisonBlobUrl } from '@/lib/liaison-api'
 import { CommissionBadge } from '@/components/CommissionBadge'
 import { VendorMapPicker } from '@/components/vendor-map-picker'
 import { PartThumb } from '@/components/ui/part-thumb'
+import { compressImage } from '@/lib/logistique/compress-image'
 import { VendorContractCard } from '@/components/vendor-contract-card'
 
 interface VendorDetail {
@@ -26,7 +27,8 @@ interface VendorDetail {
   createdAt: string
   kyc: {
     kycType: 'RCCM' | 'CNI'
-    documentNumber: string
+    documentNumber: string | null
+    documentImageAt: string | null
   } | null
 }
 
@@ -364,10 +366,16 @@ export default function VendorDetailPage() {
         </h2>
         <p className="mt-2 text-sm text-ink">
           {vendor.vendorType === 'FORMAL' ? 'Formel' : 'Informel'}
-          {vendor.kyc
+          {vendor.kyc?.documentNumber
             ? ` · ${vendor.kyc.kycType} ${vendor.kyc.documentNumber}`
             : ''}
         </p>
+        <KycPhoto
+          vendorId={id}
+          vendorType={vendor.vendorType}
+          capturedAt={vendor.kyc?.documentImageAt ?? null}
+          onUploaded={refreshVendor}
+        />
       </section>
 
       <section className="mt-6 flex items-center justify-between">
@@ -421,6 +429,102 @@ export default function VendorDetailPage() {
           ))}
         </ul>
       )}
+    </div>
+  )
+}
+
+/**
+ * Pièce d'identité du vendeur : photo prise sur place (CNI, passeport, permis,
+ * attestation) ou RCCM. Jamais d'URL publique — la lecture passe par la route
+ * authentifiée, l'affichage par un object URL révoqué au démontage.
+ */
+function KycPhoto({
+  vendorId,
+  vendorType,
+  capturedAt,
+  onUploaded,
+}: {
+  vendorId: string
+  vendorType: 'FORMAL' | 'INFORMAL'
+  capturedAt: string | null
+  onUploaded: () => void
+}) {
+  const [url, setUrl] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // `capturedAt` change à chaque nouvelle photo : l'object URL précédent est
+  // révoqué au nettoyage, celui de la nouvelle prend sa place.
+  useEffect(() => {
+    if (!capturedAt) return
+    let objectUrl: string | null = null
+    let cancelled = false
+    liaisonBlobUrl(`/vendors/${vendorId}/kyc-photo`).then((u) => {
+      if (cancelled) {
+        if (u) URL.revokeObjectURL(u)
+        return
+      }
+      objectUrl = u
+      setUrl(u)
+    })
+    return () => {
+      cancelled = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [vendorId, capturedAt])
+
+  async function upload(file: File) {
+    setUploading(true)
+    setError(null)
+    const form = new FormData()
+    form.append('document', await compressImage(file), 'piece-identite.jpg')
+    const r = await liaisonUpload(`/vendors/${vendorId}/kyc-photo`, form)
+    setUploading(false)
+    if (!r.ok) {
+      setError(r.message)
+      return
+    }
+    onUploaded()
+  }
+
+  const label = vendorType === 'FORMAL' ? 'Photo du RCCM' : 'Photo de la pièce d’identité'
+
+  return (
+    <div className="mt-3">
+      <p className="text-xs font-medium text-ink">{label}</p>
+      {error && <p className="mt-1 text-xs text-[#D32F2F]">{error}</p>}
+      {url ? (
+        <figure className="mt-2 overflow-hidden rounded-md border border-border">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={url}
+            alt={label}
+            className="max-h-64 w-full bg-surface object-contain"
+          />
+          <figcaption className="border-t border-border bg-surface px-2 py-1 text-[11px] text-muted">
+            Enregistrée le{' '}
+            {capturedAt ? new Date(capturedAt).toLocaleDateString('fr-FR') : '—'}
+          </figcaption>
+        </figure>
+      ) : (
+        <p className="mt-1 text-xs text-muted">
+          {capturedAt ? 'Chargement…' : 'Aucune pièce enregistrée.'}
+        </p>
+      )}
+      <label className="mt-2 inline-flex cursor-pointer items-center rounded-md bg-card px-3 py-2 text-xs font-medium text-ink ring-1 ring-border hover:bg-surface">
+        {uploading ? 'Envoi…' : capturedAt ? 'Reprendre la photo' : 'Prendre la photo'}
+        <input
+          type="file"
+          accept="image/*,application/pdf"
+          capture="environment"
+          className="hidden"
+          disabled={uploading}
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) void upload(file)
+          }}
+        />
+      </label>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { uploadToR2 } from '../../lib/r2.js'
+import { storeKycPhoto, readKycPhoto } from '../../lib/kycPhoto.js'
 import { processVariants } from '../../lib/imageProcessor.js'
 import { scanOemLabel } from '../../lib/oemScan.js'
 import { subcategoryOf, resolveWarranty } from 'shared/constants'
@@ -120,6 +121,7 @@ const VENDOR_DETAIL_SELECT = {
       kycType: true,
       documentNumber: true,
       isPublic: true,
+      documentImageAt: true,
     },
   },
 } as const
@@ -267,6 +269,47 @@ export async function updateLiaisonVendor(
     where: { id: vendorId },
     select: VENDOR_DETAIL_SELECT,
   })
+}
+
+/**
+ * Photo de la pièce d'identité (CNI, passeport, permis, attestation) ou du RCCM
+ * d'un vendeur géré. Stockée sous clé R2 privée : jamais d'URL publique, la
+ * lecture passe par la route authentifiée `GET /vendors/:id/kyc-photo`.
+ *
+ * Un vendeur informel peut n'apporter que la photo : la fiche KYC est alors
+ * créée sans numéro de document.
+ */
+export async function uploadVendorKycPhoto(
+  liaisonId: string,
+  vendorId: string,
+  fileBuffer: Buffer,
+  mimeType: string,
+) {
+  const owned = await prisma.vendor.findFirst({
+    where: { id: vendorId, managedByLiaisonId: liaisonId },
+    select: { id: true, vendorType: true },
+  })
+  if (!owned) {
+    throw new AppError('LIAISON_VENDOR_NOT_FOUND', 404, {
+      message: 'Vendeur introuvable ou non géré par cette liaison',
+    })
+  }
+
+  const stored = await storeKycPhoto(vendorId, owned.vendorType, fileBuffer, mimeType)
+  return { vendorId, kycType: stored.kycType, documentImageAt: stored.documentImageAt }
+}
+
+export async function getVendorKycPhoto(liaisonId: string, vendorId: string) {
+  const owned = await prisma.vendor.findFirst({
+    where: { id: vendorId, managedByLiaisonId: liaisonId },
+    select: { id: true },
+  })
+  if (!owned) {
+    throw new AppError('LIAISON_VENDOR_NOT_FOUND', 404, {
+      message: 'Vendeur introuvable ou non géré par cette liaison',
+    })
+  }
+  return readKycPhoto(vendorId)
 }
 
 export async function createPartForVendor(

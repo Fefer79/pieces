@@ -12,6 +12,8 @@ const mockInterviewFindMany = vi.fn()
 const mockInterviewCount = vi.fn()
 const mockInterviewUpdate = vi.fn()
 const mockVendorContactFindUnique = vi.fn()
+const mockVendorContactCreate = vi.fn()
+const mockVendorContactUpdate = vi.fn()
 const mockVendorFindUnique = vi.fn()
 const mockContactActivityCreate = vi.fn()
 const mockTransaction = vi.fn()
@@ -29,7 +31,11 @@ vi.mock('../../lib/prisma.js', () => ({
       count: (...a: unknown[]) => mockInterviewCount(...a),
       update: (...a: unknown[]) => mockInterviewUpdate(...a),
     },
-    vendorContact: { findUnique: (...a: unknown[]) => mockVendorContactFindUnique(...a) },
+    vendorContact: {
+      findUnique: (...a: unknown[]) => mockVendorContactFindUnique(...a),
+      create: (...a: unknown[]) => mockVendorContactCreate(...a),
+      update: (...a: unknown[]) => mockVendorContactUpdate(...a),
+    },
     vendor: { findUnique: (...a: unknown[]) => mockVendorFindUnique(...a) },
     contactActivity: { create: (...a: unknown[]) => mockContactActivityCreate(...a) },
     $transaction: (ops: unknown) => mockTransaction(ops),
@@ -47,6 +53,8 @@ vi.mock('../../lib/gemini.js', () => ({
 
 const {
   createInterview,
+  updateInterview,
+  applyInterview,
   recordConsent,
   appendTranscript,
   attachAudio,
@@ -79,9 +87,31 @@ const baseInterview = {
   endedAt: null,
   createdAt: new Date('2026-09-01'),
   updatedAt: new Date('2026-09-01'),
-  prospect: { id: 'prospect-1', name: 'M. Koné', shopName: 'Stand 12', phone: '+2250700000000', commune: 'Adjamé', statut: 'VISITE' },
+  leadName: null,
+  leadShopName: null,
+  leadPhone: null,
+  leadCommune: null,
+  prospect: {
+    id: 'prospect-1',
+    name: 'M. Koné',
+    shopName: 'Stand 12',
+    phone: '+2250700000000',
+    commune: 'Adjamé',
+    statut: 'VISITE',
+    vendorId: null,
+  },
   vendor: null,
   conductedBy: { id: 'user-1', name: 'Awa' },
+}
+
+/** Entretien démarré sur un simple nom, sans fiche prospect. */
+const leadInterview = {
+  ...baseInterview,
+  id: 'itw-lead',
+  prospectId: null,
+  prospect: null,
+  leadName: 'M. Koffi',
+  leadShopName: 'Auto Pièces Adjamé',
 }
 
 beforeEach(() => {
@@ -99,6 +129,36 @@ describe('createInterview', () => {
       statusCode: 400,
     })
     expect(mockInterviewCreate).not.toHaveBeenCalled()
+  })
+
+  it('démarre sur un simple nom, sans fiche prospect', async () => {
+    mockInterviewCreate.mockResolvedValue(leadInterview)
+    const res = await createInterview(liaison, {
+      leadName: 'M. Koffi',
+      leadShopName: 'Auto Pièces Adjamé',
+    })
+    expect(res.lead).toEqual({
+      name: 'M. Koffi',
+      shopName: 'Auto Pièces Adjamé',
+      phone: null,
+      commune: null,
+    })
+    expect(mockInterviewCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ leadName: 'M. Koffi', prospectId: null, vendorId: null }),
+      }),
+    )
+    // Aucune fiche CRM n'est créée à ce stade.
+    expect(mockVendorContactCreate).not.toHaveBeenCalled()
+  })
+
+  it('ignore le nom libre quand une fiche est rattachée', async () => {
+    mockVendorContactFindUnique.mockResolvedValue({ id: 'prospect-1' })
+    mockInterviewCreate.mockResolvedValue(baseInterview)
+    await createInterview(liaison, { prospectId: 'prospect-1', leadName: 'M. Koffi' })
+    expect(mockInterviewCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ leadName: null }) }),
+    )
   })
 
   it('rejette un prospect inexistant', async () => {
@@ -213,5 +273,96 @@ describe('extraction IA', () => {
     expect(data.answers.accroche_nom_boutique).toEqual({ text: 'Stand 12', source: 'MANUEL' })
     expect(data.answers.gamme_familles).toEqual({ text: 'Freinage', source: 'IA' })
     expect(data.status).toBe('TRANSCRIT')
+  })
+})
+
+describe('clôture — de l’entretien au vendeur', () => {
+  it('exige un téléphone pour créer la fiche d’un prospect saisi au vol', async () => {
+    mockInterviewFindUnique.mockResolvedValue({ ...leadInterview })
+    await expect(applyInterview(liaison, 'itw-lead', { overwrite: false })).rejects.toMatchObject({
+      code: 'PROSPECTION_LEAD_PHONE_REQUIRED',
+      statusCode: 409,
+    })
+    expect(mockVendorContactCreate).not.toHaveBeenCalled()
+  })
+
+  it('crée la fiche prospect à partir du nom saisi au vol et la rattache', async () => {
+    mockInterviewFindUnique.mockResolvedValue({
+      ...leadInterview,
+      leadPhone: '+2250700000000',
+      leadCommune: 'Adjamé',
+      answers: { gamme_familles: { text: 'Freinage, moteur', source: 'MANUEL' } },
+    })
+    mockVendorContactCreate.mockResolvedValue({
+      id: 'prospect-neuf',
+      name: 'M. Koffi',
+      shopName: 'Auto Pièces Adjamé',
+      commune: 'Adjamé',
+      pieces: [],
+      remarques: null,
+    })
+
+    await applyInterview(liaison, 'itw-lead', { overwrite: false })
+
+    expect(mockVendorContactCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          name: 'M. Koffi',
+          shopName: 'Auto Pièces Adjamé',
+          phone: '+2250700000000',
+          statut: 'VISITE',
+          source: 'MANUEL',
+        }),
+      }),
+    )
+    expect(mockInterviewUpdate).toHaveBeenCalledWith({
+      where: { id: 'itw-lead' },
+      data: { prospectId: 'prospect-neuf' },
+    })
+  })
+
+  it('rattache le vendeur créé à l’issue de l’entretien', async () => {
+    mockInterviewFindUnique.mockResolvedValue({ ...leadInterview })
+    mockVendorFindUnique.mockResolvedValue({ id: 'vendor-9' })
+    await updateInterview(liaison, 'itw-lead', { vendorId: 'vendor-9' })
+    expect(mockInterviewUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ vendorId: 'vendor-9' }) }),
+    )
+  })
+
+  it('refuse de rattacher un vendeur inexistant', async () => {
+    mockInterviewFindUnique.mockResolvedValue({ ...leadInterview })
+    mockVendorFindUnique.mockResolvedValue(null)
+    await expect(
+      updateInterview(liaison, 'itw-lead', { vendorId: 'nope' }),
+    ).rejects.toMatchObject({ code: 'VENDOR_NOT_FOUND', statusCode: 404 })
+    expect(mockInterviewUpdate).not.toHaveBeenCalled()
+  })
+})
+
+describe('rattachement du vendeur → fiche prospect', () => {
+  it('lie la fiche prospect au vendeur et la passe CONCLU', async () => {
+    mockInterviewFindUnique.mockResolvedValue({ ...baseInterview })
+    mockVendorFindUnique.mockResolvedValue({ id: 'vendor-9' })
+    await updateInterview(liaison, 'itw-1', { vendorId: 'vendor-9' })
+
+    const call = mockVendorContactUpdate.mock.calls[0][0]
+    expect(call.where).toEqual({ id: 'prospect-1' })
+    expect(call.data).toMatchObject({ vendorId: 'vendor-9', statut: 'CONCLU' })
+    expect(call.data.activites.create).toMatchObject({
+      type: 'CONVERSION',
+      statutAvant: 'VISITE',
+      statutApres: 'CONCLU',
+    })
+  })
+
+  it('ne reconvertit pas une fiche déjà liée à un vendeur', async () => {
+    mockInterviewFindUnique.mockResolvedValue({
+      ...baseInterview,
+      prospect: { ...baseInterview.prospect, vendorId: 'vendor-deja' },
+    })
+    mockVendorFindUnique.mockResolvedValue({ id: 'vendor-9' })
+    await updateInterview(liaison, 'itw-1', { vendorId: 'vendor-9' })
+    expect(mockVendorContactUpdate).not.toHaveBeenCalled()
   })
 })

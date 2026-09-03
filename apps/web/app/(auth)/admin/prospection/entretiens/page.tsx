@@ -81,7 +81,13 @@ export default function AdminProspectionInterviewsPage() {
                 ? { name: it.prospect.shopName ?? it.prospect.name, sub: it.prospect.phone, kind: 'Prospect' }
                 : it.vendor
                   ? { name: it.vendor.shopName, sub: it.vendor.phone, kind: 'Vendeur' }
-                  : { name: '—', sub: '', kind: '' }
+                  : it.lead
+                    ? {
+                        name: it.lead.shopName ?? it.lead.name,
+                        sub: it.lead.phone ?? '—',
+                        kind: 'Non qualifié',
+                      }
+                    : { name: '—', sub: '', kind: '' }
               return (
                 <Tr key={it.id}>
                   <Td>

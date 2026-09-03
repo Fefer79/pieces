@@ -9,17 +9,22 @@ export const prospectionConsentMethodSchema = z.enum(PROSPECTION_CONSENT_METHODS
 export const prospectionAnswerSourceSchema = z.enum(['MANUEL', 'TRANSCRIPTION', 'IA'])
 
 /**
- * Un entretien se rattache à un prospect (VendorContact du CRM) OU à un vendeur
- * déjà onboardé — au moins l'un des deux.
+ * Un entretien se rattache à un prospect (VendorContact du CRM), à un vendeur
+ * déjà onboardé, ou à un simple nom relevé sur place (`leadName`) — le
+ * démarcheur n'a pas à créer une fiche prospect avant de commencer à parler.
  */
 export const createProspectionInterviewSchema = z
   .object({
     prospectId: z.string().min(1).optional().nullable(),
     vendorId: z.string().min(1).optional().nullable(),
+    leadName: z.string().min(2).max(120).optional().nullable(),
+    leadShopName: z.string().min(2).max(120).optional().nullable(),
+    leadPhone: z.string().max(30).optional().nullable(),
+    leadCommune: z.string().max(80).optional().nullable(),
   })
-  .refine((d) => Boolean(d.prospectId) || Boolean(d.vendorId), {
-    message: 'Rattachez l’entretien à un prospect ou à un vendeur',
-    path: ['prospectId'],
+  .refine((d) => Boolean(d.prospectId) || Boolean(d.vendorId) || Boolean(d.leadName?.trim()), {
+    message: 'Indiquez le nom du prospect, ou rattachez l’entretien à une fiche existante',
+    path: ['leadName'],
   })
 
 /**
@@ -40,6 +45,13 @@ export const prospectionAnswerSchema = z.object({
 
 export const updateProspectionInterviewSchema = z.object({
   status: prospectionInterviewStatusSchema.optional(),
+  /** Rattachement a posteriori : le vendeur créé à l'issue de l'entretien. */
+  vendorId: z.string().min(1).optional().nullable(),
+  /** Complétion du prospect saisi au vol (nom, boutique, téléphone, commune). */
+  leadName: z.string().min(2).max(120).optional().nullable(),
+  leadShopName: z.string().min(2).max(120).optional().nullable(),
+  leadPhone: z.string().max(30).optional().nullable(),
+  leadCommune: z.string().max(80).optional().nullable(),
   notes: z.string().max(20000).optional().nullable(),
   answers: z.record(z.string().min(1).max(80), prospectionAnswerSchema).optional(),
   startedAt: z.string().datetime().optional().nullable(),

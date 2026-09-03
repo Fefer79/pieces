@@ -16,6 +16,8 @@ import {
   listLiaisonVendors,
   getLiaisonVendor,
   updateLiaisonVendor,
+  uploadVendorKycPhoto,
+  getVendorKycPhoto,
   createPartForVendor,
   createPartWithQuickVendor,
   uploadLiaisonPartImage,
@@ -150,6 +152,64 @@ export async function liaisonRoutes(fastify: FastifyInstance) {
       const { id } = request.params as { id: string }
       const result = await listVendorParts(request.user.id, id)
       return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/vendors/:id/kyc-photo',
+    {
+      schema: {
+        tags: ['Liaison'],
+        description:
+          'Photographier la pièce d\'identité du vendeur (CNI, passeport, permis) ou son RCCM',
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const result = await uploadVendorKycPhoto(request.user.id, id, buffer, file.mimetype)
+      request.log.info({
+        event: 'LIAISON_VENDOR_KYC_PHOTO_UPLOADED',
+        liaisonId: request.user.id,
+        vendorId: id,
+        kycType: result.kycType,
+      })
+      await recordActivity({
+        actorId: request.user.id,
+        actorRole: request.user.activeContext ?? 'LIAISON',
+        action: 'VENDOR_KYC_PHOTO_UPLOADED',
+        targetType: 'Vendor',
+        targetId: id,
+        payload: { kycType: result.kycType },
+      })
+      return reply.status(201).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/vendors/:id/kyc-photo',
+    {
+      schema: {
+        tags: ['Liaison'],
+        description: 'Récupérer la pièce d\'identité enregistrée d\'un vendeur géré',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: guard,
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const { buffer, mimeType } = await getVendorKycPhoto(request.user.id, id)
+      return reply
+        .header('Content-Type', mimeType)
+        .header('Cache-Control', 'private, no-store')
+        .send(buffer)
     },
   )
 

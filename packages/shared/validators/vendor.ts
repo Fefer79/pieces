@@ -12,7 +12,10 @@ export const createVendorSchema = z
     contactName: z.string().min(2).max(100),
     phone: phoneSchema,
     vendorType: vendorTypeSchema,
-    documentNumber: z.string().min(5).max(50),
+    // Vendeur informel : le numéro est optionnel, la photo de la pièce
+    // d'identité (POST /vendors/me/kyc-photo) en tient lieu. Un vendeur formel
+    // doit déclarer son RCCM.
+    documentNumber: z.string().min(5).max(50).optional(),
     kycType: kycTypeSchema,
   })
   .refine(
@@ -25,6 +28,10 @@ export const createVendorSchema = z
       path: ['kycType'],
     },
   )
+  .refine((data) => data.vendorType !== 'FORMAL' || Boolean(data.documentNumber), {
+    message: 'Le numéro RCCM est requis pour un vendeur formel',
+    path: ['documentNumber'],
+  })
 
 export const updateDeliveryZonesSchema = z.object({
   zones: z.array(z.enum(ABIDJAN_COMMUNES)).min(1, 'Au moins une commune est requise'),

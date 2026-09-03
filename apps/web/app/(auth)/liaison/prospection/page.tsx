@@ -72,7 +72,12 @@ export default function ProspectionInterviewsPage() {
               ? { title: itw.prospect.shopName ?? itw.prospect.name, sub: itw.prospect.phone }
               : itw.vendor
                 ? { title: itw.vendor.shopName, sub: itw.vendor.phone }
-                : { title: 'Sans rattachement', sub: '' }
+                : itw.lead
+                  ? {
+                      title: itw.lead.shopName ?? itw.lead.name,
+                      sub: itw.lead.phone ?? 'Téléphone à compléter',
+                    }
+                  : { title: 'Sans rattachement', sub: '' }
             return (
               <li key={itw.id}>
                 <Link

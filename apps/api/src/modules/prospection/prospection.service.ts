@@ -40,7 +40,17 @@ const AUDIO_EXT: Record<string, string> = {
 }
 
 const interviewInclude = {
-  prospect: { select: { id: true, name: true, shopName: true, phone: true, commune: true, statut: true } },
+  prospect: {
+    select: {
+      id: true,
+      name: true,
+      shopName: true,
+      phone: true,
+      commune: true,
+      statut: true,
+      vendorId: true,
+    },
+  },
   vendor: { select: { id: true, shopName: true, phone: true, commune: true, status: true } },
   conductedBy: { select: { id: true, name: true } },
 } as const
@@ -80,12 +90,14 @@ function assertConsent(interview: { consentGivenAt: Date | null }) {
 }
 
 export async function createInterview(actor: Actor, input: CreateProspectionInterviewInput) {
+  const leadName = input.leadName?.trim() || null
+
   // `zodToFastify` ne transpose pas le `.refine` inter-champs du schéma : on
   // rejoue la règle ici pour renvoyer un 400 propre plutôt que laisser le
   // CHECK SQL lever un 500.
-  if (!input.prospectId && !input.vendorId) {
+  if (!input.prospectId && !input.vendorId && !leadName) {
     throw new AppError('PROSPECTION_TARGET_REQUIRED', 400, {
-      message: 'Rattachez l’entretien à un prospect ou à un vendeur.',
+      message: 'Indiquez le nom du prospect, ou rattachez l’entretien à une fiche existante.',
     })
   }
 
@@ -108,6 +120,12 @@ export async function createInterview(actor: Actor, input: CreateProspectionInte
     data: {
       prospectId: input.prospectId ?? null,
       vendorId: input.vendorId ?? null,
+      // Prospect saisi au vol : on garde le nom sur l'entretien, la fiche CRM
+      // ne sera créée qu'au report des réponses.
+      leadName: input.prospectId || input.vendorId ? null : leadName,
+      leadShopName: input.leadShopName?.trim() || null,
+      leadPhone: input.leadPhone?.trim() || null,
+      leadCommune: input.leadCommune?.trim() || null,
       conductedById: actor.userId,
       status: 'BROUILLON',
     },
@@ -120,10 +138,14 @@ export async function createInterview(actor: Actor, input: CreateProspectionInte
     action: 'PROSPECTION_INTERVIEW_CREATED',
     targetType: 'ProspectionInterview',
     targetId: interview.id,
-    payload: { prospectId: input.prospectId ?? null, vendorId: input.vendorId ?? null },
+    payload: {
+      prospectId: input.prospectId ?? null,
+      vendorId: input.vendorId ?? null,
+      leadName: interview.leadName,
+    },
   })
 
-  return interview
+  return publicView(interview)
 }
 
 export async function listInterviews(actor: Actor, query: ProspectionInterviewListQuery) {
@@ -205,6 +227,22 @@ export async function updateInterview(
   if (input.notes !== undefined) data.notes = input.notes
   if (input.startedAt !== undefined) data.startedAt = input.startedAt ? new Date(input.startedAt) : null
   if (input.endedAt !== undefined) data.endedAt = input.endedAt ? new Date(input.endedAt) : null
+  if (input.leadName !== undefined) data.leadName = input.leadName?.trim() || null
+  if (input.leadShopName !== undefined) data.leadShopName = input.leadShopName?.trim() || null
+  if (input.leadPhone !== undefined) data.leadPhone = input.leadPhone?.trim() || null
+  if (input.leadCommune !== undefined) data.leadCommune = input.leadCommune?.trim() || null
+
+  // Rattachement du vendeur créé à l'issue de l'entretien.
+  if (input.vendorId !== undefined) {
+    if (input.vendorId) {
+      const vendor = await prisma.vendor.findUnique({
+        where: { id: input.vendorId },
+        select: { id: true },
+      })
+      if (!vendor) throw new AppError('VENDOR_NOT_FOUND', 404, { message: 'Vendeur introuvable' })
+    }
+    data.vendorId = input.vendorId || null
+  }
 
   if (input.answers) {
     const merged = mergeAnswers(readAnswers(interview.answers), input.answers)
@@ -216,6 +254,28 @@ export async function updateInterview(
     data,
     include: interviewInclude,
   })
+
+  // Le vendeur créé à l'issue de l'entretien clôt le funnel CRM : la fiche
+  // prospect est liée au vendeur et passe CONCLU, comme une conversion.
+  if (input.vendorId && interview.prospectId && !interview.prospect?.vendorId) {
+    await prisma.vendorContact.update({
+      where: { id: interview.prospectId },
+      data: {
+        vendorId: input.vendorId,
+        statut: 'CONCLU',
+        activites: {
+          create: {
+            authorId: actor.userId,
+            type: 'CONVERSION',
+            note: 'Vendeur onboardé à l’issue de l’entretien de démarchage',
+            statutAvant: interview.prospect?.statut ?? null,
+            statutApres: 'CONCLU',
+          },
+        },
+      },
+    })
+  }
+
   return publicView(updated)
 }
 
@@ -345,8 +405,48 @@ export async function runExtraction(interviewId: string, logger: Logger) {
 }
 
 /**
+ * Crée la fiche prospect (VendorContact) d'un entretien démarré sur un simple
+ * nom. Le téléphone est le seul champ que le CRM exige : sans lui, on demande
+ * au démarcheur de le compléter plutôt que d'inventer une fiche muette.
+ */
+async function promoteLeadToProspect(actor: Actor, interviewId: string, lead: {
+  leadName: string
+  leadShopName: string | null
+  leadPhone: string | null
+  leadCommune: string | null
+}) {
+  const phone = lead.leadPhone?.trim()
+  if (!phone) {
+    throw new AppError('PROSPECTION_LEAD_PHONE_REQUIRED', 409, {
+      message:
+        'Ajoutez le téléphone du prospect pour créer sa fiche et reporter les réponses.',
+    })
+  }
+
+  const prospect = await prisma.vendorContact.create({
+    data: {
+      name: lead.leadName,
+      shopName: lead.leadShopName,
+      phone,
+      commune: lead.leadCommune,
+      statut: 'VISITE',
+      source: 'MANUEL',
+      createdById: actor.userId,
+      liaisonId: actor.userId,
+    },
+  })
+
+  await prisma.prospectionInterview.update({
+    where: { id: interviewId },
+    data: { prospectId: prospect.id },
+  })
+
+  return prospect
+}
+
+/**
  * Reporte les réponses de l'entretien sur la fiche prospect (VendorContact).
- * Nécessite un prospect rattaché.
+ * Si l'entretien a été démarré sur un simple nom, la fiche est créée ici.
  */
 export async function applyInterview(
   actor: Actor,
@@ -354,14 +454,21 @@ export async function applyInterview(
   input: ApplyProspectionInterviewInput,
 ) {
   const interview = await loadOwned(actor, id, true)
-  if (!interview.prospectId) {
+  if (!interview.prospectId && !interview.leadName) {
     throw new AppError('PROSPECTION_NO_PROSPECT', 409, {
       message: 'Rattachez un prospect à l’entretien pour reporter les réponses.',
     })
   }
 
   const answers = readAnswers(interview.answers)
-  const prospect = await prisma.vendorContact.findUnique({ where: { id: interview.prospectId } })
+  const prospect = interview.prospectId
+    ? await prisma.vendorContact.findUnique({ where: { id: interview.prospectId } })
+    : await promoteLeadToProspect(actor, id, {
+        leadName: interview.leadName as string,
+        leadShopName: interview.leadShopName,
+        leadPhone: interview.leadPhone,
+        leadCommune: interview.leadCommune,
+      })
   if (!prospect) throw new AppError('PROSPECT_NOT_FOUND', 404, { message: 'Prospect introuvable' })
 
   const data: Record<string, unknown> = {}
@@ -467,6 +574,14 @@ function publicView(interview: InterviewRow) {
     status: interview.status,
     prospect: interview.prospect,
     vendor: interview.vendor,
+    lead: interview.leadName
+      ? {
+          name: interview.leadName,
+          shopName: interview.leadShopName,
+          phone: interview.leadPhone,
+          commune: interview.leadCommune,
+        }
+      : null,
     conductedBy: interview.conductedBy,
     consent: interview.consentGivenAt
       ? {

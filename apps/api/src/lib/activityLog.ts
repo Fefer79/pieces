@@ -50,6 +50,7 @@ export type ActivityAction =
   | 'PROSPECTION_INTERVIEW_CREATED'
   | 'PROSPECTION_CONSENT_RECORDED'
   | 'PROSPECTION_INTERVIEW_APPLIED'
+  | 'VENDOR_KYC_PHOTO_UPLOADED'
 
 interface RecordParams {
   actorId: string

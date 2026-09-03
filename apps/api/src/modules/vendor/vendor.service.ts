@@ -3,6 +3,7 @@ import { AppError } from '../../lib/appError.js'
 import { createVendorSchema } from 'shared/validators'
 import { ABIDJAN_COMMUNES } from 'shared/constants'
 import type { CatalogItemStatus } from '@prisma/client'
+import { storeKycPhoto, readKycPhoto } from '../../lib/kycPhoto.js'
 
 export async function createVendor(userId: string, body: unknown) {
   const parsed = createVendorSchema.safeParse(body)
@@ -41,7 +42,8 @@ export async function createVendor(userId: string, body: unknown) {
       data: {
         vendorId: vendor.id,
         kycType,
-        documentNumber,
+        // Informel sans numéro dicté : la fiche existe, la photo la complète.
+        documentNumber: documentNumber ?? null,
         isPublic: kycType === 'RCCM',
       },
     })
@@ -317,4 +319,32 @@ export async function getVendorDashboard(userId: string) {
       outOfStock: outOfStockCount,
     },
   }
+}
+
+/**
+ * Photo de la pièce d'identité prise par le vendeur lui-même à l'inscription
+ * (CNI, passeport, permis ou attestation pour un vendeur informel).
+ */
+export async function uploadMyKycPhoto(userId: string, fileBuffer: Buffer, mimeType: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true, vendorType: true },
+  })
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur pour cet utilisateur',
+    })
+  }
+  const stored = await storeKycPhoto(vendor.id, vendor.vendorType, fileBuffer, mimeType)
+  return { vendorId: vendor.id, kycType: stored.kycType, documentImageAt: stored.documentImageAt }
+}
+
+export async function getMyKycPhoto(userId: string) {
+  const vendor = await prisma.vendor.findUnique({ where: { userId }, select: { id: true } })
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur pour cet utilisateur',
+    })
+  }
+  return readKycPhoto(vendor.id)
 }

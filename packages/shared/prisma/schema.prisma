@@ -290,13 +290,24 @@ model VendorGuaranteeSignature {
 }
 
 model VendorKyc {
-  id             String   @id @default(uuid())
-  vendorId       String   @unique @map("vendor_id")
-  vendor         Vendor   @relation(fields: [vendorId], references: [id])
-  kycType        KycType  @map("kyc_type")
-  documentNumber String   @map("document_number")
-  isPublic       Boolean  @default(false) @map("is_public")
-  createdAt      DateTime @default(now()) @map("created_at")
+  id       String  @id @default(uuid())
+  vendorId String  @unique @map("vendor_id")
+  vendor   Vendor  @relation(fields: [vendorId], references: [id])
+  kycType  KycType @map("kyc_type")
+
+  // Nullable : un vendeur informel peut n'apporter que la photo de sa pièce
+  // d'identité, le numéro étant relevé plus tard.
+  documentNumber String? @map("document_number")
+
+  // Photo de la pièce d'identité (CNI, passeport, permis, attestation) ou du
+  // RCCM. Stockée sur R2 sous clé privée : jamais servie par URL publique,
+  // toujours par une route authentifiée.
+  documentImageKey      String?   @map("document_image_key")
+  documentImageMimeType String?   @map("document_image_mime_type")
+  documentImageAt       DateTime? @map("document_image_at")
+
+  isPublic  Boolean  @default(false) @map("is_public")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("vendor_kyc")
 }
@@ -2604,11 +2615,20 @@ enum ProspectionConsentMethod {
 model ProspectionInterview {
   id String @id @default(cuid())
 
-  // Rattachement souple : au moins l'un des deux (contrainte applicative + CHECK).
+  // Rattachement souple : un prospect CRM, un vendeur onboardé, ou un simple nom
+  // saisi sur le terrain (leadName) — au moins l'un des trois (CHECK SQL).
   prospectId String?        @map("prospect_id")
   prospect   VendorContact? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
   vendorId   String?        @map("vendor_id")
   vendor     Vendor?        @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  // Prospect saisi au vol : le démarcheur commence l'entretien avec le seul nom
+  // du patron ou de la boutique, sans fiche CRM préalable. La fiche prospect
+  // est créée plus tard (report des réponses ou onboarding du vendeur).
+  leadName     String? @map("lead_name")
+  leadShopName String? @map("lead_shop_name")
+  leadPhone    String? @map("lead_phone")
+  leadCommune  String? @map("lead_commune")
 
   conductedById String @map("conducted_by_id")
   conductedBy   User   @relation("ProspectionInterviewConductedBy", fields: [conductedById], references: [id], onDelete: Cascade)

@@ -1,22 +1,45 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
-import { liaisonFetch } from '@/lib/liaison-api'
+import { liaisonFetch, liaisonUpload } from '@/lib/liaison-api'
+import { prospectionFetch } from '@/lib/prospection-api'
+import { compressImage } from '@/lib/logistique/compress-image'
 import { VendorMapPicker } from '@/components/vendor-map-picker'
 
 const VENDOR_TYPES = [
-  { value: 'FORMAL', label: 'Formel (commerce enregistré)', kycLabel: 'Numéro RCCM' },
-  { value: 'INFORMAL', label: 'Informel (marché)', kycLabel: 'Numéro CNI / résident' },
+  {
+    value: 'FORMAL',
+    label: 'Formel (commerce enregistré)',
+    kycLabel: 'Numéro RCCM',
+    photoLabel: 'Photo du RCCM',
+  },
+  {
+    value: 'INFORMAL',
+    label: 'Informel (marché)',
+    kycLabel: 'Numéro CNI / résident',
+    photoLabel: 'Photo de la CNI ou d’une pièce d’identité valide',
+  },
 ] as const
 type VendorType = (typeof VENDOR_TYPES)[number]['value']
 
 const PHONE_REGEX = /^\+225(01|05|07)\d{8}$/
 
 export default function NewVendorPage() {
+  return (
+    <Suspense fallback={<p className="px-4 py-6 text-sm text-muted">Chargement…</p>}>
+      <NewVendorForm />
+    </Suspense>
+  )
+}
+
+function NewVendorForm() {
   const router = useRouter()
+  // Préremplissage depuis un entretien de démarchage qui vient d'être clôturé.
+  const searchParams = useSearchParams()
+  const interviewId = searchParams.get('interviewId')
 
   const [shopName, setShopName] = useState('')
   const [contactName, setContactName] = useState('')
@@ -27,12 +50,43 @@ export default function NewVendorPage() {
   const [address, setAddress] = useState('')
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [deliveryZones, setDeliveryZones] = useState<string[]>([])
+  const [idPhoto, setIdPhoto] = useState<File | null>(null)
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const kycType = vendorType === 'FORMAL' ? 'RCCM' : 'CNI'
   const kycLabel = VENDOR_TYPES.find((t) => t.value === vendorType)?.kycLabel ?? ''
+  const photoLabel = VENDOR_TYPES.find((t) => t.value === vendorType)?.photoLabel ?? ''
+
+  const idPhotoPreview = useMemo(
+    () => (idPhoto ? URL.createObjectURL(idPhoto) : null),
+    [idPhoto],
+  )
+  useEffect(
+    () => () => {
+      if (idPhotoPreview) URL.revokeObjectURL(idPhotoPreview)
+    },
+    [idPhotoPreview],
+  )
+
+  // Le préremplissage ne s'applique qu'au montage : on ne réécrit jamais une
+  // saisie en cours.
+  useEffect(() => {
+    const prefill = {
+      shopName: searchParams.get('shopName'),
+      contactName: searchParams.get('contactName'),
+      phone: searchParams.get('phone'),
+      commune: searchParams.get('commune'),
+    }
+    if (prefill.shopName) setShopName(prefill.shopName)
+    if (prefill.contactName) setContactName(prefill.contactName)
+    if (prefill.phone) setPhone(prefill.phone.startsWith('+') ? prefill.phone : `+225${prefill.phone}`)
+    if (prefill.commune && (ABIDJAN_COMMUNES as readonly string[]).includes(prefill.commune)) {
+      setCommune(prefill.commune)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Onboarding minimal : nom de la boutique + téléphone suffisent. Le reste
   // (contact, KYC, localisation, zones) se complète plus tard depuis la fiche.
@@ -74,12 +128,39 @@ export default function NewVendorPage() {
       body: JSON.stringify(payload),
     })
 
-    setSubmitting(false)
     if (!r.ok) {
+      setSubmitting(false)
       setError(r.message)
       return
     }
-    router.push(`/liaison/vendors/${r.data.id}`)
+
+    const vendorId = r.data.id
+
+    // La photo ne peut partir qu'après la création : elle est rattachée au
+    // vendeur. Un échec d'upload ne perd pas le vendeur créé.
+    if (idPhoto) {
+      const form = new FormData()
+      form.append('document', await compressImage(idPhoto), 'piece-identite.jpg')
+      const up = await liaisonUpload(`/vendors/${vendorId}/kyc-photo`, form)
+      if (!up.ok) {
+        setSubmitting(false)
+        setError(
+          `Vendeur créé, mais la pièce d'identité n'a pas pu être envoyée : ${up.message}. Reprenez la photo depuis sa fiche.`,
+        )
+        return
+      }
+    }
+
+    // Rattachement à l'entretien d'où vient cet onboarding.
+    if (interviewId) {
+      await prospectionFetch(`/interviews/${interviewId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ vendorId }),
+      })
+    }
+
+    setSubmitting(false)
+    router.push(`/liaison/vendors/${vendorId}`)
   }
 
   return (
@@ -160,6 +241,45 @@ export default function NewVendorPage() {
             onChange={(e) => setDocumentNumber(e.target.value)}
             className="input"
           />
+        </Field>
+
+        <Field
+          label={photoLabel}
+          hint="Photographiez le document — c'est la pièce qui fait foi, le numéro peut être relevé plus tard"
+        >
+          {idPhotoPreview ? (
+            <figure className="relative overflow-hidden rounded-md border border-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={idPhotoPreview}
+                alt="Pièce d'identité du vendeur"
+                className="aspect-[4/3] w-full bg-surface object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => setIdPhoto(null)}
+                className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-ink backdrop-blur"
+                aria-label="Retirer la photo"
+              >
+                ×
+              </button>
+            </figure>
+          ) : (
+            <label
+              className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border-strong text-sm text-muted transition-colors hover:bg-surface"
+              style={{ minHeight: 44 }}
+            >
+              <span className="text-2xl leading-none text-muted-2">＋</span>
+              Prendre la photo
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => setIdPhoto(e.target.files?.[0] ?? null)}
+              />
+            </label>
+          )}
         </Field>
 
         <Field label="Commune" hint="Optionnel">

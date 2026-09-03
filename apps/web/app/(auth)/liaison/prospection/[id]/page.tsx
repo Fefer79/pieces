@@ -2,6 +2,8 @@
 
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
 import { Chip } from '@/components/ui/chip'
 import {
   PROSPECTION_CONSENT_SCRIPT,
@@ -25,6 +27,41 @@ import {
 } from '@/lib/prospection-speech'
 
 const THEMES = prospectionQuestionsByTheme()
+
+/**
+ * Paramètres de préremplissage de l'onboarding vendeur : ce que l'entretien a
+ * déjà appris n'est pas à ressaisir. `interviewId` permet de rattacher le
+ * vendeur créé à l'entretien.
+ */
+function vendorPrefillParams(interview: ProspectionInterview): URLSearchParams {
+  const source = interview.prospect
+    ? {
+        shopName: interview.prospect.shopName,
+        contactName: interview.prospect.name,
+        phone: interview.prospect.phone,
+        commune: interview.prospect.commune,
+      }
+    : {
+        shopName: interview.lead?.shopName ?? null,
+        contactName: interview.lead?.name ?? null,
+        phone: interview.lead?.phone ?? null,
+        commune: interview.lead?.commune ?? null,
+      }
+
+  const params = new URLSearchParams({ interviewId: interview.id })
+  for (const [key, value] of Object.entries(source)) {
+    if (value) params.set(key, value)
+  }
+  return params
+}
+
+/** Libellé de la cible : fiche prospect, vendeur onboardé, ou nom saisi au vol. */
+function targetLabel(interview: ProspectionInterview): string {
+  if (interview.prospect) return interview.prospect.shopName ?? interview.prospect.name
+  if (interview.vendor) return interview.vendor.shopName
+  if (interview.lead) return interview.lead.shopName ?? interview.lead.name
+  return 'Prospect'
+}
 
 export default function ProspectionInterviewPage({
   params,
@@ -99,9 +136,7 @@ function ConsentGate({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const target = interview.prospect
-    ? interview.prospect.shopName ?? interview.prospect.name
-    : interview.vendor?.shopName ?? 'Vendeur'
+  const target = targetLabel(interview)
 
   async function submit() {
     setSubmitting(true)
@@ -207,6 +242,7 @@ function Cockpit({
   reload: () => void
 }) {
   const id = interview.id
+  const router = useRouter()
   const speechSupported = isSpeechRecognitionSupported()
 
   const [recording, setRecording] = useState(false)
@@ -226,9 +262,7 @@ function Cockpit({
   const pendingFinalsRef = useRef<string[]>([])
   const flushTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const target = interview.prospect
-    ? interview.prospect.shopName ?? interview.prospect.name
-    : interview.vendor?.shopName ?? 'Vendeur'
+  const target = targetLabel(interview)
 
   const flushTranscript = useCallback(async () => {
     if (pendingFinalsRef.current.length === 0) return
@@ -325,16 +359,41 @@ function Cockpit({
     setRecording(true)
   }
 
+  /**
+   * Clôture : on arrête la dictée, on enregistre, on reporte les réponses sur la
+   * fiche prospect (créée au besoin), puis on enchaîne sur l'onboarding du
+   * vendeur — c'est la suite naturelle d'un démarchage qui a abouti.
+   */
   async function finishInterview() {
     setBusy('finish')
     if (recording) await stopEverything()
+
     const r = await prospectionFetch<ProspectionInterview>(`/interviews/${id}`, {
       method: 'PATCH',
       body: JSON.stringify({ status: 'A_TRANSCRIRE', endedAt: new Date().toISOString() }),
     })
-    setBusy(null)
-    if (r.ok) onChange(r.data)
-    else setBanner(r.message)
+    if (!r.ok) {
+      setBusy(null)
+      setBanner(r.message)
+      return
+    }
+    onChange(r.data)
+
+    // Report au mieux : un prospect saisi au vol sans téléphone n'a pas encore
+    // de fiche, ce n'est pas une raison pour bloquer l'onboarding.
+    let saved = r.data
+    if (Object.keys(answers).length > 0 && (saved.prospect || saved.lead)) {
+      const applied = await prospectionFetch<ProspectionInterview>(`/interviews/${id}/apply`, {
+        method: 'POST',
+        body: JSON.stringify({ overwrite: false }),
+      })
+      if (applied.ok) {
+        saved = applied.data
+        onChange(applied.data)
+      }
+    }
+
+    router.push(`/liaison/vendors/new?${vendorPrefillParams(saved).toString()}`)
   }
 
   async function saveTranscriptEdit() {
@@ -536,6 +595,12 @@ function Cockpit({
         </div>
       </section>
 
+      {/* Coordonnées du prospect saisi au vol — le téléphone conditionne la
+          création de la fiche CRM et l'onboarding du vendeur. */}
+      {interview.lead && !interview.prospect && (
+        <LeadFields interview={interview} onChange={onChange} onError={setBanner} />
+      )}
+
       {/* Actions de clôture */}
       <section className="grid gap-2 rounded-md border border-border bg-card p-4">
         <button
@@ -545,7 +610,7 @@ function Cockpit({
           className="rounded-md bg-ink px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
           style={{ minHeight: 44 }}
         >
-          {busy === 'finish' ? 'Clôture…' : 'Terminer l’entretien'}
+          {busy === 'finish' ? 'Clôture…' : 'Terminer l’entretien et créer le vendeur'}
         </button>
         <button
           type="button"
@@ -559,13 +624,13 @@ function Cockpit({
         <button
           type="button"
           onClick={() => void apply()}
-          disabled={busy !== null || !interview.prospect || answeredCount === 0}
+          disabled={busy !== null || (!interview.prospect && !interview.lead) || answeredCount === 0}
           className="rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
           style={{ minHeight: 44 }}
         >
           {busy === 'apply' ? 'Report…' : 'Reporter les réponses sur la fiche prospect'}
         </button>
-        {!interview.prospect && (
+        {!interview.prospect && !interview.lead && (
           <p className="text-xs text-muted">
             Report indisponible : cet entretien est rattaché à un vendeur, pas à un prospect CRM.
           </p>
@@ -579,6 +644,107 @@ function Cockpit({
         </button>
       </section>
     </div>
+  )
+}
+
+/**
+ * Complétion des coordonnées d'un prospect saisi au vol, pendant l'entretien.
+ * Chaque champ est enregistré à la sortie du champ (blur) : pas de bouton à
+ * chercher entre deux questions.
+ */
+function LeadFields({
+  interview,
+  onChange,
+  onError,
+}: {
+  interview: ProspectionInterview
+  onChange: (i: ProspectionInterview) => void
+  onError: (message: string) => void
+}) {
+  const lead = interview.lead
+  const [name, setName] = useState(lead?.name ?? '')
+  const [shopName, setShopName] = useState(lead?.shopName ?? '')
+  const [phone, setPhone] = useState(lead?.phone ?? '')
+  const [commune, setCommune] = useState(lead?.commune ?? '')
+  const [saved, setSaved] = useState(false)
+
+  async function patch(payload: Record<string, string | null>) {
+    const r = await prospectionFetch<ProspectionInterview>(`/interviews/${interview.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    })
+    if (r.ok) {
+      onChange(r.data)
+      setSaved(true)
+    } else onError(r.message)
+  }
+
+  return (
+    <section className="mb-4 rounded-md border border-border bg-card p-4">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h2 className="font-display text-lg text-ink">Coordonnées du prospect</h2>
+        {saved && <span className="font-mono text-[11px] uppercase tracking-wider text-muted">Enregistré</span>}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm">
+          <span className="font-medium text-ink">Nom</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => name.trim().length >= 2 && name.trim() !== lead?.name && void patch({ leadName: name.trim() })}
+            className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink"
+            style={{ minHeight: 44 }}
+          />
+        </label>
+        <label className="grid gap-1 text-sm">
+          <span className="font-medium text-ink">Enseigne</span>
+          <input
+            value={shopName}
+            onChange={(e) => setShopName(e.target.value)}
+            onBlur={() => shopName.trim() !== (lead?.shopName ?? '') && void patch({ leadShopName: shopName.trim() || null })}
+            className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink"
+            style={{ minHeight: 44 }}
+          />
+        </label>
+        <label className="grid gap-1 text-sm">
+          <span className="font-medium text-ink">Téléphone</span>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            onBlur={() => phone.trim() !== (lead?.phone ?? '') && void patch({ leadPhone: phone.trim() || null })}
+            inputMode="tel"
+            placeholder="+2250700000000"
+            className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted-2"
+            style={{ minHeight: 44 }}
+          />
+        </label>
+        <label className="grid gap-1 text-sm">
+          <span className="font-medium text-ink">Commune</span>
+          <select
+            value={commune}
+            onChange={(e) => {
+              setCommune(e.target.value)
+              void patch({ leadCommune: e.target.value || null })
+            }}
+            className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink"
+            style={{ minHeight: 44 }}
+          >
+            <option value="">— À préciser —</option>
+            {ABIDJAN_COMMUNES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {!phone.trim() && (
+        <p className="mt-3 text-xs text-muted">
+          Sans téléphone, la fiche prospect ne peut pas être créée : les réponses resteront sur
+          l’entretien.
+        </p>
+      )}
+    </section>
   )
 }
 

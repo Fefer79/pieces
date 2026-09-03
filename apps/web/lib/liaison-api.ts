@@ -61,3 +61,17 @@ export async function liaisonUpload<T = unknown>(
   }
   return { ok: true, data: body.data as T }
 }
+
+/**
+ * Récupère un fichier servi par une route liaison authentifiée (pièce d'identité
+ * KYC) sous forme d'object URL. À révoquer par l'appelant.
+ */
+export async function liaisonBlobUrl(path: string): Promise<string | null> {
+  const token = await getToken()
+  if (!token) return null
+  const res = await fetch(`/api/v1/liaison${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) return null
+  return URL.createObjectURL(await res.blob())
+}
