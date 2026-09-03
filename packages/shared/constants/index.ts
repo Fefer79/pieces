@@ -109,3 +109,25 @@ export {
   isBusinessUnit,
 } from './erp-rbac'
 export type { StaffRoleKey, BusinessUnitKey, ErpCapability } from './erp-rbac'
+export {
+  PROSPECTION_THEMES,
+  PROSPECTION_THEME_LABELS,
+  PROSPECTION_SCRIPT,
+  prospectionQuestionsByTheme,
+  prospectionQuestion,
+  PROSPECTION_CONSENT_METHODS,
+  PROSPECTION_CONSENT_METHOD_LABELS,
+  PROSPECTION_CONSENT_SCRIPT,
+  PROSPECTION_CONSENT_CHECKBOX_LABEL,
+  PROSPECTION_INTERVIEW_STATUSES,
+  PROSPECTION_INTERVIEW_STATUS_LABELS,
+} from './prospection-script'
+export type {
+  ProspectionThemeKey,
+  ProspectionQuestion,
+  ProspectionAnswerTarget,
+  ProspectionConsentMethodKey,
+  ProspectionInterviewStatusKey,
+  ProspectionAnswerSource,
+  ProspectionAnswerValue,
+} from './prospection-script'

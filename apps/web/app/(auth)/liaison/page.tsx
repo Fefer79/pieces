@@ -82,6 +82,13 @@ export default function LiaisonDashboardPage() {
               + Onboarder un vendeur
             </Link>
             <Link
+              href="/liaison/prospection"
+              className="rounded-md bg-card px-4 py-3 text-center text-sm font-medium text-ink ring-1 ring-border transition-colors hover:bg-surface"
+              style={{ minHeight: 48 }}
+            >
+              🎙️ Entretiens de démarchage
+            </Link>
+            <Link
               href="/liaison/vendors"
               className="rounded-md bg-card px-4 py-3 text-center text-sm font-medium text-ink ring-1 ring-border transition-colors hover:bg-surface"
               style={{ minHeight: 48 }}

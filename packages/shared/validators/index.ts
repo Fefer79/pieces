@@ -339,3 +339,24 @@ export type {
 } from './sourcing'
 export { businessUnitSchema, cockpitQuerySchema } from './admin'
 export type { CockpitQuery } from './admin'
+export {
+  prospectionInterviewStatusSchema,
+  prospectionConsentMethodSchema,
+  prospectionAnswerSourceSchema,
+  createProspectionInterviewSchema,
+  recordProspectionConsentSchema,
+  prospectionAnswerSchema,
+  updateProspectionInterviewSchema,
+  appendProspectionTranscriptSchema,
+  applyProspectionInterviewSchema,
+  prospectionInterviewParamsSchema,
+  prospectionInterviewListQuerySchema,
+} from './prospection'
+export type {
+  CreateProspectionInterviewInput,
+  RecordProspectionConsentInput,
+  UpdateProspectionInterviewInput,
+  AppendProspectionTranscriptInput,
+  ApplyProspectionInterviewInput,
+  ProspectionInterviewListQuery,
+} from './prospection'

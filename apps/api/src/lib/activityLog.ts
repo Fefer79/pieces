@@ -47,6 +47,9 @@ export type ActivityAction =
   | 'SOURCING_SEARCH_CREATED'
   | 'SOURCING_PO_CREATED'
   | 'SHIPMENT_CREATED'
+  | 'PROSPECTION_INTERVIEW_CREATED'
+  | 'PROSPECTION_CONSENT_RECORDED'
+  | 'PROSPECTION_INTERVIEW_APPLIED'
 
 interface RecordParams {
   actorId: string
@@ -70,6 +73,7 @@ interface RecordParams {
     | 'ReturnOrder'
     | 'SourcingSearch'
     | 'Shipment'
+    | 'ProspectionInterview'
   targetId?: string | null
   payload?: Record<string, unknown>
 }

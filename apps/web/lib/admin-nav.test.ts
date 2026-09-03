@@ -10,8 +10,8 @@ describe('ADMIN_NAV', () => {
     expect(new Set(hrefs).size).toBe(hrefs.length)
   })
 
-  it('couvre les 20 écrans du back-office', () => {
-    expect(ADMIN_NAV.flatMap((s) => s.items)).toHaveLength(20)
+  it('couvre les 21 écrans du back-office', () => {
+    expect(ADMIN_NAV.flatMap((s) => s.items)).toHaveLength(21)
   })
 
   it('n’a pas de section vide', () => {
@@ -22,7 +22,7 @@ describe('ADMIN_NAV', () => {
 describe('navForCapabilities', () => {
   it('montre tout à qui a toutes les capacités', () => {
     const nav = navForCapabilities(ALL)
-    expect(nav.flatMap((s) => s.items)).toHaveLength(20)
+    expect(nav.flatMap((s) => s.items)).toHaveLength(21)
   })
 
   it('ouvre les écrans à double public à un membre DIRECTION sans Role.ADMIN', () => {
@@ -97,7 +97,7 @@ describe('navForCapabilities', () => {
 
   it('un ADMIN plateforme sans fiche d’équipe voit tout', () => {
     const nav = navForCapabilities(capabilitiesFor({ isPlatformAdmin: true }))
-    expect(nav.flatMap((s) => s.items)).toHaveLength(20)
+    expect(nav.flatMap((s) => s.items)).toHaveLength(21)
   })
 })
 

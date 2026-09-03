@@ -62,6 +62,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
       { href: '/admin/contrats-vendeurs', label: 'Contrats vendeurs', capability: 'crm:write' },
       { href: '/admin/enterprises', label: 'Entreprises', capability: 'erp:admin' },
       { href: '/admin/prospection', label: 'Prospection', capability: 'crm:read' },
+      { href: '/admin/prospection/entretiens', label: 'Entretiens démarchage', capability: 'crm:read' },
       { href: '/admin/marketing', label: 'Marketing', capability: 'crm:read' },
       { href: '/admin/support', label: 'SAV', capability: 'crm:read' },
     ],

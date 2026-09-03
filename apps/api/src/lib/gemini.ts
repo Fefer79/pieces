@@ -138,6 +138,94 @@ export async function extractOemLabel(
   }
 }
 
+export interface InterviewAnswerExtraction {
+  /** questionId → réponse en français (extraite ou synthétisée). Clé absente si non abordée. */
+  answers: Record<string, string>
+  /** Résumé libre de l'entretien, 3–4 phrases, ou null. */
+  summary: string | null
+}
+
+/**
+ * Lit la transcription d'un entretien de démarchage vendeur et en extrait les
+ * réponses aux questions de la « bible du démarcheur ». Le transcript vient du
+ * moteur de dictée du terminal ; il peut être bruité, non ponctué, en français
+ * ivoirien parlé.
+ */
+export async function extractInterviewAnswers(
+  transcript: string,
+  questions: ReadonlyArray<{ id: string; label: string }>,
+  logger?: { warn: (obj: Record<string, unknown>, msg: string) => void },
+): Promise<InterviewAnswerExtraction | null> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    logger?.warn(
+      { event: 'GEMINI_NOT_CONFIGURED' },
+      'Gemini API key not configured — skipping interview answer extraction',
+    )
+    return null
+  }
+
+  const trimmed = transcript.trim()
+  if (trimmed.length < 20) return { answers: {}, summary: null }
+
+  callCount++
+
+  const questionsBlock = questions.map((q) => `- ${q.id}: ${q.label}`).join('\n')
+  const prompt = `Tu analyses la transcription d'un entretien de démarchage entre un commercial de la marketplace "Pièces" (pièces auto d'occasion à Abidjan) et un vendeur de pièces.
+La transcription est brute : dictée automatique, français parlé ivoirien, ponctuation approximative, coupures.
+
+Voici les questions de la trame d'entretien (identifiant: question) :
+${questionsBlock}
+
+Transcription :
+"""
+${trimmed.slice(0, 24000)}
+"""
+
+Renvoie UNIQUEMENT un objet JSON valide :
+{
+  "answers": {
+    "<identifiant de question>": "La réponse du vendeur, en français clair, extraite ou synthétisée depuis la transcription. N'inclure la clé QUE si le sujet a réellement été abordé. Ne rien inventer."
+  },
+  "summary": "Résumé de l'entretien en 3 à 4 phrases : qui est le vendeur, son intérêt, les points bloquants, la prochaine étape. null si la transcription est inexploitable."
+}
+Pas de markdown, pas de texte hors du JSON.`
+
+  try {
+    if (!genAIInstance) genAIInstance = new GoogleGenerativeAI(apiKey)
+    const model = genAIInstance.getGenerativeModel({ model: GEMINI_MODEL })
+
+    const result = await model.generateContent(prompt)
+    const text = result.response.text().trim()
+    const jsonText = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '')
+    const parsed = JSON.parse(jsonText)
+
+    const validIds = new Set(questions.map((q) => q.id))
+    const answers: Record<string, string> = {}
+    if (parsed.answers && typeof parsed.answers === 'object') {
+      for (const [key, value] of Object.entries(parsed.answers)) {
+        if (!validIds.has(key)) continue
+        if (typeof value !== 'string') continue
+        const t = value.trim().slice(0, 4000)
+        if (t.length > 0) answers[key] = t
+      }
+    }
+
+    const summary =
+      typeof parsed.summary === 'string' && parsed.summary.trim().length > 0
+        ? parsed.summary.trim().slice(0, 4000)
+        : null
+
+    return { answers, summary }
+  } catch {
+    logger?.warn(
+      { event: 'GEMINI_INTERVIEW_EXTRACT_FAILED', callCount },
+      'Gemini Flash API error — interview answer extraction failed',
+    )
+    return null
+  }
+}
+
 const PROMPT = `Analyze this auto part image from an Ivory Coast (Côte d'Ivoire) marketplace.
 Return ONLY a valid JSON object with these fields:
 {

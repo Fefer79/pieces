@@ -64,6 +64,7 @@ model User {
   sourcingSearches       SourcingSearch[]        @relation("SourcingSearchCreator")
   shipments              Shipment[]              @relation("ShipmentCreator")
   shipmentEvents         ShipmentEvent[]         @relation("ShipmentEventActor")
+  prospectionInterviews  ProspectionInterview[]  @relation("ProspectionInterviewConductedBy")
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -113,7 +114,7 @@ enum KycType {
 
 enum GuaranteeType {
   // Socle de reprise du contrat v1.2, signé par tout vendeur à son activation.
-  RETURN_48H       // Non-conformité à l'annonce signalée sous 48 h.
+  RETURN_48H // Non-conformité à l'annonce signalée sous 48 h.
   DELIVERY_REFUSAL // Livraison non effectuée ou refusée pour non-conformité.
 
   // Historique : garantie de fonctionnement 30 jours imposée par le contrat
@@ -201,6 +202,7 @@ enum JobType {
   CRM_DUE_TASKS_SCAN
   MARKETING_CAMPAIGN_SEND
   SOURCING_SEARCH_RUN
+  PROSPECTION_EXTRACT
 }
 
 enum JobStatus {
@@ -252,12 +254,13 @@ model Vendor {
   relanceLastSentAt DateTime? @map("relance_last_sent_at")
   relanceCount      Int       @default(0) @map("relance_count")
 
-  kyc                 VendorKyc?
-  guaranteeSignatures VendorGuaranteeSignature[]
-  catalogItems        CatalogItem[]
-  contracts           VendorContract[]
-  partEnrichments     PartEnrichment[]           @relation("EnrichmentVendeur")
-  contacts            VendorContact[]
+  kyc                   VendorKyc?
+  guaranteeSignatures   VendorGuaranteeSignature[]
+  catalogItems          CatalogItem[]
+  contracts             VendorContract[]
+  partEnrichments       PartEnrichment[]           @relation("EnrichmentVendeur")
+  contacts              VendorContact[]
+  prospectionInterviews ProspectionInterview[]
 
   @@unique([externalSource, externalSellerId], name: "uq_vendors_external_seller")
   @@index([phone], name: "idx_vendors_phone")
@@ -1663,28 +1666,29 @@ enum ContactStatus {
 }
 
 model VendorContact {
-  id               String              @id @default(cuid())
-  name             String
-  shopName         String?             @map("shop_name")
-  phone            String
-  phone2           String?
-  whatsapp         String?
-  email            String?
-  commune          String?
-  address          String?
-  lat              Float?
-  lng              Float?
-  pieces           String[]
-  piecesLibre      String?             @map("pieces_libre")
-  remarques        String?
-  statut           ContactStatus       @default(A_CONTACTER)
-  relanceLe        DateTime?           @map("relance_le")
-  derniereVisite   DateTime?           @map("derniere_visite")
-  derniereCommande DateTime?           @map("derniere_commande")
-  notesAppel       String?             @map("notes_appel")
-  photos           String[]
-  liens            VendorContactLink[]
-  activites        ContactActivity[]
+  id                    String                 @id @default(cuid())
+  name                  String
+  shopName              String?                @map("shop_name")
+  phone                 String
+  phone2                String?
+  whatsapp              String?
+  email                 String?
+  commune               String?
+  address               String?
+  lat                   Float?
+  lng                   Float?
+  pieces                String[]
+  piecesLibre           String?                @map("pieces_libre")
+  remarques             String?
+  statut                ContactStatus          @default(A_CONTACTER)
+  relanceLe             DateTime?              @map("relance_le")
+  derniereVisite        DateTime?              @map("derniere_visite")
+  derniereCommande      DateTime?              @map("derniere_commande")
+  notesAppel            String?                @map("notes_appel")
+  photos                String[]
+  liens                 VendorContactLink[]
+  activites             ContactActivity[]
+  prospectionInterviews ProspectionInterview[]
 
   // Provenance du lead : MANUEL (saisie terrain), OSM (radar boutiques
   // CompetitorVendor) ou slug de source externe (COINAFRIQUE_CI, …).
@@ -2562,4 +2566,74 @@ model ShipmentEvent {
 
   @@index([shipmentId, occurredAt], name: "idx_shipment_events_shipment")
   @@map("shipment_events")
+}
+
+// ---------------------------------------------------------------------------
+// Entretien de démarchage vendeur — outil du commercial / de la liaison.
+//
+// Le démarcheur déroule la « bible » (shared/constants/prospection-script) face
+// au vendeur, et — APRÈS consentement explicite — enregistre et fait transcrire
+// l'échange (moteur de dictée du terminal). Gemini extrait ensuite les réponses
+// aux questions de la trame, qu'on reporte sur la fiche prospect.
+// ---------------------------------------------------------------------------
+
+enum ProspectionInterviewStatus {
+  BROUILLON // créé, consentement pas encore acté
+  EN_COURS // consentement donné, entretien / enregistrement en cours
+  A_TRANSCRIRE // audio ou entretien terminé, transcription pas finalisée
+  TRANSCRIT // transcript disponible
+  EXPLOITE // réponses extraites et reportées sur le prospect
+  ANNULE
+}
+
+enum ProspectionConsentMethod {
+  VERBAL
+  ECRIT
+}
+
+model ProspectionInterview {
+  id String @id @default(cuid())
+
+  // Rattachement souple : au moins l'un des deux (contrainte applicative + CHECK).
+  prospectId String?        @map("prospect_id")
+  prospect   VendorContact? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+  vendorId   String?        @map("vendor_id")
+  vendor     Vendor?        @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  conductedById String @map("conducted_by_id")
+  conductedBy   User   @relation("ProspectionInterviewConductedBy", fields: [conductedById], references: [id], onDelete: Cascade)
+
+  status ProspectionInterviewStatus @default(BROUILLON)
+
+  // Traçabilité du consentement — obligatoire avant tout audio / transcript.
+  consentGivenAt    DateTime?                 @map("consent_given_at")
+  consentMethod     ProspectionConsentMethod? @map("consent_method")
+  consentScriptText String?                   @map("consent_script_text")
+  consentGivenById  String?                   @map("consent_given_by_id")
+
+  // Audio (optionnel — la transcription du terminal peut suffire).
+  audioKey         String? @map("audio_key")
+  audioMimeType    String? @map("audio_mime_type")
+  audioDurationSec Int?    @map("audio_duration_sec")
+  audioSizeBytes   Int?    @map("audio_size_bytes")
+
+  // Transcription produite côté terrain par le moteur de dictée du terminal.
+  transcript         String? @db.Text
+  transcriptSource   String? @map("transcript_source")
+  transcriptSegments Json?   @map("transcript_segments")
+
+  // Réponses à la bible : { [questionId]: { text, source } }
+  answers Json?
+  notes   String? @db.Text
+
+  startedAt DateTime? @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([prospectId], name: "idx_prospection_interviews_prospect")
+  @@index([vendorId], name: "idx_prospection_interviews_vendor")
+  @@index([conductedById, createdAt(sort: Desc)], name: "idx_prospection_interviews_conductor")
+  @@index([status], name: "idx_prospection_interviews_status")
+  @@map("prospection_interviews")
 }
