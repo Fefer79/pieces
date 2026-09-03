@@ -92,8 +92,16 @@ beforeEach(() => {
 })
 
 describe('createInterview', () => {
-  it('rejette si ni prospect ni vendeur', async () => {
-    // le schéma Zod garde ça côté route ; le service exige au moins un id valide
+  it('rejette proprement (400) si ni prospect ni vendeur', async () => {
+    // `zodToFastify` perd le refine inter-champs : le service doit garder la règle.
+    await expect(createInterview(liaison, {})).rejects.toMatchObject({
+      code: 'PROSPECTION_TARGET_REQUIRED',
+      statusCode: 400,
+    })
+    expect(mockInterviewCreate).not.toHaveBeenCalled()
+  })
+
+  it('rejette un prospect inexistant', async () => {
     mockVendorContactFindUnique.mockResolvedValue(null)
     await expect(createInterview(liaison, { prospectId: 'nope' })).rejects.toMatchObject({
       code: 'PROSPECT_NOT_FOUND',

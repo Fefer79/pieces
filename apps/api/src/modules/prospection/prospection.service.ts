@@ -80,6 +80,15 @@ function assertConsent(interview: { consentGivenAt: Date | null }) {
 }
 
 export async function createInterview(actor: Actor, input: CreateProspectionInterviewInput) {
+  // `zodToFastify` ne transpose pas le `.refine` inter-champs du schéma : on
+  // rejoue la règle ici pour renvoyer un 400 propre plutôt que laisser le
+  // CHECK SQL lever un 500.
+  if (!input.prospectId && !input.vendorId) {
+    throw new AppError('PROSPECTION_TARGET_REQUIRED', 400, {
+      message: 'Rattachez l’entretien à un prospect ou à un vendeur.',
+    })
+  }
+
   if (input.prospectId) {
     const prospect = await prisma.vendorContact.findUnique({
       where: { id: input.prospectId },
