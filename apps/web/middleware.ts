@@ -51,7 +51,9 @@ export async function middleware(request: NextRequest) {
 
   if (!isAuthed && isProtectedPath) {
     const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('returnTo', request.nextUrl.pathname)
+    // Query string comprise : un onboarding vendeur prérempli depuis un entretien
+    // de démarchage perdrait sinon tout son préremplissage à la reconnexion.
+    loginUrl.searchParams.set('returnTo', `${request.nextUrl.pathname}${request.nextUrl.search}`)
     return NextResponse.redirect(loginUrl)
   }
 

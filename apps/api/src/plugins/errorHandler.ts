@@ -14,12 +14,16 @@ export function setupErrorHandler(fastify: FastifyInstance) {
     const error = err as Error & FastifyValidationError & { details?: Record<string, unknown> }
 
     if (error instanceof AppError) {
+      // `AppError` fait `super(code)` : `error.message` vaut le code. Le message
+      // lisible est passé dans `details.message` — on le remonte au premier plan,
+      // sinon l'utilisateur lit « LIAISON_VENDOR_NOT_FOUND » à l'écran.
+      const { message: humanMessage, ...rest } = error.details ?? {}
       return reply.status(error.statusCode).send({
         error: {
           code: error.code,
-          message: error.message,
+          message: typeof humanMessage === 'string' ? humanMessage : error.message,
           statusCode: error.statusCode,
-          details: error.details,
+          details: Object.keys(rest).length > 0 ? rest : undefined,
         },
       })
     }

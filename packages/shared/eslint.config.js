@@ -5,6 +5,6 @@ export default [
   {
     // Outillage d'exploitation lancé à la main : `console` y est la sortie
     // normale, et AppError n'a pas de sens hors du runtime API.
-    ignores: ['prisma/seed.mjs', 'scripts/**'],
+    ignores: ['prisma/seed.mjs', 'prisma/manual/**', 'scripts/**'],
   },
 ]

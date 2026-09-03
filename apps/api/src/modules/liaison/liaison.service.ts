@@ -136,13 +136,24 @@ export async function createVendorByLiaison(liaisonId: string, body: unknown) {
 
   const data = parsed.data
 
+  // Un démarcheur tombe souvent sur une boutique déjà en base. On refuse le
+  // doublon, mais on renvoie de quoi rattacher l'entretien au vendeur existant
+  // plutôt que de laisser l'agent dans une impasse au comptoir.
   const phoneTaken = await prisma.vendor.findFirst({
     where: { phone: data.phone },
-    select: { id: true },
+    select: { id: true, shopName: true, status: true, managedByLiaisonId: true },
   })
   if (phoneTaken) {
     throw new AppError('LIAISON_VENDOR_PHONE_TAKEN', 409, {
-      message: 'Un vendeur avec ce numéro existe déjà',
+      message: `Ce numéro est déjà celui du vendeur « ${phoneTaken.shopName} »`,
+      details: {
+        vendorId: phoneTaken.id,
+        shopName: phoneTaken.shopName,
+        status: phoneTaken.status,
+        // Le vendeur peut appartenir à une autre liaison : sa fiche sera alors
+        // inaccessible à cet agent, seul le rattachement de l'entretien vaut.
+        managedByMe: phoneTaken.managedByLiaisonId === liaisonId,
+      },
     })
   }
 
