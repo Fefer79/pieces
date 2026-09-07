@@ -334,8 +334,10 @@ export async function convertToOrder(
     throw new AppError('CATALOG_ITEM_UNAVAILABLE', 422, { message: 'Cette pièce n\'est pas disponible à la vente' })
   }
 
-  // Mapping du sourcing choisi sur les modes de livraison existants.
-  const deliveryMode = input.source === 'AIR' ? 'EXPRESS' : 'STANDARD'
+  // Mapping du sourcing choisi sur les trois délais de livraison :
+  // avion → express, cargo (45 j) → économique, stock local → standard.
+  const deliveryMode =
+    input.source === 'AIR' ? 'EXPRESS' : input.source === 'CARGO' ? 'ECO' : 'STANDARD'
 
   const order = await createOrder(userId, [{ catalogItemId: input.catalogItemId, quantity: 1 }], {
     vehicleId: request.vehicleId,

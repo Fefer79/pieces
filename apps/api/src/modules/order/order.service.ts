@@ -9,6 +9,7 @@ import {
   computeDeliveryFee,
   type DeliveryPricingMode,
   type DeliveryPricingTier,
+  type DeliveryVendorGroup,
 } from 'shared/constants'
 import { currentTier } from '../enterprise/subscription.service.js'
 
@@ -209,19 +210,19 @@ export async function createOrder(
   const deliveryCommune = options.deliveryCommune?.trim() || undefined
   const deliveryMode: DeliveryPricingMode = options.deliveryMode ?? 'STANDARD'
   const tier: DeliveryPricingTier = enterpriseId ? await currentTier(enterpriseId) : 'FREE'
-  const subtotalByVendor = new Map<string, number>()
+  const byVendor = new Map<string, DeliveryVendorGroup>()
   for (const c of create) {
-    subtotalByVendor.set(
-      c.vendorId,
-      (subtotalByVendor.get(c.vendorId) ?? 0) + c.priceSnapshot * c.quantity,
-    )
+    const group = byVendor.get(c.vendorId) ?? { subtotal: 0, categories: [] }
+    group.subtotal += c.priceSnapshot * c.quantity
+    group.categories.push(c.category)
+    byVendor.set(c.vendorId, group)
   }
   const deliveryFee =
     computeDeliveryFee({
       tier,
       mode: deliveryMode,
       commune: deliveryCommune,
-      vendorSubtotals: [...subtotalByVendor.values()],
+      vendors: [...byVendor.values()],
     }) ?? 0
 
   const order = await prisma.order.create({

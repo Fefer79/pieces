@@ -236,7 +236,7 @@ export default function ProductPage() {
           tier: 'FREE',
           mode: 'STANDARD',
           commune: deliveryCommune,
-          vendorSubtotals: [item.price * qty],
+          vendors: [{ subtotal: item.price * qty, categories: [item.category] }],
         })
       : null
 

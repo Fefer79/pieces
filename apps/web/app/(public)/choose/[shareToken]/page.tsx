@@ -29,7 +29,7 @@ interface Order {
   status: string
   totalAmount: number
   deliveryFee: number
-  deliveryMode?: 'STANDARD' | 'EXPRESS'
+  deliveryMode?: 'ECO' | 'STANDARD' | 'EXPRESS'
   laborCost: number | null
   shareToken: string
   items: OrderItem[]
@@ -178,7 +178,12 @@ export default function OwnerChoicePage() {
       ? [{ label: "Main d'œuvre", amount: order.laborCost }]
       : []),
     {
-      label: order.deliveryMode === 'EXPRESS' ? 'Livraison express prioritaire' : 'Livraison',
+      label:
+        order.deliveryMode === 'EXPRESS'
+          ? 'Livraison express prioritaire'
+          : order.deliveryMode === 'ECO'
+            ? 'Livraison économique (3–5 j)'
+            : 'Livraison',
       amount: order.deliveryFee,
     },
   ]

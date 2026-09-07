@@ -11,7 +11,9 @@
 // dans Flotte Pro + (voir DELEGATED_PROCUREMENT).
 // Les fourchettes de livraison affichées ici doivent rester cohérentes avec la
 // grille réellement facturée : packages/shared/constants/delivery-pricing.ts
-// (% du sous-total par vendeur, plancher zone = borne basse, plafond = borne haute).
+// (% du sous-total par vendeur ET gabarit de la pièce ; plancher zone × gabarit
+// = borne basse, plafond palier = borne haute). Trois délais : Économique 3–5 j,
+// Standard 48–72 h, Express prioritaire.
 
 export type TierKey = 'FREE' | 'PRO_FLOTTE' | 'PRO_FLOTTE_PLUS'
 
@@ -35,7 +37,7 @@ export interface FleetPlan {
 
 /** La promesse de livraison rapide du palier Pro + (sans SLA ni pénalité). */
 export const DELIVERY_PROMISE =
-  'Livraison express prioritaire : notre équipe dédiée livre les pièces le plus rapidement possible pour minimiser votre temps d\'immobilisation. Offerte avec Flotte Pro + ; en option sinon (5 000 – 19 900 F en Gratuit, 5 000 – 9 900 F en Flotte Pro). Livraison standard 48–72 h : 1 500 – 9 000 F en Gratuit, 1 000 – 5 000 F en Flotte Pro.'
+  'Vous choisissez votre délai, et le prix suit le volume réel de la commande — montant du panier et encombrement des pièces (un filtre ne coûte pas le prix d\'un pare-chocs). Livraison express prioritaire : notre équipe dédiée livre les pièces le plus rapidement possible pour minimiser votre temps d\'immobilisation. Offerte avec Flotte Pro + ; en option sinon (5 000 – 19 900 F en Gratuit, 5 000 – 9 900 F en Flotte Pro). Standard 48–72 h : 1 500 – 9 000 F en Gratuit, 1 000 – 5 000 F en Flotte Pro. Économique 3–5 jours : 1 500 – 6 000 F en Gratuit, 1 000 – 4 000 F en Flotte Pro.'
 
 export const FLEET_PLANS: FleetPlan[] = [
   {
@@ -52,6 +54,7 @@ export const FLEET_PLANS: FleetPlan[] = [
       'Jusqu’à 3 véhicules, 1 utilisateur',
     ],
     delivery: [
+      { label: 'Économique 3–5 j', value: '1 500 – 6 000 F' },
       { label: 'Standard 48–72 h', value: '1 500 – 9 000 F' },
       { label: 'Express prioritaire', value: '+ 5 000 – 19 900 F' },
     ],
@@ -72,6 +75,7 @@ export const FLEET_PLANS: FleetPlan[] = [
       'Factures normalisées DGI à l’unité',
     ],
     delivery: [
+      { label: 'Économique 3–5 j', value: '1 000 – 4 000 F' },
       { label: 'Standard 48–72 h', value: '1 000 – 5 000 F' },
       { label: 'Express prioritaire', value: '+ 5 000 – 9 900 F' },
     ],
@@ -96,6 +100,7 @@ export const FLEET_PLANS: FleetPlan[] = [
       'Revue trimestrielle avec un expert Pièces',
     ],
     delivery: [
+      { label: 'Économique 3–5 j', value: 'Offerte' },
       { label: 'Standard 48–72 h', value: 'Offerte' },
       { label: 'Express prioritaire', value: 'Offerte' },
     ],
@@ -154,9 +159,11 @@ export const FLEET_COMPARISON: ComparisonGroup[] = [
   {
     group: 'Logistique',
     rows: [
+      { label: 'Livraison économique (3–5 jours)', free: '1 500 – 6 000 F', pro: '1 000 – 4 000 F', plus: 'Offerte' },
       { label: 'Livraison standard (48–72 h)', free: '1 500 – 9 000 F', pro: '1 000 – 5 000 F', plus: 'Offerte' },
       { label: 'Livraison express prioritaire à Abidjan', free: '+ 5 000 – 19 900 F', pro: '+ 5 000 – 9 900 F', plus: 'Offerte' },
       { label: 'Livraison prioritaire hors Abidjan', free: '—', pro: '—', plus: '✓' },
+      { label: 'Tarif indexé sur le volume (montant + gabarit de la pièce)', free: '✓', pro: '✓', plus: 'Offerte' },
       { label: 'Concierge sourcing (hors catalogue)', free: '—', pro: '—', plus: '✓' },
     ],
   },

@@ -9,7 +9,7 @@ export const createOrderSchema = z.object({
   laborCost: z.number().int().min(0).optional(),
   vehicleId: z.string().uuid().optional(),
   deliveryCommune: z.string().max(50).optional(),
-  deliveryMode: z.enum(['STANDARD', 'EXPRESS']).optional(),
+  deliveryMode: z.enum(['ECO', 'STANDARD', 'EXPRESS']).optional(),
   // Qui paie ? Choix du checkout : SELF = l'acheteur paie lui-même,
   // OWNER_LINK = le lien de validation part au propriétaire du véhicule.
   payerMode: z.enum(['SELF', 'OWNER_LINK']).optional(),

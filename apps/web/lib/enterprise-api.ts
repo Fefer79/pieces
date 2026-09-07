@@ -282,13 +282,13 @@ export type SourcingOption = {
   label: string
   delay: string
   priceNote: string
-  deliveryMode: 'STANDARD' | 'EXPRESS'
+  deliveryMode: 'ECO' | 'STANDARD' | 'EXPRESS'
 }
 
 export const SOURCING_OPTIONS: SourcingOption[] = [
   { source: 'LOCAL', label: 'Stock local', delay: '24–48 h', priceNote: 'Prix catalogue', deliveryMode: 'STANDARD' },
   { source: 'AIR', label: 'Avion', delay: '3–5 jours', priceNote: '+30 à +50 % vs catalogue', deliveryMode: 'EXPRESS' },
-  { source: 'CARGO', label: 'Cargo', delay: '45 jours', priceNote: 'Prix catalogue, commande groupée', deliveryMode: 'STANDARD' },
+  { source: 'CARGO', label: 'Cargo', delay: '45 jours', priceNote: 'Prix catalogue, commande groupée', deliveryMode: 'ECO' },
 ]
 
 export type LogisticsMode =

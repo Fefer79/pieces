@@ -16,6 +16,8 @@ import {
   ABIDJAN_COMMUNES,
   computeDeliveryFee,
   DELIVERY_MODES,
+  GABARIT_LABEL,
+  maxGabarit,
   type DeliveryPricingMode,
   type DeliveryPricingTier,
 } from 'shared/constants'
@@ -145,12 +147,23 @@ export default function PanierPage() {
   // plancher zone / plafond palier. Même helper que le serveur (createOrder) —
   // l'affichage est donc exactement le montant facturé.
   const vendorCount = itemsByVendor.length
-  const vendorSubtotals = itemsByVendor.map((g) => g.subtotal)
+  const vendorGroups = itemsByVendor.map((g) => ({
+    subtotal: g.subtotal,
+    categories: g.items.map((i) => i.category),
+  }))
   const feeForMode = (mode: DeliveryPricingMode) =>
-    computeDeliveryFee({ tier: deliveryTier, mode, commune, vendorSubtotals })
+    computeDeliveryFee({ tier: deliveryTier, mode, commune, vendors: vendorGroups })
   const deliveryFee = feeForMode(deliveryMode)
   const isPlus = deliveryTier === 'PRO_FLOTTE_PLUS'
-  const modeLabel = deliveryMode === 'EXPRESS' ? 'Livraison express' : 'Livraison'
+  // Gabarit affiché : la pièce la plus encombrante du panier, c'est elle qui
+  // dicte le véhicule à mobiliser (et donc le plancher tarifaire).
+  const cartGabarit = maxGabarit(items.map((i) => i.category))
+  const modeLabel =
+    deliveryMode === 'EXPRESS'
+      ? 'Livraison express'
+      : deliveryMode === 'ECO'
+        ? 'Livraison économique'
+        : 'Livraison'
   const priceLines: PriceLine[] = [
     { label: 'Sous-total pièces', amount: subtotal },
     ...(deliveryFee != null
@@ -158,8 +171,9 @@ export default function PanierPage() {
           {
             label:
               (vendorCount > 1
-                ? `${modeLabel} · ${commune} (${vendorCount} vendeurs)`
-                : `${modeLabel} · ${commune}`) + (isPlus ? ' — offerte' : ''),
+                ? `${modeLabel} · ${commune} · ${GABARIT_LABEL[cartGabarit].toLowerCase()} (${vendorCount} vendeurs)`
+                : `${modeLabel} · ${commune} · ${GABARIT_LABEL[cartGabarit].toLowerCase()}`) +
+              (isPlus ? ' — offerte' : ''),
             amount: deliveryFee,
           },
         ]

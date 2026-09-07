@@ -8,7 +8,7 @@ export async function createDelivery(orderId: string, options: {
   deliveryAddress?: string
   deliveryLat?: number
   deliveryLng?: number
-  mode?: 'EXPRESS' | 'STANDARD'
+  mode?: 'ECO' | 'EXPRESS' | 'STANDARD'
   codAmount?: number
 }) {
   const existing = await prisma.delivery.findUnique({ where: { orderId } })

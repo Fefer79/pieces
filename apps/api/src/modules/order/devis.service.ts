@@ -146,7 +146,13 @@ export async function generateDevisPdf(orderId: string, requesterId: string): Pr
 
     totalLine('Sous-total pièces', itemsTotal)
     if (labor > 0) totalLine('Main d\'œuvre', labor)
-    if (delivery > 0) totalLine(order.deliveryMode === 'EXPRESS' ? 'Livraison express prioritaire' : 'Livraison', delivery)
+    const deliveryLabel =
+      order.deliveryMode === 'EXPRESS'
+        ? 'Livraison express prioritaire'
+        : order.deliveryMode === 'ECO'
+          ? 'Livraison économique (3–5 j)'
+          : 'Livraison'
+    if (delivery > 0) totalLine(deliveryLabel, delivery)
     doc.moveTo(320, y).lineTo(545, y).strokeColor(COLOR_BORDER).stroke()
     y += 8
     totalLine('TOTAL', grandTotal, true)
@@ -157,7 +163,9 @@ export async function generateDevisPdf(orderId: string, requesterId: string): Pr
       .text(
         order.deliveryMode === 'EXPRESS'
           ? 'Devis valable 7 jours à compter de la date d\'émission. Prix exprimés en FCFA, livraison express prioritaire à Abidjan.'
-          : 'Devis valable 7 jours à compter de la date d\'émission. Prix exprimés en FCFA, livraison standard 48–72 h à Abidjan.',
+          : order.deliveryMode === 'ECO'
+            ? 'Devis valable 7 jours à compter de la date d\'émission. Prix exprimés en FCFA, livraison économique 3–5 jours à Abidjan.'
+            : 'Devis valable 7 jours à compter de la date d\'émission. Prix exprimés en FCFA, livraison standard 48–72 h à Abidjan.',
         50, footerY, { width: 495, align: 'center' },
       )
       .text('pieces.ci — generated automatically', 50, footerY + 14, { width: 495, align: 'center' })

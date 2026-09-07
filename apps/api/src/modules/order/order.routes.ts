@@ -31,7 +31,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const body = request.body as { items: { catalogItemId: string; quantity?: number }[]; ownerPhone?: string; laborCost?: number; vehicleId?: string; deliveryCommune?: string; deliveryMode?: 'STANDARD' | 'EXPRESS'; payerMode?: 'SELF' | 'OWNER_LINK' }
+      const body = request.body as { items: { catalogItemId: string; quantity?: number }[]; ownerPhone?: string; laborCost?: number; vehicleId?: string; deliveryCommune?: string; deliveryMode?: 'ECO' | 'STANDARD' | 'EXPRESS'; payerMode?: 'SELF' | 'OWNER_LINK' }
       const order = await createOrder(request.user.id, body.items, {
         ownerPhone: body.ownerPhone,
         laborCost: body.laborCost,

@@ -188,6 +188,7 @@ enum DeliveryStatus {
 enum DeliveryMode {
   EXPRESS
   STANDARD
+  ECO
 }
 
 enum JobType {
