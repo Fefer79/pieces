@@ -6,7 +6,12 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
 import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
-import { ConditionChip, PartSourceChip, type Condition, type PartSource } from '@/components/ui/chip'
+import {
+  ConditionChip,
+  PartSourceChip,
+  type Condition,
+  type PartSource,
+} from '@/components/ui/chip'
 import { QuantityStepper } from '@/components/ui/quantity-stepper'
 import { MiniCartButton } from '@/components/cart/mini-cart'
 import { useCart } from '@/lib/cart'
@@ -15,6 +20,8 @@ import { apiFetch } from '@/lib/enterprise-api'
 import { createClient } from '@/lib/supabase'
 import {
   ABIDJAN_COMMUNES,
+  DELIVERY_MODES,
+  type DeliveryPricingMode,
   computeDeliveryFee,
   formatWarranty,
   warrantyLabel,
@@ -124,13 +131,7 @@ function matchesVehicle(fitments: Fitment[], vehicle: SelectedVehicle): boolean 
 }
 
 /** Note vendeur « façon Amazon » : étoiles pleines selon la note, + nombre d'avis vérifiés. */
-function VendorRating({
-  rating,
-  reviewsCount,
-}: {
-  rating: number | null
-  reviewsCount: number
-}) {
+function VendorRating({ rating, reviewsCount }: { rating: number | null; reviewsCount: number }) {
   const value = rating ?? 0
   const rounded = Math.round(value * 2) / 2
   return (
@@ -149,8 +150,8 @@ function VendorRating({
       </span>
       {reviewsCount > 0 ? (
         <span className="text-xs text-muted">
-          {value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} ·{' '}
-          {reviewsCount} avis vérifié{reviewsCount > 1 ? 's' : ''}
+          {value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} · {reviewsCount} avis
+          vérifié{reviewsCount > 1 ? 's' : ''}
         </span>
       ) : (
         <span className="text-xs text-muted-2">Pas encore d&apos;avis</span>
@@ -164,7 +165,13 @@ export default function ProductPage() {
   const id = params.id
   const router = useRouter()
   const { vehicle } = useSelectedVehicle()
-  const { addItem, commune: deliveryCommune, setCommune: setDeliveryCommune } = useCart()
+  const {
+    addItem,
+    commune: deliveryCommune,
+    setCommune: setDeliveryCommune,
+    deliveryMode,
+    setDeliveryMode,
+  } = useCart()
 
   const [item, setItem] = useState<ProductDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -206,7 +213,9 @@ export default function ProductPage() {
     if (!item?.oemReference) return
     let cancelled = false
     fetch(`/api/v1/browse/compare?oem=${encodeURIComponent(item.oemReference)}&sort=${offerSort}`)
-      .then(async (r) => (r.ok ? ((await r.json()).data as { groups: CompareGroup[] } | CompareGroup[]) : []))
+      .then(async (r) =>
+        r.ok ? ((await r.json()).data as { groups: CompareGroup[] } | CompareGroup[]) : [],
+      )
       .then((data) => {
         if (cancelled) return
         const groups = Array.isArray(data) ? data : data.groups
@@ -228,25 +237,32 @@ export default function ProductPage() {
         )
     : []
 
-  // Estimation au délai Standard, palier Gratuit (la fiche produit n'a pas de
-  // contexte flotte) — même formule que le panier et le serveur (delivery-pricing.ts).
-  // Le choix entre Économique / Standard / Express se fait au panier puis au paiement.
-  const deliveryFee: number | null =
+  // Estimation au palier Gratuit (la fiche produit n'a pas de contexte flotte) —
+  // même formule que le panier et le serveur (delivery-pricing.ts). Le délai
+  // choisi ici est persisté dans le panier et suit jusqu'au paiement.
+  const feeForMode = (mode: DeliveryPricingMode): number | null =>
     item?.price != null
       ? computeDeliveryFee({
           tier: 'FREE',
-          mode: 'STANDARD',
+          mode,
           commune: deliveryCommune,
           vendors: [{ subtotal: item.price * qty, categories: [item.category] }],
         })
       : null
+  const deliveryFee = feeForMode(deliveryMode)
+  const modeLabel = DELIVERY_MODES.find((m) => m.mode === deliveryMode)?.label ?? 'Standard'
 
   const priceLines: PriceLine[] =
     item?.price != null
       ? [
           { label: `Prix pièce × ${qty}`, amount: item.price * qty },
           ...(deliveryFee != null
-            ? [{ label: `Livraison standard · ${deliveryCommune}`, amount: deliveryFee }]
+            ? [
+                {
+                  label: `Livraison ${modeLabel.toLowerCase()} · ${deliveryCommune}`,
+                  amount: deliveryFee,
+                },
+              ]
             : []),
         ]
       : []
@@ -283,7 +299,9 @@ export default function ProductPage() {
     setBuying(true)
 
     // Non connecté → renvoyer vers la connexion, avec retour sur cette fiche.
-    const { data: { session } } = await createClient().auth.getSession()
+    const {
+      data: { session },
+    } = await createClient().auth.getSession()
     if (!session) {
       const returnTo = `/produit/${item.id}`
       router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`)
@@ -364,7 +382,9 @@ export default function ProductPage() {
                       key={url}
                       onClick={() => setActivePhoto(i)}
                       className={`h-16 w-16 overflow-hidden rounded-sm border-2 transition-colors ${
-                        i === activePhoto ? 'border-accent' : 'border-border hover:border-border-strong'
+                        i === activePhoto
+                          ? 'border-accent'
+                          : 'border-border hover:border-border-strong'
                       }`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -388,22 +408,26 @@ export default function ProductPage() {
                         : 'bg-warning-bg text-warning-fg'
                   }`}
                 >
-                  <span aria-hidden>{compatibility ? '✅' : item.isUniversallyCompatible ? '🌐' : '⚠️'}</span>
+                  <span aria-hidden>
+                    {compatibility ? '✅' : item.isUniversallyCompatible ? '🌐' : '⚠️'}
+                  </span>
                   <span>
                     {compatibility
                       ? `Compatible avec votre ${vehicle!.brand} ${vehicle!.model} ${vehicle!.year}`
                       : item.isUniversallyCompatible
-                        ? 'Pièce compatible universelle — s\'adapte à tous les véhicules'
+                        ? "Pièce compatible universelle — s'adapte à tous les véhicules"
                         : `Compatibilité non confirmée avec votre ${vehicle!.brand} ${vehicle!.model} ${vehicle!.year}`}
                   </span>
                 </div>
               )}
-              {compatibility === null && item.isUniversallyCompatible && item.fitments.length === 0 && (
-                <div className="mb-4 flex items-start gap-2 rounded-md bg-card px-3.5 py-2.5 text-[13px] font-medium ring-1 ring-border">
-                  <span aria-hidden>🌐</span>
-                  <span>Pièce compatible universelle — s&apos;adapte à tous les véhicules</span>
-                </div>
-              )}
+              {compatibility === null &&
+                item.isUniversallyCompatible &&
+                item.fitments.length === 0 && (
+                  <div className="mb-4 flex items-start gap-2 rounded-md bg-card px-3.5 py-2.5 text-[13px] font-medium ring-1 ring-border">
+                    <span aria-hidden>🌐</span>
+                    <span>Pièce compatible universelle — s&apos;adapte à tous les véhicules</span>
+                  </div>
+                )}
 
               {/* 2. Titre + chips */}
               <h1 className="font-display text-2xl text-ink lg:text-3xl">{item.name ?? 'Pièce'}</h1>
@@ -430,8 +454,8 @@ export default function ProductPage() {
               {!item.inStock && (
                 <div className="mt-3 rounded-md border border-accent/30 bg-accent/5 p-4">
                   <p className="text-[13.5px] leading-relaxed text-ink">
-                    Cette pièce n&apos;est pas en stock actuellement. Vous pouvez la faire
-                    importer — estimation immédiate, sans compte, en deux minutes.
+                    Cette pièce n&apos;est pas en stock actuellement. Vous pouvez la faire importer
+                    — estimation immédiate, sans compte, en deux minutes.
                   </p>
                   <Link
                     href={`/logistique/devis?piece=${encodeURIComponent(item.name ?? '')}${
@@ -483,11 +507,59 @@ export default function ProductPage() {
                         </option>
                       ))}
                     </select>
-                    <p className="mt-1.5 text-xs text-muted">
-                      {deliveryFee != null
-                        ? `Frais de livraison vers ${deliveryCommune} : ${deliveryFee.toLocaleString('fr-FR')} FCFA.`
-                        : 'Sélectionnez votre commune pour calculer les frais de livraison.'}
-                    </p>
+                    {deliveryFee == null ? (
+                      <p className="mt-1.5 text-xs text-muted">
+                        Sélectionnez votre commune pour calculer les frais de livraison.
+                      </p>
+                    ) : (
+                      <fieldset className="mt-3">
+                        <legend className="block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                          Délai de livraison
+                        </legend>
+                        <div className="mt-1.5 space-y-1.5">
+                          {DELIVERY_MODES.map(({ mode, label, detail }) => {
+                            const fee = feeForMode(mode)
+                            return (
+                              <label
+                                key={mode}
+                                className={`flex cursor-pointer items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
+                                  deliveryMode === mode
+                                    ? 'border-accent bg-accent/5'
+                                    : 'border-border bg-surface'
+                                }`}
+                              >
+                                <span className="flex min-w-0 items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="produit-delivery-mode"
+                                    value={mode}
+                                    checked={deliveryMode === mode}
+                                    // Persisté dans le panier comme la commune :
+                                    // le choix survit à la navigation et au paiement.
+                                    onChange={() => setDeliveryMode(mode)}
+                                    className="accent-accent"
+                                  />
+                                  <span className="min-w-0 text-sm text-ink">
+                                    {label} <span className="text-xs text-muted">{detail}</span>
+                                  </span>
+                                </span>
+                                <span className="shrink-0">
+                                  {fee == null ? (
+                                    <span className="text-xs text-muted">—</span>
+                                  ) : fee === 0 ? (
+                                    <span className="text-xs font-semibold text-accent">
+                                      Offerte
+                                    </span>
+                                  ) : (
+                                    <Price amount={fee} className="text-xs" />
+                                  )}
+                                </span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </fieldset>
+                    )}
                   </div>
 
                   <PriceBreakdown title="Prix" eyebrow="" lines={priceLines} total={priceTotal} />
@@ -532,9 +604,7 @@ export default function ProductPage() {
                 )}
                 <div className="flex justify-between gap-4 px-4 py-2.5">
                   <dt className="text-muted">Garantie</dt>
-                  <dd className="text-ink">
-                    {warrantyText ?? 'Aucune — fixée par le vendeur'}
-                  </dd>
+                  <dd className="text-ink">{warrantyText ?? 'Aucune — fixée par le vendeur'}</dd>
                 </div>
               </dl>
 
@@ -544,7 +614,9 @@ export default function ProductPage() {
                 <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-muted">
                   {RETURN_POLICY.points.map((point) => (
                     <li key={point} className="flex gap-2">
-                      <span aria-hidden className="text-success-fg">✓</span>
+                      <span aria-hidden className="text-success-fg">
+                        ✓
+                      </span>
                       <span>{point}</span>
                     </li>
                   ))}
@@ -575,69 +647,77 @@ export default function ProductPage() {
               )}
 
               {/* 6. Offres concurrentes */}
-              {offers.length > 0 && (() => {
-                const bestValueId = offers.reduce<CompareOffer | null>((acc, o) => {
-                  if (o.valueScore == null) return acc
-                  return acc == null || o.valueScore > (acc.valueScore ?? -1) ? o : acc
-                }, null)?.id
-                return (
-                <div className="mt-6">
-                  <div className="flex items-center justify-between gap-3">
-                    <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                      {offers.length} autre{offers.length > 1 ? 's' : ''} vendeur
-                      {offers.length > 1 ? 's' : ''} pour cette pièce
-                    </h2>
-                    <div className="flex items-center gap-0.5 rounded-md border border-border bg-card p-0.5 text-[11px]">
-                      <button
-                        onClick={() => setOfferSort('value')}
-                        className={`rounded-sm px-2 py-1 font-medium ${offerSort === 'value' ? 'bg-ink-2 text-white' : 'text-muted hover:text-ink'}`}
-                      >
-                        Qualité-prix
-                      </button>
-                      <button
-                        onClick={() => setOfferSort('price')}
-                        className={`rounded-sm px-2 py-1 font-medium ${offerSort === 'price' ? 'bg-ink-2 text-white' : 'text-muted hover:text-ink'}`}
-                      >
-                        Prix
-                      </button>
-                    </div>
-                  </div>
-                  <ul className="mt-2 divide-y divide-border rounded-md border border-border bg-card">
-                    {offers.slice(0, 6).map((o) => (
-                      <li key={o.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <Link
-                              href={`/produit/${o.id}`}
-                              className="truncate text-sm font-medium text-ink hover:underline"
-                            >
-                              {o.vendorName}
-                            </Link>
-                            {o.id === bestValueId && (
-                              <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
-                                Meilleur rapport
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            {o.condition && <ConditionChip condition={o.condition as Condition} />}
-                            <span className="text-xs text-muted">
-                              {o.vendorRating != null ? `${Math.round(o.vendorRating)}/100` : 'Nouveau'}
-                            </span>
-                            {o.valueScore != null && (
-                              <span className="font-mono text-[10px] text-muted">
-                                · score {o.valueScore}
-                              </span>
-                            )}
-                          </div>
+              {offers.length > 0 &&
+                (() => {
+                  const bestValueId = offers.reduce<CompareOffer | null>((acc, o) => {
+                    if (o.valueScore == null) return acc
+                    return acc == null || o.valueScore > (acc.valueScore ?? -1) ? o : acc
+                  }, null)?.id
+                  return (
+                    <div className="mt-6">
+                      <div className="flex items-center justify-between gap-3">
+                        <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                          {offers.length} autre{offers.length > 1 ? 's' : ''} vendeur
+                          {offers.length > 1 ? 's' : ''} pour cette pièce
+                        </h2>
+                        <div className="flex items-center gap-0.5 rounded-md border border-border bg-card p-0.5 text-[11px]">
+                          <button
+                            onClick={() => setOfferSort('value')}
+                            className={`rounded-sm px-2 py-1 font-medium ${offerSort === 'value' ? 'bg-ink-2 text-white' : 'text-muted hover:text-ink'}`}
+                          >
+                            Qualité-prix
+                          </button>
+                          <button
+                            onClick={() => setOfferSort('price')}
+                            className={`rounded-sm px-2 py-1 font-medium ${offerSort === 'price' ? 'bg-ink-2 text-white' : 'text-muted hover:text-ink'}`}
+                          >
+                            Prix
+                          </button>
                         </div>
-                        {o.price != null && <Price amount={o.price} className="text-sm" />}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                )
-              })()}
+                      </div>
+                      <ul className="mt-2 divide-y divide-border rounded-md border border-border bg-card">
+                        {offers.slice(0, 6).map((o) => (
+                          <li
+                            key={o.id}
+                            className="flex items-center justify-between gap-3 px-4 py-3"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <Link
+                                  href={`/produit/${o.id}`}
+                                  className="truncate text-sm font-medium text-ink hover:underline"
+                                >
+                                  {o.vendorName}
+                                </Link>
+                                {o.id === bestValueId && (
+                                  <span className="shrink-0 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">
+                                    Meilleur rapport
+                                  </span>
+                                )}
+                              </div>
+                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                {o.condition && (
+                                  <ConditionChip condition={o.condition as Condition} />
+                                )}
+                                <span className="text-xs text-muted">
+                                  {o.vendorRating != null
+                                    ? `${Math.round(o.vendorRating)}/100`
+                                    : 'Nouveau'}
+                                </span>
+                                {o.valueScore != null && (
+                                  <span className="font-mono text-[10px] text-muted">
+                                    · score {o.valueScore}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {o.price != null && <Price amount={o.price} className="text-sm" />}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )
+                })()}
 
               {/* CTA tertiaire WhatsApp */}
               <a

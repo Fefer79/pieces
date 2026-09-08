@@ -6,7 +6,12 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Price } from '@/components/ui/price'
 import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
-import { ConditionChip, PartSourceChip, type Condition, type PartSource } from '@/components/ui/chip'
+import {
+  ConditionChip,
+  PartSourceChip,
+  type Condition,
+  type PartSource,
+} from '@/components/ui/chip'
 import { PartThumb } from '@/components/ui/part-thumb'
 import { QuantityStepper } from '@/components/ui/quantity-stepper'
 import { useCart, type CartItem } from '@/lib/cart'
@@ -37,8 +42,22 @@ type DraftItem = {
 type Draft = { items: DraftItem[] } | null
 
 export default function PanierPage() {
-  const { items, itemsByVendor, count, subtotal, vehicle, commune, setQuantity, removeItem, clear, mergeItems, setVehicle, setCommune } =
-    useCart()
+  const {
+    items,
+    itemsByVendor,
+    count,
+    subtotal,
+    vehicle,
+    commune,
+    deliveryMode,
+    setQuantity,
+    removeItem,
+    clear,
+    mergeItems,
+    setVehicle,
+    setCommune,
+    setDeliveryMode,
+  } = useCart()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   // Qui paie ? Ce n'est plus déduit d'un rôle : l'acheteur choisit au checkout.
@@ -48,7 +67,6 @@ export default function PanierPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<CreatedOrder | null>(null)
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryPricingMode>('STANDARD')
   // Palier de tarification livraison : FREE par défaut, résolu côté serveur
   // depuis l'abonnement de l'entreprise du véhicule sélectionné. Le palier
   // effectif est dérivé au rendu (pas de setState synchrone dans l'effet).
@@ -251,7 +269,9 @@ export default function PanierPage() {
                   <span className="min-w-0 text-sm text-ink">
                     🔧 Commande pour&nbsp;
                     <span className="font-semibold">{vehicle.label}</span>
-                    <span className="ml-1 text-muted">— rattachée au suivi de coûts du véhicule</span>
+                    <span className="ml-1 text-muted">
+                      — rattachée au suivi de coûts du véhicule
+                    </span>
                   </span>
                   <button
                     onClick={() => setVehicle(null)}
@@ -359,7 +379,9 @@ export default function PanierPage() {
                         <label
                           key={mode}
                           className={`flex cursor-pointer items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
-                            deliveryMode === mode ? 'border-accent bg-accent/5' : 'border-border bg-surface'
+                            deliveryMode === mode
+                              ? 'border-accent bg-accent/5'
+                              : 'border-border bg-surface'
                           }`}
                         >
                           <span className="flex items-center gap-2">

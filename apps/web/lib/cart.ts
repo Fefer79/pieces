@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
+import type { DeliveryPricingMode } from 'shared/constants'
 
 const STORAGE_KEY = 'pieces_cart'
 const EVENT = 'pieces:cart-changed'
@@ -8,6 +9,8 @@ const VEHICLE_KEY = 'pieces_cart_vehicle'
 const VEHICLE_EVENT = 'pieces:cart-vehicle-changed'
 const COMMUNE_KEY = 'pieces_cart_commune'
 const COMMUNE_EVENT = 'pieces:cart-commune-changed'
+const MODE_KEY = 'pieces_cart_delivery_mode'
+const MODE_EVENT = 'pieces:cart-delivery-mode-changed'
 
 export interface CartItem {
   catalogItemId: string
@@ -177,6 +180,45 @@ export function setCartCommune(commune: string) {
   }
 }
 
+/**
+ * Délai de livraison choisi par l'acheteur : proposé dès la fiche produit (le
+ * prix affiché en dépend), il persiste jusqu'au panier puis à la commande.
+ * Valeur inconnue en storage → Standard, le compromis par défaut.
+ */
+function readModeRaw(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return window.localStorage.getItem(MODE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function subscribeMode(callback: () => void) {
+  if (typeof window === 'undefined') return () => {}
+  window.addEventListener(MODE_EVENT, callback)
+  window.addEventListener('storage', callback)
+  return () => {
+    window.removeEventListener(MODE_EVENT, callback)
+    window.removeEventListener('storage', callback)
+  }
+}
+
+export function parseMode(raw: string | null): DeliveryPricingMode {
+  return raw === 'ECO' || raw === 'EXPRESS' || raw === 'STANDARD' ? raw : 'STANDARD'
+}
+
+/** Définit le délai de livraison du panier. */
+export function setCartDeliveryMode(mode: DeliveryPricingMode) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(MODE_KEY, mode)
+    window.dispatchEvent(new CustomEvent(MODE_EVENT))
+  } catch {
+    // ignore
+  }
+}
+
 export interface VendorGroup {
   vendorId: string
   vendorShopName: string
@@ -192,6 +234,9 @@ export function useCart() {
   const vehicle = useMemo(() => parseVehicle(rawVehicle), [rawVehicle])
 
   const commune = useSyncExternalStore(subscribeCommune, readCommuneRaw, getServerSnapshot) ?? ''
+
+  const rawMode = useSyncExternalStore(subscribeMode, readModeRaw, getServerSnapshot)
+  const deliveryMode = useMemo(() => parseMode(rawMode), [rawMode])
 
   const addItem = useCallback((item: Omit<CartItem, 'quantity'>, quantity = 1) => {
     const current = parse(readFromStorage())
@@ -256,5 +301,21 @@ export function useCart() {
     return [...groups.values()]
   }, [items])
 
-  return { items, itemsByVendor, count, subtotal, vehicle, commune, addItem, setQuantity, removeItem, clear, mergeItems, setVehicle: setCartVehicle, setCommune: setCartCommune }
+  return {
+    items,
+    itemsByVendor,
+    count,
+    subtotal,
+    vehicle,
+    commune,
+    deliveryMode,
+    addItem,
+    setQuantity,
+    removeItem,
+    clear,
+    mergeItems,
+    setVehicle: setCartVehicle,
+    setCommune: setCartCommune,
+    setDeliveryMode: setCartDeliveryMode,
+  }
 }

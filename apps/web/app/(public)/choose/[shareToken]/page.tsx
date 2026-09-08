@@ -407,9 +407,6 @@ export default function OwnerChoicePage() {
                         )
                       })}
                     </div>
-                    <p className="mt-2 text-[11px] leading-relaxed text-muted">
-                      Le plus rapide coûte plus cher : vous arbitrez avant de payer.
-                    </p>
                   </>
                 )}
               </fieldset>
