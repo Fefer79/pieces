@@ -8,7 +8,12 @@ import { Price } from '@/components/ui/price'
 import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
 import { PartThumb } from '@/components/ui/part-thumb'
 import { useAuth } from '@/lib/auth-context'
-import { warrantyLabel, RETURN_POLICY, type WarrantyUnit } from 'shared/constants'
+import {
+  warrantyLabel,
+  RETURN_POLICY,
+  type WarrantyUnit,
+  type DeliveryPricingMode,
+} from 'shared/constants'
 
 interface OrderItem {
   id: string
@@ -24,12 +29,23 @@ interface OrderItem {
   warrantyUnit: WarrantyUnit | null
 }
 
+/** Tarif d'un des trois délais, calculé serveur-side pour cette commande. */
+interface DeliveryOption {
+  mode: DeliveryPricingMode
+  label: string
+  detail: string
+  /** null = commune inconnue/absente : la ligne livraison est masquée. */
+  fee: number | null
+}
+
 interface Order {
   id: string
   status: string
   totalAmount: number
   deliveryFee: number
-  deliveryMode?: 'ECO' | 'STANDARD' | 'EXPRESS'
+  deliveryMode?: DeliveryPricingMode
+  deliveryCommune?: string | null
+  deliveryOptions?: DeliveryOption[]
   laborCost: number | null
   shareToken: string
   items: OrderItem[]
@@ -93,6 +109,8 @@ export default function OwnerChoicePage() {
   const [error, setError] = useState<string | null>(null)
   const [paying, setPaying] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<PayMethodId | null>(null)
+  // Changement de délai : optimiste sur la sélection, le tarif fait foi au retour serveur.
+  const [switchingMode, setSwitchingMode] = useState<DeliveryPricingMode | null>(null)
 
   const fetchOrder = useCallback(async () => {
     try {
@@ -136,6 +154,31 @@ export default function OwnerChoicePage() {
     }
   }
 
+  // L'acheteur qui paie choisit son délai : le serveur retarife et renvoie la
+  // commande à jour, donc le total affiché reste celui qui sera prélevé.
+  async function handleDeliveryMode(mode: DeliveryPricingMode) {
+    if (!order || order.deliveryMode === mode || switchingMode) return
+    setSwitchingMode(mode)
+    try {
+      const res = await fetch(`/api/v1/orders/share/${shareToken}/delivery`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deliveryMode: mode }),
+      })
+      const body = await res.json()
+      if (!res.ok) {
+        setError(body.error?.message ?? 'Impossible de changer le mode de livraison')
+        return
+      }
+      setError(null)
+      setOrder(body.data)
+    } catch {
+      setError('Erreur réseau')
+    } finally {
+      setSwitchingMode(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -172,18 +215,23 @@ export default function OwnerChoicePage() {
     ...((grandTotal <= 75000 ? ['COD'] : []) as PayMethodId[]),
   ]
 
+  const currentMode: DeliveryPricingMode = order.deliveryMode ?? 'STANDARD'
+  // Les trois délais tarifés pour cette commande. Absents (commune inconnue) →
+  // pas de choix à offrir, la ligne livraison reste celle figée à la commande.
+  const deliveryChoices = (order.deliveryOptions ?? []).filter(
+    (o): o is DeliveryOption & { fee: number } => o.fee != null,
+  )
+  const currentChoice = deliveryChoices.find((o) => o.mode === currentMode)
+
   const priceLines: PriceLine[] = [
     { label: 'Pièces', amount: order.totalAmount },
     ...(order.laborCost != null && order.laborCost > 0
       ? [{ label: "Main d'œuvre", amount: order.laborCost }]
       : []),
     {
-      label:
-        order.deliveryMode === 'EXPRESS'
-          ? 'Livraison express prioritaire'
-          : order.deliveryMode === 'ECO'
-            ? 'Livraison économique (3–5 j)'
-            : 'Livraison',
+      label: currentChoice
+        ? `Livraison ${currentChoice.label.toLowerCase()} · ${currentChoice.detail}`
+        : 'Livraison',
       amount: order.deliveryFee,
     },
   ]
@@ -263,8 +311,59 @@ export default function OwnerChoicePage() {
               </div>
             </div>
 
-            {/* Sidebar: breakdown + payment */}
+            {/* Sidebar: delivery choice + breakdown + payment */}
             <div className="order-1 min-w-0 space-y-4 md:order-none md:space-y-5 lg:sticky lg:top-24 lg:self-start">
+              {/* Délai de livraison : c'est celui qui paie qui arbitre prix/rapidité.
+                  Chaque tarif vient du serveur, donc le total est exact avant paiement. */}
+              {deliveryChoices.length > 0 && (
+                <fieldset className="rounded-md border border-border bg-card px-4 py-3">
+                  <legend className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                    Délai de livraison
+                  </legend>
+                  <div className="mt-1.5 space-y-1.5">
+                    {deliveryChoices.map(({ mode, label, detail, fee }) => {
+                      const isSelected = currentMode === mode
+                      const isBusy = switchingMode === mode
+                      return (
+                        <label
+                          key={mode}
+                          className={`flex cursor-pointer items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
+                            isSelected ? 'border-accent bg-accent/5' : 'border-border bg-surface'
+                          } ${switchingMode && !isBusy ? 'opacity-60' : ''}`}
+                        >
+                          <span className="flex min-w-0 items-center gap-2">
+                            <input
+                              type="radio"
+                              name="choose-delivery-mode"
+                              value={mode}
+                              checked={isSelected}
+                              disabled={switchingMode !== null}
+                              onChange={() => handleDeliveryMode(mode)}
+                              className="accent-accent"
+                            />
+                            <span className="min-w-0 text-sm text-ink">
+                              {label} <span className="text-xs text-muted">{detail}</span>
+                            </span>
+                          </span>
+                          <span className="shrink-0">
+                            {isBusy ? (
+                              <span className="text-xs text-muted">…</span>
+                            ) : fee === 0 ? (
+                              <span className="text-xs font-semibold text-accent">Offerte</span>
+                            ) : (
+                              <Price amount={fee} className="text-xs" />
+                            )}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                  <p className="mt-2 text-[11px] leading-relaxed text-muted">
+                    Le plus rapide coûte plus cher : vous arbitrez avant de payer.
+                  </p>
+                </fieldset>
+              )}
+
               <PriceBreakdown
                 title="Le détail, avant de payer"
                 lines={priceLines}

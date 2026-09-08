@@ -7,6 +7,7 @@ import { getOrCreateInvoiceForOrder } from '../enterprise/invoice.service.js'
 import { consumeStockForOrder, restockForOrder } from '../catalog/stock.service.js'
 import {
   computeDeliveryFee,
+  DELIVERY_MODES,
   type DeliveryPricingMode,
   type DeliveryPricingTier,
   type DeliveryVendorGroup,
@@ -33,6 +34,51 @@ function rescoreOrderVendors(orderId: string) {
 }
 
 const COD_MAX_AMOUNT = 75_000
+
+/** Mode retenu quand l'acheteur n'a pas encore tranché — le compromis délai/prix. */
+const DEFAULT_DELIVERY_MODE: DeliveryPricingMode = 'STANDARD'
+
+/**
+ * Regroupe les lignes d'une commande par vendeur : chacun expédie séparément,
+ * donc chacun a son sous-total (taux) et son gabarit (plancher). Même forme en
+ * entrée de `computeDeliveryFee` que la commande soit en cours de création
+ * (lignes à créer) ou déjà persistée (OrderItem).
+ */
+function vendorGroupsOf(
+  items: Array<{ vendorId: string; priceSnapshot: number; quantity: number; category: string | null }>,
+): DeliveryVendorGroup[] {
+  const byVendor = new Map<string, DeliveryVendorGroup>()
+  for (const i of items) {
+    const group = byVendor.get(i.vendorId) ?? { subtotal: 0, categories: [] }
+    group.subtotal += i.priceSnapshot * i.quantity
+    group.categories.push(i.category)
+    byVendor.set(i.vendorId, group)
+  }
+  return [...byVendor.values()]
+}
+
+/** Palier de livraison d'une commande déjà créée (l'abonnement peut avoir changé depuis). */
+async function tierOfOrder(enterpriseId: string | null): Promise<DeliveryPricingTier> {
+  return enterpriseId ? currentTier(enterpriseId) : 'FREE'
+}
+
+/**
+ * Tarif des trois modes pour une commande donnée. Calculé serveur-side avec le
+ * même helper que `createOrder`, pour que l'acheteur qui paie voie exactement
+ * ce qui lui sera facturé s'il change de mode.
+ */
+function deliveryOptionsFor(args: {
+  tier: DeliveryPricingTier
+  commune: string | null
+  vendors: DeliveryVendorGroup[]
+}): Array<{ mode: DeliveryPricingMode; label: string; detail: string; fee: number | null }> {
+  return DELIVERY_MODES.map(({ mode, label, detail }) => ({
+    mode,
+    label,
+    detail,
+    fee: computeDeliveryFee({ tier: args.tier, mode, commune: args.commune, vendors: args.vendors }),
+  }))
+}
 
 function generateShareToken(): string {
   return randomBytes(16).toString('hex')
@@ -208,21 +254,14 @@ export async function createOrder(
   // Le palier vient de l'abonnement actif de l'entreprise rattachée au véhicule
   // (essai 30 j inclus). Calculé serveur-side, jamais confié au client.
   const deliveryCommune = options.deliveryCommune?.trim() || undefined
-  const deliveryMode: DeliveryPricingMode = options.deliveryMode ?? 'STANDARD'
+  const deliveryMode: DeliveryPricingMode = options.deliveryMode ?? DEFAULT_DELIVERY_MODE
   const tier: DeliveryPricingTier = enterpriseId ? await currentTier(enterpriseId) : 'FREE'
-  const byVendor = new Map<string, DeliveryVendorGroup>()
-  for (const c of create) {
-    const group = byVendor.get(c.vendorId) ?? { subtotal: 0, categories: [] }
-    group.subtotal += c.priceSnapshot * c.quantity
-    group.categories.push(c.category)
-    byVendor.set(c.vendorId, group)
-  }
   const deliveryFee =
     computeDeliveryFee({
       tier,
       mode: deliveryMode,
       commune: deliveryCommune,
-      vendors: [...byVendor.values()],
+      vendors: vendorGroupsOf(create),
     }) ?? 0
 
   const order = await prisma.order.create({
@@ -365,7 +404,52 @@ export async function getOrderByShareToken(shareToken: string) {
     throw new AppError('ORDER_NOT_FOUND', 404, { message: 'Commande introuvable' })
   }
 
-  return order
+  // Le tarif des trois modes accompagne la commande : celui qui paie choisit
+  // son délai sur cette page, et voit le prix exact avant de payer. Modifiable
+  // tant que la commande est en DRAFT (cf. setOrderDeliveryMode).
+  const deliveryOptions = deliveryOptionsFor({
+    tier: await tierOfOrder(order.enterpriseId),
+    commune: order.deliveryCommune,
+    vendors: vendorGroupsOf(order.items),
+  })
+
+  return { ...order, deliveryOptions }
+}
+
+/**
+ * L'acheteur qui paie choisit son mode de livraison depuis le lien partagé.
+ * Le tarif est recalculé serveur-side (jamais reçu du client) et n'est
+ * modifiable qu'avant paiement — après, le prix affiché ferait foi à tort.
+ */
+export async function setOrderDeliveryMode(shareToken: string, mode: DeliveryPricingMode) {
+  const order = await prisma.order.findUnique({
+    where: { shareToken },
+    include: { items: true },
+  })
+
+  if (!order) {
+    throw new AppError('ORDER_NOT_FOUND', 404, { message: 'Commande introuvable' })
+  }
+  if (order.status !== 'DRAFT') {
+    throw new AppError('ORDER_DELIVERY_MODE_LOCKED', 409, {
+      message: 'Le mode de livraison ne peut plus être modifié après le paiement',
+    })
+  }
+
+  const deliveryFee =
+    computeDeliveryFee({
+      tier: await tierOfOrder(order.enterpriseId),
+      mode,
+      commune: order.deliveryCommune,
+      vendors: vendorGroupsOf(order.items),
+    }) ?? 0
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { deliveryMode: mode, deliveryFee },
+  })
+
+  return getOrderByShareToken(shareToken)
 }
 
 export async function getOrderById(orderId: string, requester: OrderRequester) {

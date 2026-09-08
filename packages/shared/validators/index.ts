@@ -30,7 +30,13 @@ export {
   MAX_PHOTOS_PER_ITEM,
 } from './catalog'
 export { vinDecodeSchema, createVehicleSchema } from './browse'
-export { createOrderSchema, confirmOrderSchema, cancelOrderSchema, upsertDraftSchema } from './order'
+export {
+  createOrderSchema,
+  confirmOrderSchema,
+  cancelOrderSchema,
+  upsertDraftSchema,
+  setDeliveryModeSchema,
+} from './order'
 export { createSellerReviewSchema, createDeliveryReviewSchema, openDisputeSchema, resolveDisputeSchema } from './review'
 export { updatePreferencesSchema, sendNotificationSchema } from './notification'
 export { liaisonCreateVendorSchema, liaisonUpdateVendorSchema, liaisonCreatePartSchema, liaisonUpdatePartSchema, liaisonQuickVendorSchema, liaisonQuickPartSchema } from './liaison'

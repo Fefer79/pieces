@@ -1,10 +1,17 @@
 import type { FastifyInstance } from 'fastify'
-import { createOrderSchema, confirmOrderSchema, cancelOrderSchema, upsertDraftSchema } from 'shared/validators'
+import {
+  createOrderSchema,
+  confirmOrderSchema,
+  cancelOrderSchema,
+  upsertDraftSchema,
+  setDeliveryModeSchema,
+} from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth } from '../../plugins/auth.js'
 import {
   createOrder,
   getOrderByShareToken,
+  setOrderDeliveryMode,
   getOrderById,
   getUserOrders,
   selectPaymentMethod,
@@ -168,6 +175,25 @@ export async function orderRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { shareToken } = request.params as { shareToken: string }
       const order = await getOrderByShareToken(shareToken)
+      return reply.status(200).send({ data: order })
+    },
+  )
+
+  // Choix du mode de livraison par celui qui paie (lien partagé, non authentifié).
+  // Le share token fait office de preuve de possession, comme pour le paiement.
+  fastify.patch(
+    '/share/:shareToken/delivery',
+    {
+      schema: {
+        tags: ['Orders'],
+        description: 'Choisir le mode de livraison (Économique / Standard / Express)',
+        body: zodToFastify(setDeliveryModeSchema),
+      },
+    },
+    async (request, reply) => {
+      const { shareToken } = request.params as { shareToken: string }
+      const { deliveryMode } = request.body as { deliveryMode: 'ECO' | 'STANDARD' | 'EXPRESS' }
+      const order = await setOrderDeliveryMode(shareToken, deliveryMode)
       return reply.status(200).send({ data: order })
     },
   )

@@ -31,6 +31,12 @@ export const confirmOrderSchema = z.object({
   shareToken: shareTokenSchema,
 })
 
+// Choix du mode de livraison par celui qui paie, depuis le lien partagé.
+// Le tarif n'est jamais transmis par le client : le serveur le recalcule.
+export const setDeliveryModeSchema = z.object({
+  deliveryMode: z.enum(['ECO', 'STANDARD', 'EXPRESS']),
+})
+
 export const cancelOrderSchema = z.object({
   reason: z.string().max(500).optional(),
   shareToken: shareTokenSchema,

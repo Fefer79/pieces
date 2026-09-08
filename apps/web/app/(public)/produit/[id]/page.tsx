@@ -228,8 +228,9 @@ export default function ProductPage() {
         )
     : []
 
-  // Estimation livraison standard, palier Gratuit (la fiche produit n'a pas de
+  // Estimation au délai Standard, palier Gratuit (la fiche produit n'a pas de
   // contexte flotte) — même formule que le panier et le serveur (delivery-pricing.ts).
+  // Le choix entre Économique / Standard / Express se fait au panier puis au paiement.
   const deliveryFee: number | null =
     item?.price != null
       ? computeDeliveryFee({
@@ -245,7 +246,7 @@ export default function ProductPage() {
       ? [
           { label: `Prix pièce × ${qty}`, amount: item.price * qty },
           ...(deliveryFee != null
-            ? [{ label: `Livraison · ${deliveryCommune}`, amount: deliveryFee }]
+            ? [{ label: `Livraison standard · ${deliveryCommune}`, amount: deliveryFee }]
             : []),
         ]
       : []

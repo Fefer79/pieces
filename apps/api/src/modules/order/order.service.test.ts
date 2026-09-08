@@ -61,7 +61,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft } = await import('./order.service.js')
+const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDeliveryMode } = await import('./order.service.js')
 
 describe('order.service', () => {
   beforeEach(() => {
@@ -561,6 +561,81 @@ describe('order.service', () => {
       const arg = mockOrderCreate.mock.calls[0]![0] as FeeArg
       expect(arg.data.deliveryFee).toBe(0)
       expect(mockCurrentTier).not.toHaveBeenCalled()
+    })
+  })
+  // Le choix du délai revient à celui qui paie, depuis le lien partagé.
+  describe('mode de livraison choisi par le payeur', () => {
+    const orderRow = (over: Record<string, unknown> = {}) => ({
+      id: 'o1',
+      shareToken: 'a'.repeat(32),
+      status: 'DRAFT',
+      enterpriseId: null,
+      deliveryCommune: 'Cocody',
+      deliveryMode: 'STANDARD',
+      deliveryFee: 1800,
+      items: [
+        {
+          vendorId: 'v1',
+          priceSnapshot: 60_000,
+          quantity: 1,
+          category: 'Filtration',
+        },
+      ],
+      initiator: { id: 'user-1', phone: '+2250700000000' },
+      ...over,
+    })
+
+    it('getOrderByShareToken tarife les trois délais de la commande', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow())
+
+      const order = await getOrderByShareToken('a'.repeat(32))
+
+      expect(order.deliveryOptions.map((o) => [o.mode, o.fee])).toEqual([
+        ['ECO', 1500], // 2 % de 60 000 = 1 200 → plancher centre éco 1 500
+        ['STANDARD', 1800], // 3 %
+        ['EXPRESS', 5000], // 3 600 → plancher express 5 000
+      ])
+    })
+
+    it('le plus rapide est toujours le plus cher', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow())
+
+      const { deliveryOptions } = await getOrderByShareToken('a'.repeat(32))
+      const fee = (mode: string) => deliveryOptions.find((o) => o.mode === mode)!.fee!
+
+      expect(fee('ECO')).toBeLessThanOrEqual(fee('STANDARD'))
+      expect(fee('STANDARD')).toBeLessThanOrEqual(fee('EXPRESS'))
+    })
+
+    it('setOrderDeliveryMode retarife serveur-side et persiste le mode', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow())
+      mockOrderUpdate.mockResolvedValueOnce({})
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow({ deliveryMode: 'EXPRESS', deliveryFee: 5000 }))
+
+      await setOrderDeliveryMode('a'.repeat(32), 'EXPRESS')
+
+      const arg = mockOrderUpdate.mock.calls[0]![0] as {
+        data: { deliveryMode: string; deliveryFee: number }
+      }
+      expect(arg.data).toEqual({ deliveryMode: 'EXPRESS', deliveryFee: 5000 })
+    })
+
+    it('refuse le changement après le paiement', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow({ status: 'PAID' }))
+
+      await expect(setOrderDeliveryMode('a'.repeat(32), 'ECO')).rejects.toMatchObject({
+        code: 'ORDER_DELIVERY_MODE_LOCKED',
+        statusCode: 409,
+      })
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+
+    it('commune inconnue : pas de tarif proposé, aucun choix offert', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow({ deliveryCommune: null }))
+
+      const { deliveryOptions } = await getOrderByShareToken('a'.repeat(32))
+
+      expect(deliveryOptions.every((o) => o.fee === null)).toBe(true)
     })
   })
 })
