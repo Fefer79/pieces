@@ -4,14 +4,14 @@ import {
   confirmOrderSchema,
   cancelOrderSchema,
   upsertDraftSchema,
-  setDeliveryModeSchema,
+  setDeliverySchema,
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth } from '../../plugins/auth.js'
 import {
   createOrder,
   getOrderByShareToken,
-  setOrderDeliveryMode,
+  setOrderDelivery,
   getOrderById,
   getUserOrders,
   selectPaymentMethod,
@@ -38,7 +38,15 @@ export async function orderRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const body = request.body as { items: { catalogItemId: string; quantity?: number }[]; ownerPhone?: string; laborCost?: number; vehicleId?: string; deliveryCommune?: string; deliveryMode?: 'ECO' | 'STANDARD' | 'EXPRESS'; payerMode?: 'SELF' | 'OWNER_LINK' }
+      const body = request.body as {
+        items: { catalogItemId: string; quantity?: number }[]
+        ownerPhone?: string
+        laborCost?: number
+        vehicleId?: string
+        deliveryCommune?: string
+        deliveryMode?: 'ECO' | 'STANDARD' | 'EXPRESS'
+        payerMode?: 'SELF' | 'OWNER_LINK'
+      }
       const order = await createOrder(request.user.id, body.items, {
         ownerPhone: body.ownerPhone,
         laborCost: body.laborCost,
@@ -77,7 +85,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
       preHandler: [requireAuth],
       schema: {
         tags: ['Orders'],
-        description: 'Lister les commandes de l\'utilisateur',
+        description: "Lister les commandes de l'utilisateur",
         security: [{ BearerAuth: [] }],
       },
     },
@@ -116,7 +124,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
       preHandler: [requireAuth],
       schema: {
         tags: ['Orders'],
-        description: 'Récupérer le brouillon panier ouvert de l\'utilisateur',
+        description: "Récupérer le brouillon panier ouvert de l'utilisateur",
         security: [{ BearerAuth: [] }],
       },
     },
@@ -152,7 +160,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
       preHandler: [requireAuth],
       schema: {
         tags: ['Orders'],
-        description: 'Détails d\'une commande',
+        description: "Détails d'une commande",
         security: [{ BearerAuth: [] }],
       },
     },
@@ -179,21 +187,29 @@ export async function orderRoutes(fastify: FastifyInstance) {
     },
   )
 
-  // Choix du mode de livraison par celui qui paie (lien partagé, non authentifié).
-  // Le share token fait office de preuve de possession, comme pour le paiement.
+  // Choix de livraison par celui qui paie (lien partagé, non authentifié) :
+  // délai et/ou commune. Le share token fait office de preuve de possession,
+  // comme pour le paiement.
   fastify.patch(
     '/share/:shareToken/delivery',
     {
       schema: {
         tags: ['Orders'],
-        description: 'Choisir le mode de livraison (Économique / Standard / Express)',
-        body: zodToFastify(setDeliveryModeSchema),
+        description:
+          'Choisir le délai (Économique / Standard / Express) et la commune de livraison',
+        body: zodToFastify(setDeliverySchema),
       },
     },
     async (request, reply) => {
       const { shareToken } = request.params as { shareToken: string }
-      const { deliveryMode } = request.body as { deliveryMode: 'ECO' | 'STANDARD' | 'EXPRESS' }
-      const order = await setOrderDeliveryMode(shareToken, deliveryMode)
+      const body = request.body as {
+        deliveryMode?: 'ECO' | 'STANDARD' | 'EXPRESS'
+        deliveryCommune?: string
+      }
+      const order = await setOrderDelivery(shareToken, {
+        mode: body.deliveryMode,
+        commune: body.deliveryCommune,
+      })
       return reply.status(200).send({ data: order })
     },
   )
@@ -210,7 +226,10 @@ export async function orderRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { orderId } = request.params as { orderId: string }
-      const { paymentMethod, shareToken } = request.body as { paymentMethod: string; shareToken: string }
+      const { paymentMethod, shareToken } = request.body as {
+        paymentMethod: string
+        shareToken: string
+      }
       const order = await selectPaymentMethod(orderId, paymentMethod, 'buyer', shareToken)
       return reply.status(200).send({ data: order })
     },
@@ -229,7 +248,10 @@ export async function orderRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { orderId } = request.params as { orderId: string }
-      const order = await vendorConfirmOrder(orderId, { id: request.user.id, roles: request.user.roles })
+      const order = await vendorConfirmOrder(orderId, {
+        id: request.user.id,
+        roles: request.user.roles,
+      })
       return reply.status(200).send({ data: order })
     },
   )

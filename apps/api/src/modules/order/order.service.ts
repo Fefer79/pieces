@@ -45,7 +45,12 @@ const DEFAULT_DELIVERY_MODE: DeliveryPricingMode = 'STANDARD'
  * (lignes à créer) ou déjà persistée (OrderItem).
  */
 function vendorGroupsOf(
-  items: Array<{ vendorId: string; priceSnapshot: number; quantity: number; category: string | null }>,
+  items: Array<{
+    vendorId: string
+    priceSnapshot: number
+    quantity: number
+    category: string | null
+  }>,
 ): DeliveryVendorGroup[] {
   const byVendor = new Map<string, DeliveryVendorGroup>()
   for (const i of items) {
@@ -76,7 +81,12 @@ function deliveryOptionsFor(args: {
     mode,
     label,
     detail,
-    fee: computeDeliveryFee({ tier: args.tier, mode, commune: args.commune, vendors: args.vendors }),
+    fee: computeDeliveryFee({
+      tier: args.tier,
+      mode,
+      commune: args.commune,
+      vendors: args.vendors,
+    }),
   }))
 }
 
@@ -417,11 +427,23 @@ export async function getOrderByShareToken(shareToken: string) {
 }
 
 /**
- * L'acheteur qui paie choisit son mode de livraison depuis le lien partagé.
- * Le tarif est recalculé serveur-side (jamais reçu du client) et n'est
- * modifiable qu'avant paiement — après, le prix affiché ferait foi à tort.
+ * L'acheteur qui paie arbitre sa livraison depuis le lien partagé : le délai et
+ * la commune où il veut être livré. Les deux font varier le prix, qui est
+ * recalculé serveur-side (jamais reçu du client) et n'est modifiable qu'avant
+ * paiement — après, le prix affiché ferait foi à tort.
  */
-export async function setOrderDeliveryMode(shareToken: string, mode: DeliveryPricingMode) {
+export async function setOrderDelivery(
+  shareToken: string,
+  choice: { mode?: DeliveryPricingMode; commune?: string },
+) {
+  // Le `.refine` du schéma partagé ne survit pas à la conversion JSON Schema
+  // (Fastify ne valide que la forme) — l'invariant se tient donc ici.
+  if (choice.mode === undefined && choice.commune === undefined) {
+    throw new AppError('DELIVERY_CHOICE_EMPTY', 400, {
+      message: 'Précisez au moins le délai ou la commune',
+    })
+  }
+
   const order = await prisma.order.findUnique({
     where: { shareToken },
     include: { items: true },
@@ -431,22 +453,26 @@ export async function setOrderDeliveryMode(shareToken: string, mode: DeliveryPri
     throw new AppError('ORDER_NOT_FOUND', 404, { message: 'Commande introuvable' })
   }
   if (order.status !== 'DRAFT') {
-    throw new AppError('ORDER_DELIVERY_MODE_LOCKED', 409, {
-      message: 'Le mode de livraison ne peut plus être modifié après le paiement',
+    throw new AppError('ORDER_DELIVERY_LOCKED', 409, {
+      message: 'La livraison ne peut plus être modifiée après le paiement',
     })
   }
+
+  const deliveryMode =
+    choice.mode ?? (order.deliveryMode as DeliveryPricingMode | null) ?? DEFAULT_DELIVERY_MODE
+  const deliveryCommune = choice.commune ?? order.deliveryCommune
 
   const deliveryFee =
     computeDeliveryFee({
       tier: await tierOfOrder(order.enterpriseId),
-      mode,
-      commune: order.deliveryCommune,
+      mode: deliveryMode,
+      commune: deliveryCommune,
       vendors: vendorGroupsOf(order.items),
     }) ?? 0
 
   await prisma.order.update({
     where: { id: order.id },
-    data: { deliveryMode: mode, deliveryFee },
+    data: { deliveryMode, deliveryCommune, deliveryFee },
   })
 
   return getOrderByShareToken(shareToken)

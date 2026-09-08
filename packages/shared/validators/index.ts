@@ -1,4 +1,12 @@
-export { phoneSchema, emailSchema, passwordSchema, credentialsSchema, registerSchema, whatsappLoginStartSchema, whatsappLoginStatusSchema } from './auth'
+export {
+  phoneSchema,
+  emailSchema,
+  passwordSchema,
+  credentialsSchema,
+  registerSchema,
+  whatsappLoginStartSchema,
+  whatsappLoginStatusSchema,
+} from './auth'
 export {
   switchContextSchema,
   selectRoleSchema,
@@ -6,7 +14,14 @@ export {
   adminRegisterWhatsAppSchema,
 } from './user'
 export { consentSchema, deletionRequestSchema } from './consent'
-export { createVendorSchema, vendorTypeSchema, kycTypeSchema, guaranteeTypeSchema, updateDeliveryZonesSchema, adminUpdateVendorSchema } from './vendor'
+export {
+  createVendorSchema,
+  vendorTypeSchema,
+  kycTypeSchema,
+  guaranteeTypeSchema,
+  updateDeliveryZonesSchema,
+  adminUpdateVendorSchema,
+} from './vendor'
 export {
   catalogItemStatusSchema,
   catalogItemFilterSchema,
@@ -35,11 +50,23 @@ export {
   confirmOrderSchema,
   cancelOrderSchema,
   upsertDraftSchema,
-  setDeliveryModeSchema,
+  setDeliverySchema,
 } from './order'
-export { createSellerReviewSchema, createDeliveryReviewSchema, openDisputeSchema, resolveDisputeSchema } from './review'
+export {
+  createSellerReviewSchema,
+  createDeliveryReviewSchema,
+  openDisputeSchema,
+  resolveDisputeSchema,
+} from './review'
 export { updatePreferencesSchema, sendNotificationSchema } from './notification'
-export { liaisonCreateVendorSchema, liaisonUpdateVendorSchema, liaisonCreatePartSchema, liaisonUpdatePartSchema, liaisonQuickVendorSchema, liaisonQuickPartSchema } from './liaison'
+export {
+  liaisonCreateVendorSchema,
+  liaisonUpdateVendorSchema,
+  liaisonCreatePartSchema,
+  liaisonUpdatePartSchema,
+  liaisonQuickVendorSchema,
+  liaisonQuickPartSchema,
+} from './liaison'
 export {
   createVendorContractSchema,
   listVendorContractsQuerySchema,

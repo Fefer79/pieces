@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/auth-context'
 import {
   warrantyLabel,
   RETURN_POLICY,
+  ABIDJAN_COMMUNES,
   type WarrantyUnit,
   type DeliveryPricingMode,
 } from 'shared/constants'
@@ -111,6 +112,7 @@ export default function OwnerChoicePage() {
   const [selectedMethod, setSelectedMethod] = useState<PayMethodId | null>(null)
   // Changement de délai : optimiste sur la sélection, le tarif fait foi au retour serveur.
   const [switchingMode, setSwitchingMode] = useState<DeliveryPricingMode | null>(null)
+  const [savingCommune, setSavingCommune] = useState(false)
 
   const fetchOrder = useCallback(async () => {
     try {
@@ -154,29 +156,42 @@ export default function OwnerChoicePage() {
     }
   }
 
-  // L'acheteur qui paie choisit son délai : le serveur retarife et renvoie la
-  // commande à jour, donc le total affiché reste celui qui sera prélevé.
-  async function handleDeliveryMode(mode: DeliveryPricingMode) {
-    if (!order || order.deliveryMode === mode || switchingMode) return
-    setSwitchingMode(mode)
+  // L'acheteur qui paie arbitre sa livraison — délai et lieu. Le serveur retarife
+  // et renvoie la commande à jour, donc le total affiché reste celui qui sera prélevé.
+  async function patchDelivery(patch: {
+    deliveryMode?: DeliveryPricingMode
+    deliveryCommune?: string
+  }) {
     try {
       const res = await fetch(`/api/v1/orders/share/${shareToken}/delivery`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deliveryMode: mode }),
+        body: JSON.stringify(patch),
       })
       const body = await res.json()
       if (!res.ok) {
-        setError(body.error?.message ?? 'Impossible de changer le mode de livraison')
+        setError(body.error?.message ?? 'Impossible de modifier la livraison')
         return
       }
       setError(null)
       setOrder(body.data)
     } catch {
       setError('Erreur réseau')
-    } finally {
-      setSwitchingMode(null)
     }
+  }
+
+  async function handleDeliveryMode(mode: DeliveryPricingMode) {
+    if (!order || order.deliveryMode === mode || switchingMode) return
+    setSwitchingMode(mode)
+    await patchDelivery({ deliveryMode: mode })
+    setSwitchingMode(null)
+  }
+
+  async function handleDeliveryCommune(commune: string) {
+    if (!order || !commune || order.deliveryCommune === commune) return
+    setSavingCommune(true)
+    await patchDelivery({ deliveryCommune: commune })
+    setSavingCommune(false)
   }
 
   if (loading) {
@@ -229,9 +244,13 @@ export default function OwnerChoicePage() {
       ? [{ label: "Main d'œuvre", amount: order.laborCost }]
       : []),
     {
+      // Sans commune, le tarif n'est pas déterminé : le dire plutôt que d'afficher
+      // un 0 F qui se lirait « offerte » (cf. DESIGN.md, aucun frais caché).
       label: currentChoice
         ? `Livraison ${currentChoice.label.toLowerCase()} · ${currentChoice.detail}`
-        : 'Livraison',
+        : order.deliveryCommune
+          ? 'Livraison'
+          : 'Livraison · commune à préciser',
       amount: order.deliveryFee,
     },
   ]
@@ -303,7 +322,9 @@ export default function OwnerChoicePage() {
                 <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-muted">
                   {RETURN_POLICY.points.map((point) => (
                     <li key={point} className="flex gap-2">
-                      <span aria-hidden className="text-success-fg">✓</span>
+                      <span aria-hidden className="text-success-fg">
+                        ✓
+                      </span>
                       <span>{point}</span>
                     </li>
                   ))}
@@ -313,56 +334,85 @@ export default function OwnerChoicePage() {
 
             {/* Sidebar: delivery choice + breakdown + payment */}
             <div className="order-1 min-w-0 space-y-4 md:order-none md:space-y-5 lg:sticky lg:top-24 lg:self-start">
-              {/* Délai de livraison : c'est celui qui paie qui arbitre prix/rapidité.
+              {/* Livraison : c'est celui qui paie qui arbitre le lieu et le prix/rapidité.
                   Chaque tarif vient du serveur, donc le total est exact avant paiement. */}
-              {deliveryChoices.length > 0 && (
-                <fieldset className="rounded-md border border-border bg-card px-4 py-3">
-                  <legend className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
-                    Délai de livraison
-                  </legend>
-                  <div className="mt-1.5 space-y-1.5">
-                    {deliveryChoices.map(({ mode, label, detail, fee }) => {
-                      const isSelected = currentMode === mode
-                      const isBusy = switchingMode === mode
-                      return (
-                        <label
-                          key={mode}
-                          className={`flex cursor-pointer items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
-                            isSelected ? 'border-accent bg-accent/5' : 'border-border bg-surface'
-                          } ${switchingMode && !isBusy ? 'opacity-60' : ''}`}
-                        >
-                          <span className="flex min-w-0 items-center gap-2">
-                            <input
-                              type="radio"
-                              name="choose-delivery-mode"
-                              value={mode}
-                              checked={isSelected}
-                              disabled={switchingMode !== null}
-                              onChange={() => handleDeliveryMode(mode)}
-                              className="accent-accent"
-                            />
-                            <span className="min-w-0 text-sm text-ink">
-                              {label} <span className="text-xs text-muted">{detail}</span>
-                            </span>
-                          </span>
-                          <span className="shrink-0">
-                            {isBusy ? (
-                              <span className="text-xs text-muted">…</span>
-                            ) : fee === 0 ? (
-                              <span className="text-xs font-semibold text-accent">Offerte</span>
-                            ) : (
-                              <Price amount={fee} className="text-xs" />
-                            )}
-                          </span>
-                        </label>
-                      )
-                    })}
-                  </div>
+              <fieldset className="rounded-md border border-border bg-card px-4 py-3">
+                <legend className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                  Livraison
+                </legend>
+
+                <label
+                  htmlFor="choose-delivery-commune"
+                  className="mt-1.5 block text-xs text-muted"
+                >
+                  Où souhaitez-vous être livré ?
+                </label>
+                <select
+                  id="choose-delivery-commune"
+                  value={order.deliveryCommune ?? ''}
+                  disabled={savingCommune || switchingMode !== null}
+                  onChange={(e) => handleDeliveryCommune(e.target.value)}
+                  className="mt-1 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-ink focus:border-accent focus:outline-none disabled:opacity-60"
+                >
+                  <option value="">Choisir votre commune…</option>
+                  {ABIDJAN_COMMUNES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+
+                {deliveryChoices.length === 0 ? (
                   <p className="mt-2 text-[11px] leading-relaxed text-muted">
-                    Le plus rapide coûte plus cher : vous arbitrez avant de payer.
+                    Choisissez votre commune pour voir les délais et leur tarif.
                   </p>
-                </fieldset>
-              )}
+                ) : (
+                  <>
+                    <p className="mt-3 text-xs text-muted">Délai</p>
+                    <div className="mt-1 space-y-1.5">
+                      {deliveryChoices.map(({ mode, label, detail, fee }) => {
+                        const isSelected = currentMode === mode
+                        const isBusy = switchingMode === mode
+                        return (
+                          <label
+                            key={mode}
+                            className={`flex cursor-pointer items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
+                              isSelected ? 'border-accent bg-accent/5' : 'border-border bg-surface'
+                            } ${switchingMode && !isBusy ? 'opacity-60' : ''}`}
+                          >
+                            <span className="flex min-w-0 items-center gap-2">
+                              <input
+                                type="radio"
+                                name="choose-delivery-mode"
+                                value={mode}
+                                checked={isSelected}
+                                disabled={switchingMode !== null}
+                                onChange={() => handleDeliveryMode(mode)}
+                                className="accent-accent"
+                              />
+                              <span className="min-w-0 text-sm text-ink">
+                                {label} <span className="text-xs text-muted">{detail}</span>
+                              </span>
+                            </span>
+                            <span className="shrink-0">
+                              {isBusy ? (
+                                <span className="text-xs text-muted">…</span>
+                              ) : fee === 0 ? (
+                                <span className="text-xs font-semibold text-accent">Offerte</span>
+                              ) : (
+                                <Price amount={fee} className="text-xs" />
+                              )}
+                            </span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                    <p className="mt-2 text-[11px] leading-relaxed text-muted">
+                      Le plus rapide coûte plus cher : vous arbitrez avant de payer.
+                    </p>
+                  </>
+                )}
+              </fieldset>
 
               <PriceBreakdown
                 title="Le détail, avant de payer"
@@ -370,8 +420,8 @@ export default function OwnerChoicePage() {
                 total={grandTotal}
                 note={
                   <span>
-                    <strong>Paiement sous séquestre.</strong> L&apos;argent n&apos;est libéré au vendeur
-                    qu&apos;après confirmation de livraison. Aucune marge cachée.
+                    <strong>Paiement sous séquestre.</strong> L&apos;argent n&apos;est libéré au
+                    vendeur qu&apos;après confirmation de livraison. Aucune marge cachée.
                   </span>
                 }
               />
@@ -435,7 +485,9 @@ export default function OwnerChoicePage() {
                 onClick={handlePay}
                 disabled={!selectedMethod || paying}
               >
-                {paying ? 'Traitement…' : (
+                {paying ? (
+                  'Traitement…'
+                ) : (
                   <>
                     Payer <Price amount={grandTotal} />
                   </>
@@ -577,7 +629,13 @@ function StatusCard({
     <div className={`rounded-md border p-5 ${classes}`}>
       <div className="mb-1.5">
         <Chip variant={chipVariant as 'status-ok' | 'status-warn' | 'status-err' | 'occasion'}>
-          {variant === 'ok' ? 'OK' : variant === 'warn' ? 'Attention' : variant === 'err' ? 'Annulé' : 'En cours'}
+          {variant === 'ok'
+            ? 'OK'
+            : variant === 'warn'
+              ? 'Attention'
+              : variant === 'err'
+                ? 'Annulé'
+                : 'En cours'}
         </Chip>
       </div>
       <div className="font-display text-lg leading-tight text-ink">{title}</div>

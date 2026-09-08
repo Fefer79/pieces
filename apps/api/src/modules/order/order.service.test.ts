@@ -61,7 +61,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDeliveryMode } = await import('./order.service.js')
+const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDelivery } = await import('./order.service.js')
 
 describe('order.service', () => {
   beforeEach(() => {
@@ -607,24 +607,70 @@ describe('order.service', () => {
       expect(fee('STANDARD')).toBeLessThanOrEqual(fee('EXPRESS'))
     })
 
-    it('setOrderDeliveryMode retarife serveur-side et persiste le mode', async () => {
+    type DeliveryPatch = {
+      data: { deliveryMode: string; deliveryCommune: string | null; deliveryFee: number }
+    }
+
+    it('setOrderDelivery retarife serveur-side et persiste le délai', async () => {
       mockOrderFindUnique.mockResolvedValueOnce(orderRow())
       mockOrderUpdate.mockResolvedValueOnce({})
       mockOrderFindUnique.mockResolvedValueOnce(orderRow({ deliveryMode: 'EXPRESS', deliveryFee: 5000 }))
 
-      await setOrderDeliveryMode('a'.repeat(32), 'EXPRESS')
+      await setOrderDelivery('a'.repeat(32), { mode: 'EXPRESS' })
 
-      const arg = mockOrderUpdate.mock.calls[0]![0] as {
-        data: { deliveryMode: string; deliveryFee: number }
-      }
-      expect(arg.data).toEqual({ deliveryMode: 'EXPRESS', deliveryFee: 5000 })
+      const arg = mockOrderUpdate.mock.calls[0]![0] as DeliveryPatch
+      expect(arg.data).toEqual({
+        deliveryMode: 'EXPRESS',
+        deliveryCommune: 'Cocody',
+        deliveryFee: 5000,
+      })
+    })
+
+    // Le lieu compte autant que le délai : la zone porte le plancher tarifaire.
+    it('changer de commune retarife au plancher de la nouvelle zone', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow({ items: [
+        { vendorId: 'v1', priceSnapshot: 10_000, quantity: 1, category: 'Filtration' },
+      ] }))
+      mockOrderUpdate.mockResolvedValueOnce({})
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow())
+
+      await setOrderDelivery('a'.repeat(32), { commune: 'Bingerville' })
+
+      const arg = mockOrderUpdate.mock.calls[0]![0] as DeliveryPatch
+      // 3 % de 10 000 = 300 < plancher périphérie 2 500, délai inchangé.
+      expect(arg.data).toEqual({
+        deliveryMode: 'STANDARD',
+        deliveryCommune: 'Bingerville',
+        deliveryFee: 2500,
+      })
+    })
+
+    it('première commune sur une commande qui n’en avait pas : le tarif cesse d’être 0', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(
+        orderRow({ deliveryCommune: null, deliveryFee: 0 }),
+      )
+      mockOrderUpdate.mockResolvedValueOnce({})
+      mockOrderFindUnique.mockResolvedValueOnce(orderRow())
+
+      await setOrderDelivery('a'.repeat(32), { commune: 'Cocody' })
+
+      const arg = mockOrderUpdate.mock.calls[0]![0] as DeliveryPatch
+      expect(arg.data.deliveryFee).toBe(1800)
+    })
+
+    it('refuse une requête qui ne change rien', async () => {
+      await expect(setOrderDelivery('a'.repeat(32), {})).rejects.toMatchObject({
+        code: 'DELIVERY_CHOICE_EMPTY',
+        statusCode: 400,
+      })
+      expect(mockOrderFindUnique).not.toHaveBeenCalled()
     })
 
     it('refuse le changement après le paiement', async () => {
       mockOrderFindUnique.mockResolvedValueOnce(orderRow({ status: 'PAID' }))
 
-      await expect(setOrderDeliveryMode('a'.repeat(32), 'ECO')).rejects.toMatchObject({
-        code: 'ORDER_DELIVERY_MODE_LOCKED',
+      await expect(setOrderDelivery('a'.repeat(32), { mode: 'ECO' })).rejects.toMatchObject({
+        code: 'ORDER_DELIVERY_LOCKED',
         statusCode: 409,
       })
       expect(mockOrderUpdate).not.toHaveBeenCalled()
