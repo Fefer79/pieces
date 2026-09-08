@@ -218,9 +218,19 @@ describe('order.service', () => {
 
   describe('selectPaymentMethod', () => {
     const TOK = 'a'.repeat(32)
+    // Une commande payable a forcément un lieu de livraison — sinon les frais
+    // valent 0 et la commande partirait sans destination facturée.
+    const payable = (over: Record<string, unknown> = {}) => ({
+      id: 'order-1',
+      status: 'DRAFT',
+      totalAmount: 20000,
+      shareToken: TOK,
+      deliveryCommune: 'Cocody',
+      ...over,
+    })
 
     it('sets COD and transitions to PAID for COD orders', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
+      mockOrderFindUnique.mockResolvedValueOnce(payable())
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'PAID', paymentMethod: 'COD', items: [] })
 
       const result = await selectPaymentMethod('order-1', 'COD', 'buyer', TOK)
@@ -228,13 +238,13 @@ describe('order.service', () => {
     })
 
     it('rejects COD over 75000 FCFA', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 100000, shareToken: TOK })
+      mockOrderFindUnique.mockResolvedValueOnce(payable({ totalAmount: 100000 }))
 
       await expect(selectPaymentMethod('order-1', 'COD', 'buyer', TOK)).rejects.toThrow()
     })
 
     it('sets PENDING_PAYMENT for mobile money', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
+      mockOrderFindUnique.mockResolvedValueOnce(payable())
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'PENDING_PAYMENT', paymentMethod: 'ORANGE_MONEY', items: [] })
 
       const result = await selectPaymentMethod('order-1', 'ORANGE_MONEY', 'buyer', TOK)
@@ -242,9 +252,19 @@ describe('order.service', () => {
     })
 
     it('rejects a wrong shareToken (possession proof)', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
+      mockOrderFindUnique.mockResolvedValueOnce(payable())
 
       await expect(selectPaymentMethod('order-1', 'COD', 'buyer', 'b'.repeat(32))).rejects.toThrow()
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+
+    it('refuse de payer une commande sans commune de livraison', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(payable({ deliveryCommune: null }))
+
+      await expect(selectPaymentMethod('order-1', 'COD', 'buyer', TOK)).rejects.toMatchObject({
+        code: 'ORDER_DELIVERY_COMMUNE_REQUIRED',
+        statusCode: 400,
+      })
       expect(mockOrderUpdate).not.toHaveBeenCalled()
     })
   })

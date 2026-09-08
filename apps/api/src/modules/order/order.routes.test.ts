@@ -164,7 +164,7 @@ describe('Order Routes', () => {
     const TOK = 'a'.repeat(32)
 
     it('returns 200 when COD selected with a valid shareToken', async () => {
-      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK })
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DRAFT', totalAmount: 20000, shareToken: TOK, deliveryCommune: 'Cocody' })
       mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'PAID', paymentMethod: 'COD', items: [] })
 
       const app = buildApp()

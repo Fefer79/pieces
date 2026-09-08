@@ -615,6 +615,15 @@ export async function selectPaymentMethod(
     })
   }
 
+  // Pas de paiement sans lieu de livraison : sans commune, les frais valent 0 et
+  // la commande partirait sans destination facturée. Celui qui paie la renseigne
+  // sur la page de validation (setOrderDelivery).
+  if (!order.deliveryCommune) {
+    throw new AppError('ORDER_DELIVERY_COMMUNE_REQUIRED', 400, {
+      message: 'Indiquez votre commune de livraison avant de payer',
+    })
+  }
+
   if (paymentMethod === 'COD' && order.totalAmount > COD_MAX_AMOUNT) {
     throw new AppError('ORDER_COD_LIMIT', 400, {
       message: `Le paiement à la livraison est limité à ${COD_MAX_AMOUNT.toLocaleString()} FCFA`,

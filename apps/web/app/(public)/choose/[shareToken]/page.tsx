@@ -478,12 +478,20 @@ export default function OwnerChoicePage() {
                 </div>
               )}
 
+              {/* Sans commune, le total n'inclut pas encore la livraison : le
+                  serveur refuse le paiement, autant le dire ici. */}
+              {!order.deliveryCommune && (
+                <p className="rounded-sm border border-border bg-surface px-3 py-2 text-[12.5px] leading-relaxed text-muted">
+                  Indiquez votre commune de livraison ci-dessus pour connaître les frais et payer.
+                </p>
+              )}
+
               <Button
                 variant="accent"
                 size="lg"
                 block
                 onClick={handlePay}
-                disabled={!selectedMethod || paying}
+                disabled={!selectedMethod || paying || !order.deliveryCommune}
               >
                 {paying ? (
                   'Traitement…'
