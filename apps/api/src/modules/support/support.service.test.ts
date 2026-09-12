@@ -20,7 +20,7 @@ const mockReturnFindUnique = vi.fn()
 const mockReturnUpdate = vi.fn()
 const mockReturnAggregate = vi.fn()
 const mockNotify = vi.fn()
-const mockRefundEscrow = vi.fn()
+const mockRefundAllHeldEscrows = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
@@ -45,7 +45,7 @@ vi.mock('../whatsapp/whatsapp.service.js', () => ({
 }))
 
 vi.mock('../payment/payment.service.js', () => ({
-  refundEscrow: (...a: unknown[]) => mockRefundEscrow(...a),
+  refundAllHeldEscrows: (...a: unknown[]) => mockRefundAllHeldEscrows(...a),
 }))
 
 const {
@@ -63,7 +63,7 @@ const {
 beforeEach(() => {
   vi.clearAllMocks()
   mockNotify.mockResolvedValue({ sent: true, channel: 'cloud' })
-  mockRefundEscrow.mockResolvedValue({ id: 'esc-1', status: 'REFUNDED' })
+  mockRefundAllHeldEscrows.mockResolvedValue([{ id: 'esc-1', status: 'REFUNDED' }])
 })
 
 // ---------------------------------------------------------------------------
@@ -449,7 +449,7 @@ function mockReturnFound(overrides: Record<string, unknown> = {}) {
     orderId: O1,
     status: 'INSPECTED',
     requestedBy: { phone: '+2250700000002' },
-    order: { escrow: { status: 'HELD' } },
+    order: { escrows: [{ status: 'HELD' }] },
     ...overrides,
   })
 }
@@ -496,7 +496,7 @@ describe('transitionReturn', () => {
       code: 'REFUND_AMOUNT_REQUIRED',
       statusCode: 422,
     })
-    expect(mockRefundEscrow).not.toHaveBeenCalled()
+    expect(mockRefundAllHeldEscrows).not.toHaveBeenCalled()
     expect(mockReturnUpdate).not.toHaveBeenCalled()
   })
 
@@ -506,7 +506,7 @@ describe('transitionReturn', () => {
 
     await transitionReturn(R1, { statut: 'REFUNDED', refundAmount: 15_000, note: 'Pièce défectueuse confirmée' })
 
-    expect(mockRefundEscrow).toHaveBeenCalledWith(O1)
+    expect(mockRefundAllHeldEscrows).toHaveBeenCalledWith(O1)
     expect(mockReturnUpdate).toHaveBeenCalledWith({
       where: { id: R1 },
       data: {
@@ -522,28 +522,28 @@ describe('transitionReturn', () => {
     )
   })
 
-  it('REFUNDED avec escrow RELEASED : pas d’appel refundEscrow', async () => {
-    mockReturnFound({ status: 'INSPECTED', order: { escrow: { status: 'RELEASED' } } })
+  it('REFUNDED avec escrow RELEASED : aucun remboursement', async () => {
+    mockReturnFound({ status: 'INSPECTED', order: { escrows: [{ status: 'RELEASED' }] } })
     mockReturnUpdate.mockResolvedValueOnce({ id: R1, status: 'REFUNDED', refundAmount: 15_000 })
 
     await transitionReturn(R1, { statut: 'REFUNDED', refundAmount: 15_000 })
 
-    expect(mockRefundEscrow).not.toHaveBeenCalled()
+    expect(mockRefundAllHeldEscrows).not.toHaveBeenCalled()
     expect(mockReturnUpdate).toHaveBeenCalled()
   })
 
-  it('REFUNDED sans escrow : pas d’appel refundEscrow', async () => {
-    mockReturnFound({ status: 'INSPECTED', order: { escrow: null } })
+  it('REFUNDED sans escrow : aucun remboursement', async () => {
+    mockReturnFound({ status: 'INSPECTED', order: { escrows: [] } })
     mockReturnUpdate.mockResolvedValueOnce({ id: R1, status: 'REFUNDED', refundAmount: 15_000 })
 
     await transitionReturn(R1, { statut: 'REFUNDED', refundAmount: 15_000 })
 
-    expect(mockRefundEscrow).not.toHaveBeenCalled()
+    expect(mockRefundAllHeldEscrows).not.toHaveBeenCalled()
   })
 
-  it('une erreur refundEscrow remonte et le statut n’est pas enregistré', async () => {
+  it('une erreur de remboursement remonte et le statut n’est pas enregistré', async () => {
     mockReturnFound({ status: 'INSPECTED' })
-    mockRefundEscrow.mockRejectedValueOnce(new Error('cinetpay down'))
+    mockRefundAllHeldEscrows.mockRejectedValueOnce(new Error('cinetpay down'))
 
     await expect(
       transitionReturn(R1, { statut: 'REFUNDED', refundAmount: 15_000 }),
@@ -565,7 +565,7 @@ describe('transitionReturn', () => {
         resolutionNote: 'Retour accepté, enlèvement demain',
       },
     })
-    expect(mockRefundEscrow).not.toHaveBeenCalled()
+    expect(mockRefundAllHeldEscrows).not.toHaveBeenCalled()
     expect(mockNotify).not.toHaveBeenCalled()
   })
 

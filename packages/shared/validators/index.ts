@@ -51,6 +51,8 @@ export {
   cancelOrderSchema,
   upsertDraftSchema,
   setDeliverySchema,
+  payImportBalanceSchema,
+  importFreightModeSchema,
 } from './order'
 export {
   createSellerReviewSchema,

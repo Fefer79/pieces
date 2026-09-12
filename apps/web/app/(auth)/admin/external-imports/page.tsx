@@ -5,6 +5,8 @@ import { adminFetch } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 import { PartThumb } from '@/components/ui/part-thumb'
+import { SupplyModeChip } from '@/components/ui/chip'
+import { originCountryLabel } from 'shared/constants'
 
 type IngestSource =
   | 'HAUTOPARTS_3H'
@@ -43,6 +45,8 @@ interface ExternalItem {
   price: number | null
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
   condition: string | null
+  supplyMode: 'LOCAL' | 'IMPORT'
+  originCountry: string | null
   partSource: string | null
   inStock: boolean
   imageOriginalUrl: string | null
@@ -207,6 +211,7 @@ export default function AdminExternalImportsPage() {
                   <Th>OEM</Th>
                   <Th align="right">Prix</Th>
                   <Th>Statut</Th>
+                  <Th>Provenance</Th>
                   <Th>Source</Th>
                   <Th>Lien</Th>
                 </Tr>
@@ -227,6 +232,16 @@ export default function AdminExternalImportsPage() {
                     <Td className="font-mono text-xs">{it.oemReference ?? '—'}</Td>
                     <Td num>{formatPrice(it.price)}</Td>
                     <Td className="text-xs">{it.status}</Td>
+                    <Td className="text-xs">
+                      {it.supplyMode === 'IMPORT' ? (
+                        <span className="flex flex-col gap-1">
+                          <SupplyModeChip supplyMode="IMPORT" />
+                          <span className="text-muted">{originCountryLabel(it.originCountry) ?? '—'}</span>
+                        </span>
+                      ) : (
+                        <span className="text-muted">Abidjan</span>
+                      )}
+                    </Td>
                     <Td className="text-xs">{it.externalSource ? SOURCE_LABELS[it.externalSource] : '—'}</Td>
                     <Td className="text-xs">
                       {it.externalSourceUrl ? (
@@ -243,7 +258,7 @@ export default function AdminExternalImportsPage() {
                   </Tr>
                 ))}
                 {data.items.length === 0 && (
-                  <Tr hover={false}><Td colSpan={8} align="center" className="py-6 text-muted">Aucun import externe.</Td></Tr>
+                  <Tr hover={false}><Td colSpan={9} align="center" className="py-6 text-muted">Aucun import externe.</Td></Tr>
                 )}
               </Tbody>
             </Table>

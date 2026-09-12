@@ -327,6 +327,27 @@ describe('toCsv', () => {
 })
 
 describe('exportCommandesCsv', () => {
+  it("une précommande d'import montre ses deux écritures dans la colonne escrow", async () => {
+    mockOrderFindMany.mockResolvedValueOnce([
+      {
+        id: 'cmd-3',
+        createdAt: new Date('2026-08-05T09:00:00Z'),
+        totalAmount: 96_000,
+        deliveryFee: 2_900,
+        laborCost: null,
+        initiator: { name: 'Aya Koffi', phone: '+2250700000003' },
+        items: [{ vendorShopName: 'Partenaire DE-04', commissionAmount: 0 }],
+        escrows: [
+          { kind: 'DEPOSIT', status: 'HELD' },
+          { kind: 'BALANCE', status: 'HELD' },
+        ],
+      },
+    ])
+
+    const { csv } = await exportCommandesCsv({ periode: '2026-08' })
+    expect(csv.split('\r\n')[1]).toContain('DEPOSIT:HELD / BALANCE:HELD')
+  })
+
   it('en-têtes FR exacts, dates YYYY-MM-DD, nom du client, statut escrow', async () => {
     mockOrderFindMany.mockResolvedValueOnce([
       {
@@ -340,7 +361,7 @@ describe('exportCommandesCsv', () => {
           { vendorShopName: 'Auto Pièces Yopougon', commissionAmount: 8_000 },
           { vendorShopName: 'Auto Pièces Yopougon', commissionAmount: 4_000 },
         ],
-        escrow: { status: 'HELD' },
+        escrows: [{ kind: 'FULL', status: 'HELD' }],
       },
       {
         id: 'cmd-2',
@@ -350,7 +371,7 @@ describe('exportCommandesCsv', () => {
         laborCost: null,
         initiator: { name: null, phone: '+2250700000002' },
         items: [{ vendorShopName: 'Garage "Le Bon" Coin; Abidjan', commissionAmount: 3_000 }],
-        escrow: null,
+        escrows: [],
       },
     ])
 

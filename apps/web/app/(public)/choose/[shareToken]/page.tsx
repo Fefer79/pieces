@@ -39,11 +39,55 @@ interface DeliveryOption {
   fee: number | null
 }
 
+/**
+ * Un acheminement chiffré pour cette précommande, avec l'échéancier qu'il
+ * implique. Le serveur renvoie les trois options et leurs montants d'acompte :
+ * la base douanière (coût d'achat partenaire) ne quitte jamais l'API.
+ */
+interface ImportOption {
+  mode: 'SEA_LCL' | 'AIR_ECONOMY' | 'AIR_NOW'
+  label: string
+  detail: string
+  transitDays: number
+  freightFee: number
+  customsFee: number
+  available: boolean
+  warnings: string[]
+  depositAmount: number
+  balanceAmount: number
+  partsDeposit: number
+  grandTotal: number
+}
+
 interface Order {
   id: string
   status: string
+  orderType?: 'STANDARD' | 'IMPORT_PREORDER'
   totalAmount: number
   deliveryFee: number
+  freightFee?: number
+  customsFee?: number
+  logisticsMode?: string | null
+  depositAmount?: number
+  balanceAmount?: number
+  importOptions?: ImportOption[] | null
+  shipment?: {
+    reference: string
+    status: string
+    mode: string
+    originCountry: string | null
+    departedAt: string | null
+    etaAt: string | null
+    customsClearedAt: string | null
+    arrivedAt: string | null
+    events: Array<{
+      id: string
+      label: string
+      location: string | null
+      occurredAt: string
+      toStatus: string | null
+    }>
+  } | null
   deliveryMode?: DeliveryPricingMode
   deliveryCommune?: string | null
   deliveryOptions?: DeliveryOption[]
@@ -112,6 +156,7 @@ export default function OwnerChoicePage() {
   const [selectedMethod, setSelectedMethod] = useState<PayMethodId | null>(null)
   // Changement de délai : optimiste sur la sélection, le tarif fait foi au retour serveur.
   const [switchingMode, setSwitchingMode] = useState<DeliveryPricingMode | null>(null)
+  const [switchingFreight, setSwitchingFreight] = useState<string | null>(null)
   const [savingCommune, setSavingCommune] = useState(false)
 
   const fetchOrder = useCallback(async () => {
@@ -161,6 +206,7 @@ export default function OwnerChoicePage() {
   async function patchDelivery(patch: {
     deliveryMode?: DeliveryPricingMode
     deliveryCommune?: string
+    logisticsMode?: string
   }) {
     try {
       const res = await fetch(`/api/v1/orders/share/${shareToken}/delivery`, {
@@ -185,6 +231,13 @@ export default function OwnerChoicePage() {
     setSwitchingMode(mode)
     await patchDelivery({ deliveryMode: mode })
     setSwitchingMode(null)
+  }
+
+  async function handleLogisticsMode(mode: string) {
+    if (!order || order.logisticsMode === mode || switchingFreight) return
+    setSwitchingFreight(mode)
+    await patchDelivery({ logisticsMode: mode })
+    setSwitchingFreight(null)
   }
 
   async function handleDeliveryCommune(commune: string) {
@@ -221,13 +274,29 @@ export default function OwnerChoicePage() {
   const pushedToOwner = order.payerMode === 'OWNER_LINK'
   const selfFraming = !pushedToOwner || (!!user?.id && order.initiator?.id === user.id)
 
-  const grandTotal = order.totalAmount + order.deliveryFee + (order.laborCost ?? 0)
+  // Précommande d'import : le total comprend le fret et la douane, et ce n'est
+  // pas lui qui est appelé maintenant — l'acompte l'est.
+  const isPreorder = order.orderType === 'IMPORT_PREORDER'
+  const grandTotal =
+    order.totalAmount +
+    order.deliveryFee +
+    (order.laborCost ?? 0) +
+    (order.freightFee ?? 0) +
+    (order.customsFee ?? 0)
+
+  const importChoices = (order.importOptions ?? []).filter((o) => o.available)
+  const currentImportChoice = importChoices.find((o) => o.mode === order.logisticsMode)
+
+  // Ce qui sera effectivement prélevé au clic sur le bouton.
+  const amountDue = isPreorder ? (order.depositAmount ?? 0) : grandTotal
 
   const availableMethods: PayMethodId[] = [
     'ORANGE_MONEY',
     'MTN_MOMO',
     'WAVE',
-    ...((grandTotal <= 75000 ? ['COD'] : []) as PayMethodId[]),
+    // Une précommande se règle d'avance : il n'y a rien à livrer tant que la
+    // pièce n'est pas achetée chez le partenaire.
+    ...((!isPreorder && amountDue <= 75000 ? ['COD'] : []) as PayMethodId[]),
   ]
 
   const currentMode: DeliveryPricingMode = order.deliveryMode ?? 'STANDARD'
@@ -242,6 +311,19 @@ export default function OwnerChoicePage() {
     { label: 'Pièces', amount: order.totalAmount },
     ...(order.laborCost != null && order.laborCost > 0
       ? [{ label: "Main d'œuvre", amount: order.laborCost }]
+      : []),
+    // Fret et douane : les deux lignes propres à une pièce à importer. Jamais
+    // fondues dans le prix des pièces (DESIGN.md, décomposition explicite).
+    ...(isPreorder && order.freightFee
+      ? [
+          {
+            label: `Fret — ${(currentImportChoice?.label ?? 'acheminement').toLowerCase()}`,
+            amount: order.freightFee,
+          },
+        ]
+      : []),
+    ...(isPreorder && order.customsFee
+      ? [{ label: 'Droits de douane', amount: order.customsFee }]
       : []),
     {
       // Sans commune, le tarif n'est pas déterminé : le dire plutôt que d'afficher
@@ -411,17 +493,87 @@ export default function OwnerChoicePage() {
                 )}
               </fieldset>
 
+              {/* Acheminement depuis l'étranger — modifiable jusqu'au paiement,
+                  comme le délai de livraison local. Le serveur re-tarife. */}
+              {isPreorder && importChoices.length > 0 && (
+                <fieldset className="rounded-md border border-border bg-card px-4 py-3">
+                  <legend className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                    Acheminement depuis l&apos;étranger
+                  </legend>
+                  <div className="mt-1.5 space-y-1.5">
+                    {importChoices.map((option) => (
+                      <label
+                        key={option.mode}
+                        className={`flex cursor-pointer items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
+                          order.logisticsMode === option.mode
+                            ? 'border-accent bg-accent/5'
+                            : 'border-border bg-surface'
+                        } ${switchingFreight ? 'opacity-60' : ''}`}
+                      >
+                        <span className="flex min-w-0 items-center gap-2">
+                          <input
+                            type="radio"
+                            name="choose-logistics-mode"
+                            value={option.mode}
+                            checked={order.logisticsMode === option.mode}
+                            disabled={switchingFreight !== null}
+                            onChange={() => handleLogisticsMode(option.mode)}
+                            className="accent-accent"
+                          />
+                          <span className="min-w-0 text-sm text-ink">
+                            {option.label}{' '}
+                            <span className="text-xs text-muted">{option.detail}</span>
+                          </span>
+                        </span>
+                        <span className="shrink-0">
+                          <Price amount={option.freightFee + option.customsFee} className="text-xs" />
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted">
+                    Le bateau divise le coût, l&apos;avion divise l&apos;attente. Le montant montré
+                    couvre le fret et les droits de douane.
+                  </p>
+                </fieldset>
+              )}
+
               <PriceBreakdown
                 title="Le détail, avant de payer"
                 lines={priceLines}
                 total={grandTotal}
                 note={
-                  <span>
-                    <strong>Paiement sous séquestre.</strong> L&apos;argent n&apos;est libéré au
-                    vendeur qu&apos;après confirmation de livraison. Aucune marge cachée.
-                  </span>
+                  isPreorder ? (
+                    <span>
+                      <strong>Acompte sous séquestre.</strong> Si la pièce s&apos;avère
+                      indisponible, il vous est intégralement remboursé. Aucune marge cachée.
+                    </span>
+                  ) : (
+                    <span>
+                      <strong>Paiement sous séquestre.</strong> L&apos;argent n&apos;est libéré au
+                      vendeur qu&apos;après confirmation de livraison. Aucune marge cachée.
+                    </span>
+                  )
                 }
               />
+
+              {/* Échéancier : ce qui est prélevé maintenant, et ce qui reste. */}
+              {isPreorder && order.depositAmount != null && (
+                <div className="rounded-md border border-ink/15 bg-ink px-4 py-3.5 text-white">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-white/70">
+                      À payer aujourd&apos;hui — acompte
+                    </span>
+                    <Price amount={order.depositAmount} className="text-base text-white" />
+                  </div>
+                  <div className="mt-1.5 flex items-baseline justify-between gap-3">
+                    <span className="text-[13px] text-white/70">
+                      Solde à l&apos;arrivée à Abidjan
+                    </span>
+                    <Price amount={order.balanceAmount ?? 0} className="text-[13px] text-white/90" />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
@@ -494,7 +646,7 @@ export default function OwnerChoicePage() {
                   'Traitement…'
                 ) : (
                   <>
-                    Payer <Price amount={grandTotal} />
+                    {isPreorder ? "Payer l'acompte" : 'Payer'} <Price amount={amountDue} />
                   </>
                 )}
               </Button>
@@ -505,6 +657,78 @@ export default function OwnerChoicePage() {
         {/* Non-DRAFT statuses */}
         {order.status !== 'DRAFT' && (
           <div className="space-y-4">
+            {order.status === 'DEPOSIT_PAID' && (
+              <StatusCard
+                variant="ok"
+                title="Acompte reçu — achat lancé"
+                description="Nous passons commande chez notre partenaire. Vous serez prévenu à chaque étape de l'acheminement."
+              />
+            )}
+            {order.status === 'IN_IMPORT' && (
+              <StatusCard
+                variant="ok"
+                title="Pièce en acheminement"
+                description="La marchandise a quitté le partenaire. Prochaine étape : dédouanement à Abidjan."
+              />
+            )}
+            {order.status === 'AWAITING_BALANCE' && (
+              <StatusCard
+                variant="warn"
+                title="Pièce arrivée — solde à régler"
+                description={`Votre pièce est dédouanée à Abidjan. Il reste ${(order.balanceAmount ?? 0).toLocaleString('fr-FR')} FCFA à régler, livraison comprise, pour déclencher la remise.`}
+              />
+            )}
+
+            {/* Fil de suivi de l'expédition — le client veut savoir où est sa
+                pièce, dédouanement compris. Alimenté par les ShipmentEvent. */}
+            {order.shipment && (
+              <div className="rounded-md border border-border bg-card px-4 py-3.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                    Suivi de l&apos;acheminement
+                  </span>
+                  <span className="font-mono text-xs text-muted">{order.shipment.reference}</span>
+                </div>
+                {order.shipment.etaAt && !order.shipment.arrivedAt && (
+                  <p className="mt-1.5 text-[13px] text-ink-2">
+                    Arrivée estimée le{' '}
+                    {new Date(order.shipment.etaAt).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                    })}
+                    .
+                  </p>
+                )}
+                {order.shipment.events.length > 0 ? (
+                  <ol className="mt-3 space-y-2.5">
+                    {order.shipment.events.map((event) => (
+                      <li key={event.id} className="flex gap-2.5">
+                        <span
+                          aria-hidden
+                          className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-import-fg"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-[13px] text-ink">{event.label}</span>
+                          <span className="block text-xs text-muted">
+                            {new Date(event.occurredAt).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'long',
+                            })}
+                            {event.location ? ` · ${event.location}` : ''}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="mt-2 text-[13px] text-muted">
+                    Expédition enregistrée. Les étapes s&apos;afficheront ici dès le départ de la
+                    marchandise.
+                  </p>
+                )}
+              </div>
+            )}
+
             {order.status === 'PAID' && (
               <StatusCard
                 variant="ok"

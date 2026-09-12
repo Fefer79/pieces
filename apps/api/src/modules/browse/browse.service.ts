@@ -2,6 +2,8 @@ import { prisma } from '../../lib/prisma.js'
 import { VEHICLE_BRANDS, BRAND_NAMES, getEngines as getEnginesData, PART_CATEGORIES, UNIVERSAL_CATEGORIES, warrantyToDays } from 'shared/constants'
 import type { WarrantyUnit } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
+import type { PartCondition, SupplyMode } from '@prisma/client'
+import { importQuoteOptions, type ImportQuoteItem } from 'shared/constants'
 
 export interface VinDecodeResult {
   vin: string
@@ -103,8 +105,33 @@ export interface VehicleCompatibilityFilters {
 export interface BrowsePartsFilters extends VehicleCompatibilityFilters {
   category?: string
   q?: string
+  /**
+   * État de la pièce. Deux axes INDÉPENDANTS avec `supplyMode` : « Neuf à
+   * importer » = condition NEW + supplyMode IMPORT. Sans ce filtre, les deux
+   * rubriques d'import renverraient la même liste.
+   */
+  condition?: PartCondition[]
+  /** Disponibilité : LOCAL = déjà à Abidjan, IMPORT = à faire venir. */
+  supplyMode?: SupplyMode
   page?: number
   limit?: number
+}
+
+const PART_CONDITIONS: PartCondition[] = ['NEW', 'USED', 'REFURBISHED']
+
+/** Conditions valides d'une liste brute (querystring), ou undefined si aucune. */
+export function parseConditions(raw: string | undefined): PartCondition[] | undefined {
+  if (!raw) return undefined
+  const values = raw
+    .split(',')
+    .map((v) => v.trim().toUpperCase())
+    .filter((v): v is PartCondition => (PART_CONDITIONS as string[]).includes(v))
+  return values.length > 0 ? values : undefined
+}
+
+export function parseSupplyMode(raw: string | undefined): SupplyMode | undefined {
+  const value = raw?.trim().toUpperCase()
+  return value === 'LOCAL' || value === 'IMPORT' ? value : undefined
 }
 
 /**
@@ -162,6 +189,12 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
   if (filters.category) {
     where.category = filters.category
   }
+  if (filters.condition && filters.condition.length > 0) {
+    where.condition = { in: filters.condition }
+  }
+  if (filters.supplyMode) {
+    where.supplyMode = filters.supplyMode
+  }
 
   // Filtrage strict : véhicule (fitments) + texte combinés en AND.
   const and: Record<string, unknown>[] = []
@@ -183,6 +216,8 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
         category: true,
         condition: true,
         partSource: true,
+        supplyMode: true,
+        originCountry: true,
         oemReference: true,
         vehicleCompatibility: true,
         price: true,
@@ -325,6 +360,9 @@ export async function compareParts(
       oemReference: true,
       condition: true,
       partSource: true,
+      supplyMode: true,
+      originCountry: true,
+      supplierLeadDays: true,
       price: true,
       warrantyValue: true,
       warrantyUnit: true,
@@ -461,6 +499,8 @@ export async function searchParts(query: string, filters: { category?: string; p
         category: true,
         condition: true,
         partSource: true,
+        supplyMode: true,
+        originCountry: true,
         oemReference: true,
         vehicleCompatibility: true,
         price: true,
@@ -530,6 +570,9 @@ export async function getPublicItemDetail(id: string) {
       vehicleCompatibility: true,
       condition: true,
       partSource: true,
+      supplyMode: true,
+      originCountry: true,
+      supplierLeadDays: true,
       price: true,
       warrantyValue: true,
       warrantyUnit: true,
@@ -576,4 +619,35 @@ export async function getPublicItemDetail(id: string) {
   })
 
   return { ...item, vendor: { ...item.vendor, reviewsCount } }
+}
+
+/**
+ * Devis d'acheminement (bateau / avion éco / avion express) pour un lot de
+ * pièces à importer.
+ *
+ * Calculé CÔTÉ SERVEUR et pas dans le navigateur, parce que la douane s'assied
+ * sur la valeur déclarée — le coût d'achat réel chez le partenaire — qui ne doit
+ * jamais quitter le serveur. Le client reçoit trois montants, pas leur base.
+ */
+export async function quoteImportOptions(input: Array<{ catalogItemId: string; quantity: number }>) {
+  const ids = input.map((i) => i.catalogItemId)
+  if (ids.length === 0) return { options: [], items: 0 }
+
+  const rows = await prisma.catalogItem.findMany({
+    where: { id: { in: ids }, status: 'PUBLISHED', supplyMode: 'IMPORT' },
+    select: { id: true, name: true, category: true, weightKg: true, price: true, sourceCostFcfa: true },
+  })
+
+  const qtyById = new Map(input.map((i) => [i.catalogItemId, Math.max(1, i.quantity)]))
+  const quoteItems: ImportQuoteItem[] = rows.map((row) => ({
+    name: row.name,
+    category: row.category,
+    weightKg: row.weightKg,
+    quantity: qtyById.get(row.id) ?? 1,
+    // Valeur en douane = coût d'achat réel ; repli sur le prix public si la
+    // fiche n'a pas de coût renseigné (saisie manuelle plutôt qu'ingestion).
+    customsValue: row.sourceCostFcfa ?? row.price ?? 0,
+  }))
+
+  return { options: importQuoteOptions(quoteItems), items: quoteItems.length }
 }

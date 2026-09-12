@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Price } from './price'
-import { ConditionChip, type Condition } from './chip'
+import { ConditionChip, SupplyModeChip, type Condition } from './chip'
 import { PartThumb, bestPartImage } from './part-thumb'
 import { useCart } from '@/lib/cart'
 
@@ -12,6 +12,7 @@ export interface ProductCardItem {
   name: string | null
   category: string | null
   condition: string | null
+  supplyMode?: string | null
   partSource?: string | null
   price: number | null
   imageThumbUrl: string | null
@@ -64,7 +65,8 @@ export function ProductCard({ item }: { item: ProductCardItem }) {
           {item.category ?? '—'} · {item.vendor.shopName}
         </p>
         <div className="mt-1.5 flex items-center gap-2">
-          {item.condition && <ConditionChip condition={item.condition as Condition} />}
+          {item.condition && <ConditionChip condition={item.condition as Condition} supplyMode={item.supplyMode} />}
+          <SupplyModeChip supplyMode={item.supplyMode} />
         </div>
       </div>
       <div className="flex flex-col items-end justify-center gap-1.5">

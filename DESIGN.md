@@ -83,6 +83,17 @@ Stack à trois familles, **partagée entre l'app web et les documents PDF/DOCX**
 
 **Règle absolue :** chaque carte produit, ligne de commande, fiche, et ligne de tableau admin montre la condition en chip coloré. Jamais en texte gris enterré. → voir composant `apps/web/components/ui/chip.tsx`.
 
+### Disponibilité (axe indépendant de la condition)
+| Disponibilité | Token bg / fg | BG | FG |
+|---|---|---|---|
+| À importer | `import-bg` / `import-fg` | `#DFF1F0` | `#0F5F5C` |
+
+La pièce est-elle déjà à Abidjan, ou chez un partenaire international ? C'est un **second axe**, jamais une valeur de condition : un distributeur allemand vend du neuf, une casse française de l'occasion, et les deux passent par le même circuit fret + douane + précommande.
+
+La chip « À importer » s'affiche **à côté** de la chip de condition, jamais à sa place. Une pièce neuve allemande porte donc `Neuf` + `À importer` — et c'est ce couple qui matérialise les rubriques **« Neuf à importer »** et **« Occasion à importer »**. Vocabulaire centralisé : `supplyRubriqueLabel()` dans `packages/shared/constants/import-pricing.ts`.
+
+Le teal est choisi pour ne se confondre avec aucune des cinq couleurs de condition avec lesquelles la chip cohabite sur une même carte.
+
 ### Statuts
 | Statut | Token bg / fg | BG | FG |
 |---|---|---|---|
@@ -153,8 +164,15 @@ Implémenté dans `apps/web/components/ui/chip.tsx`. Variantes : `neuf · occasi
 - Toujours colorés, jamais gris (sauf `plain` = surface/muted/border).
 - `rounded-full`, padding `px-2.5 py-1`, texte 11.5px, `font-semibold`, uppercase, `tracking-[0.04em]`.
 - Dot indicateur 6×6px en `bg-current`.
-- Helpers exportés : `<ConditionChip>` (NEW→Neuf / USED→Occasion importée / REFURBISHED→Ré-usiné) et `<PartSourceChip>` (OEM / AFTERMARKET / COMPATIBLE→`plain`).
+- Helpers exportés : `<ConditionChip>` (NEW→Neuf / USED→Occasion importée / REFURBISHED→Ré-usiné), `<PartSourceChip>` (OEM / AFTERMARKET / COMPATIBLE→`plain`) et `<SupplyModeChip>` (IMPORT→« À importer », rien en LOCAL).
 - Présents sur : catalogue, fiche produit, commande, admin, historique.
+
+### Décomposition de prix d'une pièce à importer
+La règle « aucun frais caché » s'applique en entier au circuit d'import. La fiche produit, le panier et `/choose` montrent **quatre lignes** — prix pièce, fret (mode choisi), droits de douane, livraison à Abidjan — puis, dans un bloc navy distinct sous le total, **ce qui est prélevé aujourd'hui** (acompte) et **ce qui reste** (solde à l'arrivée). L'échéancier décide de l'achat : il se lit avant le bouton, jamais après.
+
+Deux corollaires non négociables :
+- **La marge n'apparaît nulle part.** Le prix public d'une pièce importée intègre la marge sur le coût partenaire ; ce coût et le taux ne sortent d'aucune réponse d'API (test `apps/api/src/modules/browse/margin-leak.test.ts`).
+- **La ligne « Droits de douane » est assise sur la valeur déclarée réelle**, pas sur le prix de vente. Gonfler une ligne intitulée « Douane » serait une marge cachée déguisée en taxe.
 
 ### Carrousel promo (home `/browse`)
 - 3 slides par défaut : Transparence (navy), Promo active (orange), Conseil IA (cream).
@@ -324,4 +342,5 @@ Le vocabulaire RBAC (« rôle », « contexte actif », « permission ») ne s'a
 | 2026-07-13 | UX « un profil, des espaces » | Validé owner. Rôles/contexte → « espaces » dans toute l'UI ; bascule auto par navigation (SpaceGuard) ; activation en contexte (interstitiel) au lieu du 403/cul-de-sac ; profil découpé en hub + sous-pages ; suppression de l'écran /onboarding/role (remplace le « choix de rôle en cartes » du redesign 2026-06). Source unique `lib/spaces.ts`. |
 | 2026-07-13 | MECHANIC/OWNER = un seul espace Achat | Même nav, même redirect : la distinction devient une préférence (« Vous êtes plutôt ? » sur /browse, toggle dans Profil → Identité). Côté API les deux variantes sont exclusives (`selectRole` remplace l'une par l'autre). |
 | 2026-07-13 | Fusion MECHANIC + OWNER → rôle unique BUYER | Va au bout de la logique espaces : la préférence Mécanicien/Particulier (bandeau, toggle Identité) est supprimée — « qui paie ? » est un choix au checkout, pas un rôle. Migration SQL `20260713_buyer_role` (fusion + dédoublonnage en base). DRIVER ajouté au type `Role` partagé (aligné sur l'enum Prisma). |
+| 2026-09-10 | Disponibilité = 2e axe, pas une 4e condition | Rubriques « Neuf à importer » et « Occasion à importer » : ce sont des croisements condition × `supplyMode`, pas des valeurs de `PartCondition`. Un partenaire allemand vend du neuf, une casse française de l'occasion, et les deux passent par le même circuit fret + douane + précommande — les fondre en une seule valeur d'enum aurait fait perdre l'état réel de la pièce. Nouvelle chip `import` (teal), affichée **en plus** de la chip de condition. Décomposition de prix étendue à fret + douane, et bloc acompte / solde sous le total. |
 | 2026-08-29 | Garantie = décision du vendeur, socle de reprise affiché | Contrat vendeur v1.2. La garantie n'est plus un standard plateforme : le vendeur la fixe pièce par pièce, sur toutes les familles sans exception (aucune n'est imposée ni exclue). Fin du fallback « Garantie : 7J » sur la fiche produit — sans garantie, on l'écrit (`warrantyLabel`, chip neutre). Le socle de reprise (livraison échouée · refus à la livraison · non-conformité sous 48 h) devient un bloc affiché fiche produit ET `/choose`, au même titre que la décompo prix : c'est ce que l'acheteur obtient quoi qu'il arrive. Source unique `shared/constants/warranty.ts`. |

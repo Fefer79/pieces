@@ -10,6 +10,7 @@ const mockEscrowCreate = vi.fn()
 const mockEscrowFindUnique = vi.fn()
 const mockEscrowUpdate = vi.fn()
 const mockOrderFindUnique = vi.fn()
+const mockEscrowFindMany = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -23,6 +24,7 @@ vi.mock('../../lib/prisma.js', () => ({
       create: (...args: unknown[]) => mockEscrowCreate(...args),
       findUnique: (...args: unknown[]) => mockEscrowFindUnique(...args),
       update: (...args: unknown[]) => mockEscrowUpdate(...args),
+      findMany: (...args: unknown[]) => mockEscrowFindMany(...args),
     },
     order: {
       findUnique: (...args: unknown[]) => mockOrderFindUnique(...args),
@@ -30,7 +32,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { createEscrow, releaseEscrow, refundEscrow, confirmOrderPayment } = await import('./payment.service.js')
+const { createEscrow, releaseEscrow, refundEscrow, confirmOrderPayment, refundAllHeldEscrows } = await import('./payment.service.js')
 
 describe('payment.service', () => {
   beforeEach(() => {
@@ -111,4 +113,103 @@ describe('payment.service', () => {
       await expect(confirmOrderPayment('bad', 5000)).rejects.toThrow()
     })
   })
+
+  // -------------------------------------------------------------------------
+  // Précommande d'import : deux écritures pour une même commande
+  // -------------------------------------------------------------------------
+
+  describe("séquestre d'une précommande d'import", () => {
+    const preorder = {
+      id: 'order-imp',
+      orderType: 'IMPORT_PREORDER',
+      status: 'PENDING_PAYMENT',
+      totalAmount: 96_000,
+      depositAmount: 94_800,
+      balanceAmount: 50_900,
+    }
+
+    it("déduit l'échéance de la commande : acompte avant l'arrivée", async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(preorder)
+      mockEscrowFindUnique.mockResolvedValueOnce(null)
+      mockEscrowCreate.mockResolvedValueOnce({ id: 'esc-d', kind: 'DEPOSIT', amount: 94_800, status: 'HELD' })
+
+      const escrow = await confirmOrderPayment('order-imp', 94_800)
+      expect(escrow.kind).toBe('DEPOSIT')
+      expect((mockEscrowCreate.mock.calls[0]![0] as { data: { kind: string } }).data.kind).toBe('DEPOSIT')
+    })
+
+    it('appelle le solde une fois la pièce dédouanée', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ ...preorder, status: 'AWAITING_BALANCE' })
+      mockEscrowFindUnique.mockResolvedValueOnce(null)
+      mockEscrowCreate.mockResolvedValueOnce({ id: 'esc-b', kind: 'BALANCE', amount: 50_900, status: 'HELD' })
+
+      const escrow = await confirmOrderPayment('order-imp', 50_900)
+      expect(escrow.kind).toBe('BALANCE')
+    })
+
+    it("refuse un acompte inférieur au montant appelé", async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(preorder)
+      mockEscrowFindUnique.mockResolvedValueOnce(null)
+
+      await expect(confirmOrderPayment('order-imp', 50_000)).rejects.toMatchObject({
+        code: 'PAYMENT_AMOUNT_MISMATCH',
+      })
+      expect(mockEscrowCreate).not.toHaveBeenCalled()
+    })
+
+    it("accepte un acompte inférieur au total de la commande (c'est le principe)", async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(preorder)
+      mockEscrowFindUnique.mockResolvedValueOnce(null)
+      mockEscrowCreate.mockResolvedValueOnce({ id: 'esc-d', kind: 'DEPOSIT', amount: 94_800, status: 'HELD' })
+
+      await expect(confirmOrderPayment('order-imp', 94_800)).resolves.toBeTruthy()
+    })
+
+    it('reste idempotent par échéance : un 2e webhook ne duplique pas', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(preorder)
+      mockEscrowFindUnique.mockResolvedValueOnce({ id: 'esc-d', kind: 'DEPOSIT', amount: 94_800, status: 'HELD' })
+
+      const escrow = await confirmOrderPayment('order-imp', 94_800)
+      expect(escrow.id).toBe('esc-d')
+      expect(mockEscrowCreate).not.toHaveBeenCalled()
+    })
+
+    it("garde le paiement unique (FULL) pour une commande locale", async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({
+        id: 'order-1',
+        orderType: 'STANDARD',
+        status: 'PENDING_PAYMENT',
+        totalAmount: 5_000,
+        depositAmount: 0,
+        balanceAmount: 0,
+      })
+      mockEscrowFindUnique.mockResolvedValueOnce(null)
+      mockEscrowCreate.mockResolvedValueOnce({ id: 'esc-1', kind: 'FULL', amount: 5_000, status: 'HELD' })
+
+      await confirmOrderPayment('order-1', 5_000)
+      expect((mockEscrowCreate.mock.calls[0]![0] as { data: { kind: string } }).data.kind).toBe('FULL')
+    })
+
+    it('rembourse intégralement les écritures encore sous séquestre', async () => {
+      mockEscrowFindMany.mockResolvedValueOnce([{ kind: 'DEPOSIT' }, { kind: 'BALANCE' }])
+      mockEscrowFindUnique
+        .mockResolvedValueOnce({ id: 'esc-d', kind: 'DEPOSIT', status: 'HELD' })
+        .mockResolvedValueOnce({ id: 'esc-b', kind: 'BALANCE', status: 'HELD' })
+      mockEscrowUpdate
+        .mockResolvedValueOnce({ id: 'esc-d', status: 'REFUNDED' })
+        .mockResolvedValueOnce({ id: 'esc-b', status: 'REFUNDED' })
+
+      const refunded = await refundAllHeldEscrows('order-imp')
+      expect(refunded).toHaveLength(2)
+      expect(refunded.every((e) => e.status === 'REFUNDED')).toBe(true)
+    })
+
+    it('ne rembourse rien quand plus rien n’est sous séquestre', async () => {
+      mockEscrowFindMany.mockResolvedValueOnce([])
+      const refunded = await refundAllHeldEscrows('order-imp')
+      expect(refunded).toHaveLength(0)
+      expect(mockEscrowUpdate).not.toHaveBeenCalled()
+    })
+  })
+
 })

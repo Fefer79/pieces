@@ -24,6 +24,11 @@
   --color-aftermarket-fg: #6B3E8F;
   --color-oem-bg: rgba(0, 35, 102, 0.08);
   --color-oem-fg: #002366;
+  /* Disponibilité — axe indépendant de la condition : la pièce est-elle à
+     Abidjan ou à faire venir ? Teal, distinct des cinq couleurs de condition
+     avec lesquelles la chip cohabite sur une même carte. */
+  --color-import-bg: #DFF1F0;
+  --color-import-fg: #0F5F5C;
 
   /* Semantic statuses */
   --color-success-bg: #E6F2EC;

@@ -274,7 +274,8 @@ export async function exportCommandesCsv(rawQuery: unknown) {
       laborCost: true,
       initiator: { select: { name: true, phone: true } },
       items: { select: { vendorShopName: true, commissionAmount: true } },
-      escrow: { select: { status: true } },
+      // Une précommande d'import porte deux écritures (acompte puis solde).
+      escrows: { select: { kind: true, status: true }, orderBy: { heldAt: 'asc' } },
     },
   })
 
@@ -287,7 +288,9 @@ export async function exportCommandesCsv(rawQuery: unknown) {
     o.deliveryFee ?? 0,
     o.laborCost ?? 0,
     o.items.reduce((s, i) => s + (i.commissionAmount ?? 0), 0),
-    o.escrow?.status ?? 'AUCUN',
+    o.escrows.length > 0
+      ? o.escrows.map((e) => (e.kind === 'FULL' ? e.status : `${e.kind}:${e.status}`)).join(' / ')
+      : 'AUCUN',
   ])
 
   return {

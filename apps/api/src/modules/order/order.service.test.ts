@@ -14,6 +14,7 @@ const mockOrderFindMany = vi.fn()
 const mockOrderUpdate = vi.fn()
 const mockOrderDelete = vi.fn()
 const mockOrderItemDeleteMany = vi.fn()
+const mockOrderItemFindMany = vi.fn()
 const mockOrderEventDeleteMany = vi.fn()
 const mockVehicleFindUnique = vi.fn()
 const mockEnterpriseMemberFindUnique = vi.fn()
@@ -45,6 +46,7 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     orderItem: {
       deleteMany: (...args: unknown[]) => mockOrderItemDeleteMany(...args),
+      findMany: (...args: unknown[]) => mockOrderItemFindMany(...args),
     },
     orderEvent: {
       deleteMany: (...args: unknown[]) => mockOrderEventDeleteMany(...args),
@@ -61,12 +63,13 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDelivery } = await import('./order.service.js')
+const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDelivery, payImportBalance } = await import('./order.service.js')
 
 describe('order.service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockCurrentTier.mockResolvedValue('FREE')
+    mockOrderItemFindMany.mockResolvedValue([])
   })
 
   describe('createOrder', () => {
@@ -704,4 +707,235 @@ describe('order.service', () => {
       expect(deliveryOptions.every((o) => o.fee === null)).toBe(true)
     })
   })
+
+  // -------------------------------------------------------------------------
+  // Précommande d'import
+  // -------------------------------------------------------------------------
+
+  describe("précommande d'import", () => {
+    // Pièce lourde : le fret dépasse le minimum de perception, donc l'acompte
+    // est sensible au mode d'acheminement — c'est ce qu'on veut vérifier.
+    const importItem = {
+      id: 'imp-1',
+      name: 'Moteur complet 1.6 HDi',
+      category: 'Moteur / Moteur complet',
+      subcategory: 'Moteur complet',
+      price: 900_000,
+      imageThumbUrl: null,
+      condition: 'USED',
+      partSource: 'OEM',
+      supplyMode: 'IMPORT',
+      originCountry: 'DE',
+      supplierLeadDays: 4,
+      weightKg: 140,
+      // Coût réel : le prix public porte la marge de 100 %.
+      sourceCostFcfa: 450_000,
+      vendorId: 'v-de',
+      commissionAmount: null,
+      stockQuantity: null,
+      warrantyValue: null,
+      warrantyUnit: null,
+      vendor: { id: 'v-de', shopName: 'Partenaire DE-04', status: 'ACTIVE' },
+    }
+
+    const localItem = {
+      id: 'loc-1',
+      name: 'Filtre à huile',
+      category: 'Filtration / Filtre à huile',
+      subcategory: 'Filtre à huile',
+      price: 5_000,
+      imageThumbUrl: null,
+      condition: 'NEW',
+      partSource: 'AFTERMARKET',
+      supplyMode: 'LOCAL',
+      originCountry: null,
+      supplierLeadDays: null,
+      weightKg: null,
+      sourceCostFcfa: null,
+      vendorId: 'v1',
+      commissionAmount: null,
+      stockQuantity: null,
+      warrantyValue: null,
+      warrantyUnit: null,
+      vendor: { id: 'v1', shopName: 'Shop', status: 'ACTIVE' },
+    }
+
+    function createdData() {
+      return (mockOrderCreate.mock.calls[0]![0] as {
+        data: {
+          orderType: string
+          logisticsMode: string | null
+          freightFee: number
+          customsFee: number
+          depositAmount: number
+          balanceAmount: number
+          totalAmount: number
+          deliveryFee: number
+          items: { create: Array<{ supplyMode: string; sourceCostSnapshot: number | null }> }
+        }
+      }).data
+    }
+
+    it('marque la commande IMPORT_PREORDER et chiffre fret et douane', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([importItem])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'imp-1' }], {
+        deliveryCommune: 'Cocody',
+        logisticsMode: 'AIR_ECONOMY',
+      })
+
+      const data = createdData()
+      expect(data.orderType).toBe('IMPORT_PREORDER')
+      expect(data.logisticsMode).toBe('AIR_ECONOMY')
+      expect(data.freightFee).toBeGreaterThan(0)
+      expect(data.customsFee).toBeGreaterThan(0)
+    })
+
+    it("l'acompte = 50 % des pièces + tout le fret et la douane", async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([importItem])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'imp-1' }], {
+        deliveryCommune: 'Cocody',
+        logisticsMode: 'AIR_ECONOMY',
+      })
+
+      const data = createdData()
+      expect(data.depositAmount).toBe(450_000 + data.freightFee + data.customsFee)
+    })
+
+    it('le solde = le reste des pièces + la livraison locale', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([importItem])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'imp-1' }], {
+        deliveryCommune: 'Cocody',
+        logisticsMode: 'AIR_ECONOMY',
+      })
+
+      const data = createdData()
+      expect(data.balanceAmount).toBe(450_000 + data.deliveryFee)
+    })
+
+    it('acompte + solde = pièces + fret + douane + livraison, au franc près', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([importItem])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'imp-1', quantity: 3 }], {
+        deliveryCommune: 'Bingerville',
+        logisticsMode: 'AIR_NOW',
+      })
+
+      const data = createdData()
+      expect(data.depositAmount + data.balanceAmount).toBe(
+        data.totalAmount + data.freightFee + data.customsFee + data.deliveryFee,
+      )
+    })
+
+    it("bascule sur un acheminement praticable quand celui demandé ne l'est pas", async () => {
+      // Bougie : trop légère pour le groupage maritime (SEA_LCL_MIN_CHARGEABLE_KG).
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { ...importItem, id: 'imp-2', name: "Bougie d'allumage", category: 'Allumage / Bougies', weightKg: 0.3, price: 16_000, sourceCostFcfa: 8_000 },
+      ])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'imp-2' }], {
+        deliveryCommune: 'Cocody',
+        logisticsMode: 'SEA_LCL',
+      })
+
+      expect(createdData().logisticsMode).not.toBe('SEA_LCL')
+    })
+
+    it('snapshote la provenance et le coût d’achat sur la ligne de commande', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([importItem])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'imp-1' }], { deliveryCommune: 'Cocody' })
+
+      const line = createdData().items.create[0]!
+      expect(line.supplyMode).toBe('IMPORT')
+      expect(line.sourceCostSnapshot).toBe(450_000)
+    })
+
+    it('refuse un panier qui mélange import et disponible à Abidjan', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([importItem, localItem])
+
+      await expect(
+        createOrder('user-1', [{ catalogItemId: 'imp-1' }, { catalogItemId: 'loc-1' }]),
+      ).rejects.toMatchObject({ code: 'ORDER_MIXED_SUPPLY_MODE' })
+      expect(mockOrderCreate).not.toHaveBeenCalled()
+    })
+
+    it('laisse une commande entièrement locale en STANDARD, sans fret ni acompte', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([localItem])
+      mockOrderCreate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await createOrder('user-1', [{ catalogItemId: 'loc-1' }], { deliveryCommune: 'Cocody' })
+
+      const data = createdData()
+      expect(data.orderType).toBe('STANDARD')
+      expect(data.freightFee).toBe(0)
+      expect(data.customsFee).toBe(0)
+      expect(data.depositAmount).toBe(0)
+      expect(data.logisticsMode).toBeNull()
+    })
+
+    it('refuse le paiement à la livraison sur une précommande', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({
+        id: 'o1',
+        status: 'DRAFT',
+        shareToken: 'tok',
+        orderType: 'IMPORT_PREORDER',
+        deliveryCommune: 'Cocody',
+        totalAmount: 20_000,
+        depositAmount: 30_000,
+        balanceAmount: 12_900,
+      })
+
+      await expect(selectPaymentMethod('o1', 'COD', 'buyer', 'tok')).rejects.toMatchObject({
+        code: 'ORDER_COD_UNAVAILABLE_ON_PREORDER',
+      })
+    })
+
+    it("le solde n'est appelable qu'une fois la pièce arrivée", async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({
+        id: 'o1',
+        status: 'DEPOSIT_PAID',
+        shareToken: 'tok',
+        orderType: 'IMPORT_PREORDER',
+      })
+
+      await expect(payImportBalance('o1', 'WAVE', 'buyer', 'tok')).rejects.toMatchObject({
+        code: 'ORDER_BALANCE_NOT_DUE',
+      })
+    })
+
+    it('règle le solde en AWAITING_BALANCE', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({
+        id: 'o1',
+        status: 'AWAITING_BALANCE',
+        shareToken: 'tok',
+        orderType: 'IMPORT_PREORDER',
+      })
+      mockOrderUpdate.mockResolvedValueOnce({ id: 'o1', items: [] })
+
+      await payImportBalance('o1', 'WAVE', 'buyer', 'tok')
+      expect(mockOrderUpdate).toHaveBeenCalled()
+    })
+
+    it('refuse un état d’import sur une commande locale', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({
+        id: 'o1',
+        status: 'PENDING_PAYMENT',
+        orderType: 'STANDARD',
+      })
+
+      await expect(transitionOrder('o1', 'DEPOSIT_PAID', 'admin')).rejects.toMatchObject({
+        code: 'ORDER_INVALID_TRANSITION',
+      })
+    })
+  })
+
 })

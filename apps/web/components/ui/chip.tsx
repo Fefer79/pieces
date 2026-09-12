@@ -6,6 +6,7 @@ export type ChipVariant =
   | 'reusine'
   | 'aftermarket'
   | 'oem'
+  | 'import'
   | 'plain'
   | 'status-ok'
   | 'status-warn'
@@ -17,6 +18,7 @@ const variantClasses: Record<ChipVariant, string> = {
   reusine: 'bg-reusine-bg text-reusine-fg',
   aftermarket: 'bg-aftermarket-bg text-aftermarket-fg',
   oem: 'bg-oem-bg text-oem-fg',
+  import: 'bg-import-bg text-import-fg',
   plain: 'bg-surface text-muted border border-border',
   'status-ok': 'bg-success-bg text-success-fg',
   'status-warn': 'bg-warn-bg text-warn-fg',
@@ -29,6 +31,7 @@ const variantWithDot: ChipVariant[] = [
   'reusine',
   'aftermarket',
   'oem',
+  'import',
   'status-ok',
   'status-warn',
   'status-err',
@@ -62,12 +65,49 @@ const CONDITION_LABELS = {
 
 export type Condition = keyof typeof CONDITION_LABELS
 
-export function ConditionChip({ condition, className }: { condition: Condition; className?: string }) {
+export function ConditionChip({
+  condition,
+  supplyMode,
+  className,
+}: {
+  condition: Condition
+  /**
+   * Provenance de la pièce. « Occasion importée » désigne une occasion DÉJÀ
+   * arrivée en Côte d'Ivoire : accolé à la chip « À importer », le libellé se
+   * contredit. Sur une pièce encore à l'étranger, on dit donc « Occasion » et
+   * on laisse la chip de disponibilité porter la provenance.
+   */
+  supplyMode?: string | null
+  className?: string
+}) {
   const variant: ChipVariant =
     condition === 'NEW' ? 'neuf' : condition === 'USED' ? 'occasion' : 'reusine'
+  const label =
+    condition === 'USED' && supplyMode === 'IMPORT' ? 'Occasion' : CONDITION_LABELS[condition]
   return (
     <Chip variant={variant} className={className}>
-      {CONDITION_LABELS[condition]}
+      {label}
+    </Chip>
+  )
+}
+
+/**
+ * Disponibilité de la pièce — axe INDÉPENDANT de la condition. Une pièce neuve
+ * chez un partenaire allemand porte les DEUX chips : « Neuf » + « À importer ».
+ * C'est ce couple qui matérialise la rubrique « Neuf à importer » ; la chip de
+ * condition n'est jamais remplacée (DESIGN.md, règle absolue).
+ */
+export function SupplyModeChip({
+  supplyMode,
+  className,
+}: {
+  supplyMode: string | null | undefined
+  className?: string
+}) {
+  if (supplyMode !== 'IMPORT') return null
+  return (
+    <Chip variant="import" className={className}>
+      À importer
     </Chip>
   )
 }
@@ -75,6 +115,9 @@ export function ConditionChip({ condition, className }: { condition: Condition; 
 const ORDER_STATUS: Record<string, { label: string; variant: ChipVariant }> = {
   DRAFT: { label: 'Brouillon', variant: 'oem' },
   PENDING_PAYMENT: { label: 'À payer', variant: 'status-warn' },
+  DEPOSIT_PAID: { label: 'Acompte payé', variant: 'status-ok' },
+  IN_IMPORT: { label: 'En acheminement', variant: 'import' },
+  AWAITING_BALANCE: { label: 'Solde à régler', variant: 'status-warn' },
   PAID: { label: 'Payé', variant: 'status-ok' },
   VENDOR_CONFIRMED: { label: 'Confirmé', variant: 'status-ok' },
   DISPATCHED: { label: 'Expédié', variant: 'status-warn' },

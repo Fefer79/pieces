@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { Price } from '@/components/ui/price'
-import { StatusChip, ConditionChip, type Condition } from '@/components/ui/chip'
+import { StatusChip, ConditionChip, SupplyModeChip, type Condition } from '@/components/ui/chip'
 import { PredictiveSearch, type PredictiveItem } from '@/components/predictive-search'
 import { PartThumb } from '@/components/ui/part-thumb'
 
@@ -22,6 +22,7 @@ interface OrderHistoryItem {
     quantity: number
     imageThumbUrl?: string | null
     condition?: string | null
+    supplyMode?: string | null
     vendorShopName?: string | null
   }>
   delivery?: { status: string; deliveredAt?: string } | null
@@ -218,7 +219,8 @@ export default function OrderHistoryPage() {
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-[12.5px] text-muted">
                       {first?.vendorShopName && <span>{first.vendorShopName}</span>}
                       {first && <span>· ×{first.quantity}</span>}
-                      {first?.condition && <ConditionChip condition={first.condition as Condition} />}
+                      {first?.condition && <ConditionChip condition={first.condition as Condition} supplyMode={first.supplyMode} />}
+                      <SupplyModeChip supplyMode={first?.supplyMode} />
                     </div>
                   </div>
                   <div className="justify-self-end">

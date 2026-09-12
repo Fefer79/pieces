@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Price } from './price'
-import { ConditionChip, PartSourceChip, type Condition, type PartSource } from './chip'
+import { ConditionChip, PartSourceChip, SupplyModeChip, type Condition, type PartSource } from './chip'
 import { bestPartImage } from './part-thumb'
 
 export interface ProductGridItem {
@@ -8,6 +8,7 @@ export interface ProductGridItem {
   name: string | null
   category: string | null
   condition: string | null
+  supplyMode?: string | null
   partSource: string | null
   price: number | null
   imageThumbUrl: string | null
@@ -55,7 +56,8 @@ export function ProductGridCard({ item }: { item: ProductGridItem }) {
           </div>
         )}
         <div className="absolute left-2 top-2 flex flex-col items-start gap-1.5">
-          {item.condition && <ConditionChip condition={item.condition as Condition} />}
+          {item.condition && <ConditionChip condition={item.condition as Condition} supplyMode={item.supplyMode} />}
+          <SupplyModeChip supplyMode={item.supplyMode} />
           {item.partSource && <PartSourceChip source={item.partSource as PartSource} />}
         </div>
       </div>

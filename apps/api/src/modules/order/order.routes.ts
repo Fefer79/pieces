@@ -5,6 +5,7 @@ import {
   cancelOrderSchema,
   upsertDraftSchema,
   setDeliverySchema,
+  payImportBalanceSchema,
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth } from '../../plugins/auth.js'
@@ -15,6 +16,7 @@ import {
   getOrderById,
   getUserOrders,
   selectPaymentMethod,
+  payImportBalance,
   cancelOrder,
   vendorConfirmOrder,
   getOpenDraft,
@@ -45,6 +47,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
         vehicleId?: string
         deliveryCommune?: string
         deliveryMode?: 'ECO' | 'STANDARD' | 'EXPRESS'
+        logisticsMode?: 'SEA_LCL' | 'AIR_ECONOMY' | 'AIR_NOW'
         payerMode?: 'SELF' | 'OWNER_LINK'
       }
       const order = await createOrder(request.user.id, body.items, {
@@ -53,6 +56,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
         vehicleId: body.vehicleId,
         deliveryCommune: body.deliveryCommune,
         deliveryMode: body.deliveryMode,
+        logisticsMode: body.logisticsMode,
         payerMode: body.payerMode,
       })
       return reply.status(201).send({ data: order })
@@ -196,7 +200,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Orders'],
         description:
-          'Choisir le délai (Économique / Standard / Express) et la commune de livraison',
+          "Choisir le délai (Économique / Standard / Express), la commune de livraison et, pour une précommande, l'acheminement depuis l'étranger",
         body: zodToFastify(setDeliverySchema),
       },
     },
@@ -205,10 +209,12 @@ export async function orderRoutes(fastify: FastifyInstance) {
       const body = request.body as {
         deliveryMode?: 'ECO' | 'STANDARD' | 'EXPRESS'
         deliveryCommune?: string
+        logisticsMode?: 'SEA_LCL' | 'AIR_ECONOMY' | 'AIR_NOW'
       }
       const order = await setOrderDelivery(shareToken, {
         mode: body.deliveryMode,
         commune: body.deliveryCommune,
+        logisticsMode: body.logisticsMode,
       })
       return reply.status(200).send({ data: order })
     },
@@ -231,6 +237,27 @@ export async function orderRoutes(fastify: FastifyInstance) {
         shareToken: string
       }
       const order = await selectPaymentMethod(orderId, paymentMethod, 'buyer', shareToken)
+      return reply.status(200).send({ data: order })
+    },
+  )
+
+  // Règlement du solde d'une précommande, une fois la pièce dédouanée à Abidjan.
+  fastify.post(
+    '/:orderId/pay-balance',
+    {
+      schema: {
+        tags: ['Orders'],
+        description: "Régler le solde d'une précommande d'import",
+        body: zodToFastify(payImportBalanceSchema),
+      },
+    },
+    async (request, reply) => {
+      const { orderId } = request.params as { orderId: string }
+      const { paymentMethod, shareToken } = request.body as {
+        paymentMethod: string
+        shareToken: string
+      }
+      const order = await payImportBalance(orderId, paymentMethod, 'buyer', shareToken)
       return reply.status(200).send({ data: order })
     },
   )

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { getBrands, getModels, getYears, getModelEngines, getCategories, browseParts, searchParts, suggestParts, compareParts, decodeVin, getPublicItemDetail } from './browse.service.js'
+import { getBrands, getModels, getYears, getModelEngines, getCategories, browseParts, searchParts, suggestParts, compareParts, decodeVin, getPublicItemDetail, parseConditions, parseSupplyMode, quoteImportOptions } from './browse.service.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { vinDecodeSchema } from 'shared/validators'
 
@@ -88,16 +88,50 @@ export async function browseRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const query = request.query as { brand?: string; model?: string; year?: string; category?: string; q?: string; page?: string; limit?: string }
+      const query = request.query as {
+        brand?: string
+        model?: string
+        year?: string
+        category?: string
+        q?: string
+        condition?: string
+        supplyMode?: string
+        page?: string
+        limit?: string
+      }
       const result = await browseParts({
         brand: query.brand,
         model: query.model,
         year: query.year ? parseInt(query.year, 10) : undefined,
         category: query.category,
         q: query.q,
+        // Les deux axes des rubriques : état de la pièce × disponibilité.
+        condition: parseConditions(query.condition),
+        supplyMode: parseSupplyMode(query.supplyMode),
         page: query.page ? parseInt(query.page, 10) : undefined,
         limit: query.limit ? parseInt(query.limit, 10) : undefined,
       })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  // Devis d'acheminement d'un lot de pièces à importer. En POST parce que le lot
+  // vient du panier ; public, comme tout le module browse.
+  fastify.post(
+    '/import-quote',
+    {
+      schema: {
+        tags: ['Browse'],
+        description: "Fret et douane pour un lot de pièces à importer (bateau / avion éco / avion express)",
+      },
+    },
+    async (request, reply) => {
+      const body = request.body as { items?: Array<{ catalogItemId?: string; quantity?: number }> }
+      const items = (body?.items ?? [])
+        .filter((i): i is { catalogItemId: string; quantity?: number } => typeof i?.catalogItemId === 'string')
+        .slice(0, 50)
+        .map((i) => ({ catalogItemId: i.catalogItemId, quantity: Number(i.quantity) || 1 }))
+      const result = await quoteImportOptions(items)
       return reply.status(200).send({ data: result })
     },
   )

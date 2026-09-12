@@ -148,9 +148,38 @@ enum PartSource {
   COMPATIBLE
 }
 
+// Où se trouve physiquement la pièce au moment où elle est mise en vente.
+// Axe INDÉPENDANT de la condition : un distributeur allemand vend du neuf, une
+// casse française de l'occasion, et les deux passent par le même circuit
+// fret + douane + précommande. Les rubriques « Neuf à importer » et
+// « Occasion à importer » sont des croisements des deux axes, pas des valeurs
+// de PartCondition.
+enum SupplyMode {
+  LOCAL // déjà à Abidjan — comportement historique
+  IMPORT // chez un partenaire international, à faire venir
+}
+
+enum OrderType {
+  STANDARD
+  IMPORT_PREORDER
+}
+
+// Une commande d'import est payée en deux fois. `FULL` couvre tout l'historique
+// et le flux local : une seule écriture par commande.
+enum EscrowKind {
+  FULL
+  DEPOSIT
+  BALANCE
+}
+
 enum OrderStatus {
   DRAFT
   PENDING_PAYMENT
+  // Précommande d'import : acompte (50 % pièce + fret + douane) encaissé,
+  // achat lancé chez le partenaire.
+  DEPOSIT_PAID
+  IN_IMPORT // marchandise en route — miroir marketplace du Shipment
+  AWAITING_BALANCE // arrivée et dédouanée à Abidjan, solde appelé
   PAID
   VENDOR_CONFIRMED
   DISPATCHED
@@ -253,6 +282,11 @@ model Vendor {
   // Vendeur « Pièces — Stock interne » : ses CatalogItem portent le stock propre
   // vendu sur la marketplace (approvisionné via les bons de commande de l'ERP).
   isInternal Boolean @default(false) @map("is_internal")
+
+  // Partenaire international : ses CatalogItem sont en supplyMode IMPORT. Le
+  // shopName porte la provenance sans identifier l'enseigne (« Partenaire DE-04 »).
+  isImportPartner Boolean @default(false) @map("is_import_partner")
+  originCountry   String? @map("origin_country")
 
   ordersDelivered Int       @default(0) @map("orders_delivered")
   disputesOpened  Int       @default(0) @map("disputes_opened")
@@ -396,6 +430,20 @@ model CatalogItem {
   lowStockThreshold       Int                     @default(1) @map("low_stock_threshold")
   condition               PartCondition?
   partSource              PartSource?             @map("part_source")
+  // Disponibilité physique. LOCAL = pièce à Abidjan. IMPORT = pièce chez un
+  // partenaire international : précommande, fret, douane (cf. SupplyMode).
+  supplyMode              SupplyMode              @default(LOCAL) @map("supply_mode")
+  originCountry           String?                 @map("origin_country")
+  // Coût d'achat réel chez le partenaire — INTERNE, jamais exposé côté client.
+  // Même triplet que SourcingOffer : montant en devise + conversion figée.
+  // `price` (public) en est dérivé : sourceCostFcfa × (1 + importMarginPct/100).
+  sourceCostAmount        Float?                  @map("source_cost_amount")
+  sourceCostCurrency      String?                 @map("source_cost_currency")
+  sourceCostFcfa          Int?                    @map("source_cost_fcfa")
+  importMarginPct         Int                     @default(100) @map("import_margin_pct")
+  // Poids annoncé par la source ; à défaut, estimé par matchLogisticsFamily().
+  weightKg                Float?                  @map("weight_kg")
+  supplierLeadDays        Int?                    @map("supplier_lead_days")
   warrantyValue           Int?                    @map("warranty_value")
   warrantyUnit            WarrantyUnit?           @map("warranty_unit")
   priceUpdatedAt          DateTime?               @map("price_updated_at")
@@ -420,6 +468,7 @@ model CatalogItem {
   @@index([createdByLiaisonId], name: "idx_catalog_items_created_by_liaison")
   @@index([oemReference, partSource, condition], name: "idx_catalog_items_oem_group")
   @@index([category, subcategory], name: "idx_catalog_items_category")
+  @@index([supplyMode, status], name: "idx_catalog_items_supply_mode")
   @@map("catalog_items")
 }
 
@@ -1090,6 +1139,20 @@ model Order {
   deliveryCommune   String?        @map("delivery_commune")
   deliveryMode      DeliveryMode   @default(STANDARD) @map("delivery_mode")
   laborCost         Int?           @map("labor_cost")
+  // Précommande d'import. `orderType` gouverne l'échéancier : une commande
+  // STANDARD est payée en une fois (escrow FULL), une IMPORT_PREORDER en deux
+  // (DEPOSIT puis BALANCE). Fret et douane sont réglés dès l'acompte, la
+  // livraison locale avec le solde.
+  orderType         OrderType      @default(STANDARD) @map("order_type")
+  freightFee        Int            @default(0) @map("freight_fee")
+  customsFee        Int            @default(0) @map("customs_fee")
+  logisticsMode     String?        @map("logistics_mode") // clé LOGISTICS_MODES
+  depositAmount     Int            @default(0) @map("deposit_amount")
+  balanceAmount     Int            @default(0) @map("balance_amount")
+  depositPaidAt     DateTime?      @map("deposit_paid_at")
+  balancePaidAt     DateTime?      @map("balance_paid_at")
+  shipmentId        String?        @map("shipment_id")
+  shipment          Shipment?      @relation(fields: [shipmentId], references: [id])
   vendorConfirmedAt DateTime?      @map("vendor_confirmed_at")
   paidAt            DateTime?      @map("paid_at")
   cancelledAt       DateTime?      @map("cancelled_at")
@@ -1098,7 +1161,7 @@ model Order {
 
   items         OrderItem[]
   events        OrderEvent[]
-  escrow        EscrowTransaction?
+  escrows       EscrowTransaction[]
   delivery      Delivery?
   sellerReviews SellerReview[]
   disputes      Dispute[]
@@ -1110,33 +1173,43 @@ model Order {
   @@index([status], name: "idx_orders_status")
   @@index([vehicleId], name: "idx_orders_vehicle")
   @@index([enterpriseId], name: "idx_orders_enterprise")
+  @@index([shipmentId], name: "idx_orders_shipment")
   @@map("orders")
 }
 
 model OrderItem {
-  id               String         @id @default(uuid())
-  orderId          String         @map("order_id")
-  order            Order          @relation(fields: [orderId], references: [id])
-  catalogItemId    String         @map("catalog_item_id")
-  vendorId         String         @map("vendor_id")
-  vendorShopName   String         @map("vendor_shop_name")
-  name             String
-  category         String?
-  subcategory      String?
-  priceSnapshot    Int            @map("price_snapshot")
-  quantity         Int            @default(1)
-  imageThumbUrl    String?        @map("image_thumb_url")
-  condition        PartCondition? // snapshot de la condition à la commande
-  partSource       PartSource?    @map("part_source")
+  id                 String         @id @default(uuid())
+  orderId            String         @map("order_id")
+  order              Order          @relation(fields: [orderId], references: [id])
+  catalogItemId      String         @map("catalog_item_id")
+  vendorId           String         @map("vendor_id")
+  vendorShopName     String         @map("vendor_shop_name")
+  name               String
+  category           String?
+  subcategory        String?
+  priceSnapshot      Int            @map("price_snapshot")
+  quantity           Int            @default(1)
+  imageThumbUrl      String?        @map("image_thumb_url")
+  condition          PartCondition? // snapshot de la condition à la commande
+  partSource         PartSource?    @map("part_source")
+  supplyMode         SupplyMode     @default(LOCAL) @map("supply_mode")
+  originCountry      String?        @map("origin_country")
+  // Coût d'achat figé — INTERNE (marge réalisée, reporting finance). Ne doit
+  // apparaître dans aucune réponse acheteur.
+  sourceCostSnapshot Int?           @map("source_cost_snapshot")
+  // Poids annoncé par la source, figé à la commande. Sans lui, le re-chiffrage
+  // du fret repartirait de l'estimation de famille et le montant bougerait
+  // entre la fiche produit et le paiement.
+  weightKg           Float?         @map("weight_kg")
   // Snapshot de la garantie commerciale accordée par le vendeur sur cette
   // pièce (contrat v1.2 : le vendeur la fixe pièce par pièce). Figée à la
   // commande, comme le prix : une modification ultérieure de l'annonce ne
   // change pas ce qui a été acheté. Nulle = vendue sans garantie ; le socle de
   // reprise s'applique quand même.
-  warrantyValue    Int?           @map("warranty_value")
-  warrantyUnit     WarrantyUnit?  @map("warranty_unit")
-  commissionAmount Int?           @map("commission_amount")
-  createdAt        DateTime       @default(now()) @map("created_at")
+  warrantyValue      Int?           @map("warranty_value")
+  warrantyUnit       WarrantyUnit?  @map("warranty_unit")
+  commissionAmount   Int?           @map("commission_amount")
+  createdAt          DateTime       @default(now()) @map("created_at")
 
   @@index([orderId], name: "idx_order_items_order")
   @@map("order_items")
@@ -1191,14 +1264,18 @@ model Delivery {
 
 model EscrowTransaction {
   id         String       @id @default(uuid())
-  orderId    String       @unique @map("order_id")
+  orderId    String       @map("order_id")
   order      Order        @relation(fields: [orderId], references: [id])
+  // Une commande locale n'a qu'une écriture (FULL). Une précommande d'import en
+  // a deux : DEPOSIT à la commande, BALANCE à l'arrivée.
+  kind       EscrowKind   @default(FULL)
   amount     Int
   status     EscrowStatus @default(HELD)
   heldAt     DateTime     @default(now()) @map("held_at")
   releasedAt DateTime?    @map("released_at")
   refundedAt DateTime?    @map("refunded_at")
 
+  @@unique([orderId, kind], name: "uq_escrow_order_kind")
   @@map("escrow_transactions")
 }
 
@@ -2559,6 +2636,7 @@ model Shipment {
   createdBy   User   @relation("ShipmentCreator", fields: [createdById], references: [id])
 
   events ShipmentEvent[]
+  orders Order[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

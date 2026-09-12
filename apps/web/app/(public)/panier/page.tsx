@@ -8,6 +8,7 @@ import { Price } from '@/components/ui/price'
 import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
 import {
   ConditionChip,
+  SupplyModeChip,
   PartSourceChip,
   type Condition,
   type PartSource,
@@ -23,6 +24,7 @@ import {
   DELIVERY_MODES,
   GABARIT_LABEL,
   maxGabarit,
+  computePreorderSchedule,
   type DeliveryPricingMode,
   type DeliveryPricingTier,
 } from 'shared/constants'
@@ -41,6 +43,18 @@ type DraftItem = {
 }
 type Draft = { items: DraftItem[] } | null
 
+/** Un acheminement chiffré par le serveur pour le panier entier. */
+type CartImportQuote = {
+  mode: 'SEA_LCL' | 'AIR_ECONOMY' | 'AIR_NOW'
+  label: string
+  detail: string
+  freightFee: number
+  customsFee: number
+  total: number
+  available: boolean
+  warnings: string[]
+}
+
 export default function PanierPage() {
   const {
     items,
@@ -50,6 +64,9 @@ export default function PanierPage() {
     vehicle,
     commune,
     deliveryMode,
+    logisticsMode,
+    isImportCart,
+    hasMixedSupply,
     setQuantity,
     removeItem,
     clear,
@@ -57,6 +74,7 @@ export default function PanierPage() {
     setVehicle,
     setCommune,
     setDeliveryMode,
+    setLogisticsMode,
   } = useCart()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
@@ -71,6 +89,9 @@ export default function PanierPage() {
   // depuis l'abonnement de l'entreprise du véhicule sélectionné. Le palier
   // effectif est dérivé au rendu (pas de setState synchrone dans l'effet).
   const [fetchedTier, setFetchedTier] = useState<DeliveryPricingTier>('FREE')
+  // Fret et douane du panier d'import, chiffrés côté serveur (la base douanière
+  // est le coût d'achat partenaire, qui ne sort pas de l'API).
+  const [importQuotes, setImportQuotes] = useState<CartImportQuote[]>([])
   const deliveryTier: DeliveryPricingTier =
     isAuthenticated && vehicle?.vehicleId ? fetchedTier : 'FREE'
   const hydrated = useRef(false)
@@ -130,6 +151,29 @@ export default function PanierPage() {
     return () => clearTimeout(t)
   }, [items, isAuthenticated, created])
 
+  // Devis d'acheminement : rejoué à chaque changement de composition du panier.
+  useEffect(() => {
+    // Pas de setState synchrone ici : un devis obsolète n'est jamais affiché,
+    // `activeQuote` étant conditionné à isImportCart.
+    if (!isImportCart) return
+    let cancelled = false
+    fetch('/api/v1/browse/import-quote', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        items: items.map((i) => ({ catalogItemId: i.catalogItemId, quantity: i.quantity })),
+      }),
+    })
+      .then(async (r) => (r.ok ? ((await r.json()).data.options as CartImportQuote[]) : []))
+      .then((options) => {
+        if (!cancelled) setImportQuotes(options)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [isImportCart, items])
+
   async function handleSend() {
     setSubmitting(true)
     setError(null)
@@ -140,6 +184,7 @@ export default function PanierPage() {
         ...(vehicle ? { vehicleId: vehicle.vehicleId } : {}),
         ...(commune ? { deliveryCommune: commune } : {}),
         deliveryMode,
+        ...(isImportCart ? { logisticsMode } : {}),
         payerMode: payer,
       }),
     })
@@ -182,22 +227,48 @@ export default function PanierPage() {
       : deliveryMode === 'ECO'
         ? 'Livraison économique'
         : 'Livraison'
+  // Acheminement retenu : celui du panier s'il est praticable pour ce lot,
+  // sinon la première option disponible — même repli que le serveur.
+  const activeQuote = isImportCart
+    ? (importQuotes.find((q) => q.mode === logisticsMode && q.available) ??
+      importQuotes.find((q) => q.available) ??
+      null)
+    : null
+
   const priceLines: PriceLine[] = [
     { label: 'Sous-total pièces', amount: subtotal },
+    ...(activeQuote
+      ? [
+          { label: `Fret — ${activeQuote.label.toLowerCase()}`, amount: activeQuote.freightFee },
+          { label: 'Droits de douane', amount: activeQuote.customsFee },
+        ]
+      : []),
     ...(deliveryFee != null
       ? [
           {
-            label:
-              (vendorCount > 1
-                ? `${modeLabel} · ${commune} · ${GABARIT_LABEL[cartGabarit].toLowerCase()} (${vendorCount} vendeurs)`
-                : `${modeLabel} · ${commune} · ${GABARIT_LABEL[cartGabarit].toLowerCase()}`) +
-              (isPlus ? ' — offerte' : ''),
+            label: isImportCart
+              ? `Livraison à ${commune} après dédouanement`
+              : (vendorCount > 1
+                  ? `${modeLabel} · ${commune} · ${GABARIT_LABEL[cartGabarit].toLowerCase()} (${vendorCount} vendeurs)`
+                  : `${modeLabel} · ${commune} · ${GABARIT_LABEL[cartGabarit].toLowerCase()}`) +
+                (isPlus ? ' — offerte' : ''),
             amount: deliveryFee,
           },
         ]
       : []),
   ]
-  const grandTotal = subtotal + (deliveryFee ?? 0)
+  const grandTotal = subtotal + (activeQuote?.total ?? 0) + (deliveryFee ?? 0)
+
+  // Échéancier de la précommande — même fonction que le serveur.
+  const schedule =
+    isImportCart && activeQuote
+      ? computePreorderSchedule({
+          partsTotal: subtotal,
+          freightFee: activeQuote.freightFee,
+          customsFee: activeQuote.customsFee,
+          deliveryFee: deliveryFee ?? 0,
+        })
+      : null
 
   return (
     <div className="min-h-dvh bg-surface pb-24 lg:pb-8">
@@ -307,8 +378,9 @@ export default function PanierPage() {
                           <p className="truncate text-xs text-muted">{item.category ?? '—'}</p>
                           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                             {item.condition && (
-                              <ConditionChip condition={item.condition as Condition} />
+                              <ConditionChip condition={item.condition as Condition} supplyMode={item.supplyMode} />
                             )}
+                            <SupplyModeChip supplyMode={item.supplyMode} />
                             {item.partSource && (
                               <PartSourceChip source={item.partSource as PartSource} />
                             )}
@@ -345,6 +417,76 @@ export default function PanierPage() {
 
             {/* Récapitulatif */}
             <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+              {/* Un panier ne peut pas mélanger local et import : deux
+                  échéanciers de paiement et deux délais incompatibles. Le dire
+                  ici plutôt que de laisser l'API refuser au moment de payer. */}
+              {hasMixedSupply && (
+                <div className="mb-4 rounded-md border border-warn-fg/25 bg-warn-bg px-4 py-3">
+                  <p className="text-[13px] font-semibold text-warn-fg">
+                    Deux commandes séparées sont nécessaires.
+                  </p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-ink-2">
+                    Votre panier contient à la fois des pièces disponibles à Abidjan et des pièces
+                    à importer. Les premières se paient en une fois et arrivent en quelques jours ;
+                    les secondes se précommandent avec un acompte. Retirez l&apos;un des deux
+                    groupes pour continuer, puis passez la seconde commande.
+                  </p>
+                </div>
+              )}
+
+              {/* Acheminement depuis l'étranger — l'arbitrage principal d'une
+                  précommande : le bateau divise le fret, l'avion divise l'attente. */}
+              {isImportCart && importQuotes.length > 0 && (
+                <fieldset className="mb-4 rounded-md border border-border bg-card px-4 py-3">
+                  <legend className="block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                    Acheminement depuis l&apos;étranger
+                  </legend>
+                  <div className="mt-1.5 space-y-1.5">
+                    {importQuotes.map((quote) => (
+                      <label
+                        key={quote.mode}
+                        className={`flex items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
+                          !quote.available
+                            ? 'cursor-not-allowed border-border bg-surface opacity-60'
+                            : activeQuote?.mode === quote.mode
+                              ? 'cursor-pointer border-accent bg-accent/5'
+                              : 'cursor-pointer border-border bg-surface'
+                        }`}
+                      >
+                        <span className="flex min-w-0 items-center gap-2">
+                          <input
+                            type="radio"
+                            name="cart-logistics-mode"
+                            value={quote.mode}
+                            checked={activeQuote?.mode === quote.mode}
+                            disabled={!quote.available}
+                            onChange={() => setLogisticsMode(quote.mode)}
+                            className="accent-accent"
+                          />
+                          <span className="min-w-0 text-sm text-ink">
+                            {quote.label} <span className="text-xs text-muted">{quote.detail}</span>
+                          </span>
+                        </span>
+                        <span className="shrink-0">
+                          {quote.available ? (
+                            <Price amount={quote.total} className="text-xs" />
+                          ) : (
+                            <span className="text-xs text-muted">Indisponible</span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  {importQuotes
+                    .filter((q) => !q.available && q.warnings.length > 0)
+                    .map((q) => (
+                      <p key={q.mode} className="mt-2 text-xs leading-relaxed text-muted">
+                        {q.label} : {q.warnings[0]}
+                      </p>
+                    ))}
+                </fieldset>
+              )}
+
               {/* Lieu de livraison : persisté depuis la fiche produit, modifiable ici. */}
               <div className="mb-4 rounded-md border border-border bg-card px-4 py-3">
                 <label
@@ -416,8 +558,30 @@ export default function PanierPage() {
               <PriceBreakdown
                 lines={priceLines}
                 total={grandTotal}
-                note="Pièces effectue la livraison et le paiement n'est libéré au vendeur qu'après votre bonne réception."
+                note={
+                  isImportCart
+                    ? "Acompte sous séquestre, et intégralement remboursé si la pièce s'avère indisponible."
+                    : "Pièces effectue la livraison et le paiement n'est libéré au vendeur qu'après votre bonne réception."
+                }
               />
+
+              {/* Échéancier de la précommande — le montant réellement appelé. */}
+              {schedule && (
+                <div className="mt-4 rounded-md border border-ink/15 bg-ink px-4 py-3.5 text-white">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-white/70">
+                      À payer aujourd&apos;hui — acompte
+                    </span>
+                    <Price amount={schedule.depositAmount} className="text-base text-white" />
+                  </div>
+                  <div className="mt-1.5 flex items-baseline justify-between gap-3">
+                    <span className="text-[13px] text-white/70">
+                      Solde à l&apos;arrivée à Abidjan
+                    </span>
+                    <Price amount={schedule.balanceAmount} className="text-[13px] text-white/90" />
+                  </div>
+                </div>
+              )}
 
               {/* Qui paie ? — choix explicite au checkout, quel que soit le profil. */}
               <fieldset className="mt-4 rounded-md border border-border bg-card px-4 py-3">
@@ -468,19 +632,23 @@ export default function PanierPage() {
                 size="lg"
                 block
                 className="mt-4"
-                disabled={submitting}
+                disabled={submitting || hasMixedSupply}
                 onClick={handleSend}
               >
                 {submitting
                   ? 'Envoi…'
                   : paySelf
-                    ? 'Procéder au paiement'
+                    ? isImportCart
+                      ? "Précommander et payer l'acompte"
+                      : 'Procéder au paiement'
                     : 'Envoyer au propriétaire'}
               </Button>
               <p className="mt-2 text-center text-xs text-muted">
-                {paySelf
-                  ? 'Vous passez directement au choix du moyen de paiement.'
-                  : 'Un lien de validation et de paiement sera généré.'}
+                {hasMixedSupply
+                  ? 'Séparez les pièces à importer des pièces disponibles à Abidjan pour continuer.'
+                  : paySelf
+                    ? 'Vous passez directement au choix du moyen de paiement.'
+                    : 'Un lien de validation et de paiement sera généré.'}
               </p>
             </aside>
           </div>

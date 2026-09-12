@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { adminFetch, fmtFcfa } from '@/lib/admin-api'
-import { Chip, ConditionChip, PartSourceChip } from '@/components/ui/chip'
+import { Chip, ConditionChip, PartSourceChip, SupplyModeChip } from '@/components/ui/chip'
 import type { ChipVariant } from '@/components/ui/chip'
 import { CategoryCascadeSelect } from '@/components/ui/category-select'
 
@@ -44,12 +44,29 @@ interface CatalogItem {
   externalSource: string | null
   externalSourceId: string | null
   externalSourceUrl: string | null
+  supplyMode: 'LOCAL' | 'IMPORT'
+  originCountry: string | null
+  supplierLeadDays: number | null
+  weightKg: number | null
+  // Coût d'achat et marge — INTERNES. N'apparaissent que sur cette page, qui
+  // est derrière une capacité ERP ; jamais dans une réponse acheteur.
+  sourceCostAmount: number | null
+  sourceCostCurrency: string | null
+  sourceCostFcfa: number | null
+  importMarginPct: number
   aiGenerated: boolean
   qualityIssue: string | null
   priceAlertFlag: boolean
   createdAt: string
   updatedAt: string
-  vendor: { id: string; shopName: string | null; isExternal: boolean; externalSource: string | null }
+  vendor: {
+    id: string
+    shopName: string | null
+    isExternal: boolean
+    externalSource: string | null
+    isImportPartner?: boolean
+    originCountry?: string | null
+  }
   photos: Photo[]
   fitments: Fitment[]
 }
@@ -329,7 +346,8 @@ export default function AdminCatalogItemPage() {
             <Chip variant={STATUS_CHIP[item.status] ?? 'plain'}>
               {STATUS_LABELS[item.status] ?? item.status}
             </Chip>
-            {item.condition && <ConditionChip condition={item.condition} />}
+            {item.condition && <ConditionChip condition={item.condition} supplyMode={item.supplyMode} />}
+            <SupplyModeChip supplyMode={item.supplyMode} />
             {item.partSource && <PartSourceChip source={item.partSource} />}
           </div>
         </div>
@@ -373,6 +391,70 @@ export default function AdminCatalogItemPage() {
           </p>
         )}
       </div>
+
+      {/* ───── Bloc INTERNE : coût d'achat et marge ─────
+          Visible ici seulement, derrière une capacité ERP. Le prix public
+          (item.price) est dérivé du coût : le client ne voit jamais la marge. */}
+      {item.supplyMode === 'IMPORT' && (
+        <div className="mb-5 rounded-md border border-ink/20 bg-ink px-4 py-3.5 text-white">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-white/60">
+              Interne — ne pas communiquer au client
+            </span>
+          </div>
+          <dl className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-sm md:grid-cols-4">
+            <div>
+              <dt className="text-xs text-white/60">Coût partenaire</dt>
+              <dd className="font-mono text-white">
+                {item.sourceCostAmount != null
+                  ? `${item.sourceCostAmount.toLocaleString('fr-FR')} ${item.sourceCostCurrency ?? ''}`
+                  : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-white/60">Coût en FCFA</dt>
+              <dd className="font-mono text-white">
+                {item.sourceCostFcfa != null
+                  ? `${item.sourceCostFcfa.toLocaleString('fr-FR')} F`
+                  : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-white/60">Marge appliquée</dt>
+              <dd className="font-mono text-white">{item.importMarginPct} %</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-white/60">Marge en francs</dt>
+              <dd className="font-mono text-white">
+                {item.sourceCostFcfa != null && item.price != null
+                  ? `${(item.price - item.sourceCostFcfa).toLocaleString('fr-FR')} F`
+                  : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-white/60">Provenance</dt>
+              <dd className="text-white">{item.originCountry ?? '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-white/60">Délai partenaire</dt>
+              <dd className="text-white">
+                {item.supplierLeadDays != null ? `${item.supplierLeadDays} j` : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-white/60">Poids annoncé</dt>
+              <dd className="text-white">
+                {item.weightKg != null ? `${item.weightKg} kg` : 'estimé'}
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-2.5 text-xs leading-relaxed text-white/60">
+            Le prix public est recalculé depuis le coût à chaque import : c&apos;est le coût qui
+            fait foi. Les droits de douane facturés au client sont assis sur ce coût réel, pas sur
+            le prix de vente.
+          </p>
+        </div>
+      )}
 
       {/* Photos */}
       <section className="mb-5 rounded-md border border-border bg-card p-4">

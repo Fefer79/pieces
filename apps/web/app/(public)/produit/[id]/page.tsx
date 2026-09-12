@@ -9,6 +9,7 @@ import { PriceBreakdown, type PriceLine } from '@/components/ui/price-breakdown'
 import {
   ConditionChip,
   PartSourceChip,
+  SupplyModeChip,
   type Condition,
   type PartSource,
 } from '@/components/ui/chip'
@@ -26,6 +27,9 @@ import {
   formatWarranty,
   warrantyLabel,
   RETURN_POLICY,
+  computePreorderSchedule,
+  originCountryLabel,
+  type ImportFreightMode,
   type WarrantyUnit,
 } from 'shared/constants'
 
@@ -65,6 +69,9 @@ type ProductDetail = {
   vehicleCompatibility: string | null
   condition: Condition | null
   partSource: PartSource | null
+  supplyMode: 'LOCAL' | 'IMPORT' | null
+  originCountry: string | null
+  supplierLeadDays: number | null
   price: number | null
   warrantyValue: number | null
   warrantyUnit: WarrantyUnit | null
@@ -78,6 +85,19 @@ type ProductDetail = {
   vendor: Vendor
   photos: Photo[]
   fitments: Fitment[]
+}
+
+/** Un acheminement chiffré par le serveur (fret + douane). */
+type ImportQuote = {
+  mode: ImportFreightMode
+  label: string
+  detail: string
+  transitDays: number
+  freightFee: number
+  customsFee: number
+  total: number
+  available: boolean
+  warnings: string[]
 }
 
 type CompareOffer = {
@@ -171,6 +191,8 @@ export default function ProductPage() {
     setCommune: setDeliveryCommune,
     deliveryMode,
     setDeliveryMode,
+    logisticsMode,
+    setLogisticsMode,
   } = useCart()
 
   const [item, setItem] = useState<ProductDetail | null>(null)
@@ -182,6 +204,7 @@ export default function ProductPage() {
   const [buying, setBuying] = useState(false)
   const [offers, setOffers] = useState<CompareOffer[]>([])
   const [offerSort, setOfferSort] = useState<'price' | 'value'>('value')
+  const [importQuotes, setImportQuotes] = useState<ImportQuote[]>([])
 
   useEffect(() => {
     if (!id) return
@@ -207,6 +230,29 @@ export default function ProductPage() {
       cancelled = true
     }
   }, [id])
+
+  // Fret et douane d'une pièce à importer. Chiffrés côté serveur : la base
+  // douanière est le coût d'achat chez le partenaire, qui ne sort pas de l'API.
+  const isImport = item?.supplyMode === 'IMPORT'
+  useEffect(() => {
+    // Pas de setState synchrone ici : `activeQuote` est conditionné à isImport,
+    // un devis laissé derrière n'est donc jamais affiché.
+    if (!item || item.supplyMode !== 'IMPORT') return
+    let cancelled = false
+    fetch('/api/v1/browse/import-quote', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ items: [{ catalogItemId: item.id, quantity: qty }] }),
+    })
+      .then(async (r) => (r.ok ? ((await r.json()).data.options as ImportQuote[]) : []))
+      .then((options) => {
+        if (!cancelled) setImportQuotes(options)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [item, qty])
 
   // Offres concurrentes : autres vendeurs ayant la même référence OEM.
   useEffect(() => {
@@ -252,14 +298,47 @@ export default function ProductPage() {
   const deliveryFee = feeForMode(deliveryMode)
   const modeLabel = DELIVERY_MODES.find((m) => m.mode === deliveryMode)?.label ?? 'Standard'
 
+  // Acheminement retenu : celui du panier s'il est praticable pour cette pièce,
+  // sinon la première option disponible (le bateau n'a pas de sens sur une
+  // bougie — le serveur applique exactement le même repli).
+  const activeQuote = isImport
+    ? (importQuotes.find((q) => q.mode === logisticsMode && q.available) ??
+      importQuotes.find((q) => q.available) ??
+      null)
+    : null
+
+  const partsTotal = item?.price != null ? item.price * qty : 0
+
+  // Échéancier de la précommande — même fonction que le serveur, pour que le
+  // montant annoncé ici soit celui qui sera appelé au paiement.
+  const schedule =
+    isImport && activeQuote
+      ? computePreorderSchedule({
+          partsTotal,
+          freightFee: activeQuote.freightFee,
+          customsFee: activeQuote.customsFee,
+          deliveryFee: deliveryFee ?? 0,
+        })
+      : null
+
   const priceLines: PriceLine[] =
     item?.price != null
       ? [
-          { label: `Prix pièce × ${qty}`, amount: item.price * qty },
+          { label: `Prix pièce × ${qty}`, amount: partsTotal },
+          // Fret et douane : les deux lignes qui distinguent une pièce à
+          // importer d'une pièce déjà à Abidjan. Jamais fondues dans le prix.
+          ...(activeQuote
+            ? [
+                { label: `Fret — ${activeQuote.label.toLowerCase()}`, amount: activeQuote.freightFee },
+                { label: 'Droits de douane', amount: activeQuote.customsFee },
+              ]
+            : []),
           ...(deliveryFee != null
             ? [
                 {
-                  label: `Livraison ${modeLabel.toLowerCase()} · ${deliveryCommune}`,
+                  label: isImport
+                    ? `Livraison à ${deliveryCommune} après dédouanement`
+                    : `Livraison ${modeLabel.toLowerCase()} · ${deliveryCommune}`,
                   amount: deliveryFee,
                 },
               ]
@@ -267,7 +346,10 @@ export default function ProductPage() {
         ]
       : []
 
-  const priceTotal = item?.price != null ? item.price * qty + (deliveryFee ?? 0) : 0
+  const priceTotal =
+    item?.price != null
+      ? partsTotal + (activeQuote?.total ?? 0) + (deliveryFee ?? 0)
+      : 0
 
   const compatibility = useMemo(() => {
     if (!item || !vehicle || item.fitments.length === 0) return null
@@ -286,6 +368,8 @@ export default function ProductPage() {
         price: item.price,
         condition: item.condition,
         partSource: item.partSource,
+        supplyMode: item.supplyMode,
+        originCountry: item.originCountry,
         imageThumbUrl: item.imageThumbUrl,
       },
       qty,
@@ -310,7 +394,14 @@ export default function ProductPage() {
 
     const res = await apiFetch<{ shareToken: string }>('/orders', {
       method: 'POST',
-      body: JSON.stringify({ items: [{ catalogItemId: item.id, quantity: qty }] }),
+      body: JSON.stringify({
+        items: [{ catalogItemId: item.id, quantity: qty }],
+        ...(deliveryCommune ? { deliveryCommune } : {}),
+        deliveryMode,
+        // Acheminement choisi sur cette fiche — le serveur re-tarife et bascule
+        // sur une option praticable si celle-ci ne l'est pas pour ce colis.
+        ...(isImport ? { logisticsMode: activeQuote?.mode ?? logisticsMode } : {}),
+      }),
     })
     setBuying(false)
     if (res.ok) router.push(`/choose/${res.data.shareToken}`)
@@ -433,7 +524,8 @@ export default function ProductPage() {
               <h1 className="font-display text-2xl text-ink lg:text-3xl">{item.name ?? 'Pièce'}</h1>
               <p className="mt-1 text-sm text-muted">{item.category ?? 'Pièce'}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {item.condition && <ConditionChip condition={item.condition} />}
+                {item.condition && <ConditionChip condition={item.condition} supplyMode={item.supplyMode} />}
+                <SupplyModeChip supplyMode={item.supplyMode} />
                 {item.partSource && <PartSourceChip source={item.partSource} />}
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold uppercase tracking-[0.04em] leading-tight ${
@@ -450,6 +542,40 @@ export default function ProductPage() {
                   </span>
                 )}
               </div>
+
+              {/* 2 bis. Pièce à importer : le dire avant le prix. Le client doit
+                  savoir qu'il précommande une pièce qui n'est pas encore dans
+                  le pays — c'est la contrepartie de l'acompte. */}
+              {isImport && (
+                <div className="mt-4 rounded-md border border-import-fg/25 bg-import-bg p-4">
+                  <p className="text-[13.5px] font-semibold text-import-fg">
+                    {item.condition === 'NEW'
+                      ? 'Pièce neuve à faire venir en Côte d’Ivoire.'
+                      : item.condition === 'USED'
+                        ? 'Pièce d’occasion à faire venir en Côte d’Ivoire.'
+                        : 'Pièce à faire venir en Côte d’Ivoire.'}
+                  </p>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-ink-2">
+                    Cette référence est en stock chez un partenaire international
+                    {originCountryLabel(item.originCountry)
+                      ? ` (${originCountryLabel(item.originCountry)})`
+                      : ''}
+                    . Elle n&apos;est pas à Abidjan aujourd&apos;hui : vous précommandez, nous
+                    l&apos;achetons, l&apos;acheminons et la dédouanons pour vous.
+                  </p>
+                  {activeQuote && (
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-ink-2">
+                      Délai estimé :{' '}
+                      <strong className="font-semibold text-ink">
+                        {item.supplierLeadDays
+                          ? `${item.supplierLeadDays + Math.round(activeQuote.transitDays)} jours`
+                          : activeQuote.detail}
+                      </strong>{' '}
+                      — préparation chez le partenaire puis {activeQuote.label.toLowerCase()}.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {!item.inStock && (
                 <div className="mt-3 rounded-md border border-accent/30 bg-accent/5 p-4">
@@ -484,6 +610,65 @@ export default function ProductPage() {
               {/* 5. Prix (recalculé × quantité + livraison) */}
               {item.price != null ? (
                 <div className="mt-5 space-y-3">
+                  {/* Acheminement depuis l'étranger — l'arbitrage principal
+                      d'une précommande : le bateau divise le fret, l'avion
+                      divise l'attente. Une option impraticable est affichée
+                      grisée AVEC son motif, jamais masquée. */}
+                  {isImport && importQuotes.length > 0 && (
+                    <fieldset className="rounded-md border border-border bg-card px-4 py-3">
+                      <legend className="block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
+                        Acheminement depuis l&apos;étranger
+                      </legend>
+                      <div className="mt-1.5 space-y-1.5">
+                        {importQuotes.map((quote) => (
+                          <label
+                            key={quote.mode}
+                            className={`flex items-center justify-between gap-2 rounded-sm border px-3 py-2 ${
+                              !quote.available
+                                ? 'cursor-not-allowed border-border bg-surface opacity-60'
+                                : activeQuote?.mode === quote.mode
+                                  ? 'cursor-pointer border-accent bg-accent/5'
+                                  : 'cursor-pointer border-border bg-surface'
+                            }`}
+                          >
+                            <span className="flex min-w-0 items-center gap-2">
+                              <input
+                                type="radio"
+                                name="produit-logistics-mode"
+                                value={quote.mode}
+                                checked={activeQuote?.mode === quote.mode}
+                                disabled={!quote.available}
+                                onChange={() => setLogisticsMode(quote.mode)}
+                                className="accent-accent"
+                              />
+                              <span className="min-w-0 text-sm text-ink">
+                                {quote.label}{' '}
+                                <span className="text-xs text-muted">{quote.detail}</span>
+                              </span>
+                            </span>
+                            <span className="shrink-0">
+                              {quote.available ? (
+                                <Price amount={quote.total} className="text-xs" />
+                              ) : (
+                                <span className="text-xs text-muted">Indisponible</span>
+                              )}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      {importQuotes
+                        .filter((q) => !q.available && q.warnings.length > 0)
+                        .map((q) => (
+                          <p key={q.mode} className="mt-2 text-xs leading-relaxed text-muted">
+                            {q.label} : {q.warnings[0]}
+                          </p>
+                        ))}
+                      <p className="mt-2 text-xs text-muted-2">
+                        Fret et droits de douane inclus dans le montant affiché.
+                      </p>
+                    </fieldset>
+                  )}
+
                   {/* Lieu de livraison → frais de livraison */}
                   <div className="rounded-md border border-border bg-card px-4 py-3">
                     <label
@@ -563,6 +748,31 @@ export default function ProductPage() {
                   </div>
 
                   <PriceBreakdown title="Prix" eyebrow="" lines={priceLines} total={priceTotal} />
+
+                  {/* Échéancier : c'est l'information qui décide de l'achat.
+                      Un client qui découvre l'acompte au moment de payer se
+                      sent piégé — il le lit ici, avant d'ajouter au panier. */}
+                  {schedule && (
+                    <div className="rounded-md border border-ink/15 bg-ink px-4 py-3.5 text-white">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-white/70">
+                          À payer aujourd&apos;hui — acompte
+                        </span>
+                        <Price amount={schedule.depositAmount} className="text-base text-white" />
+                      </div>
+                      <div className="mt-1.5 flex items-baseline justify-between gap-3">
+                        <span className="text-[13px] text-white/70">
+                          Solde à l&apos;arrivée à Abidjan
+                        </span>
+                        <Price amount={schedule.balanceAmount} className="text-[13px] text-white/90" />
+                      </div>
+                      <p className="mt-2.5 text-xs leading-relaxed text-white/70">
+                        Si le partenaire ne peut finalement pas fournir la pièce, votre acompte
+                        vous est <strong className="font-semibold text-white">intégralement
+                        remboursé</strong>.
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="mt-5 rounded-md border border-border bg-card p-5 text-sm text-muted">

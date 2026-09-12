@@ -8,11 +8,21 @@ import { Button } from '@/components/ui/button'
 import { ProductCard, type ProductCardItem } from '@/components/ui/product-card'
 import { PartSearchAutocomplete } from '@/components/part-search-autocomplete'
 import { MiniCartButton } from '@/components/cart/mini-cart'
+import { supplyRubriqueLabel } from 'shared/constants'
 
 const CONDITION_OPTIONS = [
   { value: 'NEW', label: 'Neuf' },
   { value: 'USED', label: 'Occasion importée' },
   { value: 'REFURBISHED', label: 'Ré-usiné' },
+] as const
+
+/**
+ * Disponibilité — axe INDÉPENDANT de l'état. Croisé avec la facette « État »,
+ * il donne les rubriques nommées « Neuf à importer » et « Occasion à importer ».
+ */
+const SUPPLY_OPTIONS = [
+  { value: 'LOCAL', label: 'Disponible à Abidjan', hint: 'Livraison en 48–72 h' },
+  { value: 'IMPORT', label: 'À importer', hint: 'Précommande, 5 j à 8 semaines' },
 ] as const
 
 const SORT_OPTIONS = [
@@ -36,6 +46,7 @@ function SearchPageContent() {
   const conditionRaw = searchParams.get('condition') ?? ''
   const conditions = conditionRaw ? conditionRaw.split(',').filter(Boolean) : []
   const conditionKey = conditions.join(',')
+  const supplyMode = searchParams.get('supplyMode') ?? ''
   const priceMin = searchParams.get('priceMin') ?? ''
   const priceMax = searchParams.get('priceMax') ?? ''
   const sortBy = searchParams.get('sortBy') ?? 'recent'
@@ -55,6 +66,8 @@ function SearchPageContent() {
   const [items, setItems] = useState<ProductCardItem[]>([])
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  // Nombre de pièces correspondantes chez nos partenaires à l'étranger.
+  const [importCount, setImportCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<string[]>([])
 
@@ -87,6 +100,7 @@ function SearchPageContent() {
     if (q) qs.set('q', q)
     if (category) qs.set('category', category)
     if (conditionKey) qs.set('condition', conditionKey)
+    if (supplyMode) qs.set('supplyMode', supplyMode)
     if (priceMin) qs.set('priceMin', priceMin)
     if (priceMax) qs.set('priceMax', priceMax)
     if (sortBy && sortBy !== 'recent') qs.set('sortBy', sortBy)
@@ -103,11 +117,55 @@ function SearchPageContent() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [brand, model, year, q, category, conditionKey, priceMin, priceMax, sortBy, page])
+  }, [brand, model, year, q, category, conditionKey, supplyMode, priceMin, priceMax, sortBy, page])
+
+  // Recherche locale infructueuse : y a-t-il la même pièce chez un partenaire ?
+  // On ne propose la précommande que si elle existe vraiment — un encart qui
+  // renvoie vers une liste vide est pire que pas d'encart du tout.
+  useEffect(() => {
+    if (loading || items.length > 0 || supplyMode === 'IMPORT') return
+    const qs = new URLSearchParams({ supplyMode: 'IMPORT', limit: '1' })
+    if (brand) qs.set('brand', brand)
+    if (model) qs.set('model', model)
+    if (year) qs.set('year', year)
+    if (q) qs.set('q', q)
+    if (category) qs.set('category', category)
+    if (conditionKey) qs.set('condition', conditionKey)
+
+    let cancelled = false
+    fetch(`/api/v1/browse/parts?${qs.toString()}`)
+      .then((r) => r.json())
+      .then((body) => {
+        if (!cancelled) setImportCount(body.data?.pagination?.total ?? 0)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [loading, items.length, supplyMode, brand, model, year, q, category, conditionKey])
+
+  // Même recherche, mais chez nos partenaires. La pagination repart de zéro.
+  const buildImportQuery = () => {
+    const next = new URLSearchParams()
+    if (brand) next.set('brand', brand)
+    if (model) next.set('model', model)
+    if (year) next.set('year', year)
+    if (q) next.set('q', q)
+    if (category) next.set('category', category)
+    if (conditionKey) next.set('condition', conditionKey)
+    next.set('supplyMode', 'IMPORT')
+    return next
+  }
 
   const toggleCondition = (c: string) => {
     const next = conditions.includes(c) ? conditions.filter((x) => x !== c) : [...conditions, c]
     updateParams({ condition: next.length > 0 ? next.join(',') : null })
+  }
+
+  // Radio : un seul mode d'approvisionnement à la fois, et un second clic sur
+  // l'option active la retire (revenir à « tout » sans bouton dédié).
+  const toggleSupplyMode = (value: string) => {
+    updateParams({ supplyMode: supplyMode === value ? null : value })
   }
 
   const applyPriceRange = () => {
@@ -128,6 +186,15 @@ function SearchPageContent() {
   }
 
   const hasVehicle = Boolean(brand && model)
+
+  // Titre de rubrique quand les deux axes sont posés (« Neuf à importer »…) —
+  // vocabulaire partagé avec le reste de l'app.
+  const rubriqueTitle =
+    supplyMode === 'IMPORT' && conditions.length === 1
+      ? supplyRubriqueLabel(conditions[0], 'IMPORT')
+      : supplyMode === 'IMPORT'
+        ? 'Pièces à importer'
+        : null
 
   return (
     <div className="min-h-dvh bg-surface">
@@ -229,6 +296,32 @@ function SearchPageContent() {
               </select>
             </div>
 
+            {/* Disponibilité : à Abidjan ou à faire venir. Croisée avec l'état
+                ci-dessous, elle produit les rubriques « Neuf à importer » et
+                « Occasion à importer ». */}
+            <fieldset className="space-y-2">
+              <legend className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+                Disponibilité
+              </legend>
+              {SUPPLY_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex cursor-pointer items-start gap-2 text-sm text-ink"
+                >
+                  <input
+                    type="checkbox"
+                    checked={supplyMode === opt.value}
+                    onChange={() => toggleSupplyMode(opt.value)}
+                    className="mt-0.5 h-4 w-4 rounded border-border text-accent focus:ring-accent"
+                  />
+                  <span className="min-w-0">
+                    {opt.label}
+                    <span className="block text-xs text-muted">{opt.hint}</span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+
             {/* Condition */}
             <fieldset className="space-y-2">
               <legend className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
@@ -312,10 +405,21 @@ function SearchPageContent() {
                   ? `Résultats pour « ${q} »`
                   : category
                     ? category
-                    : hasVehicle
-                      ? `Pièces compatibles ${brand} ${model}${year ? ` ${year}` : ''}`
-                      : 'Recherche de pièces'}
+                    : // Une rubrique nommée se titre par son nom : arriver sur
+                      // « Neuf à importer » et lire « Recherche de pièces »
+                      // ferait perdre le fil de ce qu'on est venu voir.
+                      rubriqueTitle
+                      ? rubriqueTitle
+                      : hasVehicle
+                        ? `Pièces compatibles ${brand} ${model}${year ? ` ${year}` : ''}`
+                        : 'Recherche de pièces'}
               </h1>
+              {rubriqueTitle && (
+                <p className="mt-1 text-[13px] leading-relaxed text-muted">
+                  Pièces en stock chez nos partenaires en Europe, aux États-Unis et en Asie.
+                  Précommande avec acompte ; fret et douane affichés avant paiement.
+                </p>
+              )}
               <p className="mt-1 text-sm text-muted">
                 {loading
                   ? 'Chargement…'
@@ -345,12 +449,26 @@ function SearchPageContent() {
                     Essayez de changer la catégorie, élargir la fourchette de prix, ou contactez-nous via WhatsApp.
                   </p>
                 </div>
-                <ImportCallout
-                  piece={q ?? undefined}
-                  brand={brand ?? undefined}
-                  model={model ?? undefined}
-                  year={year ?? undefined}
-                />
+                {/* Deux offres distinctes, jamais côte à côte :
+                    — nous AVONS la pièce chez un partenaire → précommande à
+                      prix ferme, c'est le plus direct pour l'acheteur ;
+                    — nous ne l'avons pas → cotation d'acheminement, où c'est
+                      lui qui a déjà trouvé son fournisseur.
+                    Les afficher ensemble reviendrait à poser deux portes
+                    « faire venir une pièce » au même endroit. */}
+                {importCount != null && importCount > 0 ? (
+                  <PartnerStockCallout
+                    count={importCount}
+                    href={`${pathname}?${buildImportQuery().toString()}`}
+                  />
+                ) : (
+                  <ImportCallout
+                    piece={q ?? undefined}
+                    brand={brand ?? undefined}
+                    model={model ?? undefined}
+                    year={year ?? undefined}
+                  />
+                )}
               </div>
             )}
 
@@ -378,6 +496,38 @@ export default function SearchPage() {
     <Suspense fallback={<div className="min-h-dvh bg-surface" />}>
       <SearchPageContent />
     </Suspense>
+  )
+}
+
+/**
+ * Pièces correspondantes en stock chez un partenaire international.
+ *
+ * S'affiche à la place de l'encart « cotation d'import » quand nous avons
+ * réellement la référence : l'acheteur y trouve un prix ferme et un bouton
+ * d'achat, pas un devis à demander.
+ */
+function PartnerStockCallout({ count, href }: { count: number; href: string }) {
+  return (
+    <div className="rounded-md border border-import-fg/25 bg-import-bg p-5">
+      <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-import-fg">
+        Disponible chez nos partenaires
+      </div>
+      <h3 className="mt-1.5 text-[16px] font-semibold text-ink">
+        {count === 1
+          ? 'Une pièce correspondante est disponible à l’étranger.'
+          : `${count} pièces correspondantes sont disponibles à l’étranger.`}
+      </h3>
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2">
+        Prix, fret et droits de douane affichés avant paiement. Vous précommandez avec un acompte ;
+        la pièce arrive en 5 jours à 8 semaines selon l&apos;acheminement choisi.
+      </p>
+      <Link
+        href={href}
+        className="mt-3 inline-block rounded-md bg-ink px-4 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-ink/90"
+      >
+        Voir les pièces à importer →
+      </Link>
+    </div>
   )
 }
 

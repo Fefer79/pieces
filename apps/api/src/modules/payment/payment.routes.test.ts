@@ -8,6 +8,7 @@ vi.stubEnv('PORT', '3001')
 
 const mockEscrowCreate = vi.fn()
 const mockEscrowFindUnique = vi.fn()
+const mockEscrowFindMany = vi.fn()
 const mockOrderFindUnique = vi.fn()
 const mockGetUser = vi.fn()
 const mockUserUpsert = vi.fn()
@@ -57,6 +58,7 @@ vi.mock('../../lib/prisma.js', () => ({
     escrowTransaction: {
       create: (...args: unknown[]) => mockEscrowCreate(...args),
       findUnique: (...args: unknown[]) => mockEscrowFindUnique(...args),
+      findMany: (...args: unknown[]) => mockEscrowFindMany(...args),
     },
     subscriptionPayment: {
       findUnique: (...args: unknown[]) => mockSubPayFindUnique(...args),
@@ -235,7 +237,9 @@ describe('Payment Routes', () => {
     it('returns 200 with escrow data for an authorized user (order initiator)', async () => {
       // getOrderById fetch (access check) — initiator matches the auth'd user
       mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', initiatorId: 'prisma-user-1', enterpriseId: null, items: [], events: [] })
-      mockEscrowFindUnique.mockResolvedValueOnce({ id: 'esc-1', orderId: 'order-1', amount: 5000, status: 'HELD' })
+      mockEscrowFindMany.mockResolvedValueOnce([
+        { id: 'esc-1', orderId: 'order-1', kind: 'FULL', amount: 5000, status: 'HELD' },
+      ])
 
       const app = buildApp()
       const response = await app.inject({
@@ -246,6 +250,25 @@ describe('Payment Routes', () => {
 
       expect(response.statusCode).toBe(200)
       expect(response.json().data.status).toBe('HELD')
+    })
+
+    it("renvoie les deux écritures d'une précommande (acompte + solde)", async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', initiatorId: 'prisma-user-1', enterpriseId: null, items: [], events: [] })
+      mockEscrowFindMany.mockResolvedValueOnce([
+        { id: 'esc-1', orderId: 'order-1', kind: 'DEPOSIT', amount: 94_800, status: 'HELD' },
+        { id: 'esc-2', orderId: 'order-1', kind: 'BALANCE', amount: 50_900, status: 'HELD' },
+      ])
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/orders/order-1/escrow',
+        headers: mockAuth(),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().escrows).toHaveLength(2)
+      expect(response.json().escrows.map((e: { kind: string }) => e.kind)).toEqual(['DEPOSIT', 'BALANCE'])
     })
 
     it('returns 403 when the user is not authorized on the order (IDOR)', async () => {

@@ -137,7 +137,19 @@ export async function getAdminCatalogItem(id: string) {
   const item = await prisma.catalogItem.findUnique({
     where: { id },
     include: {
-      vendor: { select: { id: true, shopName: true, isExternal: true, externalSource: true } },
+      // `include` sur l'annonce ramène tous les scalaires, coût d'achat et
+      // marge d'import compris : cette route est derrière une capacité ERP,
+      // c'est le seul endroit où ces champs ont le droit de sortir.
+      vendor: {
+        select: {
+          id: true,
+          shopName: true,
+          isExternal: true,
+          externalSource: true,
+          isImportPartner: true,
+          originCountry: true,
+        },
+      },
       photos: { orderBy: { position: 'asc' } },
       fitments: { orderBy: [{ brand: 'asc' }, { model: 'asc' }] },
     },
@@ -1242,6 +1254,10 @@ export async function getAdminExternalImports(query: AdminListQuery) {
         status: true,
         condition: true,
         partSource: true,
+        // Provenance : distingue une annonce scrappée sur le marché ivoirien
+        // d'une pièce chez un partenaire international (rubriques d'import).
+        supplyMode: true,
+        originCountry: true,
         inStock: true,
         imageOriginalUrl: true,
         externalSource: true,

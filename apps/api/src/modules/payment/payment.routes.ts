@@ -1,12 +1,12 @@
 import type { FastifyInstance } from 'fastify'
-import { confirmOrderPayment, getEscrowByOrderId } from './payment.service.js'
+import { confirmOrderPayment, getEscrowsByOrderId } from './payment.service.js'
 import { verifyCinetPayTransaction } from '../../lib/cinetpay.js'
 import {
   isSubscriptionTransaction,
   confirmSubscriptionPayment,
   markSubscriptionPaymentFailed,
 } from '../enterprise/subscriptionPayment.service.js'
-import { getOrderById } from '../order/order.service.js'
+import { getOrderById, transitionOrder } from '../order/order.service.js'
 import { requireAuth } from '../../plugins/auth.js'
 
 export async function paymentRoutes(fastify: FastifyInstance) {
@@ -66,8 +66,18 @@ export async function paymentRoutes(fastify: FastifyInstance) {
         return reply.status(400).send({ error: { code: 'INVALID_WEBHOOK', message: 'Référence commande invalide' } })
       }
 
-      // On utilise le montant VÉRIFIÉ, jamais celui du payload.
-      await confirmOrderPayment(orderId, verification.amount)
+      // On utilise le montant VÉRIFIÉ, jamais celui du payload. L'échéance
+      // soldée (paiement unique, acompte ou solde) est déduite de la commande.
+      const escrow = await confirmOrderPayment(orderId, verification.amount)
+
+      // Le séquestre encaissé fait avancer la précommande : l'acompte lance
+      // l'achat chez le partenaire, le solde complète le paiement.
+      if (escrow.kind === 'DEPOSIT') {
+        await transitionOrder(orderId, 'DEPOSIT_PAID', 'cinetpay', 'Acompte encaissé')
+      } else if (escrow.kind === 'BALANCE') {
+        await transitionOrder(orderId, 'PAID', 'cinetpay', 'Solde encaissé')
+      }
+
       return reply.status(200).send({ status: 'ok' })
     },
   )
@@ -88,8 +98,10 @@ export async function paymentRoutes(fastify: FastifyInstance) {
       // Réutilise le contrôle d'accès commande (initiateur / vendeur / membre
       // entreprise / admin) — lève 403/404 si non autorisé. Empêche l'IDOR.
       await getOrderById(orderId, { id: request.user.id, roles: request.user.roles })
-      const escrow = await getEscrowByOrderId(orderId)
-      return reply.status(200).send({ data: escrow })
+      // Une précommande d'import porte deux écritures (acompte puis solde) :
+      // les renvoyer toutes, sinon le solde reste invisible côté client.
+      const escrows = await getEscrowsByOrderId(orderId)
+      return reply.status(200).send({ data: escrows[0] ?? null, escrows })
     },
   )
 }

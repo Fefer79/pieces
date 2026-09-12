@@ -8,7 +8,7 @@ import {
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
 import { notifyWhatsAppUser } from '../whatsapp/whatsapp.service.js'
-import { refundEscrow } from '../payment/payment.service.js'
+import { refundAllHeldEscrows } from '../payment/payment.service.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const THIRTY_DAYS_MS = 30 * DAY_MS
@@ -167,7 +167,7 @@ export async function getDispute(id: string) {
               imageThumbUrl: true,
             },
           },
-          escrow: { select: { status: true, amount: true } },
+          escrows: { select: { kind: true, status: true, amount: true }, orderBy: { heldAt: 'asc' } },
         },
       },
     },
@@ -307,7 +307,7 @@ export async function getReturn(id: string) {
               imageThumbUrl: true,
             },
           },
-          escrow: { select: { status: true, amount: true } },
+          escrows: { select: { kind: true, status: true, amount: true }, orderBy: { heldAt: 'asc' } },
         },
       },
     },
@@ -325,7 +325,7 @@ export async function transitionReturn(id: string, rawBody: unknown) {
     where: { id },
     include: {
       requestedBy: { select: { phone: true } },
-      order: { select: { escrow: { select: { status: true } } } },
+      order: { select: { escrows: { select: { status: true } } } },
     },
   })
   if (!returnOrder) throw new AppError('RETURN_NOT_FOUND', 404)
@@ -340,14 +340,16 @@ export async function transitionReturn(id: string, rawBody: unknown) {
     throw new AppError('REFUND_AMOUNT_REQUIRED', 422)
   }
 
-  // Câblage NOUVEAU : refundEscrow (module payment) n'était appelé par aucun
+  // Câblage NOUVEAU : le remboursement escrow (module payment) n'était appelé par aucun
   // module jusqu'ici. Au statut REFUNDED, si le séquestre de la commande est
   // encore HELD, on le rembourse AVANT d'enregistrer le statut : si
-  // refundEscrow lève, l'erreur remonte telle quelle (l'admin doit savoir que
+  // le remboursement lève, l'erreur remonte telle quelle (l'admin doit savoir que
   // le remboursement escrow a échoué) et le retour n'a pas changé de statut —
   // l'action peut être retentée proprement.
-  if (statut === 'REFUNDED' && returnOrder.order.escrow?.status === 'HELD') {
-    await refundEscrow(returnOrder.orderId)
+  // Une précommande d'import peut porter deux écritures (acompte + solde) :
+  // on rembourse tout ce qui est encore sous séquestre, pas la première venue.
+  if (statut === 'REFUNDED' && returnOrder.order.escrows.some((e) => e.status === 'HELD')) {
+    await refundAllHeldEscrows(returnOrder.orderId)
   }
 
   const tsField = TIMESTAMP_FIELD[statut]

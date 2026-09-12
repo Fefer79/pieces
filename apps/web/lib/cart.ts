@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
-import type { DeliveryPricingMode } from 'shared/constants'
+import type { DeliveryPricingMode, ImportFreightMode } from 'shared/constants'
+import { DEFAULT_IMPORT_FREIGHT_MODE, isImportFreightMode } from 'shared/constants'
 
 const STORAGE_KEY = 'pieces_cart'
 const EVENT = 'pieces:cart-changed'
@@ -11,6 +12,10 @@ const COMMUNE_KEY = 'pieces_cart_commune'
 const COMMUNE_EVENT = 'pieces:cart-commune-changed'
 const MODE_KEY = 'pieces_cart_delivery_mode'
 const MODE_EVENT = 'pieces:cart-delivery-mode-changed'
+// Acheminement depuis l'étranger d'une précommande d'import — indépendant du
+// délai de livraison local, qui s'applique après dédouanement.
+const FREIGHT_KEY = 'pieces_cart_logistics_mode'
+const FREIGHT_EVENT = 'pieces:cart-logistics-mode-changed'
 
 export interface CartItem {
   catalogItemId: string
@@ -21,6 +26,9 @@ export interface CartItem {
   price: number | null
   condition: string | null
   partSource: string | null
+  /** LOCAL (déjà à Abidjan) ou IMPORT (à faire venir) — pilote le checkout. */
+  supplyMode?: string | null
+  originCountry?: string | null
   imageThumbUrl: string | null
   quantity: number
 }
@@ -34,7 +42,7 @@ function readFromStorage(): string | null {
   }
 }
 
-function parse(raw: string | null): CartItem[] {
+export function parse(raw: string | null): CartItem[] {
   if (!raw) return []
   try {
     const parsed = JSON.parse(raw)
@@ -50,6 +58,10 @@ function parse(raw: string | null): CartItem[] {
           price: typeof i.price === 'number' ? i.price : null,
           condition: i.condition ?? null,
           partSource: i.partSource ?? null,
+          // Sans ces deux champs, un panier de pièces à importer se comporte
+          // comme un panier local : ni fret, ni douane, ni acompte.
+          supplyMode: i.supplyMode === 'IMPORT' ? 'IMPORT' : 'LOCAL',
+          originCountry: i.originCountry ?? null,
           imageThumbUrl: i.imageThumbUrl ?? null,
           quantity: Math.min(99, Math.max(1, Number(i.quantity) || 1)),
         }))
@@ -219,6 +231,41 @@ export function setCartDeliveryMode(mode: DeliveryPricingMode) {
   }
 }
 
+function readFreightRaw(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return window.localStorage.getItem(FREIGHT_KEY)
+  } catch {
+    return null
+  }
+}
+
+function subscribeFreight(callback: () => void) {
+  if (typeof window === 'undefined') return () => {}
+  window.addEventListener(FREIGHT_EVENT, callback)
+  window.addEventListener('storage', callback)
+  return () => {
+    window.removeEventListener(FREIGHT_EVENT, callback)
+    window.removeEventListener('storage', callback)
+  }
+}
+
+/** Acheminement valide, ou l'aérien économique par défaut. */
+export function parseFreightMode(raw: string | null): ImportFreightMode {
+  return isImportFreightMode(raw) ? raw : DEFAULT_IMPORT_FREIGHT_MODE
+}
+
+/** Définit l'acheminement depuis l'étranger d'une précommande. */
+export function setCartLogisticsMode(mode: ImportFreightMode) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(FREIGHT_KEY, mode)
+    window.dispatchEvent(new CustomEvent(FREIGHT_EVENT))
+  } catch {
+    // ignore
+  }
+}
+
 export interface VendorGroup {
   vendorId: string
   vendorShopName: string
@@ -237,6 +284,9 @@ export function useCart() {
 
   const rawMode = useSyncExternalStore(subscribeMode, readModeRaw, getServerSnapshot)
   const deliveryMode = useMemo(() => parseMode(rawMode), [rawMode])
+
+  const rawFreight = useSyncExternalStore(subscribeFreight, readFreightRaw, getServerSnapshot)
+  const logisticsMode = useMemo(() => parseFreightMode(rawFreight), [rawFreight])
 
   const addItem = useCallback((item: Omit<CartItem, 'quantity'>, quantity = 1) => {
     const current = parse(readFromStorage())
@@ -309,6 +359,13 @@ export function useCart() {
     vehicle,
     commune,
     deliveryMode,
+    logisticsMode,
+    // Un panier est entièrement local ou entièrement d'import : les deux
+    // échéanciers de paiement sont incompatibles (une fois / acompte + solde),
+    // et l'API refuse le mélange (ORDER_MIXED_SUPPLY_MODE).
+    isImportCart: items.length > 0 && items.every((i) => i.supplyMode === 'IMPORT'),
+    hasMixedSupply:
+      items.some((i) => i.supplyMode === 'IMPORT') && items.some((i) => i.supplyMode !== 'IMPORT'),
     addItem,
     setQuantity,
     removeItem,
@@ -317,5 +374,6 @@ export function useCart() {
     setVehicle: setCartVehicle,
     setCommune: setCartCommune,
     setDeliveryMode: setCartDeliveryMode,
+    setLogisticsMode: setCartLogisticsMode,
   }
 }

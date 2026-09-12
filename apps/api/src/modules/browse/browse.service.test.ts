@@ -28,7 +28,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { getBrands, getModels, getYears, getModelEngines, getCategories, browseParts, searchParts, suggestParts, decodeVin } = await import('./browse.service.js')
+const { getBrands, getModels, getYears, getModelEngines, getCategories, browseParts, searchParts, suggestParts, decodeVin, parseConditions, parseSupplyMode, quoteImportOptions } = await import('./browse.service.js')
 
 describe('browse.service', () => {
   beforeEach(() => {
@@ -232,4 +232,103 @@ describe('browse.service', () => {
       globalThis.fetch = originalFetch
     })
   })
+
+  // -------------------------------------------------------------------------
+  // Rubriques : état × disponibilité
+  // -------------------------------------------------------------------------
+
+  describe('filtrage par état et disponibilité', () => {
+    function whereOf() {
+      return (mockCatalogItemFindMany.mock.calls[0]![0] as { where: Record<string, unknown> }).where
+    }
+
+    beforeEach(() => {
+      mockCatalogItemFindMany.mockResolvedValue([])
+      mockCatalogItemCount.mockResolvedValue(0)
+    })
+
+    it('« Neuf à importer » pose les DEUX axes dans la requête', async () => {
+      await browseParts({ condition: ['NEW'], supplyMode: 'IMPORT' })
+      const where = whereOf()
+      expect(where.condition).toEqual({ in: ['NEW'] })
+      expect(where.supplyMode).toBe('IMPORT')
+    })
+
+    it('« Occasion à importer » filtre bien sur USED, pas sur NEW', async () => {
+      await browseParts({ condition: ['USED'], supplyMode: 'IMPORT' })
+      expect(whereOf().condition).toEqual({ in: ['USED'] })
+    })
+
+    it('sans filtre, ni état ni disponibilité ne contraignent la requête', async () => {
+      await browseParts({})
+      const where = whereOf()
+      expect(where.condition).toBeUndefined()
+      expect(where.supplyMode).toBeUndefined()
+    })
+
+    it('accepte plusieurs états à la fois', async () => {
+      await browseParts({ condition: ['NEW', 'REFURBISHED'] })
+      expect(whereOf().condition).toEqual({ in: ['NEW', 'REFURBISHED'] })
+    })
+
+    it('garde les invariants de visibilité (publiée, en stock, vendeur actif)', async () => {
+      await browseParts({ supplyMode: 'IMPORT' })
+      const where = whereOf()
+      expect(where.status).toBe('PUBLISHED')
+      expect(where.inStock).toBe(true)
+      expect(where.vendor).toEqual({ status: 'ACTIVE' })
+    })
+  })
+
+  describe('parseConditions / parseSupplyMode', () => {
+    it('ne retient que les états connus', () => {
+      expect(parseConditions('NEW,USED')).toEqual(['NEW', 'USED'])
+      expect(parseConditions('new')).toEqual(['NEW'])
+      expect(parseConditions('NEW,BOGUS')).toEqual(['NEW'])
+      expect(parseConditions('BOGUS')).toBeUndefined()
+      expect(parseConditions('')).toBeUndefined()
+      expect(parseConditions(undefined)).toBeUndefined()
+    })
+
+    it('ne retient que LOCAL et IMPORT', () => {
+      expect(parseSupplyMode('IMPORT')).toBe('IMPORT')
+      expect(parseSupplyMode('local')).toBe('LOCAL')
+      expect(parseSupplyMode('BOGUS')).toBeUndefined()
+      expect(parseSupplyMode(undefined)).toBeUndefined()
+    })
+  })
+
+  describe('quoteImportOptions', () => {
+    it('chiffre les trois acheminements du lot', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([
+        { id: 'imp-1', name: 'Moteur complet', category: 'Moteur / Moteur complet', weightKg: 140, price: 900_000, sourceCostFcfa: 450_000 },
+      ])
+
+      const result = await quoteImportOptions([{ catalogItemId: 'imp-1', quantity: 1 }])
+      expect(result.options).toHaveLength(3)
+      expect(result.items).toBe(1)
+      expect(result.options.every((o) => o.freightFee > 0)).toBe(true)
+    })
+
+    it("assied la douane sur le coût d'achat, pas sur le prix public", async () => {
+      const row = { id: 'imp-1', name: 'Moteur complet', category: 'Moteur / Moteur complet', weightKg: 140, price: 900_000 }
+      mockCatalogItemFindMany.mockResolvedValueOnce([{ ...row, sourceCostFcfa: 450_000 }])
+      const auCout = await quoteImportOptions([{ catalogItemId: 'imp-1', quantity: 1 }])
+
+      // Même pièce sans coût renseigné : repli sur le prix public, douane plus élevée.
+      mockCatalogItemFindMany.mockResolvedValueOnce([{ ...row, sourceCostFcfa: null }])
+      const auPrix = await quoteImportOptions([{ catalogItemId: 'imp-1', quantity: 1 }])
+
+      const eco = (o: { options: Array<{ mode: string; customsFee: number }> }) =>
+        o.options.find((x) => x.mode === 'AIR_ECONOMY')!.customsFee
+      expect(eco(auPrix)).toBeGreaterThan(eco(auCout))
+    })
+
+    it('ne demande que des pièces à importer et rien pour un lot vide', async () => {
+      const empty = await quoteImportOptions([])
+      expect(empty.options).toHaveLength(0)
+      expect(mockCatalogItemFindMany).not.toHaveBeenCalled()
+    })
+  })
+
 })
