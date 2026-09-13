@@ -1,0 +1,190 @@
+{
+ "brand": "MITSUBISHI",
+ "model": "Canter",
+ "source": "https://en.wikipedia.org/wiki/Mitsubishi_Fuso_Canter",
+ "generations": [
+  {
+   "code": "FE6",
+   "from": 1993,
+   "to": 2002,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.8 4M40",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.8,
+     "powerCv": 94,
+     "from": 1993,
+     "to": 1998,
+     "tech": [
+      "4M40"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.8 4M41",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.8,
+     "powerCv": 116,
+     "from": 1999,
+     "to": 2001,
+     "tech": [
+      "4M41"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.9 4D34",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3.9,
+     "powerCv": 136,
+     "from": 1993,
+     "to": 2002,
+     "tech": [
+      "4D34"
+     ],
+     "drive": null
+    },
+    {
+     "name": "4.2 4D33",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 4.2,
+     "powerCv": 170,
+     "from": 1993,
+     "to": 1998,
+     "tech": [
+      "4D33"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "FE7",
+   "from": 2002,
+   "to": 2010,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.8 4M40",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.8,
+     "powerCv": 140,
+     "from": 2004,
+     "to": 2004,
+     "tech": [
+      "4M40"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 4M42",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 125,
+     "from": 2002,
+     "to": 2009,
+     "tech": [
+      "4M42"
+     ],
+     "drive": null
+    },
+    {
+     "name": "4.9 4M50",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 4.9,
+     "powerCv": 190,
+     "from": 2004,
+     "to": 2009,
+     "tech": [
+      "4M50"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "FE8",
+   "from": 2010,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "3.0 4P10 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 110,
+     "from": 2020,
+     "to": 2026,
+     "tech": [
+      "4P10"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 4P10 131",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 131,
+     "from": 2010,
+     "to": 2026,
+     "tech": [
+      "4P10"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 4P10 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 150,
+     "from": 2010,
+     "to": 2026,
+     "tech": [
+      "4P10"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 4P10 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 163,
+     "from": 2010,
+     "to": 2026,
+     "tech": [
+      "4P10"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 4P10 175",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 175,
+     "from": 2010,
+     "to": 2026,
+     "tech": [
+      "4P10"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

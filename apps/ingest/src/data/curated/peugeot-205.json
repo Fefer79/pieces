@@ -1,0 +1,263 @@
+{
+ "brand": "PEUGEOT",
+ "model": "205",
+ "source": "https://fr.wikipedia.org/wiki/Peugeot_205",
+ "generations": [
+  {
+   "code": "205",
+   "from": 1983,
+   "to": 1998,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 45",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 45,
+     "from": 1983,
+     "to": 1986,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.1 50",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 50,
+     "from": 1983,
+     "to": 1985,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.1 55",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 55,
+     "from": 1988,
+     "to": 1989,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.1 60",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 60,
+     "from": 1989,
+     "to": 1996,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 103",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 103,
+     "from": 1988,
+     "to": 1990,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 60",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 60,
+     "from": 1983,
+     "to": 1989,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 65",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 65,
+     "from": 1988,
+     "to": 1989,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 75",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 1988,
+     "to": 1996,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 80",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 80,
+     "from": 1983,
+     "to": 1985,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 80",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 80,
+     "from": 1986,
+     "to": 1989,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 89",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 89,
+     "from": 1991,
+     "to": 1996,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 103",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 103,
+     "from": 1983,
+     "to": 1989,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 113",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 113,
+     "from": 1985,
+     "to": 1992,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 D 60",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.8,
+     "powerCv": 60,
+     "from": 1983,
+     "to": 1998,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 TD 79",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.8,
+     "powerCv": 79,
+     "from": 1990,
+     "to": 1998,
+     "tech": [
+      "TD"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 D 64",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 64,
+     "from": 1987,
+     "to": 1998,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 102",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.9,
+     "powerCv": 102,
+     "from": 1986,
+     "to": 1994,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.9,
+     "powerCv": 120,
+     "from": 1988,
+     "to": 1995,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 128",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.9,
+     "powerCv": 128,
+     "from": 1986,
+     "to": 1992,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

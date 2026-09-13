@@ -1,0 +1,155 @@
+{
+ "brand": "SUZUKI",
+ "model": "VITARA",
+ "source": "https://en.wikipedia.org/wiki/Suzuki_Vitara",
+ "generations": [
+  {
+   "code": "JT",
+   "from": 2005,
+   "to": 2017,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 M16A VVT",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 125,
+     "from": 2005,
+     "to": 2017,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 DDiS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 127,
+     "from": 2005,
+     "to": 2017,
+     "tech": [
+      "DDiS"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 J20A",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 2005,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 J24B VVT",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 166,
+     "from": 2008,
+     "to": 2017,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "LY",
+   "from": 2015,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 BoosterJet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 111,
+     "from": 2018,
+     "to": 2020,
+     "tech": [
+      "BoosterJet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 BoosterJet MHEV",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 129,
+     "from": 2020,
+     "to": 2026,
+     "tech": [
+      "BoosterJet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 BoosterJet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 140,
+     "from": 2015,
+     "to": 2026,
+     "tech": [
+      "BoosterJet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Hybrid",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 101,
+     "from": 2022,
+     "to": 2026,
+     "tech": [
+      "Hybrid"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 M16A VVT",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2015,
+     "to": 2025,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 DDiS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "DDiS"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

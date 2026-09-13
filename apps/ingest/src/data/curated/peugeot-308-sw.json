@@ -1,0 +1,467 @@
+{
+ "brand": "PEUGEOT",
+ "model": "308 SW",
+ "source": "https://fr.wikipedia.org/wiki/Peugeot_308",
+ "generations": [
+  {
+   "code": "T7",
+   "from": 2007,
+   "to": 2014,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.4 VTi 95",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 VTi 98",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 98,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 92",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 92,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 112",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 112,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 e-HDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "e-HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 122",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 122,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 150",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 150,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 156",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 156,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 175",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 175,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 200",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 200,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 140",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "T9",
+   "from": 2013,
+   "to": 2021,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 VTi 82",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 82,
+     "from": 2013,
+     "to": 2017,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 PureTech 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 110,
+     "from": 2014,
+     "to": 2021,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 PureTech 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 130,
+     "from": 2014,
+     "to": 2021,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 BlueHDi 100",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 100,
+     "from": 2017,
+     "to": 2021,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 BlueHDi 130",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 130,
+     "from": 2017,
+     "to": 2021,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 92",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 92,
+     "from": 2013,
+     "to": 2015,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 100",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 100,
+     "from": 2014,
+     "to": 2017,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 e-HDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2013,
+     "to": 2015,
+     "tech": [
+      "e-HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2014,
+     "to": 2017,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 125",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 125,
+     "from": 2013,
+     "to": 2015,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 155",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 155,
+     "from": 2013,
+     "to": 2015,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 205",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 205,
+     "from": 2014,
+     "to": 2017,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 PureTech 225",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 225,
+     "from": 2018,
+     "to": 2021,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 250",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 250,
+     "from": 2015,
+     "to": 2017,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 PureTech 263",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 263,
+     "from": 2018,
+     "to": 2021,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 270",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 270,
+     "from": 2015,
+     "to": 2017,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2014,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 180",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 180,
+     "from": 2015,
+     "to": 2021,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,94 @@
+{
+ "brand": "KIA",
+ "model": "Cerato",
+ "source": "https://en.wikipedia.org/wiki/Kia_Cerato",
+ "generations": [
+  {
+   "code": "LD",
+   "from": 2003,
+   "to": 2008,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.5 CRDi VGT",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 102,
+     "from": 2003,
+     "to": 2008,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 CVVT",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2003,
+     "to": 2008,
+     "tech": [
+      "CVVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 CRDi VGT",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2003,
+     "to": 2008,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 MPI",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 122,
+     "from": 2004,
+     "to": 2008,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CVVT",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 139,
+     "from": 2003,
+     "to": 2008,
+     "tech": [
+      "CVVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 2003,
+     "to": 2008,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

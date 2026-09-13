@@ -1,0 +1,120 @@
+{
+ "brand": "CITROEN",
+ "model": "C3 Aircross",
+ "source": "https://en.wikipedia.org/wiki/Citro%C3%ABn_C3_Aircross",
+ "generations": [
+  {
+   "code": "A88",
+   "from": 2017,
+   "to": 2024,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 PureTech 82",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 82,
+     "from": 2017,
+     "to": 2018,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 PureTech 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 110,
+     "from": 2017,
+     "to": 2024,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 PureTech 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 130,
+     "from": 2017,
+     "to": 2024,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 BlueHDi 102",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 102,
+     "from": 2018,
+     "to": 2021,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 BlueHDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 110,
+     "from": 2021,
+     "to": 2024,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 BlueHDi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 120,
+     "from": 2018,
+     "to": 2024,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 99",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 99,
+     "from": 2017,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2017,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

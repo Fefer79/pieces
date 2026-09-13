@@ -1,0 +1,103 @@
+{
+ "brand": "TOYOTA",
+ "model": "Probox",
+ "source": "https://en.wikipedia.org/wiki/Toyota_Probox",
+ "generations": [
+  {
+   "code": "XP50",
+   "from": 2002,
+   "to": 2014,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.3 2NZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 86,
+     "from": 2002,
+     "to": 2014,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 D-4D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 83,
+     "from": 2002,
+     "to": 2007,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 1NZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 110,
+     "from": 2002,
+     "to": 2014,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "XP160",
+   "from": 2014,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.3 1NR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 100,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Hybrid",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 100,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "Hybrid"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 1NZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 109,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

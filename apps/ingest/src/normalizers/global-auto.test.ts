@@ -109,4 +109,25 @@ describe('parseSeries', () => {
     expect(r.yearEnd).toBe(2010)
     expect(r.code).toBe('I Sedan')
   })
+
+  // Millésime perdu sur 46 générations tant que le mois était forcé à 2 chiffres.
+  it('accepts a one-digit month', () => {
+    const r = parseSeries('(204) Phase 2 Break (03/2011 - 7/2014)')
+    expect(r.yearStart).toBe(2011)
+    expect(r.yearEnd).toBe(2014)
+    expect(r.code).toBe('(204) Phase 2 Break')
+  })
+
+  it('accepts a bare year on either side', () => {
+    const r = parseSeries('II (B7) SW (2010 - 2018)')
+    expect(r.yearStart).toBe(2010)
+    expect(r.yearEnd).toBe(2018)
+    expect(r.code).toBe('II (B7) SW')
+  })
+
+  it('accepts a bare start year with an open end', () => {
+    const r = parseSeries('(206) Berline (2021 - ...)')
+    expect(r.yearStart).toBe(2021)
+    expect(r.yearEnd).toBeNull()
+  })
 })

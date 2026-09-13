@@ -13,6 +13,7 @@ import {
   type GaSeries,
 } from '../sources/global-auto.ts'
 import { parseTrim, parseSeries, type FuelType } from '../normalizers/global-auto.ts'
+import { pickTrimSeries, type CompatPair } from '../normalizers/trim-series.ts'
 import { slugify } from '../lib/slugify.ts'
 import { prisma } from '../lib/prisma.ts'
 
@@ -24,6 +25,10 @@ interface TrimSeed {
   trimName: string
   /** Series the trim belongs to (from product compatibility). */
   seriesId: number
+  /** Model the series belongs to — needed to spot catch-all series. */
+  modelId: number
+  /** Raw series label, which carries the year range. */
+  seriesName: string
 }
 
 export interface VehiclesStats {
@@ -158,12 +163,17 @@ export async function loadVehicleCatalog(
     }
   }
 
-  // 4. Upsert engines (trims). One DB row per unique global-auto trim_id.
+  // 4. Upsert engines (trims). One DB row per unique global-auto trim_id — la
+  // table n'accepte qu'une génération par motorisation, alors qu'un quart des
+  // motorisations de la source en déclarent plusieurs. On choisit donc la plus
+  // étroite hors fourre-tout (cf. normalizers/trim-series.ts) au lieu de garder
+  // celle vue en premier, qui dépendait de l'ordre de pagination des produits.
+  const seriesByTrim = pickTrimSeries(data.trims as CompatPair[])
   const seen = new Set<number>()
   for (const t of data.trims) {
     if (seen.has(t.trimId)) continue
     seen.add(t.trimId)
-    const localGenId = generationIdByGa.get(t.seriesId)
+    const localGenId = generationIdByGa.get(seriesByTrim.get(t.trimId) ?? t.seriesId)
     if (!localGenId) continue
     const parsed = parseTrim(t.trimName)
     await db.vehicleEngine.upsert({
@@ -238,28 +248,36 @@ export async function ingestGlobalAutoVehicles(
   }
   console.log(`[global-auto] ${stats.series} générations`)
 
-  // Phase 2: stream products to harvest unique trims (trim_id, trim_name, series_id)
-  const trimsMap = new Map<number, TrimSeed>()
+  // Phase 2: stream products to harvest every (trim, series) pair. On garde
+  // TOUTES les paires : une motorisation reconduite d'une génération à l'autre
+  // en déclare plusieurs, et c'est ce qui permet ensuite de distinguer une
+  // génération légitime d'un fourre-tout.
+  const pairs = new Map<string, TrimSeed>()
+  const trimIds = new Set<number>()
   for await (const page of streamAllProducts(opts.pageLimit ?? 500)) {
     stats.pagesScanned += 1
     stats.productsScanned += page.products.length
     for (const p of page.products) {
       for (const c of p.vehicle_compatibility) {
-        if (c.trim_id != null && c.trim_name && c.series_id != null) {
-          if (!trimsMap.has(c.trim_id)) {
-            trimsMap.set(c.trim_id, {
+        if (c.trim_id != null && c.trim_name && c.series_id != null && c.model_id != null) {
+          trimIds.add(c.trim_id)
+          const key = `${c.trim_id}:${c.series_id}`
+          if (!pairs.has(key)) {
+            pairs.set(key, {
               trimId: c.trim_id,
               trimName: c.trim_name,
               seriesId: c.series_id,
+              modelId: c.model_id,
+              seriesName: c.series_name ?? '',
             })
           }
         }
       }
     }
-    console.log(`[global-auto] page ${page.page}/${page.totalPages} — ${trimsMap.size} trims uniques`)
+    console.log(`[global-auto] page ${page.page}/${page.totalPages} — ${trimIds.size} trims uniques`)
   }
-  const trims = Array.from(trimsMap.values())
-  stats.trims = trims.length
+  const trims = Array.from(pairs.values())
+  stats.trims = trimIds.size
 
   if (dryRun) {
     await mkdir(RAW_DIR, { recursive: true })

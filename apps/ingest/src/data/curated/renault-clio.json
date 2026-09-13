@@ -1,0 +1,511 @@
+{
+ "brand": "RENAULT",
+ "model": "Clio",
+ "source": "https://fr.wikipedia.org/wiki/Renault_Clio",
+ "generations": [
+  {
+   "code": "X65",
+   "from": 1998,
+   "to": 2012,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 D7F",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 60,
+     "from": 1998,
+     "to": 2012,
+     "tech": [
+      "8v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 D4F 712",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 75,
+     "from": 2001,
+     "to": 2012,
+     "tech": [
+      "16v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 K7J",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 1998,
+     "to": 2001,
+     "tech": [
+      "8v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 K4J 710",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 100,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "16v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 65",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 65,
+     "from": 2001,
+     "to": 2012,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 82",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 82,
+     "from": 2002,
+     "to": 2005,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 100",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 100,
+     "from": 2004,
+     "to": 2005,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 K7M 744",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 1998,
+     "to": 2000,
+     "tech": [
+      "8v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 K4M",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 1999,
+     "to": 2005,
+     "tech": [
+      "16v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dTi",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 80,
+     "from": 2000,
+     "to": 2001,
+     "tech": [
+      "dTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 R.S.",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 172,
+     "from": 1999,
+     "to": 2004,
+     "tech": [
+      "16v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 R.S. 182",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 182,
+     "from": 2004,
+     "to": 2006,
+     "tech": [
+      "16v"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "X85",
+   "from": 2005,
+   "to": 2012,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 D4F 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 2005,
+     "to": 2012,
+     "tech": [
+      "16v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 K4J 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 98,
+     "from": 2005,
+     "to": 2012,
+     "tech": [
+      "16v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 103,
+     "from": 2005,
+     "to": 2012,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 K4M 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2005,
+     "to": 2012,
+     "tech": [
+      "16v"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 F4R 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 197,
+     "from": 2006,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "X98",
+   "from": 2012,
+   "to": 2020,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "0.9 TCe 75",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 0.9,
+     "powerCv": 75,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "0.9 TCe 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 0.9,
+     "powerCv": 90,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 16V 75",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 TCe 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 120,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 75",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 75,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 90,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 110,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 TCe 200",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 200,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 TCe 220",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 220,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "BJA",
+   "from": 2019,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 SCe 65",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 65,
+     "from": 2019,
+     "to": 2023,
+     "tech": [
+      "SCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 SCe 75",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 75,
+     "from": 2019,
+     "to": 2023,
+     "tech": [
+      "SCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 TCe 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 90,
+     "from": 2021,
+     "to": 2026,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 TCe 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 100,
+     "from": 2019,
+     "to": 2021,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 TCe 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 130,
+     "from": 2019,
+     "to": 2023,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 TCe 140",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 140,
+     "from": 2022,
+     "to": 2023,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Blue dCi 85",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 85,
+     "from": 2019,
+     "to": 2020,
+     "tech": [
+      "Blue dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Blue dCi 100",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 100,
+     "from": 2021,
+     "to": 2026,
+     "tech": [
+      "Blue dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Blue dCi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 115,
+     "from": 2019,
+     "to": 2023,
+     "tech": [
+      "Blue dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 E-Tech 140",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 91,
+     "from": 2020,
+     "to": 2026,
+     "tech": [
+      "E-Tech"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

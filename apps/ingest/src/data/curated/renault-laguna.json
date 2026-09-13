@@ -1,0 +1,211 @@
+{
+ "brand": "RENAULT",
+ "model": "Laguna",
+ "source": "https://en.wikipedia.org/wiki/Renault_Laguna",
+ "generations": [
+  {
+   "code": "X74",
+   "from": 2001,
+   "to": 2007,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 16V 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2001,
+     "to": 2005,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V 117",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 117,
+     "from": 2005,
+     "to": 2007,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 16V 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 120,
+     "from": 2001,
+     "to": 2005,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dCi 102",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 102,
+     "from": 2001,
+     "to": 2005,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dCi 105",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 105,
+     "from": 2005,
+     "to": 2007,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dCi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 120,
+     "from": 2001,
+     "to": 2007,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dCi 131",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 131,
+     "from": 2005,
+     "to": 2007,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 135",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 135,
+     "from": 2002,
+     "to": 2007,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V IDE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 2002,
+     "to": 2005,
+     "tech": [
+      "IDE"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2005,
+     "to": 2007,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V Turbo 163",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2003,
+     "to": 2005,
+     "tech": [
+      "Turbo"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V Turbo 170",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 170,
+     "from": 2005,
+     "to": 2007,
+     "tech": [
+      "Turbo"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 175",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 175,
+     "from": 2005,
+     "to": 2007,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 dCi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 150,
+     "from": 2002,
+     "to": 2005,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 V6 24V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 207,
+     "from": 2001,
+     "to": 2007,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,307 @@
+{
+ "brand": "RENAULT",
+ "model": "Symbol",
+ "source": "https://en.wikipedia.org/wiki/Renault_Symbol",
+ "generations": [
+  {
+   "code": "I",
+   "from": 1999,
+   "to": 2008,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 8V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 1999,
+     "to": 2008,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 1999,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 8V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 1999,
+     "to": 2008,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 98,
+     "from": 1999,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 64",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 64,
+     "from": 2002,
+     "to": 2008,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 70",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 70,
+     "from": 2005,
+     "to": 2008,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 80",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 80,
+     "from": 2004,
+     "to": 2008,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 100,
+     "from": 1999,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 d",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 65,
+     "from": 1999,
+     "to": 2008,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dTi",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 68,
+     "from": 1999,
+     "to": 2008,
+     "tech": [
+      "dTi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "II",
+   "from": 2008,
+   "to": 2012,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 8V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 8V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 98,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 64",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 64,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 105,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "III",
+   "from": 2013,
+   "to": 2021,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "0.9 TCe 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 0.9,
+     "powerCv": 90,
+     "from": 2013,
+     "to": 2021,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 TCe 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 100,
+     "from": 2013,
+     "to": 2021,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 2013,
+     "to": 2021,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 90,
+     "from": 2013,
+     "to": 2021,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 SCe 83",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 83,
+     "from": 2013,
+     "to": 2021,
+     "tech": [
+      "SCe"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

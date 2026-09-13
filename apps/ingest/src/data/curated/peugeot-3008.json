@@ -1,0 +1,259 @@
+{
+ "brand": "PEUGEOT",
+ "model": "3008",
+ "source": "https://fr.wikipedia.org/wiki/Peugeot_3008_I",
+ "generations": [
+  {
+   "code": "3008-I",
+   "from": 2009,
+   "to": 2016,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2009,
+     "to": 2013,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2011,
+     "to": 2016,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2009,
+     "to": 2016,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2014,
+     "to": 2016,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 155",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 155,
+     "from": 2009,
+     "to": 2016,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 165",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 165,
+     "from": 2013,
+     "to": 2016,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 150",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2009,
+     "to": 2016,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2009,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2014,
+     "to": 2016,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2011,
+     "to": 2016,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "3008-II",
+   "from": 2016,
+   "to": 2023,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 PureTech 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 130,
+     "from": 2016,
+     "to": 2023,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 BlueHDi 130",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 130,
+     "from": 2018,
+     "to": 2023,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2016,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 165",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 165,
+     "from": 2016,
+     "to": 2018,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 PureTech 180",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 180,
+     "from": 2018,
+     "to": 2023,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 PureTech 225",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 225,
+     "from": 2019,
+     "to": 2023,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2016,
+     "to": 2023,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 180",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 180,
+     "from": 2016,
+     "to": 2023,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,337 @@
+{
+ "brand": "HYUNDAI",
+ "model": "Tucson",
+ "source": "https://en.wikipedia.org/wiki/Hyundai_Tucson",
+ "generations": [
+  {
+   "code": "LM",
+   "from": 2009,
+   "to": 2015,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 GDI 135",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 135,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.7 CRDi 116",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.7,
+     "powerCv": 116,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 136 4WD",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.0 MPI 166",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 166,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 MPI 166 4WD",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 166,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "MPI"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.0 GDI 166",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 166,
+     "from": 2013,
+     "to": 2015,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 184",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 184,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 184 4WD",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 184,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.4 MPI 177",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 177,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "TL",
+   "from": 2015,
+   "to": 2020,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 CRDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2018,
+     "to": 2020,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 GDI 132",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 132,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 CRDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 136,
+     "from": 2018,
+     "to": 2020,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 CRDi 136 4WD",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 136,
+     "from": 2018,
+     "to": 2020,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "1.6 T-GDI 177",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 177,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 T-GDI 177 4WD",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 177,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "1.7 CRDi 116",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.7,
+     "powerCv": 116,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.7 CRDi 141",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.7,
+     "powerCv": 141,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 MPI 155",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 155,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 GDI 163",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 185",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 185,
+     "from": 2018,
+     "to": 2020,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 MPI 176",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 176,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 GDI 184",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 184,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

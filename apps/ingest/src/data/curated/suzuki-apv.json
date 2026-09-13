@@ -1,0 +1,42 @@
+{
+ "brand": "SUZUKI",
+ "model": "APV",
+ "source": "https://en.wikipedia.org/wiki/Suzuki_APV",
+ "generations": [
+  {
+   "code": "GC",
+   "from": 2004,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.5 G15A",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 92,
+     "from": 2004,
+     "to": 2026,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 G16A",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 105,
+     "from": 2004,
+     "to": 2026,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

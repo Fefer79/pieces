@@ -1,0 +1,216 @@
+{
+ "brand": "ISUZU",
+ "model": "D-Max",
+ "source": "https://en.wikipedia.org/wiki/Isuzu_D-Max",
+ "generations": [
+  {
+   "code": "RA",
+   "from": 2002,
+   "to": 2012,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.0 4G63",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 2002,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 4G69",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 170,
+     "from": 2002,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 4JA1-T",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.5,
+     "powerCv": 136,
+     "from": 2002,
+     "to": 2005,
+     "tech": [
+      "DDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 DDi iTEQ",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.5,
+     "powerCv": 158,
+     "from": 2005,
+     "to": 2011,
+     "tech": [
+      "DDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 4JH1-T",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 147,
+     "from": 2002,
+     "to": 2004,
+     "tech": [
+      "DDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 DDi iTEQ",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 199,
+     "from": 2004,
+     "to": 2011,
+     "tech": [
+      "DDi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "RT",
+   "from": 2011,
+   "to": 2019,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.9 Ddi Blue Power",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 150,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "Ddi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 Vortec",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 152,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 DDi iTEQ",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.5,
+     "powerCv": 117,
+     "from": 2011,
+     "to": 2015,
+     "tech": [
+      "DDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 DDi iTEQ VGS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.5,
+     "powerCv": 135,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "DDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 DDi iTEQ VGS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 177,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "DDi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "RG",
+   "from": 2019,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.9 Ddi Blue Power",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 150,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "Ddi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 Ddi Blue Power 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 163,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "Ddi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 Ddi VGS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 190,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "Ddi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

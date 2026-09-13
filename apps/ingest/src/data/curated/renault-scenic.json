@@ -1,0 +1,407 @@
+{
+ "brand": "RENAULT",
+ "model": "Scenic",
+ "source": "https://en.wikipedia.org/wiki/Renault_Sc%C3%A9nic",
+ "generations": [
+  {
+   "code": "JA",
+   "from": 1996,
+   "to": 2003,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.4 E7J",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 1996,
+     "to": 2003,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 K4J 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 K7M",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 1996,
+     "to": 2003,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 K4M 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 F4P 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 116,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dT",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 95,
+     "from": 1996,
+     "to": 2003,
+     "tech": [
+      "dT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dTi",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 99,
+     "from": 1996,
+     "to": 2003,
+     "tech": [
+      "dTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dCi 102",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 102,
+     "from": 2000,
+     "to": 2003,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 F3R",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 114,
+     "from": 1996,
+     "to": 2003,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 F4R 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 139,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "JM",
+   "from": 2003,
+   "to": 2009,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.4 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 2003,
+     "to": 2009,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 82",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 82,
+     "from": 2003,
+     "to": 2009,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2003,
+     "to": 2009,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dCi 102",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 102,
+     "from": 2003,
+     "to": 2009,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2003,
+     "to": 2009,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V Turbo",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2003,
+     "to": 2009,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2003,
+     "to": 2009,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "JZ",
+   "from": 2009,
+   "to": 2016,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 TCe 115",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 115,
+     "from": 2009,
+     "to": 2016,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 82",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 82,
+     "from": 2009,
+     "to": 2016,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 dCi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2009,
+     "to": 2016,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dCi 98",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 98,
+     "from": 2009,
+     "to": 2016,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2009,
+     "to": 2016,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "R9",
+   "from": 2016,
+   "to": 2022,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 TCe 115",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 115,
+     "from": 2016,
+     "to": 2022,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 TCe 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 130,
+     "from": 2016,
+     "to": 2022,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 95",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 95,
+     "from": 2016,
+     "to": 2022,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 dCi 130",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 130,
+     "from": 2016,
+     "to": 2022,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 dCi 160",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 160,
+     "from": 2016,
+     "to": 2022,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.7 dCi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.7,
+     "powerCv": 120,
+     "from": 2016,
+     "to": 2022,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

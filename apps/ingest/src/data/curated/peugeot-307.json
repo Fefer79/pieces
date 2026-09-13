@@ -1,0 +1,159 @@
+{
+ "brand": "PEUGEOT",
+ "model": "307",
+ "source": "https://fr.wikipedia.org/wiki/Peugeot_307",
+ "generations": [
+  {
+   "code": "307",
+   "from": 2001,
+   "to": 2008,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.4 HDi 70",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 70,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 75",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 16V 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 90,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 2004,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2004,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 90,
+     "from": 2001,
+     "to": 2005,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 110,
+     "from": 2001,
+     "to": 2005,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2003,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 138",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 138,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 177",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 177,
+     "from": 2003,
+     "to": 2006,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,220 @@
+{
+ "brand": "TOYOTA",
+ "model": "Rav4",
+ "source": "https://en.wikipedia.org/wiki/Toyota_RAV4",
+ "generations": [
+  {
+   "code": "XA30",
+   "from": 2005,
+   "to": 2012,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.0 D-4D 116",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 116,
+     "from": 2005,
+     "to": 2006,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 1AZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 152,
+     "from": 2005,
+     "to": 2012,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 Valvematic",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 158,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "Valvematic"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 D-4D 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 136,
+     "from": 2007,
+     "to": 2008,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 D-4D 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 150,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 D-4D 177",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 177,
+     "from": 2007,
+     "to": 2012,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 2AZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 169,
+     "from": 2005,
+     "to": 2008,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 2AR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.5,
+     "powerCv": 181,
+     "from": 2009,
+     "to": 2012,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.5 V6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3.5,
+     "powerCv": 272,
+     "from": 2005,
+     "to": 2012,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "XA40",
+   "from": 2012,
+   "to": 2018,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.0 D-4D 124",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 124,
+     "from": 2012,
+     "to": 2018,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 Valvematic",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 151,
+     "from": 2012,
+     "to": 2018,
+     "tech": [
+      "Valvematic"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 D-4D 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 150,
+     "from": 2012,
+     "to": 2018,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 D-4D 177",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 177,
+     "from": 2012,
+     "to": 2018,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 2AR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.5,
+     "powerCv": 178,
+     "from": 2012,
+     "to": 2018,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 Hybrid",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.5,
+     "powerCv": 197,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

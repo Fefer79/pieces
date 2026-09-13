@@ -1,0 +1,338 @@
+{
+ "brand": "TOYOTA",
+ "model": "Land Cruiser Prado",
+ "source": "https://en.wikipedia.org/wiki/Toyota_Land_Cruiser_Prado",
+ "generations": [
+  {
+   "code": "J90",
+   "from": 1996,
+   "to": 2002,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.7 3RZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.7,
+     "powerCv": 150,
+     "from": 1996,
+     "to": 2002,
+     "tech": [
+      "16V"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.0 1KZ-TE",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 140,
+     "from": 1996,
+     "to": 2000,
+     "tech": [
+      "TD"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.0 D-4D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 170,
+     "from": 2000,
+     "to": 2002,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.4 5VZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3.4,
+     "powerCv": 185,
+     "from": 1996,
+     "to": 2002,
+     "tech": [
+      "V6"
+     ],
+     "drive": "4WD"
+    }
+   ]
+  },
+  {
+   "code": "J120",
+   "from": 2002,
+   "to": 2009,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.7 3RZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.7,
+     "powerCv": 150,
+     "from": 2002,
+     "to": 2004,
+     "tech": [
+      "16V"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.7 2TR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.7,
+     "powerCv": 163,
+     "from": 2004,
+     "to": 2009,
+     "tech": [
+      "16V"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.0 5L-E",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 95,
+     "from": 2002,
+     "to": 2009,
+     "tech": [],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.0 1KZ-TE",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 131,
+     "from": 2002,
+     "to": 2009,
+     "tech": [
+      "TD"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.0 D-4D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 173,
+     "from": 2006,
+     "to": 2009,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.4 5VZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3.4,
+     "powerCv": 185,
+     "from": 2002,
+     "to": 2004,
+     "tech": [
+      "V6"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "4.0 1GR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 4,
+     "powerCv": 276,
+     "from": 2004,
+     "to": 2009,
+     "tech": [
+      "V6"
+     ],
+     "drive": "4WD"
+    }
+   ]
+  },
+  {
+   "code": "J150",
+   "from": 2009,
+   "to": 2023,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.7 Dual VVT-i",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.7,
+     "powerCv": 161,
+     "from": 2015,
+     "to": 2023,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.7 2TR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.7,
+     "powerCv": 163,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "16V"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.8 D-4D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.8,
+     "powerCv": 174,
+     "from": 2015,
+     "to": 2023,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.8 D-4D Mild Hybrid",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.8,
+     "powerCv": 201,
+     "from": 2020,
+     "to": 2023,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.0 5L-E",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 95,
+     "from": 2009,
+     "to": 2023,
+     "tech": [],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.0 D-4D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 170,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.5 7GR-FKS",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3.5,
+     "powerCv": 280,
+     "from": 2015,
+     "to": 2020,
+     "tech": [
+      "V6"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "4.0 1GR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 4,
+     "powerCv": 278,
+     "from": 2009,
+     "to": 2015,
+     "tech": [
+      "V6"
+     ],
+     "drive": "4WD"
+    }
+   ]
+  },
+  {
+   "code": "J250",
+   "from": 2023,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.4 Turbo",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 278,
+     "from": 2023,
+     "to": 2026,
+     "tech": [
+      "Turbo"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.7 2TR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.7,
+     "powerCv": 161,
+     "from": 2023,
+     "to": 2026,
+     "tech": [
+      "16V"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.8 D-4D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.8,
+     "powerCv": 174,
+     "from": 2023,
+     "to": 2026,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "2.8 D-4D Mild Hybrid",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.8,
+     "powerCv": 201,
+     "from": 2023,
+     "to": 2026,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": "4WD"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "brand": "SUZUKI",
+ "model": "WAGON R",
+ "source": "https://en.wikipedia.org/wiki/Maruti_Suzuki_Wagon_R",
+ "generations": [
+  {
+   "code": "MC",
+   "from": 1999,
+   "to": 2009,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.1 F10D",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 64,
+     "from": 1999,
+     "to": 2009,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "MP31S",
+   "from": 2010,
+   "to": 2019,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 K10B",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2010,
+     "to": 2019,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "MT81S",
+   "from": 2019,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 K10B",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 Dualjet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2022,
+     "to": 2026,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 K12M",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 82,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 Dualjet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 82,
+     "from": 2022,
+     "to": 2026,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

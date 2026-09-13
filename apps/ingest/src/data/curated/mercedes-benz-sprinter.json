@@ -1,0 +1,281 @@
+{
+ "brand": "MERCEDES-BENZ",
+ "model": "Sprinter",
+ "source": "https://en.wikipedia.org/wiki/Mercedes-Benz_Sprinter",
+ "generations": [
+  {
+   "code": "W903",
+   "from": 1995,
+   "to": 2006,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.1 CDI 82",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 82,
+     "from": 2000,
+     "to": 2006,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.1 CDI 109",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 109,
+     "from": 2000,
+     "to": 2006,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.1 CDI 129",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 129,
+     "from": 2000,
+     "to": 2006,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.3 D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.3,
+     "powerCv": 79,
+     "from": 1995,
+     "to": 2000,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.3 essence",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.3,
+     "powerCv": 143,
+     "from": 1995,
+     "to": 2000,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.7 CDI 156",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.7,
+     "powerCv": 156,
+     "from": 2000,
+     "to": 2006,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.9 D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.9,
+     "powerCv": 102,
+     "from": 1995,
+     "to": 2000,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.9 D 122",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.9,
+     "powerCv": 122,
+     "from": 1995,
+     "to": 2000,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "W906",
+   "from": 2006,
+   "to": 2018,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.1 CDI 88",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 88,
+     "from": 2006,
+     "to": 2018,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.1 CDI 109",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 109,
+     "from": 2006,
+     "to": 2018,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.1 CDI 129",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 129,
+     "from": 2006,
+     "to": 2018,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.1 CDI 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 150,
+     "from": 2006,
+     "to": 2018,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 CDI 184",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 184,
+     "from": 2006,
+     "to": 2018,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 CDI 190 4x4",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 190,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "CDI"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "3.5 essence",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3.5,
+     "powerCv": 258,
+     "from": 2006,
+     "to": 2018,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "W907",
+   "from": 2019,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.0 CDI 116",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 116,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CDI 141",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 141,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 essence",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 156,
+     "from": 2019,
+     "to": 2024,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 CDI 188",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 188,
+     "from": 2019,
+     "to": 2022,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

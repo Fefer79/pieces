@@ -1,0 +1,55 @@
+{
+ "brand": "SUZUKI",
+ "model": "SPLASH",
+ "source": "https://en.wikipedia.org/wiki/Suzuki_Splash",
+ "generations": [
+  {
+   "code": "EX",
+   "from": 2008,
+   "to": 2014,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 K10B",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 69,
+     "from": 2008,
+     "to": 2014,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 K12B",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 94,
+     "from": 2008,
+     "to": 2014,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 DDiS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.3,
+     "powerCv": 75,
+     "from": 2008,
+     "to": 2014,
+     "tech": [
+      "DDiS"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

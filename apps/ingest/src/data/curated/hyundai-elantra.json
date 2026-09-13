@@ -1,0 +1,142 @@
+{
+ "brand": "HYUNDAI",
+ "model": "Elantra",
+ "source": "https://en.wikipedia.org/wiki/Hyundai_Elantra",
+ "generations": [
+  {
+   "code": "HD",
+   "from": 2006,
+   "to": 2010,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 MPI 109",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 109,
+     "from": 2006,
+     "to": 2010,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 CRDi 113",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 113,
+     "from": 2006,
+     "to": 2010,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 MPI 136",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2006,
+     "to": 2010,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "MD",
+   "from": 2010,
+   "to": 2015,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 CRDi 113",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 113,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 MPI 138",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 138,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 GDI 138",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 138,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 MPI 148",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 148,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 MPI 164",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 164,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 GDI 173",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 173,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

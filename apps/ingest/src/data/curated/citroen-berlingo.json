@@ -1,0 +1,298 @@
+{
+ "brand": "CITROEN",
+ "model": "Berlingo",
+ "source": "https://fr.wikipedia.org/wiki/Citro%C3%ABn_Berlingo",
+ "generations": [
+  {
+   "code": "Berlingo-I",
+   "from": 1996,
+   "to": 2008,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.1 60",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 60,
+     "from": 1996,
+     "to": 2008,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 75",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 1996,
+     "to": 2008,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 75",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 75,
+     "from": 2005,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 2005,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V 109",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 109,
+     "from": 2003,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 D 69",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 69,
+     "from": 1996,
+     "to": 2008,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 90,
+     "from": 1999,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "Berlingo-II",
+   "from": 2008,
+   "to": 2018,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 PureTech 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 110,
+     "from": 2016,
+     "to": 2018,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 VTi 95",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 2012,
+     "to": 2018,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 75",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 75,
+     "from": 2008,
+     "to": 2015,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 75",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 75,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 2008,
+     "to": 2010,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 2008,
+     "to": 2015,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 e-HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 2011,
+     "to": 2015,
+     "tech": [
+      "e-HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 92",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 92,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 98",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 98,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 100",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 100,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

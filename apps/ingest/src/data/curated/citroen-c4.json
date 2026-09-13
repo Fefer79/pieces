@@ -1,0 +1,324 @@
+{
+ "brand": "CITROEN",
+ "model": "C4",
+ "source": "https://fr.wikipedia.org/wiki/Citro%C3%ABn_C4_I",
+ "generations": [
+  {
+   "code": "C4-I",
+   "from": 2004,
+   "to": 2010,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.4 16V 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 90,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2004,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2008,
+     "to": 2010,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 140",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 140,
+     "from": 2008,
+     "to": 2010,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 150",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 150,
+     "from": 2008,
+     "to": 2010,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 140",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 140",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 177",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 177,
+     "from": 2004,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "C4-II",
+   "from": 2010,
+   "to": 2018,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 PureTech 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 110,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 PureTech 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 130,
+     "from": 2014,
+     "to": 2018,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 VTi 95",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 92",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 92,
+     "from": 2010,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 100",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 100,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 112",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 112,
+     "from": 2010,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 e-HDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2012,
+     "to": 2014,
+     "tech": [
+      "e-HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2010,
+     "to": 2014,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 155",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 155,
+     "from": 2010,
+     "to": 2014,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2010,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2015,
+     "to": 2016,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

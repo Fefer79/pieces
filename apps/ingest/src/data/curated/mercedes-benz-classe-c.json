@@ -1,0 +1,307 @@
+{
+ "brand": "MERCEDES-BENZ",
+ "model": "Classe C",
+ "source": "https://en.wikipedia.org/wiki/Mercedes-Benz_C-Class_(W205)",
+ "generations": [
+  {
+   "code": "W205",
+   "from": 2014,
+   "to": 2021,
+   "excludedFamilies": [
+    "KOMPRESSOR",
+    "CGI"
+   ],
+   "mildHybridFrom": 2018,
+   "variants": [
+    {
+     "name": "C 160",
+     "num": 160,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 129,
+     "from": 2015,
+     "to": 2019
+    },
+    {
+     "name": "C 180",
+     "num": 180,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 156,
+     "from": 2014,
+     "to": 2021
+    },
+    {
+     "name": "C 200",
+     "num": 200,
+     "fuel": "PETROL",
+     "displacement": 2.0,
+     "powerCv": 184,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 250",
+     "num": 250,
+     "fuel": "PETROL",
+     "displacement": 2.0,
+     "powerCv": 211,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 300",
+     "num": 300,
+     "fuel": "PETROL",
+     "displacement": 2.0,
+     "powerCv": 245,
+     "from": 2015,
+     "to": 2018
+    },
+    {
+     "name": "C 400 4MATIC",
+     "num": 400,
+     "fuel": "PETROL",
+     "displacement": 3.0,
+     "powerCv": 333,
+     "from": 2014,
+     "to": 2021
+    },
+    {
+     "name": "C 450 AMG / AMG C 43",
+     "num": 450,
+     "fuel": "PETROL",
+     "displacement": 3.0,
+     "powerCv": 367,
+     "from": 2015,
+     "to": 2018
+    },
+    {
+     "name": "AMG C 43 4MATIC",
+     "num": 43,
+     "fuel": "PETROL",
+     "displacement": 3.0,
+     "powerCv": 367,
+     "from": 2016,
+     "to": 2018
+    },
+    {
+     "name": "AMG C 63",
+     "num": 63,
+     "fuel": "PETROL",
+     "displacement": 4.0,
+     "powerCv": 476,
+     "from": 2015,
+     "to": 2020
+    },
+    {
+     "name": "AMG C 63 S",
+     "num": 63,
+     "fuel": "PETROL",
+     "displacement": 4.0,
+     "powerCv": 510,
+     "from": 2015,
+     "to": 2021
+    },
+    {
+     "name": "C 180 d",
+     "num": 180,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 116,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 200 d (OM626)",
+     "num": 200,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 136,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 200 d (OM651)",
+     "num": 200,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 136,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 220 d",
+     "num": 220,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 163,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 220 d",
+     "num": 220,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 170,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 250 d",
+     "num": 250,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 204,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 300 h",
+     "num": 300,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 204,
+     "from": 2014,
+     "to": 2018
+    },
+    {
+     "name": "C 350 e",
+     "num": 350,
+     "fuel": "PETROL",
+     "displacement": 2.0,
+     "powerCv": 211,
+     "from": 2015,
+     "to": 2018
+    },
+    {
+     "name": "C 180 (M264)",
+     "num": 180,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 156,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 200 EQ Boost",
+     "num": 200,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 184,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 300 EQ Boost",
+     "num": 300,
+     "fuel": "PETROL",
+     "displacement": 2.0,
+     "powerCv": 258,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "AMG C 43 4MATIC (restylage)",
+     "num": 43,
+     "fuel": "PETROL",
+     "displacement": 3.0,
+     "powerCv": 390,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 180 d (OM654)",
+     "num": 180,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 122,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 200 d (OM654 1.6)",
+     "num": 200,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 150,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 200 d (OM654 2.0)",
+     "num": 200,
+     "fuel": "DIESEL",
+     "displacement": 2.0,
+     "powerCv": 150,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 200 d 160 ch (OM654 1.6)",
+     "num": 200,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 160,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 200 d 160 ch (OM654 2.0)",
+     "num": 200,
+     "fuel": "DIESEL",
+     "displacement": 2.0,
+     "powerCv": 160,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 200 d EQ Boost",
+     "num": 200,
+     "fuel": "DIESEL",
+     "displacement": 2.0,
+     "powerCv": 163,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 220 d (OM654)",
+     "num": 220,
+     "fuel": "DIESEL",
+     "displacement": 2.0,
+     "powerCv": 194,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 300 d",
+     "num": 300,
+     "fuel": "DIESEL",
+     "displacement": 2.0,
+     "powerCv": 245,
+     "from": 2018,
+     "to": 2021
+    },
+    {
+     "name": "C 300 e",
+     "num": 300,
+     "fuel": "PETROL",
+     "displacement": 2.0,
+     "powerCv": 211,
+     "from": 2019,
+     "to": 2021
+    },
+    {
+     "name": "C 300 de",
+     "num": 300,
+     "fuel": "DIESEL",
+     "displacement": 2.0,
+     "powerCv": 194,
+     "from": 2019,
+     "to": 2021
+    }
+   ]
+  }
+ ]
+}

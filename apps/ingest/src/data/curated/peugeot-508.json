@@ -1,0 +1,285 @@
+{
+ "brand": "PEUGEOT",
+ "model": "508",
+ "source": "https://fr.wikipedia.org/wiki/Peugeot_508_I",
+ "generations": [
+  {
+   "code": "508-I",
+   "from": 2011,
+   "to": 2018,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 HDi 112",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 112,
+     "from": 2011,
+     "to": 2012,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 e-HDi 112",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 112,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "e-HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 e-HDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "e-HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 BlueHDi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 155",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 155,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 165",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 165,
+     "from": 2014,
+     "to": 2018,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 THP 200",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 200,
+     "from": 2015,
+     "to": 2018,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 140",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 2011,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2014,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2011,
+     "to": 2016,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 180",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 180,
+     "from": 2014,
+     "to": 2018,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 HDi 204",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 204,
+     "from": 2011,
+     "to": 2015,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "508-II",
+   "from": 2018,
+   "to": 2025,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 PureTech 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 130,
+     "from": 2018,
+     "to": 2025,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 BlueHDi 130",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 130,
+     "from": 2018,
+     "to": 2025,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 PureTech 180",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 180,
+     "from": 2018,
+     "to": 2025,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 PureTech 225",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 225,
+     "from": 2018,
+     "to": 2025,
+     "tech": [
+      "PureTech"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 160",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 160,
+     "from": 2018,
+     "to": 2025,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 180",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 180,
+     "from": 2018,
+     "to": 2025,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

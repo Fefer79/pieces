@@ -1,0 +1,333 @@
+{
+ "brand": "RENAULT",
+ "model": "DUSTER",
+ "source": "https://en.wikipedia.org/wiki/Dacia_Duster",
+ "generations": [
+  {
+   "code": "HS",
+   "from": 2010,
+   "to": 2017,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 TCe 125",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 125,
+     "from": 2013,
+     "to": 2017,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 85",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 86,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 16V 106",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 106,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 107,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 110 4x4",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 107,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "dCi"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "1.6 16V 105",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 105,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V 114",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 114,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 135",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 135,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "HM",
+   "from": 2017,
+   "to": 2024,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 TCe 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 91,
+     "from": 2020,
+     "to": 2024,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 TCe 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 101,
+     "from": 2019,
+     "to": 2024,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 TCe 125",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 125,
+     "from": 2017,
+     "to": 2019,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 TCe 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 131,
+     "from": 2019,
+     "to": 2024,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 TCe 150",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 150,
+     "from": 2019,
+     "to": 2024,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 90,
+     "from": 2017,
+     "to": 2018,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Blue dCi 95",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 95,
+     "from": 2018,
+     "to": 2024,
+     "tech": [
+      "Blue dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 109,
+     "from": 2017,
+     "to": 2018,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Blue dCi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 116,
+     "from": 2018,
+     "to": 2024,
+     "tech": [
+      "Blue dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Blue dCi 115 4x4",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 116,
+     "from": 2018,
+     "to": 2024,
+     "tech": [
+      "Blue dCi"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "1.6 SCe 115",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 114,
+     "from": 2017,
+     "to": 2019,
+     "tech": [
+      "SCe"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "P1310",
+   "from": 2024,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 ECO-G 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 100,
+     "from": 2024,
+     "to": 2026,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 TCe 130",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 130,
+     "from": 2024,
+     "to": 2026,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 TCe 160",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 160,
+     "from": 2024,
+     "to": 2026,
+     "tech": [
+      "TCe"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "1.6 Hybrid 140",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 140,
+     "from": 2024,
+     "to": 2026,
+     "tech": [
+      "Hybrid"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

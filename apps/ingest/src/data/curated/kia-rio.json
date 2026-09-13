@@ -1,0 +1,168 @@
+{
+ "brand": "KIA",
+ "model": "Rio",
+ "source": "https://en.wikipedia.org/wiki/Kia_Rio",
+ "generations": [
+  {
+   "code": "UB",
+   "from": 2011,
+   "to": 2017,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.1 CRDi 75",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.1,
+     "powerCv": 75,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 MPI 85",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 85,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 CRDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 90,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 MPI 107",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 107,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 GDI 135",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 135,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "YB",
+   "from": 2017,
+   "to": 2023,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 T-GDI 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 100,
+     "from": 2017,
+     "to": 2023,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 T-GDI 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 120,
+     "from": 2017,
+     "to": 2023,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 MPI 84",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 84,
+     "from": 2017,
+     "to": 2023,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 CRDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 90,
+     "from": 2017,
+     "to": 2023,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 MPI 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 100,
+     "from": 2017,
+     "to": 2023,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 MPI 122",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 122,
+     "from": 2017,
+     "to": 2023,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

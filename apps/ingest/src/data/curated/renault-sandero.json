@@ -1,0 +1,242 @@
+{
+ "brand": "RENAULT",
+ "model": "Sandero",
+ "source": "https://en.wikipedia.org/wiki/Dacia_Sandero",
+ "generations": [
+  {
+   "code": "B90",
+   "from": 2008,
+   "to": 2012,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 16v Hi-Flex",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 77,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 16v D4F",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 8v K7J",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 75",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 75,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 90,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 8v K7M",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 85,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16v K4M",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 105,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "B52",
+   "from": 2012,
+   "to": 2020,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "0.9 TCe 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 0.9,
+     "powerCv": 90,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 SCe 73",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 73,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "SCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 16v D4F",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 75,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 75",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 75,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 90,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16v K4M",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 105,
+     "from": 2012,
+     "to": 2020,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "BJI",
+   "from": 2020,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 SCe 65",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 65,
+     "from": 2020,
+     "to": 2026,
+     "tech": [
+      "SCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 TCe 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 90,
+     "from": 2020,
+     "to": 2026,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 ECO-G 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 100,
+     "from": 2020,
+     "to": 2026,
+     "tech": [
+      "TCe"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

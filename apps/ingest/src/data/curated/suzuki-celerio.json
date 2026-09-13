@@ -1,0 +1,77 @@
+{
+ "brand": "SUZUKI",
+ "model": "CELERIO",
+ "source": "https://en.wikipedia.org/wiki/Suzuki_Celerio",
+ "generations": [
+  {
+   "code": "FE",
+   "from": 2014,
+   "to": 2021,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "0.8 DDiS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 0.8,
+     "powerCv": 50,
+     "from": 2015,
+     "to": 2017,
+     "tech": [
+      "DDiS"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 K10B",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2014,
+     "to": 2021,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 Dualjet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2017,
+     "to": 2021,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "3G",
+   "from": 2021,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 Dualjet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2021,
+     "to": 2026,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

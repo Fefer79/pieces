@@ -1,0 +1,320 @@
+{
+ "brand": "MERCEDES-BENZ",
+ "model": "Vito",
+ "source": "https://en.wikipedia.org/wiki/Mercedes-Benz_Vito",
+ "generations": [
+  {
+   "code": "W638",
+   "from": 1996,
+   "to": 2003,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.0 essence",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 127,
+     "from": 1996,
+     "to": 2003,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 CDI 80",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 80,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 CDI 101",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 101,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 CDI 121",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 121,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.3 D",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.3,
+     "powerCv": 78,
+     "from": 1996,
+     "to": 1999,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.3 TD",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.3,
+     "powerCv": 97,
+     "from": 1996,
+     "to": 2003,
+     "tech": [
+      "TD"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.3 essence",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.3,
+     "powerCv": 141,
+     "from": 1996,
+     "to": 2003,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.8 V6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.8,
+     "powerCv": 172,
+     "from": 1997,
+     "to": 2003,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "W639",
+   "from": 2003,
+   "to": 2014,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "2.1 CDI 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 136,
+     "from": 2010,
+     "to": 2014,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.1 CDI 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 163,
+     "from": 2010,
+     "to": 2014,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 CDI 80",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 80,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 CDI 101",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 101,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 CDI 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 150,
+     "from": 2004,
+     "to": 2010,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 CDI 204",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 204,
+     "from": 2006,
+     "to": 2010,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 CDI 224",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 224,
+     "from": 2010,
+     "to": 2014,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.2 essence",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3.2,
+     "powerCv": 190,
+     "from": 2003,
+     "to": 2010,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.5 essence",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3.5,
+     "powerCv": 258,
+     "from": 2007,
+     "to": 2014,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "W447",
+   "from": 2014,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 CDI 109",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 109,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.7 CDI 122",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.7,
+     "powerCv": 122,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CDI 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 essence",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 211,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 CDI 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 163,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "CDI"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

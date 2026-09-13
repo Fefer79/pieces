@@ -1,0 +1,519 @@
+{
+ "brand": "BMW",
+ "model": "Serie 1",
+ "source": "https://en.wikipedia.org/wiki/BMW_1_Series",
+ "generations": [
+  {
+   "code": "E87",
+   "from": 2004,
+   "to": 2013,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "116i 1.6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 114,
+     "from": 2004,
+     "to": 2007,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "116i 1.6 121",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 121,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "116d 2.0",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 114,
+     "from": 2009,
+     "to": 2011,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "118d 2.0 121",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 121,
+     "from": 2004,
+     "to": 2007,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "116i 2.0",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 127,
+     "from": 2009,
+     "to": 2011,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "118i 2.0 141",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 141,
+     "from": 2007,
+     "to": 2009,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "118d 2.0 141",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 141,
+     "from": 2007,
+     "to": 2013,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "120i 2.0 148",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 148,
+     "from": 2004,
+     "to": 2007,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "120d 2.0 161",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 161,
+     "from": 2004,
+     "to": 2007,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "120i 2.0 168",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 168,
+     "from": 2007,
+     "to": 2013,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "120d 2.0 174",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 174,
+     "from": 2007,
+     "to": 2013,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "123d 2.0",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 201,
+     "from": 2007,
+     "to": 2013,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "130i 3.0 255",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 255,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "130i 3.0 261",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 261,
+     "from": 2005,
+     "to": 2007,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "F20",
+   "from": 2011,
+   "to": 2019,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "114d 1.5",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 97,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "116i 1.5",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 109,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "116d 1.5",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 116,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "118i 1.5",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 136,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "114d 1.6",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 95,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "114i 1.6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 102,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "116d 1.6",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 116,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "116i 1.6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 136,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "118i 1.6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 170,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "120i 1.6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 177,
+     "from": 2015,
+     "to": 2016,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "116d 2.0",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 116,
+     "from": 2011,
+     "to": 2015,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "118d 2.0 143",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 143,
+     "from": 2011,
+     "to": 2015,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "118d xDrive 143",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 143,
+     "from": 2013,
+     "to": 2015,
+     "tech": [
+      "d"
+     ],
+     "drive": "xDrive"
+    },
+    {
+     "name": "118d 2.0 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "120i 2.0",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 184,
+     "from": 2016,
+     "to": 2019,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "120d 2.0 184",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 184,
+     "from": 2011,
+     "to": 2015,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "120d xDrive 184",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 184,
+     "from": 2011,
+     "to": 2015,
+     "tech": [
+      "d"
+     ],
+     "drive": "xDrive"
+    },
+    {
+     "name": "120d 2.0 190",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 190,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "125i 2.0 218",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 218,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "125d 2.0 218",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 218,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "125i 2.0 224",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 224,
+     "from": 2016,
+     "to": 2019,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "125d 2.0 224",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 224,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "d"
+     ],
+     "drive": null
+    },
+    {
+     "name": "M135i 3.0 320",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 320,
+     "from": 2012,
+     "to": 2015,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "M140i 3.0 340",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 340,
+     "from": 2016,
+     "to": 2019,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

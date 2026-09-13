@@ -1,0 +1,181 @@
+{
+ "brand": "NISSAN",
+ "model": "Micra",
+ "source": "https://en.wikipedia.org/wiki/Nissan_Micra",
+ "generations": [
+  {
+   "code": "K12",
+   "from": 2002,
+   "to": 2010,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 16V 68",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2002,
+     "to": 2010,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 16V 80",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 80,
+     "from": 2002,
+     "to": 2010,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 16V 95",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 2002,
+     "to": 2010,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 82",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 82,
+     "from": 2002,
+     "to": 2010,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 16V 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 110,
+     "from": 2002,
+     "to": 2010,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V 113",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 113,
+     "from": 2002,
+     "to": 2010,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "K13",
+   "from": 2010,
+   "to": 2017,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 16V 68",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 16V 79",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 79,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 DIG-S 98",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 98,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "DIG-S"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 dCi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 90,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 16V 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 110,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V 113",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 113,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

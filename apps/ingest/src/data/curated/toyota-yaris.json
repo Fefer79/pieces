@@ -1,0 +1,120 @@
+{
+ "brand": "TOYOTA",
+ "model": "Yaris",
+ "source": "https://en.wikipedia.org/wiki/Toyota_Yaris_(XP130)",
+ "generations": [
+  {
+   "code": "XP130",
+   "from": 2011,
+   "to": 2019,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 VVT-i 68",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 VVT-i 86",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 86,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 VVT-i 99",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 99,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 D-4D 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 90,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 Hybrid 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 100,
+     "from": 2012,
+     "to": 2019,
+     "tech": [
+      "Hybrid"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 VVT-i 106",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 106,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 VVT-i 111",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 111,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 156",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 156,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

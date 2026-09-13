@@ -1,0 +1,233 @@
+{
+ "brand": "KIA",
+ "model": "Sportage",
+ "source": "https://en.wikipedia.org/wiki/Kia_Sportage",
+ "generations": [
+  {
+   "code": "SL",
+   "from": 2010,
+   "to": 2015,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 GDI 135",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 135,
+     "from": 2011,
+     "to": 2015,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 MPI 163",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 T-GDI 177",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 177,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 184",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 184,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 MPI 177",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 177,
+     "from": 2010,
+     "to": 2015,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "QL",
+   "from": 2015,
+   "to": 2021,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 CRDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 GDI 132",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 132,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 T-GDI 177",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 177,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.7 CRDi 141",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.7,
+     "powerCv": 141,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 MPI 163",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 GDI 163",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 CRDi 184",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 184,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 T-GDI 233",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 233,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 MPI 188",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 188,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 GDI 188",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 188,
+     "from": 2016,
+     "to": 2021,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

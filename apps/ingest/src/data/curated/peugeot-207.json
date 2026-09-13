@@ -1,0 +1,185 @@
+{
+ "brand": "PEUGEOT",
+ "model": "207",
+ "source": "https://fr.wikipedia.org/wiki/Peugeot_207",
+ "generations": [
+  {
+   "code": "207",
+   "from": 2006,
+   "to": 2014,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.4 HDi 70",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 70,
+     "from": 2006,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 75",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 2006,
+     "to": 2014,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 90,
+     "from": 2006,
+     "to": 2009,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 VTi 95",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 2007,
+     "to": 2012,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 2006,
+     "to": 2009,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 92",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 92,
+     "from": 2009,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2006,
+     "to": 2009,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2006,
+     "to": 2009,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 112",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 112,
+     "from": 2009,
+     "to": 2014,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2007,
+     "to": 2014,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 150",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 150,
+     "from": 2006,
+     "to": 2010,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 155",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 155,
+     "from": 2010,
+     "to": 2012,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 175",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 175,
+     "from": 2007,
+     "to": 2011,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

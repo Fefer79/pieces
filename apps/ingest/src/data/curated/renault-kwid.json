@@ -1,0 +1,42 @@
+{
+ "brand": "RENAULT",
+ "model": "Kwid",
+ "source": "https://en.wikipedia.org/wiki/Renault_Kwid",
+ "generations": [
+  {
+   "code": "BBA",
+   "from": 2015,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "0.8 SCe 54",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 0.8,
+     "powerCv": 54,
+     "from": 2015,
+     "to": 2026,
+     "tech": [
+      "SCe"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 SCe 68",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 68,
+     "from": 2016,
+     "to": 2026,
+     "tech": [
+      "SCe"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

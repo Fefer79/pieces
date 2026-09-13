@@ -1,0 +1,224 @@
+{
+ "brand": "PEUGEOT",
+ "model": "406",
+ "source": "https://fr.wikipedia.org/wiki/Peugeot_406",
+ "generations": [
+  {
+   "code": "406",
+   "from": 1995,
+   "to": 2004,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 1995,
+     "to": 1999,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 90,
+     "from": 1995,
+     "to": 1999,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 16V 112",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 112,
+     "from": 1995,
+     "to": 1999,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 16V 117",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 117,
+     "from": 1999,
+     "to": 2004,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 TD 75",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 75,
+     "from": 1995,
+     "to": 1999,
+     "tech": [
+      "TD"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 TD 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 90,
+     "from": 1995,
+     "to": 1999,
+     "tech": [
+      "TD"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 90,
+     "from": 1999,
+     "to": 2004,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 109",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 109,
+     "from": 2000,
+     "to": 2004,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 135",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 135,
+     "from": 1995,
+     "to": 2004,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HPi 140",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 140,
+     "from": 1999,
+     "to": 2004,
+     "tech": [
+      "HPi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 Turbo 147",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 147,
+     "from": 1995,
+     "to": 1999,
+     "tech": [
+      "Turbo"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.1 TD 109",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.1,
+     "powerCv": 109,
+     "from": 1995,
+     "to": 1999,
+     "tech": [
+      "TD"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 HDi 133",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 133,
+     "from": 2000,
+     "to": 2004,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 16V 158",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.2,
+     "powerCv": 158,
+     "from": 1999,
+     "to": 2004,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 V6 190",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 190,
+     "from": 1995,
+     "to": 2004,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 V6 207",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 207,
+     "from": 1999,
+     "to": 2004,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,129 @@
+{
+ "brand": "KIA",
+ "model": "Picanto",
+ "source": "https://en.wikipedia.org/wiki/Kia_Picanto",
+ "generations": [
+  {
+   "code": "TA",
+   "from": 2011,
+   "to": 2017,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 MPI 69",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 69,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 T-GDI 106",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 106,
+     "from": 2015,
+     "to": 2017,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 MPI 84",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 84,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "JA",
+   "from": 2017,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 MPI 69",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 69,
+     "from": 2017,
+     "to": 2026,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 MPI 73",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 73,
+     "from": 2020,
+     "to": 2026,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 T-GDI 100",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 100,
+     "from": 2017,
+     "to": 2026,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.0 T-GDI 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 120,
+     "from": 2017,
+     "to": 2026,
+     "tech": [
+      "T-GDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 MPI 84",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 84,
+     "from": 2017,
+     "to": 2026,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

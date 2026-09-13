@@ -1,0 +1,285 @@
+{
+ "brand": "TOYOTA",
+ "model": "Corolla",
+ "source": "https://en.wikipedia.org/wiki/Toyota_Corolla_(E140)",
+ "generations": [
+  {
+   "code": "E140",
+   "from": 2006,
+   "to": 2013,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.3 2NZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 110,
+     "from": 2006,
+     "to": 2013,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 D-4D 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 90,
+     "from": 2006,
+     "to": 2013,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 4ZZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 107,
+     "from": 2006,
+     "to": 2013,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 1NZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 110,
+     "from": 2006,
+     "to": 2013,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 3ZZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 109,
+     "from": 2006,
+     "to": 2013,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 1ZR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 122,
+     "from": 2010,
+     "to": 2013,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 1ZZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 129,
+     "from": 2006,
+     "to": 2013,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 2ZR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 140,
+     "from": 2010,
+     "to": 2013,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 D-4D 126",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 126,
+     "from": 2006,
+     "to": 2013,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 3ZR-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 145,
+     "from": 2009,
+     "to": 2013,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 2AZ-FE",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 158,
+     "from": 2007,
+     "to": 2013,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "E170",
+   "from": 2013,
+   "to": 2019,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 Turbo 136",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 136,
+     "from": 2015,
+     "to": 2019,
+     "tech": [
+      "Turbo"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 2NZ-FE 86",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 86,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 1NR-FE 95",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 95,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 D-4D 95",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 1ZR 125",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 125,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 Hybrid 136",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 136,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 2ZR 140",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 140,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 D-4D 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "D-4D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 3ZR 145",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 145,
+     "from": 2013,
+     "to": 2019,
+     "tech": [
+      "Dual VVT-i"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

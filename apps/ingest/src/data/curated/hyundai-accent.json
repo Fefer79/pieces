@@ -1,0 +1,129 @@
+{
+ "brand": "HYUNDAI",
+ "model": "Accent",
+ "source": "https://en.wikipedia.org/wiki/Hyundai_Accent",
+ "generations": [
+  {
+   "code": "MC",
+   "from": 2005,
+   "to": 2011,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.4 CVVT 97",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 97,
+     "from": 2005,
+     "to": 2011,
+     "tech": [
+      "CVVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 CRDi 108",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.5,
+     "powerCv": 108,
+     "from": 2005,
+     "to": 2011,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 CVVT 112",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 112,
+     "from": 2005,
+     "to": 2011,
+     "tech": [
+      "CVVT"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "RB",
+   "from": 2011,
+   "to": 2019,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.4 CRDi 95",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 95,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 MPI 107",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 107,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 MPI 123",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 123,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "MPI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 CRDi 128",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 128,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "CRDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 GDI 138",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 138,
+     "from": 2011,
+     "to": 2019,
+     "tech": [
+      "GDI"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

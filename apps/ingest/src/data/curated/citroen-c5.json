@@ -1,0 +1,298 @@
+{
+ "brand": "CITROEN",
+ "model": "C5",
+ "source": "https://fr.wikipedia.org/wiki/Citro%C3%ABn_C5",
+ "generations": [
+  {
+   "code": "C5-I",
+   "from": 2001,
+   "to": 2008,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2004,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 16V 117",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 117,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 90,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 110,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2004,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 138",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 138,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 HDi 133",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 133,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 V6 210",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 210,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "C5-II",
+   "from": 2008,
+   "to": 2017,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 HDi 109",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 109,
+     "from": 2008,
+     "to": 2017,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 115,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 VTi 120",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 120,
+     "from": 2008,
+     "to": 2017,
+     "tech": [
+      "VTi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 THP 156",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 156,
+     "from": 2008,
+     "to": 2017,
+     "tech": [
+      "THP"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 16V 125",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 125,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 136",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 136,
+     "from": 2008,
+     "to": 2017,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 143",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 143,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 BlueHDi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2014,
+     "to": 2017,
+     "tech": [
+      "BlueHDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 163,
+     "from": 2010,
+     "to": 2017,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 HDi 170",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 170,
+     "from": 2008,
+     "to": 2017,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.2 HDi 204",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.2,
+     "powerCv": 204,
+     "from": 2011,
+     "to": 2017,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 V6 211",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 211,
+     "from": 2008,
+     "to": 2012,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 HDi 240",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 3,
+     "powerCv": 240,
+     "from": 2009,
+     "to": 2017,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

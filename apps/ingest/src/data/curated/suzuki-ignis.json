@@ -1,0 +1,155 @@
+{
+ "brand": "SUZUKI",
+ "model": "IGNIS",
+ "source": "https://en.wikipedia.org/wiki/Suzuki_Ignis",
+ "generations": [
+  {
+   "code": "FH",
+   "from": 2000,
+   "to": 2008,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.3 M13A",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.3,
+     "powerCv": 88,
+     "from": 2000,
+     "to": 2008,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 DDiS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.3,
+     "powerCv": 88,
+     "from": 2003,
+     "to": 2008,
+     "tech": [
+      "DDiS"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 M15A",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 99,
+     "from": 2001,
+     "to": 2008,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 M15A 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 110,
+     "from": 2000,
+     "to": 2006,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 M15A 4WD",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 110,
+     "from": 2000,
+     "to": 2006,
+     "tech": [
+      "VVT"
+     ],
+     "drive": "4WD"
+    }
+   ]
+  },
+  {
+   "code": "MF",
+   "from": 2016,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 K12M",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 82,
+     "from": 2016,
+     "to": 2020,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 K12D Dualjet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 83,
+     "from": 2020,
+     "to": 2026,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 K12C",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 91,
+     "from": 2016,
+     "to": 2020,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 K12C 4WD",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 91,
+     "from": 2016,
+     "to": 2020,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": "4WD"
+    },
+    {
+     "name": "1.3 DDiS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.3,
+     "powerCv": 75,
+     "from": 2016,
+     "to": 2018,
+     "tech": [
+      "DDiS"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

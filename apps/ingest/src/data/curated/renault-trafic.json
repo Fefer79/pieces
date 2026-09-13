@@ -1,0 +1,181 @@
+{
+ "brand": "RENAULT",
+ "model": "Trafic",
+ "source": "https://en.wikipedia.org/wiki/Renault_Trafic",
+ "generations": [
+  {
+   "code": "X83",
+   "from": 2001,
+   "to": 2015,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.9 dCi 80",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 80,
+     "from": 2001,
+     "to": 2015,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 dCi 100",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 100,
+     "from": 2001,
+     "to": 2015,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 90,
+     "from": 2006,
+     "to": 2015,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 115,
+     "from": 2006,
+     "to": 2015,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 120,
+     "from": 2001,
+     "to": 2015,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 dCi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.5,
+     "powerCv": 150,
+     "from": 2001,
+     "to": 2015,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "X82",
+   "from": 2014,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 dCi 95",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 95,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 dCi 125",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 125,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 dCi 145",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 145,
+     "from": 2014,
+     "to": 2026,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 120",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 120,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 150",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 dCi 170",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 170,
+     "from": 2019,
+     "to": 2026,
+     "tech": [
+      "dCi"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

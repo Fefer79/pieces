@@ -1,0 +1,211 @@
+{
+ "brand": "AUDI",
+ "model": "A4",
+ "source": "https://en.wikipedia.org/wiki/Audi_A4",
+ "generations": [
+  {
+   "code": "B6",
+   "from": 2000,
+   "to": 2005,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.6 i",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 102,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 T 150",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 150,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "T"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 T 163",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 163,
+     "from": 2002,
+     "to": 2005,
+     "tech": [
+      "T"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.8 T 190",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.8,
+     "powerCv": 190,
+     "from": 2002,
+     "to": 2005,
+     "tech": [
+      "T"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 TDI 100",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 100,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "TDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 TDI 115",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 115,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "TDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 TDI 130",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 130,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "TDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 i",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 130,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "i"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 FSI",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 150,
+     "from": 2002,
+     "to": 2005,
+     "tech": [
+      "FSI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.4 V6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2.4,
+     "powerCv": 170,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 V6 TDI 155",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.5,
+     "powerCv": 155,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "TDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 V6 TDI 163",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.5,
+     "powerCv": 163,
+     "from": 2003,
+     "to": 2005,
+     "tech": [
+      "TDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.5 V6 TDI 180",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2.5,
+     "powerCv": 180,
+     "from": 2004,
+     "to": 2005,
+     "tech": [
+      "TDI"
+     ],
+     "drive": null
+    },
+    {
+     "name": "3.0 V6",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 3,
+     "powerCv": 220,
+     "from": 2000,
+     "to": 2005,
+     "tech": [
+      "V6"
+     ],
+     "drive": null
+    },
+    {
+     "name": "4.2 V8 S4",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 4.2,
+     "powerCv": 344,
+     "from": 2003,
+     "to": 2005,
+     "tech": [
+      "V8"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

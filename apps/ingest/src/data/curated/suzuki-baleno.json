@@ -1,0 +1,116 @@
+{
+ "brand": "SUZUKI",
+ "model": "BALENO",
+ "source": "https://en.wikipedia.org/wiki/Suzuki_Baleno_(2015)",
+ "generations": [
+  {
+   "code": "WB1",
+   "from": 2015,
+   "to": 2022,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.0 BoosterJet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1,
+     "powerCv": 111,
+     "from": 2015,
+     "to": 2022,
+     "tech": [
+      "BoosterJet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 K12M",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 83,
+     "from": 2015,
+     "to": 2022,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.2 Dualjet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 90,
+     "from": 2015,
+     "to": 2022,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.3 DDiS",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.3,
+     "powerCv": 75,
+     "from": 2015,
+     "to": 2022,
+     "tech": [
+      "DDiS"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 K14B",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 97,
+     "from": 2015,
+     "to": 2022,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    }
+   ]
+  },
+  {
+   "code": "WB2",
+   "from": 2022,
+   "to": 2026,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.2 Dualjet",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.2,
+     "powerCv": 89,
+     "from": 2022,
+     "to": 2026,
+     "tech": [
+      "Dualjet"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.5 K15B",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.5,
+     "powerCv": 105,
+     "from": 2022,
+     "to": 2026,
+     "tech": [
+      "VVT"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

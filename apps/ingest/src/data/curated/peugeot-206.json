@@ -1,0 +1,237 @@
+{
+ "brand": "PEUGEOT",
+ "model": "206",
+ "source": "https://fr.wikipedia.org/wiki/Peugeot_206",
+ "generations": [
+  {
+   "code": "206",
+   "from": 1998,
+   "to": 2012,
+   "excludedFamilies": [],
+   "mildHybridFrom": 9999,
+   "variants": [
+    {
+     "name": "1.1 55",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 55,
+     "from": 1998,
+     "to": 2003,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.1 58",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 58,
+     "from": 1998,
+     "to": 2003,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.1 60",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.1,
+     "powerCv": 60,
+     "from": 1998,
+     "to": 2012,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 HDi 68",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 68,
+     "from": 2001,
+     "to": 2012,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 HDi 70",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.4,
+     "powerCv": 70,
+     "from": 2001,
+     "to": 2012,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 73",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 73,
+     "from": 1998,
+     "to": 2003,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 75",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 75,
+     "from": 1998,
+     "to": 2012,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.4 16V 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.4,
+     "powerCv": 90,
+     "from": 2003,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 90",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 90,
+     "from": 1998,
+     "to": 2003,
+     "tech": [
+      "8V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 109",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 109,
+     "from": 2004,
+     "to": 2012,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 16V 110",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 1998,
+     "to": 2012,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.6 HDi 110",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.6,
+     "powerCv": 110,
+     "from": 2004,
+     "to": 2012,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 D 68",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 68,
+     "from": 1998,
+     "to": 2003,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "1.9 D 71",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 1.9,
+     "powerCv": 71,
+     "from": 1998,
+     "to": 2003,
+     "tech": [
+      "D"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 HDi 90",
+     "num": null,
+     "fuel": "DIESEL",
+     "displacement": 2,
+     "powerCv": 90,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "HDi"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 137",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 137,
+     "from": 1999,
+     "to": 2003,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    },
+    {
+     "name": "2.0 16V 177",
+     "num": null,
+     "fuel": "PETROL",
+     "displacement": 2,
+     "powerCv": 177,
+     "from": 2003,
+     "to": 2006,
+     "tech": [
+      "16V"
+     ],
+     "drive": null
+    }
+   ]
+  }
+ ]
+}

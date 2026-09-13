@@ -80,13 +80,14 @@ export function parseSeries(seriesName: string): ParsedSeries {
   const normalized = seriesName.replace(/\s+/g, ' ').trim()
 
   // Find the date paren. Tolerates: missing spaces, spaces inside the date,
+  // 1- or 2-digit months ("7/2014"), a bare year on either side ("2011 - 2015"),
   // 3+ trailing dots, "Aujourd'hui" / "Today" as open-ended sentinel.
   const dateMatch = normalized.match(
-    /\(\s*(\d{2})\s*\/\s*(\d{4})\s*-\s*(?:(\d{2})\s*\/\s*(\d{4})|\.{3,}|Aujourd'?hui|Today)\s*\)/i,
+    /\(\s*(?:\d{1,2}\s*\/\s*)?(\d{4})\s*-\s*(?:(?:\d{1,2}\s*\/\s*)?(\d{4})|\.{3,}|Aujourd'?hui|Today)\s*\)/i,
   )
   if (dateMatch) {
-    out.yearStart = Number(dateMatch[2])
-    if (dateMatch[4]) out.yearEnd = Number(dateMatch[4])
+    out.yearStart = Number(dateMatch[1])
+    if (dateMatch[2]) out.yearEnd = Number(dateMatch[2])
     // Everything before the date paren is the variant code.
     const codeRaw = normalized.slice(0, dateMatch.index).trim()
     if (codeRaw.length > 0) out.code = codeRaw

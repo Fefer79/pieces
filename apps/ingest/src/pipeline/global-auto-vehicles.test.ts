@@ -75,8 +75,8 @@ describe('loadVehicleCatalog', () => {
         modelsByMake,
         seriesByModel,
         trims: [
-          { trimId: 1000, trimName: '1.6 THP 165 cv', seriesId: 100 },
-          { trimId: 2000, trimName: '2.0 Blue HDi 136 cv', seriesId: 200 },
+          { trimId: 1000, trimName: '1.6 THP 165 cv', seriesId: 100, modelId: 10, seriesName: peugeot208Series.name },
+          { trimId: 2000, trimName: '2.0 Blue HDi 136 cv', seriesId: 200, modelId: 20, seriesName: ds5Series.name },
         ],
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -156,7 +156,9 @@ describe('loadVehicleCatalog', () => {
         makes,
         modelsByMake,
         seriesByModel,
-        trims: [{ trimId: 1000, trimName: '1.6 THP 165 cv', seriesId: 100 }],
+        trims: [
+          { trimId: 1000, trimName: '1.6 THP 165 cv', seriesId: 100, modelId: 10, seriesName: peugeot208Series.name },
+        ],
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       db as any,
@@ -200,14 +202,44 @@ describe('loadVehicleCatalog', () => {
         modelsByMake: new Map([[1, [peugeot208]]]),
         seriesByModel: new Map([[10, [peugeot208Series]]]),
         trims: [
-          { trimId: 7777, trimName: '1.6 HDi 100 cv', seriesId: 100 },
-          { trimId: 7777, trimName: '1.6 HDi 100 cv', seriesId: 100 },
+          { trimId: 7777, trimName: '1.6 HDi 100 cv', seriesId: 100, modelId: 10, seriesName: peugeot208Series.name },
+          { trimId: 7777, trimName: '1.6 HDi 100 cv', seriesId: 100, modelId: 10, seriesName: peugeot208Series.name },
         ],
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       db as any,
     )
     expect(engineUpsert).toHaveBeenCalledTimes(1)
+  })
+
+  // Régression : la Classe C rattachait ses 386 motorisations à la génération
+  // 1993-2000 parce que l'ingest gardait la première série vue.
+  it('attaches a multi-series trim to the narrowest generation, not the first seen', async () => {
+    const { db, engineUpsert } = makeMockDb()
+    const wide: GaSeries = { id: 300, model_id: 10, name: 'I (01/1993 - 12/2015)', slug: 'wide' }
+    await loadVehicleCatalog(
+      {
+        makes: [peugeotMake],
+        modelsByMake: new Map([[1, [peugeot208]]]),
+        seriesByModel: new Map([[10, [wide, peugeot208Series]]]),
+        trims: [
+          { trimId: 4242, trimName: '1.6 HDi 100 cv', seriesId: 300, modelId: 10, seriesName: wide.name },
+          {
+            trimId: 4242,
+            trimName: '1.6 HDi 100 cv',
+            seriesId: 100,
+            modelId: 10,
+            seriesName: peugeot208Series.name,
+          },
+        ],
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      db as any,
+    )
+    expect(engineUpsert).toHaveBeenCalledTimes(1)
+    const arg = engineUpsert.mock.calls[0]?.[0] as { create: { generationId: string } }
+    // Id mocké = `local-gen-<series_id>` : 100 = la génération étroite (2019-…).
+    expect(arg.create.generationId).toBe('local-gen-100')
   })
 
   it('skips engine when its series_id was not upserted (orphan)', async () => {
@@ -217,7 +249,9 @@ describe('loadVehicleCatalog', () => {
         makes: [peugeotMake],
         modelsByMake: new Map([[1, [peugeot208]]]),
         seriesByModel: new Map([[10, [peugeot208Series]]]),
-        trims: [{ trimId: 5555, trimName: '1.6 HDi 100 cv', seriesId: 99999 }],
+        trims: [
+          { trimId: 5555, trimName: '1.6 HDi 100 cv', seriesId: 99999, modelId: 10, seriesName: 'inconnue' },
+        ],
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       db as any,

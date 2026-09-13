@@ -6,6 +6,8 @@
   "scripts": {
     "ingest": "tsx --env-file=.env src/cli.ts",
     "export:vehicles": "tsx --env-file=.env src/scripts/export-vehicles-data.ts",
+    "annotate:engine-years": "tsx src/scripts/annotate-engine-years.ts",
+    "curated:add": "tsx src/scripts/curated-from-lines.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vitest run --passWithNoTests"
