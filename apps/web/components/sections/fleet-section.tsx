@@ -31,7 +31,7 @@ export function FleetSection() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
-              href="/enterprise/register"
+              href="/enterprise/dashboard"
               className="rounded-md bg-accent px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-accent-hover"
             >
               Enregistrer ma flotte

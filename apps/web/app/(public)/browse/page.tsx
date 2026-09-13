@@ -45,7 +45,7 @@ const PROMO_SLIDES: PromoSlide[] = [
     title: 'Vous êtes une entreprise ? Vous avez une flotte ?',
     description:
       'Tableau de bord multi-véhicules, détection des véhicules « gouffres », alertes prédictives WhatsApp, stock tampon auto, factures DGI consolidées, livraison express. Pilotez votre flotte, réduisez vos coûts.',
-    cta: { label: 'Enregistrer ma flotte', href: '/enterprise/register' },
+    cta: { label: 'Enregistrer ma flotte', href: '/enterprise/dashboard' },
     secondaryCta: { label: 'Nos services entreprise', href: '/entreprises' },
     art: <PromoArt src="/promo/flotte.webp" alt="Flotte de véhicules utilitaires" />,
     theme: 'cream',
