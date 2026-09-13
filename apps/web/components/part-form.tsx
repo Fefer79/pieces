@@ -12,7 +12,7 @@ import {
   ABIDJAN_COMMUNES,
   PART_CATALOG,
   VEHICLE_BRANDS,
-  getEngines,
+  getEnginesForRange,
 } from 'shared/constants'
 
 const CONDITIONS = [
@@ -294,9 +294,31 @@ export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, 
     return [...set].sort((a, b) => b - a)
   }, [fitBrand, fitModel])
   const fitEngines = useMemo(
-    () => (fitBrand && fitModel ? getEngines(fitBrand, fitModel) : []),
-    [fitBrand, fitModel],
+    () =>
+      fitBrand && fitModel
+        ? getEnginesForRange(
+            fitBrand,
+            fitModel,
+            fitYearFrom ? Number(fitYearFrom) : null,
+            fitYearTo ? Number(fitYearTo) : null,
+          )
+        : [],
+    [fitBrand, fitModel, fitYearFrom, fitYearTo],
   )
+
+  /**
+   * Rétrécir la plage d'années peut rendre le moteur déjà choisi incompatible :
+   * on l'efface plutôt que de le laisser partir dans le fitment.
+   */
+  const changeFitYear = (which: 'from' | 'to', v: string) => {
+    const from = which === 'from' ? v : fitYearFrom
+    const to = which === 'to' ? v : fitYearTo
+    if (which === 'from') setFitYearFrom(v)
+    else setFitYearTo(v)
+    if (!fitEngine || !fitBrand || !fitModel) return
+    const next = getEnginesForRange(fitBrand, fitModel, from ? Number(from) : null, to ? Number(to) : null)
+    if (!next.includes(fitEngine)) setFitEngine('')
+  }
 
   const handleFitBrandChange = (v: string) => {
     setFitBrand(v)
@@ -845,7 +867,7 @@ export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, 
           <select
             aria-label="Année min"
             value={fitYearFrom}
-            onChange={(e) => setFitYearFrom(e.target.value)}
+            onChange={(e) => changeFitYear('from', e.target.value)}
             className="part-input"
             disabled={fitYears.length === 0}
           >
@@ -857,7 +879,7 @@ export function PartForm({ actor, mode, vendorId, partId, initial, quickVendor, 
           <select
             aria-label="Année max"
             value={fitYearTo}
-            onChange={(e) => setFitYearTo(e.target.value)}
+            onChange={(e) => changeFitYear('to', e.target.value)}
             className="part-input"
             disabled={fitYears.length === 0}
           >

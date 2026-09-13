@@ -63,8 +63,8 @@ export default function VendorCatalogUploadPage() {
     return [...ys].sort((a, b) => b - a)
   }, [brand, model])
   const engines = useMemo(
-    () => (brand && model ? getEngines(brand, model) : []),
-    [brand, model],
+    () => (brand && model ? getEngines(brand, model, year ? Number(year) : null) : []),
+    [brand, model, year],
   )
 
   // Derived data for part cascade
@@ -258,7 +258,8 @@ export default function VendorCatalogUploadPage() {
             </select>
           </Field>
         )}
-        {brand && model && engines.length > 0 && (
+        {/* Les motorisations dépendent de la génération : on attend l'année. */}
+        {brand && model && year && engines.length > 0 && (
           <Field id="motor" label="Motorisation (optionnel)">
             <select
               id="motor"

@@ -61,7 +61,10 @@ export default function EnterpriseSearchPage() {
   const models = brandData ? Object.keys(brandData.models).sort() : []
   const modelYears = brandData && selectedModel ? brandData.models[selectedModel] : undefined
   const years = modelYears ? [...modelYears].sort((a, b) => b - a) : []
-  const engines = selectedBrand && selectedModel ? getEngines(selectedBrand, selectedModel) : []
+  const engines =
+    selectedBrand && selectedModel
+      ? getEngines(selectedBrand, selectedModel, selectedYear ? Number(selectedYear) : null)
+      : []
 
   // Reset cascading
   useEffect(() => {

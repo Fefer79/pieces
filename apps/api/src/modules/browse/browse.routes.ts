@@ -55,12 +55,18 @@ export async function browseRoutes(fastify: FastifyInstance) {
     {
       schema: {
         tags: ['Browse'],
-        description: 'Motorisations disponibles pour une marque/modèle',
+        description:
+          'Motorisations disponibles pour une marque/modèle, restreintes au millésime si `year` est fourni',
+        querystring: {
+          type: 'object',
+          properties: { year: { type: 'integer' } },
+        },
       },
     },
     async (request, reply) => {
       const { brand, model } = request.params as { brand: string; model: string }
-      const engines = getModelEngines(decodeURIComponent(brand), decodeURIComponent(model))
+      const { year } = request.query as { year?: number }
+      const engines = getModelEngines(decodeURIComponent(brand), decodeURIComponent(model), year)
       return reply.status(200).send({ data: engines })
     },
   )

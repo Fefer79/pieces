@@ -73,11 +73,13 @@ export function getYears(brand: string, model: string) {
 }
 
 /**
- * Motorisations connues pour une marque/modèle. Résout d'abord les clés
- * canoniques (casse exacte) car getEnginesData indexe VEHICLE_DATA par clé
- * exacte. Renvoie [] si le modèle existe mais n'a pas de data moteur.
+ * Motorisations connues pour une marque/modèle, restreintes au millésime quand
+ * il est fourni (une génération ne partage pas les moteurs des autres). Résout
+ * d'abord les clés canoniques (casse exacte) car getEnginesData indexe
+ * VEHICLE_DATA par clé exacte. Renvoie [] si le modèle existe mais n'a pas de
+ * data moteur.
  */
-export function getModelEngines(brand: string, model: string): string[] {
+export function getModelEngines(brand: string, model: string, year?: number): string[] {
   const lowerBrand = brand.toLowerCase()
   const brandKey = Object.keys(VEHICLE_BRANDS).find((b) => b.toLowerCase() === lowerBrand)
   if (!brandKey) {
@@ -89,7 +91,7 @@ export function getModelEngines(brand: string, model: string): string[] {
   if (!modelKey) {
     throw new AppError('MODEL_NOT_FOUND', 404, { message: `Modèle "${model}" introuvable pour ${brand}` })
   }
-  return getEnginesData(brandKey, modelKey)
+  return getEnginesData(brandKey, modelKey, year)
 }
 
 export function getCategories() {

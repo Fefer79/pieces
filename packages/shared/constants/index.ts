@@ -15,7 +15,16 @@ export type {
   DeliveryVendorGroup,
   DeliveryGabarit,
 } from './delivery-pricing'
-export { VEHICLE_BRANDS, VEHICLE_DATA, BRAND_NAMES, getEngines, VEHICLE_TYPES, DEFAULT_VEHICLE_TYPE } from './vehicles'
+export {
+  VEHICLE_BRANDS,
+  VEHICLE_DATA,
+  BRAND_NAMES,
+  getEngines,
+  getEnginesForRange,
+  engineLabel,
+  VEHICLE_TYPES,
+  DEFAULT_VEHICLE_TYPE,
+} from './vehicles'
 export type { VehicleType, VehicleTypeId } from './vehicles'
 export {
   PART_CATEGORIES,

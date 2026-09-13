@@ -79,6 +79,14 @@ describe('browse.service', () => {
       expect(Array.isArray(engines)).toBe(true)
     })
 
+    it('restreint les motorisations au millésime quand il est fourni', () => {
+      const all = getModelEngines('toyota', 'corolla')
+      const y2005 = getModelEngines('toyota', 'corolla', 2005)
+      expect(y2005.length).toBeGreaterThan(0)
+      expect(y2005.length).toBeLessThan(all.length)
+      expect(all).toEqual(expect.arrayContaining(y2005))
+    })
+
     it('throws BRAND_NOT_FOUND for invalid brand', () => {
       expect(() => getModelEngines('Invalid', 'Corolla')).toThrow()
     })

@@ -4,7 +4,19 @@
  */
 import vehiclesData from './vehicles-data'
 
-type VehiclesData = Record<string, { models: Record<string, { years: number[]; engines: string[] }> }>
+/**
+ * Motorisation : libellé seul (plage inconnue) ou `[libellé, début, fin]`,
+ * `fin: null` signifiant « encore produit ». La plage vient des générations
+ * Global Auto — voir `pnpm -F ingest annotate:engine-years`.
+ */
+export type EngineEntry = string | readonly [label: string, from: number, to: number | null]
+
+interface ModelEntry {
+  years: number[]
+  engines: EngineEntry[]
+}
+
+type VehiclesData = Record<string, { models: Record<string, ModelEntry> }>
 
 const data = vehiclesData as unknown as VehiclesData
 
@@ -25,9 +37,52 @@ export const VEHICLE_BRANDS: Record<string, { models: Record<string, number[]> }
 
 export const BRAND_NAMES = Object.keys(VEHICLE_BRANDS)
 
-/** Get engines for a specific brand + model */
-export function getEngines(brand: string, model: string): string[] {
+export function engineLabel(entry: EngineEntry): string {
+  return typeof entry === 'string' ? entry : entry[0]
+}
+
+function entries(brand: string, model: string): EngineEntry[] {
   return data[brand]?.models[model]?.engines ?? []
+}
+
+/** Une motorisation sans plage connue reste proposable sur tout le modèle. */
+function overlaps(entry: EngineEntry, from: number, to: number): boolean {
+  if (typeof entry === 'string') return true
+  const [, start, end] = entry
+  return start <= to && (end ?? Number.POSITIVE_INFINITY) >= from
+}
+
+/**
+ * Motorisations d'un modèle, restreintes au millésime quand il est fourni.
+ *
+ * Filet de sécurité : si le filtre ne laisse rien (référentiel de générations
+ * incomplet pour ce modèle), on renvoie la liste entière plutôt qu'un menu
+ * vide — mieux vaut trop proposer que bloquer la saisie.
+ */
+export function getEngines(brand: string, model: string, year?: number | null): string[] {
+  const all = entries(brand, model)
+  if (!year) return all.map(engineLabel)
+  const filtered = all.filter((e) => overlaps(e, year, year))
+  return (filtered.length > 0 ? filtered : all).map(engineLabel)
+}
+
+/**
+ * Variante plage : motorisations compatibles avec au moins une année de
+ * l'intervalle [from, to] (bornes optionnelles), pour les saisies de fitment
+ * vendeur qui couvrent plusieurs millésimes.
+ */
+export function getEnginesForRange(
+  brand: string,
+  model: string,
+  from?: number | null,
+  to?: number | null,
+): string[] {
+  const all = entries(brand, model)
+  if (!from && !to) return all.map(engineLabel)
+  const lo = from ?? Number.NEGATIVE_INFINITY
+  const hi = to ?? Number.POSITIVE_INFINITY
+  const filtered = all.filter((e) => overlaps(e, lo, hi))
+  return (filtered.length > 0 ? filtered : all).map(engineLabel)
 }
 
 /**

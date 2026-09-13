@@ -138,7 +138,8 @@ export function VehicleTypeSelector({ onConfirmed, type: controlledType }: Vehic
   const models = brandData ? Object.keys(brandData.models).sort() : []
   const modelYears = brandData && model ? brandData.models[model] : undefined
   const years = modelYears ? [...modelYears].sort((a, b) => b - a) : []
-  const engines = brand && model ? getEngines(brand, model) : []
+  // Les motorisations dépendent de la génération : sans l'année, on ne filtre pas.
+  const engines = brand && model ? getEngines(brand, model, year ? Number(year) : null) : []
 
   // Resets de cascade gérés dans les handlers (pas d'effet → pas de render en cascade).
   const changeType = (t: VehicleTypeId) => {
