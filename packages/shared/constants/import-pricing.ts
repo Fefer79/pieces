@@ -8,7 +8,7 @@
  * fret, douane, livraison locale (DESIGN.md : aucune ligne cachée).
  *
  * Ce module est une COUCHE MINCE au-dessus de `logistics.ts`, qui porte déjà la
- * grille de fret (LOGISTICS_MODES), le taux de douane (CUSTOMS_DUTY_RATE), le
+ * grille de fret (LOGISTICS_MODES), le barème douanier (customsDutyRate), le
  * référentiel poids/volume (PART_LOGISTICS_FAMILIES) et le calcul du poids
  * taxable. Aucun taux n'est redéfini ici : le devis flotte et la marketplace
  * doivent chiffrer un même colis à l'identique.
@@ -18,7 +18,7 @@
  */
 
 import {
-  CUSTOMS_DUTY_RATE,
+  customsDutyRate,
   DEFAULT_FAMILY,
   LOGISTICS_MODES,
   SEA_LCL_MIN_CHARGEABLE_KG,
@@ -157,8 +157,17 @@ export function computeImportQuote(items: ImportQuoteItem[], mode: ImportFreight
   const chargeable = chargeableWeightKg(mode, weightKg, volumeDm3)
 
   const freightFee = roundTo100(Math.max(chargeable * spec.ratePerKg + spec.handlingFee, spec.minimumCharge))
+  // La douane se liquide ligne par ligne : un filtre (5 %) et une batterie
+  // (20 %) dans le même colis ne portent pas le même droit. Le fret est
+  // réparti au prorata de la valeur déclarée, comme le ferait un transitaire.
   const declaredValue = items.reduce((sum, i) => sum + i.customsValue * Math.max(1, i.quantity), 0)
-  const customsFee = roundTo100(CUSTOMS_DUTY_RATE * (declaredValue + freightFee))
+  const customsFee = roundTo100(
+    items.reduce((sum, item) => {
+      const lineValue = item.customsValue * Math.max(1, item.quantity)
+      const share = declaredValue > 0 ? lineValue / declaredValue : 0
+      return sum + customsDutyRate(familyOf(item)) * (lineValue + freightFee * share)
+    }, 0),
+  )
 
   const warnings: string[] = []
   let available = true

@@ -466,8 +466,62 @@ export const LOGISTICS_MODES: Record<LogisticsMode, LogisticsModeSpec> = {
   },
 }
 
-/** Droits de douane approximatifs sur la valeur pièce + fret (la TVA est récupérable). */
-export const CUSTOMS_DUTY_RATE = 0.2
+// ---------------------------------------------------------------------------
+// Douane — barème réel du TEC CEDEAO appliqué en Côte d'Ivoire
+//
+// Source : « TEC CEDEAO enrichi des principaux droits et taxes relevant de la
+// taxation nationale », Direction générale des douanes, mise à jour du
+// 27/03/2026. Les taux ci-dessous sont ceux du tarif ; c'est la position
+// déclarée à l'arrivée qui fait foi, et elle dépend de la facture et de la
+// description — un transitaire valide la classification.
+//
+// La TVA (18 %) n'entre PAS dans ces taux : elle est récupérable pour un
+// assujetti, donc c'est une avance de trésorerie et non un coût.
+// ---------------------------------------------------------------------------
+
+/**
+ * Prélèvements communautaires et redevance statistique, identiques sur toutes
+ * les lignes tarifaires : PCC 0,5 % + PCS 0,8 % + PUA 0,2 % + RST 1 %.
+ */
+export const COMMUNITY_LEVIES_RATE = 0.025
+
+/** Droit de douane du gros du catalogue (position 8708 et assimilées). */
+const DEFAULT_CUSTOMS_DUTY = 0.1
+
+/**
+ * Droit de douane par famille logistique, quand il s'écarte des 10 % communs.
+ * Chaque entrée porte la position tarifaire qui la justifie.
+ */
+const CUSTOMS_DUTY_BY_FAMILY: Record<string, number> = {
+  // 8421 — appareils pour la filtration des huiles et de l'air des moteurs.
+  FILTER: 0.05,
+  // 8507 — accumulateurs au plomb pour le démarrage des moteurs.
+  BATTERY: 0.2,
+  // 4012 — pneumatiques rechapés ou usagés. Les pneus neufs (4011) sont à
+  // 10 %, mais un pneu importé par cette rubrique vient d'une casse : on
+  // retient le taux le plus élevé plutôt que de sous-facturer la douane.
+  TYRE: 0.2,
+}
+
+/**
+ * Taux de douane NON RÉCUPÉRABLE applicable à une pièce : droit de douane de sa
+ * position tarifaire, plus les prélèvements communautaires.
+ *
+ * Remplace un forfait de 20 % qui était un ordre de grandeur de cadrage et
+ * surfacturait la ligne « Droits de douane » d'environ 60 % sur l'essentiel du
+ * catalogue. Gonfler une ligne qui porte le nom d'une taxe est une marge cachée
+ * déguisée, et c'est vérifiable par n'importe quel client au tarif public.
+ */
+export function customsDutyRate(family?: PartLogisticsFamily | null): number {
+  const duty = (family && CUSTOMS_DUTY_BY_FAMILY[family.id]) ?? DEFAULT_CUSTOMS_DUTY
+  return duty + COMMUNITY_LEVIES_RATE
+}
+
+/**
+ * Taux par défaut, pour les chiffrages où la famille n'est pas connue (coût
+ * rendu entrepôt d'un bon de commande, par exemple).
+ */
+export const CUSTOMS_DUTY_RATE = DEFAULT_CUSTOMS_DUTY + COMMUNITY_LEVIES_RATE
 
 /**
  * Frais d'envoi Pièces : 10 % du prix de la pièce.
@@ -579,7 +633,9 @@ export function computeArbitrageMatrix(input: ArbitrageInput): ArbitrageResult {
     const freightCost = isImport
       ? roundTo100(Math.max(chargeable * spec.ratePerKg + spec.handlingFee, spec.minimumCharge))
       : spec.handlingFee
-    const customsCost = isImport ? roundTo100(CUSTOMS_DUTY_RATE * (opt.partPrice + freightCost)) : 0
+    const customsCost = isImport
+      ? roundTo100(customsDutyRate(family) * (opt.partPrice + freightCost))
+      : 0
     // Assis sur le prix de la pièce seul : ni le fret ni la douane ne sont
     // notre valeur ajoutée, et les frais d'envoi n'entrent pas dans la base
     // douanière (c'est un service, pas de la valeur transportée).

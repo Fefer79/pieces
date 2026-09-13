@@ -51,7 +51,9 @@ const isImportMode = (mode: string) => mode.startsWith('AIR_') || mode === 'SEA_
 /**
  * Coût « rendu entrepôt » d'un approvisionnement, en FCFA.
  * fret = max(poids × tarif/kg, minimum de perception) + forfait dossier ;
- * douane = 20 % de (valeur + fret) pour les modes d'import, 0 en LOCAL ;
+ * douane = droit de douane + prélèvements communautaires sur (valeur + fret)
+ *          pour les modes d'import, 0 en LOCAL. Taux par défaut (12,5 %) : un
+ *          bon de commande porte des références hétérogènes, sans famille unique ;
  * lastMile = livraison finale Abidjan (import uniquement).
  */
 export function computeLandedCost(mode: LogisticsMode, poidsTotalKg: number, montantFcfa: number) {

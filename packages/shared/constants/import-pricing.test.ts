@@ -8,7 +8,7 @@ import {
   originCountryLabel,
   type ImportQuoteItem,
 } from './import-pricing'
-import { CUSTOMS_DUTY_RATE, LOGISTICS_MODES } from './logistics'
+import { COMMUNITY_LEVIES_RATE, CUSTOMS_DUTY_RATE, customsDutyRate, LOGISTICS_MODES, matchLogisticsFamily } from './logistics'
 
 const bougie: ImportQuoteItem = {
   name: "Bougie d'allumage NGK",
@@ -44,6 +44,53 @@ describe('computeImportQuote', () => {
     const attendu = Math.round((CUSTOMS_DUTY_RATE * (8_000 + q.freightFee)) / 100) * 100
     expect(q.customsFee).toBe(attendu)
     expect(q.total).toBe(q.freightFee + q.customsFee)
+  })
+
+  it('applique le droit réduit des filtres (position 8421)', () => {
+    const filtre: ImportQuoteItem = {
+      name: 'Filtre à huile',
+      category: 'Filtration / Filtre à huile',
+      weightKg: 0.4,
+      quantity: 1,
+      customsValue: 8_000,
+    }
+    const q = computeImportQuote([filtre], 'AIR_ECONOMY')
+    const attendu = Math.round((0.075 * (8_000 + q.freightFee)) / 100) * 100
+    expect(q.customsFee).toBe(attendu)
+    // Moins cher qu'une pièce au droit commun de même valeur et même fret.
+    expect(q.customsFee).toBeLessThan(computeImportQuote([bougie], 'AIR_ECONOMY').customsFee)
+  })
+
+  it('applique le droit majoré des batteries (position 8507)', () => {
+    const batterie: ImportQuoteItem = {
+      name: 'Batterie 12V 70Ah',
+      category: 'Électrique & batterie / Batterie',
+      weightKg: 16,
+      quantity: 1,
+      customsValue: 60_000,
+    }
+    const q = computeImportQuote([batterie], 'SEA_LCL')
+    const attendu = Math.round((0.225 * (60_000 + q.freightFee)) / 100) * 100
+    expect(q.customsFee).toBe(attendu)
+  })
+
+  it('liquide un lot mixte ligne par ligne, pas au taux moyen', () => {
+    const filtre: ImportQuoteItem = {
+      name: 'Filtre à huile', category: 'Filtration / Filtre à huile',
+      weightKg: 0.4, quantity: 1, customsValue: 50_000,
+    }
+    const batterie: ImportQuoteItem = {
+      name: 'Batterie 12V 70Ah', category: 'Électrique & batterie / Batterie',
+      weightKg: 16, quantity: 1, customsValue: 50_000,
+    }
+    const mixte = computeImportQuote([filtre, batterie], 'SEA_LCL')
+    const forfait = Math.round(
+      (CUSTOMS_DUTY_RATE * (100_000 + mixte.freightFee)) / 100,
+    ) * 100
+    // Le lot contient une ligne à 7,5 % et une à 22,5 % : le total ne peut pas
+    // valoir le taux commun de 12,5 % appliqué à l'ensemble.
+    expect(mixte.customsFee).not.toBe(forfait)
+    expect(mixte.customsFee).toBeGreaterThan(forfait)
   })
 
   it('ne facture jamais la douane sur le prix de vente public', () => {
@@ -197,6 +244,28 @@ describe('poids annoncé contre famille mal choisie', () => {
     }
     expect(computeImportQuote([turbo], 'AIR_ECONOMY').chargeableWeightKg).toBe(6.4)
     expect(computeImportQuote([turbo], 'SEA_LCL').available).toBe(true)
+  })
+})
+
+describe('customsDutyRate', () => {
+  it('ajoute les prélèvements communautaires au droit de douane', () => {
+    expect(COMMUNITY_LEVIES_RATE).toBe(0.025)
+    // Position 8708 et assimilées : 10 % + 2,5 %.
+    expect(customsDutyRate(matchLogisticsFamily('Disque de frein'))).toBeCloseTo(0.125, 5)
+  })
+
+  it('descend à 7,5 % sur les filtres et monte à 22,5 % sur les batteries', () => {
+    expect(customsDutyRate(matchLogisticsFamily('Filtre à huile'))).toBeCloseTo(0.075, 5)
+    expect(customsDutyRate(matchLogisticsFamily('Batterie 12V'))).toBeCloseTo(0.225, 5)
+  })
+
+  it('retombe sur le droit commun quand la famille est inconnue', () => {
+    expect(customsDutyRate(null)).toBeCloseTo(0.125, 5)
+    expect(customsDutyRate(undefined)).toBe(CUSTOMS_DUTY_RATE)
+  })
+
+  it("ne facture plus le forfait de 20 % hérité du cadrage", () => {
+    expect(CUSTOMS_DUTY_RATE).toBeLessThan(0.2)
   })
 })
 

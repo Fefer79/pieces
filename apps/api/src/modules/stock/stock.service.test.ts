@@ -123,13 +123,15 @@ describe('computeLandedCost', () => {
     })
   })
 
-  it('AIR_STANDARD : fret au poids + douane 20 % + last-mile', () => {
-    // fret = 10 kg × 7 000 + 15 000 = 85 000 ; douane = 20 % × 185 000 = 37 000
+  it('AIR_STANDARD : fret au poids + douane au taux commun + last-mile', () => {
+    // fret = 10 kg × 7 000 + 15 000 = 85 000
+    // douane = 12,5 % × 185 000 = 23 125 → arrondi 23 100
+    // (droit 10 % du gros du catalogue + 2,5 % de prélèvements communautaires)
     expect(computeLandedCost('AIR_STANDARD', 10, 100_000)).toEqual({
       fret: 85_000,
-      douane: 37_000,
+      douane: 23_100,
       lastMile: 2_000,
-      total: 224_000,
+      total: 210_100,
       delaiJours: 5,
     })
   })
@@ -149,12 +151,13 @@ describe('estimateLandedCost', () => {
       poidsTotalKg: 100,
       montantFcfa: 200_000,
     })
-    // fret = max(100 × 450, 30 000) + 25 000 = 70 000 ; douane = 20 % × 270 000 = 54 000
+    // fret = max(100 × 450, 30 000) + 25 000 = 70 000
+    // douane = 12,5 % × 270 000 = 33 750 → arrondi 33 800
     expect(res).toEqual({
       fret: 70_000,
-      douane: 54_000,
+      douane: 33_800,
       lastMile: 2_000,
-      total: 326_000,
+      total: 305_800,
       delaiJours: 45,
     })
   })
@@ -527,10 +530,11 @@ describe('createPurchaseOrder', () => {
     const res = await createPurchaseOrder(ADMIN, BODY)
 
     // (10 × 25,5 + 4 × 100) × 200 = 131 000 FCFA ; poids total = 20 kg
-    // fret = max(20 × 5 000, 25 000) + 15 000 = 115 000 ; douane = 20 % × 246 000 = 49 200
+    // fret = max(20 × 5 000, 25 000) + 15 000 = 115 000
+    // douane = 12,5 % × 246 000 = 30 750 → arrondi 30 800
     expect(res.numero).toMatch(/^BC-\d{8}-[A-HJ-NP-Z2-9]{4}$/)
     expect(res.montantEstimeFcfa).toBe(131_000)
-    expect(res.fraisEstimes).toMatchObject({ fret: 115_000, douane: 49_200, lastMile: 2_000 })
+    expect(res.fraisEstimes).toMatchObject({ fret: 115_000, douane: 30_800, lastMile: 2_000 })
     expect(mockPoCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
