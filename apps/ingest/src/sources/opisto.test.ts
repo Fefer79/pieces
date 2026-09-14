@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -65,6 +65,42 @@ describe('nextPageUrl', () => {
 
   it('returns null at the end of pagination', () => {
     expect(nextPageUrl('<html><head></head><body></body></html>')).toBeNull()
+  })
+})
+
+describe('streamListings — garde-fou de pagination', () => {
+  // Opisto renvoie TOUJOURS `rel="next"` -> page-2, et une page au-dela du stock
+  // repond 200 avec le contenu de la derniere page utile. Suivre la balise faisait
+  // boucler sur la page 2 : un premier run y a perdu un tiers du gisement, sans
+  // aucune erreur dans les logs puisque chaque reponse etait un 200 valide.
+  it('stops instead of looping when the site replays the same page', async () => {
+    const fetched: string[] = []
+    vi.doMock('../lib/http.ts', () => ({
+      fetchText: async (url: string) => {
+        fetched.push(url)
+        return fixture // toujours la meme page, comme le site au-dela du stock
+      },
+    }))
+    const { streamListings: stream } = await import('./opisto.ts?replay')
+
+    const pages = []
+    for await (const page of stream({
+      categories: ['alternateur'],
+      brands: ['peugeot'],
+      maxPagesPerCombo: 5,
+    })) {
+      pages.push(page)
+    }
+
+    // Une seule emission : la page 2 ne contient plus rien d'inedit.
+    expect(pages).toHaveLength(1)
+    expect(pages[0]?.parts).toHaveLength(2)
+    // Et on s'arrete au 2e fetch, sans consommer les 5 pages autorisees.
+    expect(fetched).toHaveLength(2)
+    // La pagination incremente le chemin, elle ne suit pas rel="next".
+    expect(fetched[0]).toMatch(/page-1$/)
+    expect(fetched[1]).toMatch(/page-2$/)
+    vi.doUnmock('../lib/http.ts')
   })
 })
 

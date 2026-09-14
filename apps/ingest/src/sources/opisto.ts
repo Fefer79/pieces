@@ -154,7 +154,18 @@ export function listingUrl(categorySlug: string, brandSlug: string, page: number
   return `${ORIGIN}/fr/auto/pieces-occasion/${categorySlug}/${brandSlug}/page-${Math.max(1, page)}`
 }
 
-/** Page suivante déclarée par `<link rel="next">`, ou null en fin de pagination. */
+/**
+ * Page suivante déclarée par `<link rel="next">`.
+ *
+ * ⚠ NE PAS UTILISER POUR PAGINER. Opisto renvoie toujours `page-2`, quelle que
+ * soit la page courante : suivre cette balise fait boucler sur la page 2
+ * indéfiniment. Un premier run complet y a perdu un tiers du gisement — 150
+ * annonces ramenées par combinaison pour 100 distinctes, page 3 jamais atteinte,
+ * et rien dans les logs puisque chaque page répondait 200.
+ *
+ * Conservée parce qu'elle lit correctement la balise et qu'elle documente le
+ * piège ; la pagination réelle incrémente le segment d'URL (cf. streamListings).
+ */
 export function nextPageUrl(html: string): string | null {
   const $ = cheerio.load(html)
   const href = $('link[rel="next"]').first().attr('href')?.trim()
@@ -169,7 +180,16 @@ export type OpistoListingPage = {
 }
 
 /**
- * Parcourt les listings catégorie × marque, en suivant `rel="next"`.
+ * Parcourt les listings catégorie × marque.
+ *
+ * La pagination incrémente le segment `/page-N` — jamais `rel="next"`, qui pointe
+ * toujours page-2 chez Opisto (cf. nextPageUrl).
+ *
+ * Deux conditions d'arrêt, parce qu'une page au-delà du stock répond 200 avec le
+ * contenu de la dernière page utile au lieu d'un 404 : plus aucune annonce, ou
+ * plus aucune annonce INÉDITE. Le jeu d'ids déjà vus garantit qu'une même annonce
+ * n'est jamais émise deux fois pour une combinaison, même si le site se répète.
+ *
  * Le rate-limit est porté par `fetchText` (file d'attente globale du process).
  */
 export async function* streamListings(opts: {
@@ -180,11 +200,11 @@ export async function* streamListings(opts: {
   const maxPages = opts.maxPagesPerCombo ?? 5
   for (const brandSlug of opts.brands) {
     for (const categorySlug of opts.categories) {
-      let url = listingUrl(categorySlug, brandSlug, 1)
+      const seen = new Set<string>()
       for (let page = 1; page <= maxPages; page += 1) {
         let html: string
         try {
-          html = await fetchText(url)
+          html = await fetchText(listingUrl(categorySlug, brandSlug, page))
         } catch (err) {
           // Un couple catégorie × marque sans stock renvoie 404 : ce n'est pas
           // une anomalie, on passe au suivant sans bruit.
@@ -194,11 +214,10 @@ export async function* streamListings(opts: {
           )
           break
         }
-        const parts = parseListingHtml(html)
-        if (parts.length > 0) yield { categorySlug, brandSlug, page, parts }
-        const next = nextPageUrl(html)
-        if (!next) break
-        url = next
+        const parts = parseListingHtml(html).filter((p) => !seen.has(p.productId))
+        if (parts.length === 0) break
+        for (const p of parts) seen.add(p.productId)
+        yield { categorySlug, brandSlug, page, parts }
       }
     }
   }
