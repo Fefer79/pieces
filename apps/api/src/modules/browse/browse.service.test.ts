@@ -9,6 +9,7 @@ vi.stubEnv('PORT', '3001')
 const mockCatalogItemFindMany = vi.fn()
 const mockCatalogItemCount = vi.fn()
 const mockSearchSynonymFindMany = vi.fn()
+const mockFitmentFindMany = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -24,6 +25,9 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     searchSynonym: {
       findMany: (...args: unknown[]) => mockSearchSynonymFindMany(...args),
+    },
+    catalogItemFitment: {
+      findMany: (...args: unknown[]) => mockFitmentFindMany(...args),
     },
   },
 }))
@@ -133,6 +137,43 @@ describe('browse.service', () => {
       expect(vehicleClause.OR.some((c) => 'category' in c)).toBe(true)
     })
 
+    it('filters fitments on the engines matching the selected motorisation', async () => {
+      mockFitmentFindMany.mockResolvedValueOnce([
+        { engine: '1.6 BlueHDi S&S 100cv' },
+        { engine: '1.6 BlueHDi 120 cv' },
+        { engine: '2.0 BlueHDi 100 cv' },
+        { engine: '1.6L 16V' },
+      ])
+      mockCatalogItemFindMany.mockResolvedValueOnce([])
+      mockCatalogItemCount.mockResolvedValueOnce(0)
+
+      await browseParts({ brand: 'Peugeot', model: '308', year: 2015, engine: '1.6 BlueHDi 100 cv' })
+
+      const where = mockCatalogItemFindMany.mock.calls[0][0].where as Record<string, unknown>
+      const and = where.AND as Record<string, unknown>[]
+      const fitmentClause = (and[0] as { OR: Array<{ fitments?: { some: { AND: Record<string, unknown>[] } } }> })
+        .OR.find((c) => c.fitments)!.fitments!.some
+      const engineClause = fitmentClause.AND.find((c) => JSON.stringify(c).includes('engine')) as {
+        OR: [{ engine: null }, { engine: { in: string[] } }]
+      }
+
+      // Cylindrée ET puissance doivent coïncider ; un libellé partiel « 1.6L 16V »
+      // reste compatible ; un fitment sans moteur vaut « toutes motorisations ».
+      expect(engineClause.OR[1].engine.in).toEqual(['1.6 BlueHDi S&S 100cv', '1.6L 16V'])
+      expect(engineClause.OR[0]).toEqual({ engine: null })
+    })
+
+    it('does not query fitment engines when no motorisation is selected', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([])
+      mockCatalogItemCount.mockResolvedValueOnce(0)
+
+      await browseParts({ brand: 'Peugeot', model: '308', year: 2015 })
+
+      expect(mockFitmentFindMany).not.toHaveBeenCalled()
+      const where = mockCatalogItemFindMany.mock.calls[0][0].where as Record<string, unknown>
+      expect(JSON.stringify(where)).not.toContain('engine')
+    })
+
     it('adds a text clause on name/oemReference when q is provided', async () => {
       mockCatalogItemFindMany.mockResolvedValueOnce([])
       mockCatalogItemCount.mockResolvedValueOnce(0)
@@ -198,25 +239,25 @@ describe('browse.service', () => {
   })
 
   describe('decodeVin', () => {
-    it('returns decoded=false when NHTSA fetch fails', async () => {
+    it('returns decoded=false when neither NHTSA nor the WMI identify the make', async () => {
       const originalFetch = globalThis.fetch
       globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('network'))
 
-      const result = await decodeVin('JTDKN3DU5A0123456')
+      const result = await decodeVin('ZZZ1234567AB12345')
 
       expect(result.decoded).toBe(false)
-      expect(result.vin).toBe('JTDKN3DU5A0123456')
+      expect(result.vin).toBe('ZZZ1234567AB12345')
       globalThis.fetch = originalFetch
     })
 
-    it('returns decoded=false when NHTSA returns no results', async () => {
+    it('returns decoded=false when NHTSA returns no results on an unknown WMI', async () => {
       const originalFetch = globalThis.fetch
       globalThis.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ Results: [{}] }),
       })
 
-      const result = await decodeVin('JTDKN3DU5A0123456')
+      const result = await decodeVin('ZZZ1234567AB12345')
 
       expect(result.decoded).toBe(false)
       globalThis.fetch = originalFetch
@@ -237,6 +278,123 @@ describe('browse.service', () => {
       expect(result.make).toBe('TOYOTA')
       expect(result.model).toBe('Corolla')
       expect(result.year).toBe(2010)
+      globalThis.fetch = originalFetch
+    })
+
+    it('resolves the engine from displacement and fuel', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          Results: [{ Make: 'TOYOTA', Model: 'Corolla', ModelYear: '2010', DisplacementL: '1.8', FuelTypePrimary: 'Gasoline' }],
+        }),
+      })
+
+      const result = await decodeVin('JTDKN3DU5A0123456')
+
+      expect(result.engines.length).toBeGreaterThan(0)
+      expect(result.engines.every((e) => e.startsWith('1.8'))).toBe(true)
+      globalThis.fetch = originalFetch
+    })
+
+    it('maps the NHTSA make onto the referential brand key', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Results: [{ Make: 'Land Rover', Model: '' }] }),
+      })
+
+      const result = await decodeVin('SALGA2AV1HA123456')
+
+      expect(result.decoded).toBe(true)
+      expect(result.make).toBe('LAND ROVER')
+      globalThis.fetch = originalFetch
+    })
+
+    it('proposes the models of the year when NHTSA only returns the make', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Results: [{ Make: 'PEUGEOT', Model: '', ModelYear: '1987' }] }),
+      })
+
+      // 7e position « Z » (lettre) => cycle 2010+, code « H » => 2017.
+      const result = await decodeVin('VF3CUHMZ6HY123456')
+
+      expect(result.make).toBe('PEUGEOT')
+      expect(result.year).toBe(2017)
+      expect(result.model).toBeNull()
+      expect(result.models).toContain('208')
+      globalThis.fetch = originalFetch
+    })
+
+    it('falls back to the model list when NHTSA returns a model absent from the referential', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Results: [{ Make: 'PEUGEOT', Model: '505', ModelYear: '1987' }] }),
+      })
+
+      const result = await decodeVin('VF3CUHMZ6HY123456')
+
+      expect(result.model).toBeNull()
+      expect(result.models).toContain('3008')
+      globalThis.fetch = originalFetch
+    })
+
+    it('keeps a model whose referential year list has holes', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Results: [{ Make: 'TOYOTA', Model: 'Prius', ModelYear: '2010' }] }),
+      })
+
+      // Le référentiel ne liste pas 2010 pour la Prius : le modèle reste retenu.
+      const result = await decodeVin('JTDKN3DU5A0123456')
+
+      expect(result.model).toBe('Prius')
+      expect(result.year).toBe(2010)
+      globalThis.fetch = originalFetch
+    })
+
+    it('strips a NHTSA trim suffix to keep the referential model', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Results: [{ Make: 'TOYOTA', Model: 'Corolla Sedan', ModelYear: '2010' }] }),
+      })
+
+      const result = await decodeVin('JTDKN3DU5A0123456')
+
+      expect(result.model).toBe('Corolla')
+      globalThis.fetch = originalFetch
+    })
+
+    it('falls back to the WMI when NHTSA does not know the make', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ Results: [{ Make: '' }] }),
+      })
+
+      const result = await decodeVin('JN1BJ0RP5JW123456')
+
+      expect(result.decoded).toBe(true)
+      expect(result.make).toBe('NISSAN')
+      expect(result.year).toBe(2018)
+      globalThis.fetch = originalFetch
+    })
+
+    it('still identifies brand and year when NHTSA is unreachable', async () => {
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('network'))
+
+      const result = await decodeVin('JTDKN3DU5A0123456')
+
+      expect(result.decoded).toBe(true)
+      expect(result.make).toBe('TOYOTA')
+      expect(result.year).toBe(2010)
+      expect(result.models.length).toBeGreaterThan(0)
       globalThis.fetch = originalFetch
     })
   })

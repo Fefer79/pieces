@@ -90,7 +90,7 @@ export async function browseRoutes(fastify: FastifyInstance) {
     {
       schema: {
         tags: ['Browse'],
-        description: 'Parcourir les pièces par filtres (marque, modèle, année, catégorie)',
+        description: 'Parcourir les pièces par filtres (marque, modèle, année, motorisation, catégorie)',
       },
     },
     async (request, reply) => {
@@ -98,6 +98,7 @@ export async function browseRoutes(fastify: FastifyInstance) {
         brand?: string
         model?: string
         year?: string
+        engine?: string
         category?: string
         q?: string
         condition?: string
@@ -109,6 +110,7 @@ export async function browseRoutes(fastify: FastifyInstance) {
         brand: query.brand,
         model: query.model,
         year: query.year ? parseInt(query.year, 10) : undefined,
+        engine: query.engine,
         category: query.category,
         q: query.q,
         // Les deux axes des rubriques : état de la pièce × disponibilité.
@@ -151,7 +153,7 @@ export async function browseRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const query = request.query as { q?: string; brand?: string; model?: string; year?: string }
+      const query = request.query as { q?: string; brand?: string; model?: string; year?: string; engine?: string }
       if (!query.q || query.q.trim().length < 2) {
         return reply.status(200).send({ data: { suggestions: [] } })
       }
@@ -159,6 +161,7 @@ export async function browseRoutes(fastify: FastifyInstance) {
         brand: query.brand,
         model: query.model,
         year: query.year ? parseInt(query.year, 10) : undefined,
+        engine: query.engine,
       })
       return reply.status(200).send({ data: result })
     },
@@ -173,11 +176,12 @@ export async function browseRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const query = request.query as { brand?: string; model?: string; year?: string; category?: string; oem?: string; sort?: string }
+      const query = request.query as { brand?: string; model?: string; year?: string; engine?: string; category?: string; oem?: string; sort?: string }
       const result = await compareParts({
         brand: query.brand,
         model: query.model,
         year: query.year ? parseInt(query.year, 10) : undefined,
+        engine: query.engine,
         category: query.category,
         oem: query.oem,
         sort: query.sort === 'value' ? 'value' : 'price',

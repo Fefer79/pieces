@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { DEFAULT_VEHICLE_TYPE } from 'shared/constants'
 import { createClient } from '@/lib/supabase'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
@@ -45,9 +45,10 @@ function PartCard({ part }: { part: PartResult }) {
   )
 }
 
-export default function YearPartsPage() {
+function YearPartsContent() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const brand = decodeURIComponent(params.brand as string)
   const model = decodeURIComponent(params.model as string)
   const year = params.year as string
@@ -60,12 +61,41 @@ export default function YearPartsPage() {
 
   const { setVehicle: persistVehicle } = useSelectedVehicle()
 
+  // Motorisation : amorcée par l'URL (décodage VIN, lien partagé) puis pilotée
+  // par le sélecteur. Elle reste dans l'URL pour rester partageable.
+  const [engine, setEngine] = useState(() => searchParams.get('engine') ?? '')
+  const [engineOptions, setEngineOptions] = useState<string[]>([])
+
   // Persist this vehicle as the active selection on landing
   useEffect(() => {
     if (brand && model && year) {
-      persistVehicle({ type: DEFAULT_VEHICLE_TYPE, brand, model, year })
+      persistVehicle({ type: DEFAULT_VEHICLE_TYPE, brand, model, year, motor: engine })
     }
-  }, [brand, model, year, persistVehicle])
+  }, [brand, model, year, engine, persistVehicle])
+
+  // Motorisations du millésime — la liste vient du référentiel, pas des annonces.
+  useEffect(() => {
+    const url = `/api/v1/browse/brands/${encodeURIComponent(brand)}/models/${encodeURIComponent(model)}/engines?year=${year}`
+    let cancelled = false
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((body) => {
+        if (!cancelled) setEngineOptions(body.data ?? [])
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [brand, model, year])
+
+  function changeEngine(value: string) {
+    setEngine(value)
+    const qs = new URLSearchParams(searchParams.toString())
+    if (value) qs.set('engine', value)
+    else qs.delete('engine')
+    const query = qs.toString()
+    router.replace(query ? `?${query}` : '?', { scroll: false })
+  }
 
   const [categories, setCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')
@@ -154,6 +184,7 @@ export default function YearPartsPage() {
     setLoading(true)
     try {
       const qs = new URLSearchParams({ brand, model, year })
+      if (engine) qs.set('engine', engine)
       if (selectedCategory) qs.set('category', selectedCategory)
       const r = await fetch(`/api/v1/browse/parts?${qs}`)
       const body = await r.json()
@@ -164,7 +195,7 @@ export default function YearPartsPage() {
     } finally {
       setLoading(false)
     }
-  }, [brand, model, year, selectedCategory])
+  }, [brand, model, year, engine, selectedCategory])
 
   useEffect(() => {
     fetchParts()
@@ -173,7 +204,10 @@ export default function YearPartsPage() {
   return (
     <div className="mx-auto w-full max-w-[1280px] px-4 py-6 lg:px-8 lg:py-8">
       <button onClick={() => router.back()} className="mb-2 text-sm text-[#002366] hover:underline">&larr; Retour</button>
-      <h1 className="mb-1 text-xl font-bold text-[#1A1A1A] lg:text-2xl">{brand} {model} {year}</h1>
+      <h1 className="mb-1 text-xl font-bold text-[#1A1A1A] lg:text-2xl">
+        {brand} {model} {year}
+        {engine ? <span className="text-base font-medium text-muted lg:text-lg"> · {engine}</span> : null}
+      </h1>
       <p className="mb-3 text-sm text-gray-500">{total} pièce{total > 1 ? 's' : ''} disponible{total > 1 ? 's' : ''}</p>
 
       {isAuth && (
@@ -210,6 +244,33 @@ export default function YearPartsPage() {
         <p className="mb-3 text-sm text-red-600">{saveError}</p>
       )}
 
+      {engineOptions.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <label htmlFor="engine-filter" className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
+            Motorisation
+          </label>
+          <select
+            id="engine-filter"
+            value={engine}
+            onChange={(e) => changeEngine(e.target.value)}
+            className="max-w-full rounded-sm border border-border-strong bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink-2"
+          >
+            <option value="">Toutes les motorisations</option>
+            {engineOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          {engine && (
+            <button
+              onClick={() => changeEngine('')}
+              className="rounded-full border border-border-strong px-3 py-1 text-xs font-medium text-muted transition-colors hover:text-ink"
+            >
+              Effacer
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="mb-4 flex flex-wrap gap-2">
         <button
           onClick={() => setSelectedCategory('')}
@@ -239,7 +300,13 @@ export default function YearPartsPage() {
       {!loading && parts.length === 0 && (
         <div className="rounded-lg border border-gray-200 p-8 text-center">
           <p className="text-sm text-gray-500">Aucune pièce disponible pour ce véhicule.</p>
-          <p className="mt-1 text-xs text-gray-400">Essayez une autre catégorie ou cherchez par référence.</p>
+          {engine ? (
+            <button onClick={() => changeEngine('')} className="mt-1 text-xs text-ink-2 hover:underline">
+              Voir toutes les motorisations
+            </button>
+          ) : (
+            <p className="mt-1 text-xs text-gray-400">Essayez une autre catégorie ou cherchez par référence.</p>
+          )}
         </div>
       )}
 
@@ -251,5 +318,13 @@ export default function YearPartsPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function YearPartsPage() {
+  return (
+    <Suspense fallback={null}>
+      <YearPartsContent />
+    </Suspense>
   )
 }

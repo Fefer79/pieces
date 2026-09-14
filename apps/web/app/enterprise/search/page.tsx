@@ -83,7 +83,7 @@ export default function EnterpriseSearchPage() {
   }, [selectedYear])
 
   const handleSearch = useCallback(
-    async (q: string, brand: string, model: string, year: string, useGrouped: boolean) => {
+    async (q: string, brand: string, model: string, year: string, motor: string, useGrouped: boolean) => {
       const hasVehicle = Boolean(brand)
       const hasText = q.trim().length >= 2
       if (!hasVehicle && !hasText) {
@@ -98,6 +98,7 @@ export default function EnterpriseSearchPage() {
           params.set('brand', brand)
           if (model) params.set('model', model)
           if (year) params.set('year', year)
+          if (motor) params.set('engine', motor)
           const res = await fetch(`/api/v1/browse/compare?${params.toString()}`)
           const body = await res.json()
           setGroups(body.data?.groups ?? [])
@@ -109,6 +110,7 @@ export default function EnterpriseSearchPage() {
             params.set('brand', brand)
             if (model) params.set('model', model)
             if (year) params.set('year', year)
+            if (motor) params.set('engine', motor)
             if (hasText) params.set('q', q)
             url = `/api/v1/browse/parts?${params.toString()}`
           } else {
@@ -131,11 +133,11 @@ export default function EnterpriseSearchPage() {
 
   useEffect(() => {
     const timer = setTimeout(
-      () => handleSearch(searchQuery, selectedBrand, selectedModel, selectedYear, grouped),
+      () => handleSearch(searchQuery, selectedBrand, selectedModel, selectedYear, selectedMotor, grouped),
       300,
     )
     return () => clearTimeout(timer)
-  }, [searchQuery, selectedBrand, selectedModel, selectedYear, grouped, handleSearch])
+  }, [searchQuery, selectedBrand, selectedModel, selectedYear, selectedMotor, grouped, handleSearch])
 
   // Suggestions de noms de pièces, scopées au véhicule sélectionné (sans vendeur).
   const fetchSuggestions = useCallback(async (term: string): Promise<PredictiveItem[]> => {
@@ -143,11 +145,12 @@ export default function EnterpriseSearchPage() {
     if (selectedBrand) params.set('brand', selectedBrand)
     if (selectedModel) params.set('model', selectedModel)
     if (selectedYear) params.set('year', selectedYear)
+    if (selectedMotor) params.set('engine', selectedMotor)
     const res = await fetch(`/api/v1/browse/suggest?${params.toString()}`)
     const body = await res.json()
     const labels: string[] = body.data?.suggestions ?? []
     return labels.map((label) => ({ label }))
-  }, [selectedBrand, selectedModel, selectedYear])
+  }, [selectedBrand, selectedModel, selectedYear, selectedMotor])
 
   const resetFilters = () => {
     setSelectedBrand('')

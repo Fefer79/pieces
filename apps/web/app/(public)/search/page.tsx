@@ -41,6 +41,9 @@ function SearchPageContent() {
   const brand = searchParams.get('brand') ?? localVehicle?.brand ?? ''
   const model = searchParams.get('model') ?? localVehicle?.model ?? ''
   const year = searchParams.get('year') ?? localVehicle?.year ?? ''
+  // Motorisation : soit passée dans l'URL (décodage VIN, page résultats), soit
+  // celle du véhicule confirmé — le filtre suit le véhicule, pas la page.
+  const engine = searchParams.get('engine') ?? localVehicle?.motor ?? ''
   const q = searchParams.get('q') ?? ''
   const category = searchParams.get('category') ?? ''
   const conditionRaw = searchParams.get('condition') ?? ''
@@ -97,6 +100,7 @@ function SearchPageContent() {
     if (brand) qs.set('brand', brand)
     if (model) qs.set('model', model)
     if (year) qs.set('year', year)
+    if (engine) qs.set('engine', engine)
     if (q) qs.set('q', q)
     if (category) qs.set('category', category)
     if (conditionKey) qs.set('condition', conditionKey)
@@ -117,7 +121,7 @@ function SearchPageContent() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [brand, model, year, q, category, conditionKey, supplyMode, priceMin, priceMax, sortBy, page])
+  }, [brand, model, year, engine, q, category, conditionKey, supplyMode, priceMin, priceMax, sortBy, page])
 
   // Recherche locale infructueuse : y a-t-il la même pièce chez un partenaire ?
   // On ne propose la précommande que si elle existe vraiment — un encart qui
@@ -128,6 +132,7 @@ function SearchPageContent() {
     if (brand) qs.set('brand', brand)
     if (model) qs.set('model', model)
     if (year) qs.set('year', year)
+    if (engine) qs.set('engine', engine)
     if (q) qs.set('q', q)
     if (category) qs.set('category', category)
     if (conditionKey) qs.set('condition', conditionKey)
@@ -142,7 +147,7 @@ function SearchPageContent() {
     return () => {
       cancelled = true
     }
-  }, [loading, items.length, supplyMode, brand, model, year, q, category, conditionKey])
+  }, [loading, items.length, supplyMode, brand, model, year, engine, q, category, conditionKey])
 
   // Même recherche, mais chez nos partenaires. La pagination repart de zéro.
   const buildImportQuery = () => {

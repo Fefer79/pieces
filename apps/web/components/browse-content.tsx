@@ -101,6 +101,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         const params = new URLSearchParams({ q, brand: vehicle.brand })
         if (vehicle.model) params.set('model', vehicle.model)
         if (vehicle.year) params.set('year', vehicle.year)
+        if (vehicle.motor) params.set('engine', vehicle.motor)
         url = `/api/v1/browse/parts?${params.toString()}`
       } else {
         url = `/api/v1/browse/search?q=${encodeURIComponent(q)}`
@@ -113,7 +114,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
     } finally {
       setSearching(false)
     }
-  }, [vehicle?.brand, vehicle?.model, vehicle?.year])
+  }, [vehicle?.brand, vehicle?.model, vehicle?.year, vehicle?.motor])
 
   useEffect(() => {
     const timer = setTimeout(() => handleSearch(searchQuery), 300)
@@ -126,6 +127,7 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
         const qs = new URLSearchParams({ brand: vehicle.brand, category: t.title })
         if (vehicle.model) qs.set('model', vehicle.model)
         if (vehicle.year) qs.set('year', vehicle.year)
+        if (vehicle.motor) qs.set('engine', vehicle.motor)
         return { id: t.id, title: t.title, image: t.image, href: `/search?${qs.toString()}` }
       })
     : []
@@ -308,10 +310,17 @@ export function BrowseContent({ variant = 'mobile' }: BrowseContentProps) {
                     maxLength={17}
                     className="font-mono w-full rounded-sm border border-border-strong bg-card px-4 py-3 text-center text-sm uppercase tracking-widest text-ink outline-none transition-shadow focus:border-ink-2 focus:shadow-[0_0_0_3px_rgba(0,35,102,0.08)]"
                     style={{ minHeight: 48 }}
+                    onChange={(e) => {
+                      // Le VIN exclut I, O et Q : on nettoie puis on décode dès
+                      // le 17e caractère, sans second geste.
+                      const val = e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '').slice(0, 17)
+                      e.target.value = val
+                      if (val.length === 17) router.push(`/browse/vin?code=${val}`)
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        const val = e.currentTarget.value.trim()
-                        if (val.length >= 11) router.push(`/browse/vin?code=${encodeURIComponent(val)}`)
+                        const val = e.currentTarget.value.trim().toUpperCase()
+                        if (val.length === 17) router.push(`/browse/vin?code=${encodeURIComponent(val)}`)
                       }
                     }}
                   />

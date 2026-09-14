@@ -7,10 +7,12 @@ vi.stubEnv('PINO_LOG_LEVEL', 'error')
 vi.stubEnv('PORT', '3001')
 
 const catalogFindMany = vi.fn()
+const fitmentFindMany = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     catalogItem: { findMany: (...a: unknown[]) => catalogFindMany(...a) },
+    catalogItemFitment: { findMany: (...a: unknown[]) => fitmentFindMany(...a) },
     searchSynonym: { findMany: vi.fn().mockResolvedValue([]) },
   },
 }))
@@ -69,5 +71,44 @@ describe('browse/compareParts value scoring', () => {
     const { groups } = await compareParts({ oem: 'OEM-1', sort: 'value' })
     expect(groups[0]!.offers[0]!.id).toBe('quality')
     expect(groups[0]!.bestValueOfferId).toBe('quality')
+  })
+})
+
+describe('compareParts — filtre motorisation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('restreint les fitments aux libellés qui correspondent à la motorisation', async () => {
+    fitmentFindMany.mockResolvedValueOnce([
+      { engine: '1.6 BlueHDi S&S 100cv' },
+      { engine: '1.6 BlueHDi 120 cv' },
+    ])
+    catalogFindMany.mockResolvedValueOnce([])
+
+    await compareParts({ brand: 'Peugeot', model: '308', year: 2015, engine: '1.6 BlueHDi 100 cv' })
+
+    const where = catalogFindMany.mock.calls[0][0].where as {
+      OR: Array<{ fitments?: { some: { AND: Record<string, unknown>[] } }; vehicleCompatibility?: unknown }>
+    }
+    const engineClause = where.OR[0].fitments!.some.AND.find((c) =>
+      JSON.stringify(c).includes('engine'),
+    ) as { OR: [{ engine: null }, { engine: { in: string[] } }] }
+
+    expect(engineClause.OR[1].engine.in).toEqual(['1.6 BlueHDi S&S 100cv'])
+    // Le repli texte legacy ne sait pas distinguer les motorisations : il sort.
+    expect(where.OR.some((c) => c.vehicleCompatibility)).toBe(false)
+  })
+
+  it('garde le repli texte legacy quand aucune motorisation n’est demandée', async () => {
+    catalogFindMany.mockResolvedValueOnce([])
+
+    await compareParts({ brand: 'Peugeot', model: '308', year: 2015 })
+
+    const where = catalogFindMany.mock.calls[0][0].where as {
+      OR: Array<{ vehicleCompatibility?: unknown }>
+    }
+    expect(fitmentFindMany).not.toHaveBeenCalled()
+    expect(where.OR.some((c) => c.vehicleCompatibility)).toBe(true)
   })
 })

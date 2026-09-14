@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma.js'
-import { VEHICLE_BRANDS, BRAND_NAMES, getEngines as getEnginesData, PART_CATEGORIES, UNIVERSAL_CATEGORIES, warrantyToDays } from 'shared/constants'
+import { VEHICLE_BRANDS, BRAND_NAMES, getEngines as getEnginesData, enginesMatch, PART_CATEGORIES, UNIVERSAL_CATEGORIES, warrantyToDays } from 'shared/constants'
 import type { WarrantyUnit } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
 import type { PartCondition, SupplyMode } from '@prisma/client'
@@ -7,34 +7,223 @@ import { importQuoteOptions, type ImportQuoteItem } from 'shared/constants'
 
 export interface VinDecodeResult {
   vin: string
+  /** Marque du référentiel quand elle est reconnue, sinon libellé brut NHTSA. */
   make: string | null
+  /** Modèle du référentiel, null quand le VIN ne permet pas de trancher. */
   model: string | null
   year: number | null
+  /** Motorisation quand une seule reste plausible pour ce millésime. */
+  engine: string | null
+  /** Motorisations candidates (marque + modèle + millésime). */
+  engines: string[]
+  /** Modèles du millésime, à proposer quand le modèle reste indéterminé. */
+  models: string[]
+  /** true dès que la marque est reconnue dans le référentiel. */
   decoded: boolean
 }
 
+/**
+ * Millésime encodé en 10ᵉ position (ISO 3779). Le code boucle sur 30 ans ; la
+ * 7ᵉ position tranche entre les deux tours (lettre = cycle 2010+, chiffre =
+ * cycle 1980+). NHTSA se trompe régulièrement de cycle sur les VIN européens,
+ * d'où ce calcul local qui fait foi.
+ */
+const VIN_YEAR_CODES = 'ABCDEFGHJKLMNPRSTVWXY123456789'
+
+export function vinModelYear(vin: string): number | null {
+  const index = VIN_YEAR_CODES.indexOf(vin[9] ?? '')
+  if (index < 0) return null
+  const secondCycle = /[A-Z]/.test(vin[6] ?? '')
+  const year = (secondCycle ? 2010 : 1980) + index
+  // Un millésime dans le futur trahit le mauvais cycle : on redescend.
+  return year > new Date().getFullYear() + 1 ? year - 30 : year
+}
+
+/** Clé de comparaison : « Land Rover », « LAND-ROVER » et « LANDROVER » égales. */
+function normalizeKey(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/gi, '')
+    .toUpperCase()
+}
+
+/** Libellés NHTSA qui ne s'écrivent pas comme la clé du référentiel. */
+const MAKE_ALIASES: Record<string, string> = {
+  VW: 'VOLKSWAGEN',
+  MERCEDES: 'MERCEDES-BENZ',
+  MERCEDESBENZAG: 'MERCEDES-BENZ',
+  ROVER: 'LAND ROVER',
+  DSAUTOMOBILES: 'DS',
+}
+
+/**
+ * Filet WMI (3 premiers caractères du VIN) → marque, pour les VIN que NHTSA ne
+ * sait pas décoder : sa base couvre mal les véhicules d'import Europe/Asie,
+ * très majoritaires à Abidjan. Seuls des codes constructeur sans ambiguïté.
+ */
+const WMI_BRANDS: Record<string, string> = {
+  JT: 'TOYOTA', SB1: 'TOYOTA', SB3: 'TOYOTA', VNK: 'TOYOTA', MR0: 'TOYOTA', AHT: 'TOYOTA',
+  JTH: 'LEXUS', JTJ: 'LEXUS',
+  JN1: 'NISSAN', JN3: 'NISSAN', JN6: 'NISSAN', JN8: 'NISSAN', VSK: 'NISSAN', SJN: 'NISSAN', MDH: 'NISSAN',
+  JHM: 'HONDA', JHL: 'HONDA', SHH: 'HONDA', MRH: 'HONDA',
+  KMH: 'HYUNDAI', KMF: 'HYUNDAI', TMA: 'HYUNDAI', NLH: 'HYUNDAI',
+  KNA: 'KIA', KNB: 'KIA', KND: 'KIA', U5Y: 'KIA',
+  JA3: 'MITSUBISHI', JA4: 'MITSUBISHI', JMB: 'MITSUBISHI', JMY: 'MITSUBISHI', MMB: 'MITSUBISHI', MMC: 'MITSUBISHI',
+  JS2: 'SUZUKI', JS3: 'SUZUKI', JSA: 'SUZUKI', TSM: 'SUZUKI', MMS: 'SUZUKI',
+  JM1: 'MAZDA', JM7: 'MAZDA', JMZ: 'MAZDA',
+  JAA: 'ISUZU', JAC: 'ISUZU', MPA: 'ISUZU',
+  VF1: 'RENAULT', VF2: 'RENAULT', X7L: 'RENAULT', VNV: 'RENAULT',
+  UU1: 'DACIA', UU5: 'DACIA',
+  VF3: 'PEUGEOT', VR3: 'PEUGEOT',
+  VF7: 'CITROEN', VR7: 'CITROEN',
+  VR1: 'DS',
+  WVW: 'VOLKSWAGEN', WV1: 'VOLKSWAGEN', WV2: 'VOLKSWAGEN', '3VW': 'VOLKSWAGEN', '9BW': 'VOLKSWAGEN',
+  WAU: 'AUDI', WA1: 'AUDI', TRU: 'AUDI',
+  WDB: 'MERCEDES-BENZ', WDC: 'MERCEDES-BENZ', WDD: 'MERCEDES-BENZ', WDF: 'MERCEDES-BENZ',
+  W1K: 'MERCEDES-BENZ', W1N: 'MERCEDES-BENZ', W1V: 'MERCEDES-BENZ',
+  WBA: 'BMW', WBS: 'BMW', WBY: 'BMW', WBW: 'BMW',
+  WF0: 'FORD', WVG: 'VOLKSWAGEN',
+  W0L: 'OPEL', W0V: 'OPEL',
+  YV1: 'VOLVO', YV4: 'VOLVO',
+  SAL: 'LAND ROVER', SAJ: 'JAGUAR',
+  TMB: 'SKODA', VSS: 'SEAT',
+  ZFA: 'FIAT', ZAR: 'ALFA ROMEO',
+  WP0: 'PORSCHE', WP1: 'PORSCHE',
+  LS5: 'CHANGAN', LGW: 'GREAT WALL',
+}
+
+/** Marque déduite du WMI : préfixe de 3 caractères, puis de 2. */
+function brandFromWmi(vin: string): string | null {
+  return WMI_BRANDS[vin.slice(0, 3)] ?? WMI_BRANDS[vin.slice(0, 2)] ?? null
+}
+
+function resolveBrandKey(make: string): string | null {
+  const key = normalizeKey(make)
+  if (!key) return null
+  const aliased = MAKE_ALIASES[key]
+  if (aliased) return aliased
+  return Object.keys(VEHICLE_BRANDS).find((brand) => normalizeKey(brand) === key) ?? null
+}
+
+/**
+ * Modèle NHTSA → modèle du référentiel. Exact d'abord, puis préfixe : NHTSA
+ * renvoie souvent une déclinaison (« Corolla Sedan ») là où le référentiel ne
+ * connaît que la famille (« Corolla »).
+ */
+function resolveModelKey(brandKey: string, model: string): string | null {
+  const models = Object.keys(VEHICLE_BRANDS[brandKey]?.models ?? {})
+  const key = normalizeKey(model)
+  if (!key) return null
+  const exact = models.find((m) => normalizeKey(m) === key)
+  if (exact) return exact
+  const prefixed = models.filter((m) => key.startsWith(normalizeKey(m)))
+  if (prefixed.length === 0) return null
+  return prefixed.reduce((longest, m) => (m.length > longest.length ? m : longest))
+}
+
+function modelsForYear(brandKey: string, year: number | null): string[] {
+  const models = VEHICLE_BRANDS[brandKey]?.models ?? {}
+  const names = Object.keys(models)
+  if (!year) return names
+  const matching = names.filter((m) => models[m]?.includes(year))
+  return matching.length > 0 ? matching : names
+}
+
+const DIESEL_MARKERS = /(^|[\s-])(D|TD|HDI|BLUEHDI|TDI|DCI|CDI|CRDI|JTD|TDCI|D4D|DIESEL)([\s-]|$)/
+
+/**
+ * Motorisations plausibles : on part de celles du millésime puis on resserre
+ * avec la cylindrée et le carburant NHTSA quand ils sont renseignés. Un filtre
+ * qui ne laisse rien est ignoré — mieux vaut proposer trop que rien.
+ */
+function narrowEngines(all: string[], displacement?: string, fuel?: string): string[] {
+  let candidates = all
+  const litres = displacement?.trim()
+  if (litres && /^\d+(\.\d+)?$/.test(litres)) {
+    const escaped = litres.replace('.', '\\.')
+    const byDisplacement = candidates.filter((label) => new RegExp(`^${escaped}(?![0-9])`).test(label))
+    if (byDisplacement.length > 0) candidates = byDisplacement
+  }
+  const isDiesel = /diesel/i.test(fuel ?? '')
+  const isPetrol = /gasoline|petrol|essence/i.test(fuel ?? '')
+  if (isDiesel || isPetrol) {
+    const byFuel = candidates.filter((label) => DIESEL_MARKERS.test(label.toUpperCase()) === isDiesel)
+    if (byFuel.length > 0) candidates = byFuel
+  }
+  return candidates
+}
+
+interface NhtsaRow {
+  Make?: string
+  Model?: string
+  ModelYear?: string
+  DisplacementL?: string
+  FuelTypePrimary?: string
+}
+
+/**
+ * Décodage VIN : NHTSA pour la marque (fiable même hors USA, elle vient du
+ * WMI) puis rapprochement avec le référentiel Pièces pour le modèle, le
+ * millésime et la motorisation. Sur les VIN européens NHTSA ne rend souvent
+ * que la marque : on renvoie alors les modèles du millésime pour que
+ * l'utilisateur tranche en un clic au lieu de repartir de zéro.
+ */
 export async function decodeVin(vin: string): Promise<VinDecodeResult> {
   const upperVin = vin.toUpperCase()
-  try {
-    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/${upperVin}?format=json`)
-    if (!res.ok) {
-      return { vin: upperVin, make: null, model: null, year: null, decoded: false }
-    }
-    const data = (await res.json()) as { Results?: Array<{ Make?: string; Model?: string; ModelYear?: string }> }
-    const result = data.Results?.[0]
-    if (!result || !result.Make) {
-      return { vin: upperVin, make: null, model: null, year: null, decoded: false }
-    }
+  const vinYear = vinModelYear(upperVin)
+  const fallback: VinDecodeResult = {
+    vin: upperVin,
+    make: null,
+    model: null,
+    year: vinYear,
+    engine: null,
+    engines: [],
+    models: [],
+    decoded: false,
+  }
 
-    return {
-      vin: upperVin,
-      make: result.Make || null,
-      model: result.Model || null,
-      year: result.ModelYear ? parseInt(result.ModelYear, 10) : null,
-      decoded: true,
+  let row: NhtsaRow | null = null
+  try {
+    const params = new URLSearchParams({ format: 'json' })
+    if (vinYear) params.set('modelyear', String(vinYear))
+    const res = await fetch(
+      `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/${upperVin}?${params.toString()}`,
+    )
+    if (res.ok) {
+      const data = (await res.json()) as { Results?: NhtsaRow[] }
+      row = data.Results?.[0] ?? null
     }
   } catch {
-    return { vin: upperVin, make: null, model: null, year: null, decoded: false }
+    // Service tiers indisponible : on garde le millésime déduit du VIN.
+  }
+
+  const brandKey = (row?.Make ? resolveBrandKey(row.Make) : null) ?? brandFromWmi(upperVin)
+  if (!brandKey) {
+    return { ...fallback, make: row?.Make?.trim() || null }
+  }
+
+  const nhtsaYear = row?.ModelYear ? parseInt(row.ModelYear, 10) : NaN
+  const year = vinYear ?? (Number.isFinite(nhtsaYear) ? nhtsaYear : null)
+
+  // Un modèle inconnu du référentiel n'est pas affichable (il ne filtrerait
+  // aucun fitment) : on bascule alors sur le choix manuel. Le millésime, lui,
+  // ne sert pas d'arbitre — les listes d'années du référentiel ont des trous.
+  const modelKey = row?.Model ? resolveModelKey(brandKey, row.Model) : null
+
+  const engines = modelKey
+    ? narrowEngines(getEnginesData(brandKey, modelKey, year), row?.DisplacementL, row?.FuelTypePrimary)
+    : []
+
+  return {
+    vin: upperVin,
+    make: brandKey,
+    model: modelKey,
+    year,
+    engine: engines.length === 1 ? (engines[0] ?? null) : null,
+    engines,
+    models: modelKey ? [] : modelsForYear(brandKey, year),
+    decoded: true,
   }
 }
 
@@ -102,6 +291,8 @@ export interface VehicleCompatibilityFilters {
   brand?: string
   model?: string
   year?: number
+  /** Motorisation choisie, libellé du référentiel (« 1.6 BlueHDi 100 cv »). */
+  engine?: string
 }
 
 export interface BrowsePartsFilters extends VehicleCompatibilityFilters {
@@ -137,23 +328,65 @@ export function parseSupplyMode(raw: string | undefined): SupplyMode | undefined
 }
 
 /**
- * Clause Prisma de compatibilité véhicule STRICTE : ne matche que les pièces
- * ayant un fitment structuré correspondant à la marque/modèle/année. Les pièces
- * universelles (fluides, outillage, accessoires) restent toujours visibles.
- * Retourne null si aucun véhicule n'est sélectionné (= pas de filtre véhicule).
+ * Libellés de motorisation présents dans les fitments du modèle qui désignent
+ * la motorisation choisie. Les vendeurs et les imports saisissent du texte
+ * libre (« 1.6 BlueHDi S&S 100cv ») : le rapprochement se fait sur la
+ * signature cylindrée + puissance, pas sur la chaîne. Le SQL ne sait pas le
+ * faire, d'où ce passage par la liste des libellés distincts du modèle.
+ *
+ * Renvoie null quand aucune motorisation n'est demandée (= pas de filtre).
  */
-function buildVehicleCompatibilityClause(filters: VehicleCompatibilityFilters): Record<string, unknown> | null {
+async function resolveFitmentEngines(filters: VehicleCompatibilityFilters): Promise<string[] | null> {
+  const engine = filters.engine?.trim()
+  if (!engine || !filters.brand || !filters.model) return null
+
+  const rows = await prisma.catalogItemFitment.findMany({
+    where: {
+      brand: { equals: filters.brand, mode: 'insensitive' },
+      model: { equals: filters.model, mode: 'insensitive' },
+      NOT: { engine: null },
+    },
+    select: { engine: true },
+    distinct: ['engine'],
+  })
+
+  return rows
+    .map((row) => row.engine)
+    .filter((label): label is string => label !== null && enginesMatch(engine, label))
+}
+
+/**
+ * Clause Prisma de compatibilité véhicule STRICTE : ne matche que les pièces
+ * ayant un fitment structuré correspondant à la marque/modèle/année/moteur.
+ * Les pièces universelles (fluides, outillage, accessoires) restent toujours
+ * visibles. Retourne null si aucun véhicule n'est sélectionné.
+ *
+ * `matchingEngines` vient de resolveFitmentEngines ; null = pas de filtre
+ * moteur. Un fitment sans moteur renseigné vaut « toutes motorisations » et
+ * passe donc toujours, comme un fitment sans modèle.
+ */
+function buildVehicleCompatibilityClause(
+  filters: VehicleCompatibilityFilters,
+  matchingEngines: string[] | null = null,
+): Record<string, unknown> | null {
   if (!filters.brand) return null
 
   const fitmentWhere: Record<string, unknown> = { brand: { equals: filters.brand, mode: 'insensitive' } }
+  const conditions: Record<string, unknown>[] = []
   if (filters.model) {
-    fitmentWhere.OR = [{ model: null }, { model: { equals: filters.model, mode: 'insensitive' } }]
+    conditions.push({ OR: [{ model: null }, { model: { equals: filters.model, mode: 'insensitive' } }] })
   }
   if (filters.year) {
-    fitmentWhere.AND = [
+    conditions.push(
       { OR: [{ yearFrom: null }, { yearFrom: { lte: filters.year } }] },
       { OR: [{ yearTo: null }, { yearTo: { gte: filters.year } }] },
-    ]
+    )
+  }
+  if (matchingEngines) {
+    conditions.push({ OR: [{ engine: null }, { engine: { in: matchingEngines } }] })
+  }
+  if (conditions.length > 0) {
+    fitmentWhere.AND = conditions
   }
 
   return {
@@ -200,7 +433,7 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
 
   // Filtrage strict : véhicule (fitments) + texte combinés en AND.
   const and: Record<string, unknown>[] = []
-  const vehicleClause = buildVehicleCompatibilityClause(filters)
+  const vehicleClause = buildVehicleCompatibilityClause(filters, await resolveFitmentEngines(filters))
   if (vehicleClause) and.push(vehicleClause)
   const textClause = buildTextClause(filters.q)
   if (textClause) and.push(textClause)
@@ -337,20 +570,33 @@ export async function compareParts(
     if (filters.year) compatParts.push(String(filters.year))
     const compatQuery = compatParts.join(' ')
 
+    const matchingEngines = await resolveFitmentEngines(filters)
     const fitmentWhere: Record<string, unknown> = { brand: { equals: filters.brand, mode: 'insensitive' } }
+    const conditions: Record<string, unknown>[] = []
     if (filters.model) {
-      fitmentWhere.OR = [{ model: null }, { model: { equals: filters.model, mode: 'insensitive' } }]
+      conditions.push({ OR: [{ model: null }, { model: { equals: filters.model, mode: 'insensitive' } }] })
     }
     if (filters.year) {
-      fitmentWhere.AND = [
+      conditions.push(
         { OR: [{ yearFrom: null }, { yearFrom: { lte: filters.year } }] },
         { OR: [{ yearTo: null }, { yearTo: { gte: filters.year } }] },
-      ]
+      )
     }
-    where.OR = [
-      { fitments: { some: fitmentWhere } },
-      { vehicleCompatibility: { contains: compatQuery, mode: 'insensitive' } },
-    ]
+    if (matchingEngines) {
+      conditions.push({ OR: [{ engine: null }, { engine: { in: matchingEngines } }] })
+    }
+    if (conditions.length > 0) {
+      fitmentWhere.AND = conditions
+    }
+
+    const compatClauses: Record<string, unknown>[] = [{ fitments: { some: fitmentWhere } }]
+    // Le repli texte legacy ne porte aucune motorisation : dès qu'une est
+    // demandée, il laisserait passer toutes les versions du modèle. On le
+    // retire alors plutôt que de rendre le filtre poreux.
+    if (!matchingEngines) {
+      compatClauses.push({ vehicleCompatibility: { contains: compatQuery, mode: 'insensitive' } })
+    }
+    where.OR = compatClauses
   }
 
   const items = await prisma.catalogItem.findMany({
@@ -542,7 +788,7 @@ export async function suggestParts(
     name: { contains: term, mode: 'insensitive' },
   }
 
-  const vehicleClause = buildVehicleCompatibilityClause(filters)
+  const vehicleClause = buildVehicleCompatibilityClause(filters, await resolveFitmentEngines(filters))
   if (vehicleClause) where.AND = [vehicleClause]
 
   const rows = await prisma.catalogItem.findMany({

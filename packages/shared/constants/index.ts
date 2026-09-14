@@ -22,10 +22,12 @@ export {
   getEngines,
   getEnginesForRange,
   engineLabel,
+  engineSignature,
+  enginesMatch,
   VEHICLE_TYPES,
   DEFAULT_VEHICLE_TYPE,
 } from './vehicles'
-export type { VehicleType, VehicleTypeId } from './vehicles'
+export type { VehicleType, VehicleTypeId, EngineSignature } from './vehicles'
 export {
   PART_CATEGORIES,
   PART_CATALOG,

@@ -86,6 +86,47 @@ export function getEnginesForRange(
 }
 
 /**
+ * Signature d'une motorisation : cylindrée en litres et puissance en chevaux.
+ * C'est le seul dénominateur commun entre le référentiel (« 1.6 BlueHDi 100 cv »)
+ * et les libellés libres saisis dans les fitments (« 1.6 BlueHDi S&S 100cv »,
+ * « 2.0L L4 DOHC 16V FWD ») — comparer les chaînes entières ne rapproche rien.
+ */
+export interface EngineSignature {
+  displacement: number | null
+  power: number | null
+}
+
+export function engineSignature(label: string): EngineSignature {
+  const normalized = label.toLowerCase().replace(/,/g, '.').replace(/[^a-z0-9.]+/g, ' ')
+  const power = normalized.match(/(\d{2,4})\s*(?:c\s*v|ch|hp|ps)\b/)?.[1]
+  const displacement = normalized.match(/(?:^|[^\d.])(\d\.\d{1,2})(?![\d.])/)?.[1]
+  return {
+    displacement: displacement ? Number(displacement) : null,
+    power: power ? Number(power) : null,
+  }
+}
+
+/**
+ * Deux libellés désignent-ils la même motorisation ? Les attributs connus des
+ * deux côtés doivent coïncider, et il en faut au moins un : un libellé sans
+ * cylindrée ni puissance n'est comparable à rien et ne matche donc pas. Un
+ * libellé partiel (« 2.0L 16V », sans puissance) reste compatible avec toutes
+ * les 2.0 du modèle — on préfère élargir que masquer une pièce compatible.
+ */
+export function enginesMatch(a: string, b: string): boolean {
+  const left = engineSignature(a)
+  const right = engineSignature(b)
+  if (left.power !== null && right.power !== null && left.power !== right.power) return false
+  if (left.displacement !== null && right.displacement !== null && left.displacement !== right.displacement) {
+    return false
+  }
+  const comparable =
+    (left.power !== null && right.power !== null) ||
+    (left.displacement !== null && right.displacement !== null)
+  return comparable
+}
+
+/**
  * Catégories de véhicules sélectionnables dans le parcours acheteur.
  * Seul VOITURE possède des données (VEHICLE_BRANDS) ; les autres sont
  * affichés « Bientôt disponible » tant que leurs marques/modèles ne sont
