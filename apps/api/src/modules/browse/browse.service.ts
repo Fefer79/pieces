@@ -4,6 +4,7 @@ import type { WarrantyUnit } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
 import type { PartCondition, SupplyMode } from '@prisma/client'
 import { importQuoteOptions, type ImportQuoteItem } from 'shared/constants'
+import { fetchNhtsa, fetchFreeVinDecoder, type VinFacts } from './vin.sources.js'
 
 export interface VinDecodeResult {
   vin: string
@@ -22,20 +23,31 @@ export interface VinDecodeResult {
   decoded: boolean
 }
 
-/**
- * Millésime encodé en 10ᵉ position (ISO 3779). Le code boucle sur 30 ans ; la
- * 7ᵉ position tranche entre les deux tours (lettre = cycle 2010+, chiffre =
- * cycle 1980+). NHTSA se trompe régulièrement de cycle sur les VIN européens,
- * d'où ce calcul local qui fait foi.
- */
 const VIN_YEAR_CODES = 'ABCDEFGHJKLMNPRSTVWXY123456789'
 
+/**
+ * Les deux millésimes que peut désigner le code de 10ᵉ position (ISO 3779) :
+ * il boucle sur 30 ans. Les millésimes futurs sont écartés.
+ */
+export function vinYearCandidates(vin: string): number[] {
+  const index = VIN_YEAR_CODES.indexOf(vin[9] ?? '')
+  if (index < 0) return []
+  const max = new Date().getFullYear() + 1
+  return [1980 + index, 2010 + index].filter((year) => year <= max)
+}
+
+/**
+ * Millésime déduit du VIN seul, et seulement quand il est déductible.
+ *
+ * La 7ᵉ position alphabétique signale le cycle 2010+ : c'est une règle FMVSS,
+ * valable pour les véhicules vendus aux États-Unis. Un VIN européen y met ce
+ * qu'il veut (WVWZZZ1KZAW… = Golf 2010 avec un chiffre en 7ᵉ), donc hors de ce
+ * cas on renvoie null plutôt qu'un millésime faux : les sources tranchent.
+ */
 export function vinModelYear(vin: string): number | null {
   const index = VIN_YEAR_CODES.indexOf(vin[9] ?? '')
-  if (index < 0) return null
-  const secondCycle = /[A-Z]/.test(vin[6] ?? '')
-  const year = (secondCycle ? 2010 : 1980) + index
-  // Un millésime dans le futur trahit le mauvais cycle : on redescend.
+  if (index < 0 || !/[A-Z]/.test(vin[6] ?? '')) return null
+  const year = 2010 + index
   return year > new Date().getFullYear() + 1 ? year - 30 : year
 }
 
@@ -134,86 +146,97 @@ const DIESEL_MARKERS = /(^|[\s-])(D|TD|HDI|BLUEHDI|TDI|DCI|CDI|CRDI|JTD|TDCI|D4D
 
 /**
  * Motorisations plausibles : on part de celles du millésime puis on resserre
- * avec la cylindrée et le carburant NHTSA quand ils sont renseignés. Un filtre
- * qui ne laisse rien est ignoré — mieux vaut proposer trop que rien.
+ * avec ce que la source a publié — cylindrée, carburant, ou un libellé moteur
+ * complet (« 1.8L L4 DOHC 16V FWD ») rapproché par signature. Un filtre qui ne
+ * laisse rien est ignoré — mieux vaut proposer trop que rien.
  */
-function narrowEngines(all: string[], displacement?: string, fuel?: string): string[] {
+function narrowEngines(
+  all: string[],
+  facts: { engine?: string | null; displacement?: string | null; fuel?: string | null },
+): string[] {
   let candidates = all
-  const litres = displacement?.trim()
+
+  const label = facts.engine?.trim()
+  if (label) {
+    const byLabel = candidates.filter((option) => enginesMatch(label, option))
+    if (byLabel.length > 0) candidates = byLabel
+  }
+
+  const litres = facts.displacement?.trim()
   if (litres && /^\d+(\.\d+)?$/.test(litres)) {
     const escaped = litres.replace('.', '\\.')
-    const byDisplacement = candidates.filter((label) => new RegExp(`^${escaped}(?![0-9])`).test(label))
+    const byDisplacement = candidates.filter((option) => new RegExp(`^${escaped}(?![0-9])`).test(option))
     if (byDisplacement.length > 0) candidates = byDisplacement
   }
-  const isDiesel = /diesel/i.test(fuel ?? '')
-  const isPetrol = /gasoline|petrol|essence/i.test(fuel ?? '')
+
+  const fuel = facts.fuel ?? ''
+  const isDiesel = /diesel|gazole/i.test(fuel)
+  const isPetrol = /gasoline|petrol|essence/i.test(fuel)
   if (isDiesel || isPetrol) {
-    const byFuel = candidates.filter((label) => DIESEL_MARKERS.test(label.toUpperCase()) === isDiesel)
+    const byFuel = candidates.filter((option) => DIESEL_MARKERS.test(option.toUpperCase()) === isDiesel)
     if (byFuel.length > 0) candidates = byFuel
   }
+
   return candidates
 }
 
-interface NhtsaRow {
-  Make?: string
-  Model?: string
-  ModelYear?: string
-  DisplacementL?: string
-  FuelTypePrimary?: string
-}
-
 /**
- * Décodage VIN : NHTSA pour la marque (fiable même hors USA, elle vient du
- * WMI) puis rapprochement avec le référentiel Pièces pour le modèle, le
- * millésime et la motorisation. Sur les VIN européens NHTSA ne rend souvent
- * que la marque : on renvoie alors les modèles du millésime pour que
- * l'utilisateur tranche en un clic au lieu de repartir de zéro.
+ * Décodage VIN en deux temps.
+ *
+ * NHTSA d'abord : sans quota, et sa marque (tirée du WMI) est fiable même hors
+ * USA. Elle s'arrête souvent là sur les VIN européens — or l'import Europe est
+ * majoritaire à Abidjan. On complète alors avec freevindecoder.eu, qui rend le
+ * modèle sur ces VIN mais plafonne à 10 requêtes/minute par IP : on ne
+ * l'interroge donc QUE pour combler un trou, jamais en systématique.
+ *
+ * Tout le reste est rapproché du référentiel Pièces, seul capable de filtrer
+ * les fitments. Si le modèle reste indéterminé, on renvoie ceux du millésime
+ * pour que l'utilisateur tranche en un clic au lieu de repartir de zéro.
  */
 export async function decodeVin(vin: string): Promise<VinDecodeResult> {
   const upperVin = vin.toUpperCase()
   const vinYear = vinModelYear(upperVin)
+  const candidates = vinYearCandidates(upperVin)
   const fallback: VinDecodeResult = {
     vin: upperVin,
     make: null,
     model: null,
-    year: vinYear,
+    // VIN non décodé : on affiche le millésime le plus récent que le code
+    // autorise, présenté comme probable et non comme acquis.
+    year: vinYear ?? candidates[candidates.length - 1] ?? null,
     engine: null,
     engines: [],
     models: [],
     decoded: false,
   }
 
-  let row: NhtsaRow | null = null
-  try {
-    const params = new URLSearchParams({ format: 'json' })
-    if (vinYear) params.set('modelyear', String(vinYear))
-    const res = await fetch(
-      `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/${upperVin}?${params.toString()}`,
-    )
-    if (res.ok) {
-      const data = (await res.json()) as { Results?: NhtsaRow[] }
-      row = data.Results?.[0] ?? null
+  const nhtsa = await fetchNhtsa(upperVin, vinYear)
+  let facts: VinFacts = nhtsa
+  let brandKey = (nhtsa.make ? resolveBrandKey(nhtsa.make) : null) ?? brandFromWmi(upperVin)
+  let modelKey = brandKey && nhtsa.model ? resolveModelKey(brandKey, nhtsa.model) : null
+
+  // Le seul cas qui justifie de consommer le budget : un modèle introuvable.
+  if (!modelKey) {
+    const free = await fetchFreeVinDecoder(upperVin)
+    if (free) {
+      brandKey = brandKey ?? (free.make ? resolveBrandKey(free.make) : null)
+      const freeModelKey = brandKey && free.model ? resolveModelKey(brandKey, free.model) : null
+      if (freeModelKey) {
+        modelKey = freeModelKey
+        // La motorisation n'a de sens qu'avec le modèle qui l'accompagne.
+        facts = free
+      }
     }
-  } catch {
-    // Service tiers indisponible : on garde le millésime déduit du VIN.
   }
 
-  const brandKey = (row?.Make ? resolveBrandKey(row.Make) : null) ?? brandFromWmi(upperVin)
   if (!brandKey) {
-    return { ...fallback, make: row?.Make?.trim() || null }
+    return { ...fallback, make: nhtsa.make || null }
   }
 
-  const nhtsaYear = row?.ModelYear ? parseInt(row.ModelYear, 10) : NaN
-  const year = vinYear ?? (Number.isFinite(nhtsaYear) ? nhtsaYear : null)
-
-  // Un modèle inconnu du référentiel n'est pas affichable (il ne filtrerait
-  // aucun fitment) : on bascule alors sur le choix manuel. Le millésime, lui,
-  // ne sert pas d'arbitre — les listes d'années du référentiel ont des trous.
-  const modelKey = row?.Model ? resolveModelKey(brandKey, row.Model) : null
-
-  const engines = modelKey
-    ? narrowEngines(getEnginesData(brandKey, modelKey, year), row?.DisplacementL, row?.FuelTypePrimary)
-    : []
+  // Le millésime vient des sources : elles savent lever l'ambiguïté du cycle
+  // sur les VIN non américains, là où le VIN seul ne le permet pas.
+  const year = facts.year ?? nhtsa.year ?? vinYear ?? null
+  const engines = modelKey ? narrowEngines(getEnginesData(brandKey, modelKey, year), facts) : []
 
   return {
     vin: upperVin,

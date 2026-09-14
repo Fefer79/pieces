@@ -10,6 +10,13 @@ const mockCatalogItemFindMany = vi.fn()
 const mockCatalogItemCount = vi.fn()
 const mockSearchSynonymFindMany = vi.fn()
 const mockFitmentFindMany = vi.fn()
+const mockFetchNhtsa = vi.fn()
+const mockFetchFreeVin = vi.fn()
+
+vi.mock('./vin.sources.js', () => ({
+  fetchNhtsa: (...args: unknown[]) => mockFetchNhtsa(...args),
+  fetchFreeVinDecoder: (...args: unknown[]) => mockFetchFreeVin(...args),
+}))
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -239,38 +246,30 @@ describe('browse.service', () => {
   })
 
   describe('decodeVin', () => {
-    it('returns decoded=false when neither NHTSA nor the WMI identify the make', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('network'))
+    const facts = (over: Record<string, unknown> = {}) => ({
+      make: null,
+      model: null,
+      year: null,
+      engine: null,
+      displacement: null,
+      fuel: null,
+      ...over,
+    })
 
+    beforeEach(() => {
+      mockFetchNhtsa.mockResolvedValue(facts())
+      mockFetchFreeVin.mockResolvedValue(null)
+    })
+
+    it('returns decoded=false when no source nor the WMI identify the make', async () => {
       const result = await decodeVin('ZZZ1234567AB12345')
 
       expect(result.decoded).toBe(false)
       expect(result.vin).toBe('ZZZ1234567AB12345')
-      globalThis.fetch = originalFetch
     })
 
-    it('returns decoded=false when NHTSA returns no results on an unknown WMI', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ Results: [{}] }),
-      })
-
-      const result = await decodeVin('ZZZ1234567AB12345')
-
-      expect(result.decoded).toBe(false)
-      globalThis.fetch = originalFetch
-    })
-
-    it('returns decoded vehicle when NHTSA returns data', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          Results: [{ Make: 'TOYOTA', Model: 'Corolla', ModelYear: '2010' }],
-        }),
-      })
+    it('resolves brand, model and year from NHTSA alone', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Corolla', year: 2010 }))
 
       const result = await decodeVin('JTDKN3DU5A0123456')
 
@@ -278,130 +277,94 @@ describe('browse.service', () => {
       expect(result.make).toBe('TOYOTA')
       expect(result.model).toBe('Corolla')
       expect(result.year).toBe(2010)
-      globalThis.fetch = originalFetch
+      // Modèle trouvé : le budget freevindecoder n'est pas entamé.
+      expect(mockFetchFreeVin).not.toHaveBeenCalled()
     })
 
-    it('resolves the engine from displacement and fuel', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({
-          Results: [{ Make: 'TOYOTA', Model: 'Corolla', ModelYear: '2010', DisplacementL: '1.8', FuelTypePrimary: 'Gasoline' }],
-        }),
-      })
+    it('narrows the engines with displacement and fuel', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(
+        facts({ make: 'TOYOTA', model: 'Corolla', year: 2010, displacement: '1.8', fuel: 'Gasoline' }),
+      )
 
       const result = await decodeVin('JTDKN3DU5A0123456')
 
       expect(result.engines.length).toBeGreaterThan(0)
       expect(result.engines.every((e) => e.startsWith('1.8'))).toBe(true)
-      globalThis.fetch = originalFetch
     })
 
-    it('maps the NHTSA make onto the referential brand key', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ Results: [{ Make: 'Land Rover', Model: '' }] }),
-      })
+    it('maps the source make onto the referential brand key', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'Land Rover' }))
 
       const result = await decodeVin('SALGA2AV1HA123456')
 
       expect(result.decoded).toBe(true)
       expect(result.make).toBe('LAND ROVER')
-      globalThis.fetch = originalFetch
     })
 
-    it('proposes the models of the year when NHTSA only returns the make', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ Results: [{ Make: 'PEUGEOT', Model: '', ModelYear: '1987' }] }),
-      })
+    it('falls back to freevindecoder when NHTSA leaves the model unknown', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'VOLKSWAGEN' }))
+      mockFetchFreeVin.mockResolvedValueOnce(
+        facts({ make: 'Volkswagen', model: 'Golf', year: 2010, engine: '1.6L L4 DOHC 16V' }),
+      )
 
-      // 7e position « Z » (lettre) => cycle 2010+, code « H » => 2017.
+      const result = await decodeVin('WVWZZZ1KZAW123456')
+
+      expect(mockFetchFreeVin).toHaveBeenCalledWith('WVWZZZ1KZAW123456')
+      expect(result.make).toBe('VOLKSWAGEN')
+      expect(result.model).toBe('Golf')
+      expect(result.engines.every((e) => e.startsWith('1.6'))).toBe(true)
+    })
+
+    it('keeps proposing the models of the year when no source finds the model', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'PEUGEOT', year: 1987 }))
+      mockFetchFreeVin.mockResolvedValueOnce(facts({ make: 'Peugeot', model: '505', year: 1987 }))
+
       const result = await decodeVin('VF3CUHMZ6HY123456')
 
       expect(result.make).toBe('PEUGEOT')
-      expect(result.year).toBe(2017)
+      expect(result.year).toBe(1987)
+      // La 505 n'est pas au référentiel : elle ne filtrerait aucun fitment.
       expect(result.model).toBeNull()
-      expect(result.models).toContain('208')
-      globalThis.fetch = originalFetch
+      expect(result.models.length).toBeGreaterThan(0)
     })
 
-    it('falls back to the model list when NHTSA returns a model absent from the referential', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ Results: [{ Make: 'PEUGEOT', Model: '505', ModelYear: '1987' }] }),
-      })
+    it('strips a trim suffix to keep the referential model', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Corolla Sedan', year: 2010 }))
 
-      const result = await decodeVin('VF3CUHMZ6HY123456')
+      const result = await decodeVin('JTDKN3DU5A0123456')
 
-      expect(result.model).toBeNull()
-      expect(result.models).toContain('3008')
-      globalThis.fetch = originalFetch
+      expect(result.model).toBe('Corolla')
     })
 
     it('keeps a model whose referential year list has holes', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ Results: [{ Make: 'TOYOTA', Model: 'Prius', ModelYear: '2010' }] }),
-      })
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Prius', year: 2010 }))
 
       // Le référentiel ne liste pas 2010 pour la Prius : le modèle reste retenu.
       const result = await decodeVin('JTDKN3DU5A0123456')
 
       expect(result.model).toBe('Prius')
       expect(result.year).toBe(2010)
-      globalThis.fetch = originalFetch
     })
 
-    it('strips a NHTSA trim suffix to keep the referential model', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ Results: [{ Make: 'TOYOTA', Model: 'Corolla Sedan', ModelYear: '2010' }] }),
-      })
+    // Régression : la 7e position d'un VIN européen ne dit rien du cycle
+    // d'années (WVWZZZ1KZAW… porte un chiffre et sort pourtant en 2010).
+    it('takes the year from the source rather than from the VIN cycle', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'VOLKSWAGEN', model: 'Golf', year: 2010 }))
 
-      const result = await decodeVin('JTDKN3DU5A0123456')
+      const result = await decodeVin('WVWZZZ1KZAW123456')
 
-      expect(result.model).toBe('Corolla')
-      globalThis.fetch = originalFetch
+      expect(result.year).toBe(2010)
     })
 
-    it('falls back to the WMI when NHTSA does not know the make', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ Results: [{ Make: '' }] }),
-      })
-
+    it('falls back to the WMI when no source knows the make', async () => {
       const result = await decodeVin('JN1BJ0RP5JW123456')
 
       expect(result.decoded).toBe(true)
       expect(result.make).toBe('NISSAN')
       expect(result.year).toBe(2018)
-      globalThis.fetch = originalFetch
-    })
-
-    it('still identifies brand and year when NHTSA is unreachable', async () => {
-      const originalFetch = globalThis.fetch
-      globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('network'))
-
-      const result = await decodeVin('JTDKN3DU5A0123456')
-
-      expect(result.decoded).toBe(true)
-      expect(result.make).toBe('TOYOTA')
-      expect(result.year).toBe(2010)
       expect(result.models.length).toBeGreaterThan(0)
-      globalThis.fetch = originalFetch
     })
   })
-
-  // -------------------------------------------------------------------------
-  // Rubriques : état × disponibilité
-  // -------------------------------------------------------------------------
 
   describe('filtrage par état et disponibilité', () => {
     function whereOf() {
