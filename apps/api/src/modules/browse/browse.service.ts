@@ -4,7 +4,7 @@ import type { WarrantyUnit } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
 import type { PartCondition, SupplyMode } from '@prisma/client'
 import { importQuoteOptions, type ImportQuoteItem } from 'shared/constants'
-import { fetchNhtsa, fetchFreeVinDecoder, type VinFacts } from './vin.sources.js'
+import { fetchNhtsa, fetchFreeVinDecoder } from './vin.sources.js'
 
 export interface VinDecodeResult {
   vin: string
@@ -211,20 +211,33 @@ export async function decodeVin(vin: string): Promise<VinDecodeResult> {
   }
 
   const nhtsa = await fetchNhtsa(upperVin, vinYear)
-  let facts: VinFacts = nhtsa
   let brandKey = (nhtsa.make ? resolveBrandKey(nhtsa.make) : null) ?? brandFromWmi(upperVin)
   let modelKey = brandKey && nhtsa.model ? resolveModelKey(brandKey, nhtsa.model) : null
+  // Le millésime vient des sources : elles savent lever l'ambiguïté du cycle
+  // sur les VIN non américains, là où le VIN seul ne le permet pas.
+  let year = nhtsa.year ?? vinYear ?? null
+  let engines =
+    brandKey && modelKey ? narrowEngines(getEnginesData(brandKey, modelKey, year), nhtsa) : []
 
-  // Le seul cas qui justifie de consommer le budget : un modèle introuvable.
+  // Second appel seulement quand le modèle manque. Sa fiche ne publie jamais
+  // la puissance et souvent aucun moteur (rien sur la Golf, « 1.8L L4 DOHC
+  // 16V FWD » sur la Prius) : elle ne trancherait donc pas une motorisation
+  // ambiguë, alors que la cylindrée NHTSA le fait déjà. Le budget — 8 appels
+  // par minute pour toute la plateforme — va là où il paie.
   if (!modelKey) {
     const free = await fetchFreeVinDecoder(upperVin)
     if (free) {
       brandKey = brandKey ?? (free.make ? resolveBrandKey(free.make) : null)
       const freeModelKey = brandKey && free.model ? resolveModelKey(brandKey, free.model) : null
-      if (freeModelKey) {
-        modelKey = freeModelKey
-        // La motorisation n'a de sens qu'avec le modèle qui l'accompagne.
-        facts = free
+      if (freeModelKey) modelKey = freeModelKey
+      year = free.year ?? year
+      if (brandKey && modelKey) {
+        const all = getEnginesData(brandKey, modelKey, year)
+        // Les deux sources se cumulent : NHTSA donne cylindrée et carburant,
+        // freevindecoder un libellé moteur complet. Ce qui reste après les
+        // deux tamis est la motorisation ; si l'un vide la liste, il est
+        // ignoré par narrowEngines.
+        engines = narrowEngines(narrowEngines(all, nhtsa), free)
       }
     }
   }
@@ -232,11 +245,6 @@ export async function decodeVin(vin: string): Promise<VinDecodeResult> {
   if (!brandKey) {
     return { ...fallback, make: nhtsa.make || null }
   }
-
-  // Le millésime vient des sources : elles savent lever l'ambiguïté du cycle
-  // sur les VIN non américains, là où le VIN seul ne le permet pas.
-  const year = facts.year ?? nhtsa.year ?? vinYear ?? null
-  const engines = modelKey ? narrowEngines(getEnginesData(brandKey, modelKey, year), facts) : []
 
   return {
     vin: upperVin,

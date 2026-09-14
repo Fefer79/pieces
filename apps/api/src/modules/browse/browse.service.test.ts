@@ -277,8 +277,29 @@ describe('browse.service', () => {
       expect(result.make).toBe('TOYOTA')
       expect(result.model).toBe('Corolla')
       expect(result.year).toBe(2010)
-      // Modèle trouvé : le budget freevindecoder n'est pas entamé.
+    })
+
+    it('settles the motorisation on its own when NHTSA gives the displacement', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(
+        facts({ make: 'HYUNDAI', model: 'ELANTRA', year: 2015, displacement: '1.8' }),
+      )
+
+      const result = await decodeVin('KMHD35LE8FU123456')
+
+      expect(result.engine).toBe('1.8 145 cv')
       expect(mockFetchFreeVin).not.toHaveBeenCalled()
+    })
+
+    it('leaves the motorisation open rather than spending the budget on it', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Corolla', year: 2010 }))
+
+      const result = await decodeVin('JTDKN3DU5A0123456')
+
+      // Modèle trouvé : freevindecoder ne publie ni puissance ni moteur
+      // exploitable, il ne trancherait pas et coûterait un appel.
+      expect(mockFetchFreeVin).not.toHaveBeenCalled()
+      expect(result.engines.length).toBeGreaterThan(1)
+      expect(result.engine).toBeNull()
     })
 
     it('narrows the engines with displacement and fuel', async () => {

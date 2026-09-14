@@ -100,7 +100,9 @@ function VinDecodeInner() {
   }
 
   const identified = result?.decoded === true
-  const complete = Boolean(identified && model && result?.year)
+  // La motorisation ne bloque pas : le VIN ne l'encode pas toujours, et la
+  // liste de pièces se filtre très bien sans elle.
+  const canSearch = Boolean(identified && model && result?.year)
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">
@@ -132,6 +134,19 @@ function VinDecodeInner() {
       </button>
 
       {error && <p className="mt-4 text-sm text-error-fg">{error}</p>}
+
+      {loading && (
+        <div className="mt-4 rounded-md border border-border bg-card p-4" aria-live="polite">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
+            Décodage en cours
+          </p>
+          <div className="mt-3 space-y-2">
+            <div className="h-4 w-1/3 animate-pulse rounded-sm bg-surface" />
+            <div className="h-4 w-1/2 animate-pulse rounded-sm bg-surface" />
+            <div className="h-4 w-2/5 animate-pulse rounded-sm bg-surface" />
+          </div>
+        </div>
+      )}
 
       {identified && result && (
         <div className="mt-4 rounded-md border border-border bg-card p-4">
@@ -170,24 +185,50 @@ function VinDecodeInner() {
           </div>
 
           <div className="mt-3">
-            <label htmlFor="vin-engine" className="text-xs text-muted">Motorisation</label>
+            <p className="text-xs text-muted">Motorisation</p>
             {result.engine ? (
-              <p id="vin-engine" className="text-sm font-semibold text-ink">{result.engine}</p>
+              <p className="text-sm font-semibold text-ink">{result.engine}</p>
+            ) : engineOptions.length === 0 ? (
+              <p className="text-sm text-muted-2">{model ? 'Non répertoriée' : '—'}</p>
+            ) : engineOptions.length <= 6 ? (
+              // Peu de candidates : des puces, choisies d'un geste, plutôt
+              // qu'un menu à ouvrir.
+              <div className="mt-1 flex flex-wrap gap-2">
+                {engineOptions.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={engine === option}
+                    onClick={() => setEngine(engine === option ? '' : option)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      engine === option
+                        ? 'border-ink-2 bg-ink-2 text-white'
+                        : 'border-border-strong text-ink hover:border-ink-2'
+                    }`}
+                    style={{ minHeight: 36 }}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
             ) : (
               <select
-                id="vin-engine"
+                aria-label="Motorisation"
                 value={engine}
                 onChange={(e) => setEngine(e.target.value)}
-                disabled={engineOptions.length === 0}
-                className="mt-1 w-full rounded-sm border border-border-strong bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink-2 disabled:text-muted-2"
+                className="mt-1 w-full rounded-sm border border-border-strong bg-card px-3 py-2 text-sm text-ink outline-none focus:border-ink-2"
               >
-                <option value="">
-                  {model && engineOptions.length === 0 ? 'Non répertoriée' : '— Choisir —'}
-                </option>
-                {engineOptions.map((e) => (
-                  <option key={e} value={e}>{e}</option>
+                <option value="">Toutes les motorisations</option>
+                {engineOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
                 ))}
               </select>
+            )}
+            {!result.engine && engineOptions.length > 0 && (
+              <p className="mt-1.5 text-xs text-muted">
+                Le VIN ne désigne pas la motorisation — affinez si vous la connaissez, sinon
+                continuez, la liste reste valable.
+              </p>
             )}
           </div>
 
@@ -200,7 +241,7 @@ function VinDecodeInner() {
 
           <button
             onClick={goToParts}
-            disabled={!complete}
+            disabled={!canSearch}
             className="mt-4 w-full rounded-md bg-accent py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover disabled:bg-border-strong"
           >
             Chercher des pièces pour ce véhicule &rarr;
