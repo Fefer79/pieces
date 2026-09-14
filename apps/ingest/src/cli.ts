@@ -10,8 +10,9 @@ import { ingestJumia } from './pipeline/jumia.ts'
 import { ingestCoinAfrique } from './pipeline/coinafrique.ts'
 import { ingestBcg } from './pipeline/bcg.ts'
 import { ingestMobristore } from './pipeline/mobristore.ts'
+import { ingestOpisto } from './pipeline/opisto.ts'
 
-type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models' | '3h' | 'global-auto-vehicles' | 'global-auto-products' | 'jumia' | 'coinafrique' | 'bcg' | 'mobristore'
+type SourceName = 'osm' | 'nhtsa' | 'nhtsa-year' | 'french-models' | '3h' | 'global-auto-vehicles' | 'global-auto-products' | 'jumia' | 'coinafrique' | 'bcg' | 'mobristore' | 'opisto'
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
@@ -20,6 +21,9 @@ async function main(): Promise<void> {
       'dry-run': { type: 'boolean', default: false },
       commit: { type: 'boolean', default: false },
       limit: { type: 'string' },
+      brands: { type: 'string' },
+      categories: { type: 'string' },
+      'max-pages': { type: 'string' },
     },
   })
   const source = values.source as SourceName | undefined
@@ -27,7 +31,7 @@ async function main(): Promise<void> {
   const commit = values.commit ?? false
   const limit = values.limit ? Number.parseInt(values.limit, 10) : undefined
   if (!source) {
-    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h|global-auto-vehicles|global-auto-products|jumia|coinafrique|bcg|mobristore> [--dry-run|--commit] [--limit=N]')
+    console.error('Usage: pnpm -F ingest ingest --source=<osm|nhtsa|nhtsa-year|french-models|3h|global-auto-vehicles|global-auto-products|jumia|coinafrique|bcg|mobristore|opisto> [--dry-run|--commit] [--limit=N]')
     process.exit(1)
   }
   switch (source) {
@@ -108,6 +112,24 @@ async function main(): Promise<void> {
       const mode = commit ? '(commit)' : '(dry-run)'
       console.log(`[ingest] mobristore pièces auto ${mode}${limit ? ` limit=${limit}` : ''}`)
       const stats = await ingestMobristore({ dryRun: effectiveDryRun, productLimit: limit })
+      console.log('[ingest] done', stats)
+      break
+    }
+    case 'opisto': {
+      const effectiveDryRun = commit ? false : true
+      const mode = commit ? '(commit)' : '(dry-run)'
+      // Listes séparées par des virgules : slugs Opisto (--brands=toyota,peugeot).
+      const csv = (v: string | undefined): string[] | undefined =>
+        v ? v.split(',').map((s) => s.trim()).filter(Boolean) : undefined
+      const maxPages = values['max-pages'] ? Number.parseInt(values['max-pages'], 10) : undefined
+      console.log(`[ingest] opisto pièces d'occasion à importer ${mode}${limit ? ` limit=${limit}` : ''}`)
+      const stats = await ingestOpisto({
+        dryRun: effectiveDryRun,
+        productLimit: limit,
+        maxPagesPerCombo: maxPages,
+        brands: csv(values.brands),
+        categories: csv(values.categories),
+      })
       console.log('[ingest] done', stats)
       break
     }

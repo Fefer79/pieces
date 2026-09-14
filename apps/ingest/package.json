@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "ingest": "tsx --env-file=.env src/cli.ts",
+    "ingest:prod": "tsx --env-file=../../packages/shared/.env src/cli.ts",
     "export:vehicles": "tsx --env-file=.env src/scripts/export-vehicles-data.ts",
     "annotate:engine-years": "tsx src/scripts/annotate-engine-years.ts",
     "curated:add": "tsx src/scripts/curated-from-lines.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "demand:brands": "tsx --env-file=../../packages/shared/.env src/scripts/rank-demand-brands.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
