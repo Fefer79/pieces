@@ -9,10 +9,12 @@ import {
   extractPriceEur,
   extractOemFromImageUrl,
   extractCasseCountry,
+  parsePartDetail,
 } from './opisto.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const fixture = readFileSync(resolve(HERE, '__fixtures__/opisto-listing.html'), 'utf8')
+const detailFixture = readFileSync(resolve(HERE, '__fixtures__/opisto-detail.html'), 'utf8')
 
 describe('parseListingHtml', () => {
   const parts = parseListingHtml(fixture)
@@ -151,5 +153,41 @@ describe('extractCasseCountry', () => {
   it('returns null on an unknown or absent suffix', () => {
     expect(extractCasseCountry('CASSE SANS PAYS')).toBeNull()
     expect(extractCasseCountry(null)).toBeNull()
+  })
+})
+
+/**
+ * La fiche produit porte ce que le listing cache : la reference OEM et l'annee
+ * du donneur. Un parseur HTML casse en silence — ces tests sont le filet.
+ */
+describe('parsePartDetail', () => {
+  it('lit la reference OEM dans le mpn du JSON-LD Product', () => {
+    expect(parsePartDetail(detailFixture).oemReference).toBe('9820893880')
+  })
+
+  it('ne garde que l annee de la date de mise en circulation', () => {
+    expect(parsePartDetail(detailFixture).year).toBe(2020)
+  })
+
+  it('lit le kilometrage malgre le separateur de milliers insecable', () => {
+    expect(parsePartDetail(detailFixture).mileageKm).toBe(80_000)
+  })
+
+  it('rend des champs nuls plutot que de jeter sur une fiche vide', () => {
+    expect(parsePartDetail('<html><body>Annonce retiree</body></html>')).toEqual({
+      oemReference: null,
+      year: null,
+      mileageKm: null,
+    })
+  })
+
+  it('ignore un bloc JSON-LD malforme', () => {
+    const html = '<script type="application/ld+json">{"@type":"Product",</script>'
+    expect(parsePartDetail(html).oemReference).toBeNull()
+  })
+
+  it('refuse une annee hors plage plausible', () => {
+    const html = '<div><b>Date de mise en circulation :</b><span>01/01/1899</span></div>'
+    expect(parsePartDetail(html).year).toBeNull()
   })
 })

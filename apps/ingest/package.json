@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vitest run --passWithNoTests",
-    "demand:brands": "tsx --env-file=../../packages/shared/.env src/scripts/rank-demand-brands.ts"
+    "demand:brands": "tsx --env-file=../../packages/shared/.env src/scripts/rank-demand-brands.ts",
+    "enrich:opisto": "tsx --env-file=../../packages/shared/.env src/scripts/enrich-opisto-details.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

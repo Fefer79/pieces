@@ -222,3 +222,91 @@ export async function* streamListings(opts: {
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Fiche produit — enrichissement
+// ---------------------------------------------------------------------------
+
+/**
+ * Ce que la page de listing ne donne pas, et qu'il faut aller chercher fiche par
+ * fiche : la référence OEM (présente seulement dans le nom des photos non
+ * lazy-loadées, soit ~3 % des annonces) et l'année du véhicule donneur (absente
+ * de l'URL une fois sur deux).
+ *
+ * Pour une pièce d'occasion, la référence constructeur est la seule
+ * correspondance vraiment fiable — le couple modèle + année ne garantit pas
+ * qu'un alternateur ira sur un véhicule donné.
+ */
+export type OpistoPartDetail = {
+  /** Référence OEM, exposée en `mpn` dans le JSON-LD Product. */
+  oemReference: string | null
+  /** Année de mise en circulation du véhicule donneur. */
+  year: number | null
+  /** Kilométrage du donneur, en km. */
+  mileageKm: number | null
+}
+
+/** Objet JSON-LD de type Product, ou null. */
+function productJsonLd(html: string): Record<string, unknown> | null {
+  const blocks = html.matchAll(
+    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+  )
+  for (const block of blocks) {
+    const raw = block[1]
+    if (!raw || !raw.includes('"Product"')) continue
+    try {
+      const parsed: unknown = JSON.parse(raw.trim())
+      if (parsed && typeof parsed === 'object') return parsed as Record<string, unknown>
+    } catch {
+      // Un bloc JSON-LD malformé ne doit pas faire échouer l'enrichissement.
+    }
+  }
+  return null
+}
+
+/**
+ * Valeur d'une ligne « Libellé : valeur » de la fiche.
+ *
+ * On passe par cheerio et non par une regex sur le HTML brut : les libellés y
+ * sont encodés en entités (`Kilom&#233;trage`), qu'une regex accentuée rate
+ * silencieusement.
+ */
+function labelledValue($: cheerio.CheerioAPI, label: RegExp): string | null {
+  let found: string | null = null
+  $('b').each((_, el) => {
+    if (found) return
+    const node = $(el)
+    if (!label.test(clean(node.text()))) return
+    const value = clean(node.parent().text().replace(node.text(), ''))
+    if (value) found = value
+  })
+  return found
+}
+
+/** Parse une fiche produit. Pur : testable hors réseau. */
+export function parsePartDetail(html: string): OpistoPartDetail {
+  const $ = cheerio.load(html)
+
+  const mpn = productJsonLd(html)?.['mpn']
+  const oemReference = typeof mpn === 'string' && mpn.trim() ? mpn.trim() : null
+
+  // « Date de mise en circulation : 28/02/2020 » — seule l'année nous intéresse.
+  const circulation = labelledValue($, /mise en circulation/i)
+  const parsedYear = circulation ? Number.parseInt(/(\d{4})\s*$/.exec(circulation)?.[1] ?? '', 10) : NaN
+  const year =
+    Number.isFinite(parsedYear) && parsedYear >= 1950 && parsedYear <= new Date().getFullYear() + 1
+      ? parsedYear
+      : null
+
+  // « Kilométrage **** : 80 000 km » — séparateur de milliers insécable.
+  const mileageText = labelledValue($, /kilom[ée]trage/i)
+  const mileageDigits = mileageText?.replace(/[^\d]/g, '') ?? ''
+  const mileageKm = mileageDigits ? Number.parseInt(mileageDigits, 10) : 0
+
+  return { oemReference, year, mileageKm: mileageKm > 0 ? mileageKm : null }
+}
+
+/** Récupère une fiche produit (rate-limit porté par `fetchText`). */
+export async function fetchPartDetail(url: string): Promise<OpistoPartDetail> {
+  return parsePartDetail(await fetchText(url))
+}
