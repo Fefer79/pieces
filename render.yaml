@@ -6,10 +6,13 @@ services:
     plan: starter
     rootDir: .
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm -F shared db:generate && pnpm -F api build
-    # `pnpm -F api start` lance `prisma migrate deploy` avant node (voir le script start
-    # de apps/api) : les migrations s'appliquent à chaque déploiement, même si le
-    # startCommand réel du service Render est resté « pnpm -F api start ».
-    startCommand: pnpm -F api start
+    # Les migrations s'appliquent ici, et NULLE PART AILLEURS. Le script `start`
+    # de apps/api les lançait aussi : `prisma migrate deploy` tournait deux fois
+    # par démarrage, chaque passage prenant le verrou consultatif Postgres
+    # (timeout 10 s). Pendant un déploiement sans coupure, l'instance sortante et
+    # l'entrante se le disputaient — P1002, déploiement en échec, redémarrage qui
+    # réussit, et Render restait sur le commit précédent.
+    startCommand: pnpm -F shared exec prisma migrate deploy && pnpm -F api start
     healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION
