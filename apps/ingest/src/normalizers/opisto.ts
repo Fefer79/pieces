@@ -1,4 +1,4 @@
-import { EUR_XOF_PARITY, VEHICLE_BRANDS } from 'shared/constants'
+import { EUR_XOF_PARITY, VEHICLE_BRANDS, getEngines } from 'shared/constants'
 import type { OpistoPartRaw } from '../sources/opisto.ts'
 import { brandForSlug, categoryLabelForSlug } from '../data/opisto-targets.ts'
 
@@ -19,8 +19,10 @@ const DEFAULT_ORIGIN_COUNTRY = 'FR'
 export type OpistoFitment = {
   brand: string
   model: string | null
-  yearFrom: number | null
-  yearTo: number | null
+  /** Motorisation, obligatoire : un fitment sans elle n'est pas émis. */
+  engine: string
+  yearFrom: number
+  yearTo: number
 }
 
 export type OpistoNormalized = {
@@ -135,6 +137,9 @@ export function normalizeOpistoPart(
   const { modelSlug, year } = parseDetailSlug(raw.url, ctx.brandSlug)
   const model = resolveModel(brand, modelSlug)
 
+  // Le libellé de listing porte souvent la motorisation (« 1.5 BLUE HDI … 1499 cm3 »).
+  const engine = model && year ? resolveEngine(getEngines(brand, model, year), raw.vehicleLabel) : null
+
   const sourceCostFcfa = Math.round(raw.priceEur * EUR_XOF_PARITY)
   const price = roundTo100(sourceCostFcfa * (1 + IMPORT_MARGIN_PCT / 100))
   const category = categoryLabelForSlug(ctx.categorySlug)
@@ -157,9 +162,107 @@ export function normalizeOpistoPart(
     warrantyValue: raw.warrantyMonths,
     warrantyUnit: raw.warrantyMonths ? 'MONTH' : null,
     imageOriginalUrl: raw.imageUrl,
+    // Un fitment Opisto n'existe QU'AVEC année et motorisation : sans l'une des
+    // deux, le filtre de compatibilité ne peut rien en faire, et une
+    // compatibilité approximative sur une pièce d'occasion vend la mauvaise
+    // pièce. L'enrichissement par fiche produit (enrich:opisto) rattrape ensuite
+    // ce que le listing ne donne pas.
+    //
     // Une pièce d'occasion vient d'UN véhicule donneur précis : on n'élargit pas
-    // la compatibilité à toute la génération. Sous-couvrir se corrige par la
-    // référence OEM ; sur-couvrir vend la mauvaise pièce, et c'est un litige.
-    fitments: model ? [{ brand, model, yearFrom: year, yearTo: year }] : [],
+    // la compatibilité à toute la génération.
+    fitments:
+      model && year && engine
+        ? [{ brand, model, engine, yearFrom: year, yearTo: year }]
+        : [],
   }
+}
+
+// ---------------------------------------------------------------------------
+// Motorisation
+// ---------------------------------------------------------------------------
+
+/** Cylindrée en litres, depuis « 1.5 », « 1,5 » ou « 1499 cm3 ». */
+export function parseDisplacement(label: string | null | undefined, cc?: number | null): string | null {
+  const decimal = label ? /(\d)\s*[.,]\s*(\d)/.exec(label) : null
+  if (decimal?.[1] && decimal[2]) return `${decimal[1]}.${decimal[2]}`
+  const cubic = cc ?? (label ? Number.parseInt(/(\d{3,4})\s*cm/i.exec(label)?.[1] ?? '', 10) : NaN)
+  if (Number.isFinite(cubic) && (cubic as number) >= 500) {
+    return (Math.round((cubic as number) / 100) / 10).toFixed(1)
+  }
+  return null
+}
+
+/** Mots techniques distinctifs d'une motorisation (HDI, VTI, DDIS, VVT-i…). */
+function engineKeywords(label: string): Set<string> {
+  return new Set(
+    label
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, ' ')
+      .split(' ')
+      .filter((w) => w.length >= 2 && !/^\d+$/.test(w) && !['CV', 'CM3', 'V', 'DE'].includes(w)),
+  )
+}
+
+/**
+ * Segment moteur d'un libellé véhicule.
+ *
+ * « PEUGEOT 208 1 PHASE 2 1.5 BLUE HDI - 16V TURBO Diesel 1499 cm3 » se réduit à
+ * « 1.5 BLUE HDI - 16V TURBO ». Sans cette coupe, le repli stockerait la marque,
+ * le modèle et la phase dans le champ motorisation — un fitment formellement
+ * rempli mais faux.
+ */
+function engineSegment(label: string | null | undefined, displacement: string | null): string | null {
+  if (!label) return null
+  const at = /\d\s*[.,]\s*\d/.exec(label)?.index
+  const body = at != null ? label.slice(at) : displacement ? `${displacement} ${label}` : null
+  if (!body) return null
+  return (
+    body
+      // Cylindrée en cm3 et carburant final n'apportent rien au rapprochement.
+      .replace(/\d{3,4}\s*cm\s*3?/i, '')
+      .replace(/\b(essence|diesel|hybride|[ée]lectrique)\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .replace(/[\s-]+$/, '')
+      .trim() || null
+  )
+}
+
+/**
+ * Rapproche la motorisation Opisto du libellé du référentiel Pièces.
+ *
+ * Indispensable : le filtre de compatibilité raisonne sur le vocabulaire du
+ * référentiel (« 1.6 e-HDi »), pas sur celui d'Opisto (« 1.6 E HDI - 16V TURBO »).
+ * Stocker le libellé brut donnerait un fitment présent mais muet pour la recherche.
+ *
+ * On apparie d'abord sur la cylindrée — c'est le discriminant le plus sûr — puis
+ * sur le recouvrement des mots techniques. Sans correspondance, on renvoie le
+ * libellé Opisto nettoyé : mieux vaut une motorisation approximative qu'aucune.
+ */
+export function resolveEngine(
+  candidates: readonly string[],
+  opistoLabel: string | null | undefined,
+  cc?: number | null,
+): string | null {
+  const displacement = parseDisplacement(opistoLabel, cc)
+  const cleaned = engineSegment(opistoLabel, displacement)
+  if (candidates.length === 0) return cleaned
+
+  const sameDisplacement = displacement
+    ? candidates.filter((c) => parseDisplacement(c) === displacement)
+    : []
+  const pool = sameDisplacement.length > 0 ? sameDisplacement : []
+  if (pool.length === 0) return cleaned
+
+  if (!cleaned) return pool[0] ?? null
+  const wanted = engineKeywords(cleaned)
+  let best = pool[0] as string
+  let bestScore = -1
+  for (const candidate of pool) {
+    const score = [...engineKeywords(candidate)].filter((w) => wanted.has(w)).length
+    if (score > bestScore) {
+      bestScore = score
+      best = candidate
+    }
+  }
+  return best
 }

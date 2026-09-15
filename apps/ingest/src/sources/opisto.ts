@@ -244,6 +244,14 @@ export type OpistoPartDetail = {
   year: number | null
   /** Kilométrage du donneur, en km. */
   mileageKm: number | null
+  /**
+   * Motorisation telle qu'Opisto la désigne, ex. « SWIFT 3 1.3 DDIS - 16V TURBO ».
+   * Lue dans « Désignation commerciale », à défaut « Finition ». Brute : c'est au
+   * normaliseur de la rapprocher du référentiel Pièces.
+   */
+  engineLabel: string | null
+  /** Cylindrée en cm³ quand la fiche la renseigne. */
+  displacementCc: number | null
 }
 
 /** Objet JSON-LD de type Product, ou null. */
@@ -278,7 +286,8 @@ function labelledValue($: cheerio.CheerioAPI, label: RegExp): string | null {
     const node = $(el)
     if (!label.test(clean(node.text()))) return
     const value = clean(node.parent().text().replace(node.text(), ''))
-    if (value) found = value
+    // Opisto écrit « Non renseignée » plutôt que de masquer la ligne.
+    if (value && !/^non renseign/i.test(value)) found = value
   })
   return found
 }
@@ -303,7 +312,20 @@ export function parsePartDetail(html: string): OpistoPartDetail {
   const mileageDigits = mileageText?.replace(/[^\d]/g, '') ?? ''
   const mileageKm = mileageDigits ? Number.parseInt(mileageDigits, 10) : 0
 
-  return { oemReference, year, mileageKm: mileageKm > 0 ? mileageKm : null }
+  const engineLabel =
+    labelledValue($, /d[ée]signation commerciale/i) ?? labelledValue($, /finition/i)
+
+  const ccText = labelledValue($, /cylindr[ée]e/i)
+  const ccDigits = ccText?.replace(/[^\d]/g, '') ?? ''
+  const cc = ccDigits ? Number.parseInt(ccDigits, 10) : 0
+
+  return {
+    oemReference,
+    year,
+    mileageKm: mileageKm > 0 ? mileageKm : null,
+    engineLabel,
+    displacementCc: cc >= 500 && cc <= 9000 ? cc : null,
+  }
 }
 
 /** Récupère une fiche produit (rate-limit porté par `fetchText`). */

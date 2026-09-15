@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { EUR_XOF_PARITY } from 'shared/constants'
-import { normalizeOpistoPart, parseDetailSlug, resolveModel, IMPORT_MARGIN_PCT } from './opisto.ts'
+import {
+  normalizeOpistoPart,
+  parseDetailSlug,
+  resolveModel,
+  resolveEngine,
+  parseDisplacement,
+  IMPORT_MARGIN_PCT,
+} from './opisto.ts'
 import type { OpistoPartRaw } from '../sources/opisto.ts'
 
 const raw = (over: Partial<OpistoPartRaw> = {}): OpistoPartRaw => ({
@@ -113,11 +120,30 @@ describe('normalizeOpistoPart', () => {
 
   // Une pièce d'occasion vient d'un donneur précis : la compatibilité n'est pas
   // élargie à toute la génération.
-  it('pins the fitment to the donor year', () => {
+  it('pins the fitment to the donor year and carries an engine', () => {
     const item = normalizeOpistoPart(raw(), ctx)
     expect(item?.fitments).toEqual([
-      { brand: 'PEUGEOT', model: '208', yearFrom: 2020, yearTo: 2020 },
+      {
+        brand: 'PEUGEOT',
+        model: '208',
+        engine: '1.5 BLUE HDI - 16V TURBO',
+        yearFrom: 2020,
+        yearTo: 2020,
+      },
     ])
+  })
+
+  // Regle metier : un fitment sans annee OU sans motorisation n'est pas emis.
+  // Le filtre de compatibilite ne peut rien en faire, et une compatibilite
+  // approximative sur une piece d'occasion vend la mauvaise piece.
+  it('emits no fitment when the year is unknown', () => {
+    const noYear = raw({ url: 'https://www.opisto.fr/fr/auto/fiche-produit/1/alternateur-peugeot-206' })
+    expect(normalizeOpistoPart(noYear, ctx)?.fitments).toEqual([])
+  })
+
+  it('emits no fitment when the label carries no engine', () => {
+    const noEngine = raw({ vehicleLabel: 'PEUGEOT 208 Essence' })
+    expect(normalizeOpistoPart(noEngine, ctx)?.fitments).toEqual([])
   })
 
   it('keeps the raw vehicle label for search', () => {
@@ -126,5 +152,48 @@ describe('normalizeOpistoPart', () => {
 
   it('rejects a part without a price', () => {
     expect(normalizeOpistoPart(raw({ priceEur: 0 }), ctx)).toBeNull()
+  })
+})
+
+
+describe('parseDisplacement', () => {
+  it('reads a decimal displacement', () => {
+    expect(parseDisplacement('1.5 BLUE HDI')).toBe('1.5')
+    expect(parseDisplacement('1,6 VTi')).toBe('1.6')
+  })
+
+  it('derives it from cubic centimetres', () => {
+    expect(parseDisplacement('Essence 1360 cm3')).toBe('1.4')
+    expect(parseDisplacement(null, 1499)).toBe('1.5')
+  })
+
+  it('returns null without any displacement', () => {
+    expect(parseDisplacement('SUZUKI SWIFT Essence')).toBeNull()
+  })
+})
+
+describe('resolveEngine', () => {
+  // Le filtre raisonne sur le vocabulaire du referentiel (« 1.6 e-HDi »), pas sur
+  // celui d'Opisto : stocker le libelle brut donnerait un fitment muet.
+  it('maps onto the referential label when the displacement matches', () => {
+    expect(resolveEngine(['1.4 HDi', '1.6 e-HDi', '1.6 THP'], 'PEUGEOT 208 1.6 E HDI - 16V TURBO')).toBe(
+      '1.6 e-HDi',
+    )
+  })
+
+  it('picks the closest candidate on shared technical words', () => {
+    expect(resolveEngine(['1.6 VTi', '1.6 THP'], 'PEUGEOT 208 1.6 THP - 16V')).toBe('1.6 THP')
+  })
+
+  // Sans candidat a la bonne cylindree, on garde le segment moteur nettoye —
+  // jamais le libelle vehicule entier, qui mettrait marque et phase dans le champ.
+  it('falls back to the engine segment alone', () => {
+    expect(
+      resolveEngine(['1.4 HDi'], 'PEUGEOT 208 1 PHASE 2 1.5 BLUE HDI - 16V TURBO Diesel 1499 cm3'),
+    ).toBe('1.5 BLUE HDI - 16V TURBO')
+  })
+
+  it('returns null when no displacement can be found', () => {
+    expect(resolveEngine([], 'SUZUKI SWIFT Essence')).toBeNull()
   })
 })

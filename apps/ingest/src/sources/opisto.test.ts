@@ -178,6 +178,8 @@ describe('parsePartDetail', () => {
       oemReference: null,
       year: null,
       mileageKm: null,
+      engineLabel: null,
+      displacementCc: null,
     })
   })
 

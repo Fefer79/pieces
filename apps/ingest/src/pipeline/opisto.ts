@@ -230,6 +230,7 @@ export async function loadOpistoItems(
         catalogItemId: ids[i] as string,
         brand: f.brand,
         model: f.model,
+        engine: f.engine,
         yearFrom: f.yearFrom,
         yearTo: f.yearTo,
       })),
