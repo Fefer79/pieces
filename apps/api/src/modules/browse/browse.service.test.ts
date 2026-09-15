@@ -290,16 +290,61 @@ describe('browse.service', () => {
       expect(mockFetchFreeVin).not.toHaveBeenCalled()
     })
 
-    it('leaves the motorisation open rather than spending the budget on it', async () => {
-      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Corolla', year: 2010 }))
+    // Le bloc moteur de freevindecoder (cylindrée, puissance, carburant) est ce
+    // qui tranche une motorisation ambiguë : NMTEX28E8… passe de seize
+    // candidates à deux grâce au « Diesel » et au « 2.0 ».
+    it('asks freevindecoder to narrow an ambiguous motorisation', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Corolla', year: 2003 }))
+      mockFetchFreeVin.mockResolvedValueOnce(
+        facts({ model: 'Corolla', year: 2003, displacement: '2.0', power: 110, fuel: 'Diesel' }),
+      )
 
-      const result = await decodeVin('JTDKN3DU5A0123456')
+      const result = await decodeVin('NMTEX28E80R003592')
 
-      // Modèle trouvé : freevindecoder ne publie ni puissance ni moteur
-      // exploitable, il ne trancherait pas et coûterait un appel.
-      expect(mockFetchFreeVin).not.toHaveBeenCalled()
-      expect(result.engines.length).toBeGreaterThan(1)
+      expect(mockFetchFreeVin).toHaveBeenCalledWith('NMTEX28E80R003592')
+      expect(result.engines).toEqual(['2.0 D-4D 116 cv', '2.0 D-4D 90 cv'])
+    })
+
+    // 110 ch SAE côté source contre 116 ch DIN au référentiel : la fenêtre de
+    // 6 % rattrape l'écart, mais sans jamais retirer l'autre candidate.
+    it('designates the engine within the power tolerance and keeps the alternative', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Corolla', year: 2003 }))
+      mockFetchFreeVin.mockResolvedValueOnce(facts({ displacement: '2.0', power: 110, fuel: 'Diesel' }))
+
+      const result = await decodeVin('NMTEX28E80R003592')
+
+      expect(result.engine).toBe('2.0 D-4D 116 cv')
+      expect(result.engines).toEqual(['2.0 D-4D 116 cv', '2.0 D-4D 90 cv'])
+    })
+
+    // Deux candidates dans la fenêtre ne se départagent pas : on ne joue pas à
+    // pile ou face sur la motorisation.
+    it('designates nothing when two candidates sit within the window', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'VOLKSWAGEN', model: 'Golf', year: 2010 }))
+      mockFetchFreeVin.mockResolvedValueOnce(facts({ displacement: '1.6', power: 101, fuel: 'Gasoline' }))
+
+      const result = await decodeVin('WVWZZZ1KZAW123456')
+
       expect(result.engine).toBeNull()
+      expect(result.engines.length).toBeGreaterThan(1)
+    })
+
+    it('designates nothing when the power is far from every candidate', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Corolla', year: 2003 }))
+      mockFetchFreeVin.mockResolvedValueOnce(facts({ displacement: '2.0', power: 180, fuel: 'Diesel' }))
+
+      const result = await decodeVin('NMTEX28E80R003592')
+
+      expect(result.engine).toBeNull()
+    })
+
+    it('settles the motorisation when the power matches the referential', async () => {
+      mockFetchNhtsa.mockResolvedValueOnce(facts({ make: 'TOYOTA', model: 'Corolla', year: 2003 }))
+      mockFetchFreeVin.mockResolvedValueOnce(facts({ displacement: '2.0', power: 116, fuel: 'Diesel' }))
+
+      const result = await decodeVin('NMTEX28E80R003592')
+
+      expect(result.engine).toBe('2.0 D-4D 116 cv')
     })
 
     it('narrows the engines with displacement and fuel', async () => {

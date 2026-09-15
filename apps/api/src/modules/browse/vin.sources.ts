@@ -22,10 +22,20 @@ export interface VinFacts {
   engine: string | null
   /** Cylindrée en litres, telle que publiée par la source. */
   displacement: string | null
+  /** Puissance en chevaux, telle que publiée par la source. */
+  power: number | null
   fuel: string | null
 }
 
-const EMPTY: VinFacts = { make: null, model: null, year: null, engine: null, displacement: null, fuel: null }
+const EMPTY: VinFacts = {
+  make: null,
+  model: null,
+  year: null,
+  engine: null,
+  displacement: null,
+  power: null,
+  fuel: null,
+}
 
 /** Décodages déjà obtenus. Un VIN ne change jamais : le cache n'expire pas. */
 const CACHE_LIMIT = 1000
@@ -106,6 +116,7 @@ export async function fetchNhtsa(vin: string, yearHint: number | null): Promise<
     year: Number.isFinite(year) ? year : null,
     engine: null,
     displacement: row.DisplacementL?.trim() || null,
+    power: null,
     fuel: row.FuelTypePrimary?.trim() || null,
   })
 }
@@ -185,12 +196,19 @@ export async function fetchFreeVinDecoder(vin: string): Promise<VinFacts | null>
   if (!make) return null
 
   const year = parseInt(readInfoRow(html, 'Model year') ?? '', 10)
+  // La puissance et le carburant ne sont pas dans le premier tableau
+  // (« General information ») mais dans le bloc moteur plus bas, d'où les
+  // libellés « Engine HorsePower » et « Displacement Nominal ». Le libellé
+  // « Engine type » existe deux fois, avec deux sens : « 2.0L L4 DOHC 16V FWD »
+  // en haut, « L4 » en bas — readInfoRow retient le premier, le bon.
+  const power = parseInt(readInfoRow(html, 'Engine HorsePower') ?? '', 10)
   return remember(key, {
     make,
     model: readInfoRow(html, 'Model'),
     year: Number.isFinite(year) ? year : null,
-    engine: readInfoRow(html, 'Engine type') ?? readInfoRow(html, 'Engine'),
-    displacement: readInfoRow(html, 'Displacement'),
+    engine: readInfoRow(html, 'Engine type'),
+    displacement: readInfoRow(html, 'Displacement Nominal'),
+    power: Number.isFinite(power) && power > 0 ? power : null,
     fuel: readInfoRow(html, 'Fuel type'),
   })
 }

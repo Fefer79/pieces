@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma.js'
-import { VEHICLE_BRANDS, BRAND_NAMES, getEngines as getEnginesData, enginesMatch, PART_CATEGORIES, UNIVERSAL_CATEGORIES, warrantyToDays } from 'shared/constants'
+import { VEHICLE_BRANDS, BRAND_NAMES, getEngines as getEnginesData, enginesMatch, engineSignature, PART_CATEGORIES, UNIVERSAL_CATEGORIES, warrantyToDays } from 'shared/constants'
 import type { WarrantyUnit } from 'shared/constants'
 import { AppError } from '../../lib/appError.js'
 import type { PartCondition, SupplyMode } from '@prisma/client'
@@ -152,7 +152,12 @@ const DIESEL_MARKERS = /(^|[\s-])(D|TD|HDI|BLUEHDI|TDI|DCI|CDI|CRDI|JTD|TDCI|D4D
  */
 function narrowEngines(
   all: string[],
-  facts: { engine?: string | null; displacement?: string | null; fuel?: string | null },
+  facts: {
+    engine?: string | null
+    displacement?: string | null
+    power?: number | null
+    fuel?: string | null
+  },
 ): string[] {
   let candidates = all
 
@@ -178,6 +183,36 @@ function narrowEngines(
   }
 
   return candidates
+}
+
+/** Écart admis entre la puissance d'une source et celle du référentiel. */
+const POWER_TOLERANCE = 0.06
+
+/**
+ * Motorisation désignée par la puissance, ou null si elle ne tranche pas.
+ *
+ * À l'identique d'abord. Sinon dans une fenêtre de 6 %, parce que les sources
+ * publient des chevaux SAE là où le référentiel porte des chevaux DIN — une
+ * 2.0 D-4D annoncée à 110 ch y figure à 116 cv. La fenêtre ne vaut que si UNE
+ * seule candidate y tombe : deux voisines ex æquo ne se départagent pas, et on
+ * ne choisit pas à pile ou face.
+ *
+ * Le résultat ne retire jamais les autres candidates de la liste : un choix
+ * approché reste visible et corrigeable d'un clic.
+ */
+function pickEngineByPower(candidates: string[], power: number | null | undefined): string | null {
+  if (!power || !Number.isFinite(power)) return null
+
+  const exact = candidates.filter((option) => engineSignature(option).power === power)
+  if (exact.length === 1) return exact[0] ?? null
+  if (exact.length > 1) return null
+
+  const window = Math.max(3, power * POWER_TOLERANCE)
+  const near = candidates.filter((option) => {
+    const candidatePower = engineSignature(option).power
+    return candidatePower !== null && Math.abs(candidatePower - power) <= window
+  })
+  return near.length === 1 ? (near[0] ?? null) : null
 }
 
 /**
@@ -213,31 +248,30 @@ export async function decodeVin(vin: string): Promise<VinDecodeResult> {
   const nhtsa = await fetchNhtsa(upperVin, vinYear)
   let brandKey = (nhtsa.make ? resolveBrandKey(nhtsa.make) : null) ?? brandFromWmi(upperVin)
   let modelKey = brandKey && nhtsa.model ? resolveModelKey(brandKey, nhtsa.model) : null
+  let power = nhtsa.power
   // Le millésime vient des sources : elles savent lever l'ambiguïté du cycle
   // sur les VIN non américains, là où le VIN seul ne le permet pas.
   let year = nhtsa.year ?? vinYear ?? null
   let engines =
     brandKey && modelKey ? narrowEngines(getEnginesData(brandKey, modelKey, year), nhtsa) : []
 
-  // Second appel seulement quand le modèle manque. Sa fiche ne publie jamais
-  // la puissance et souvent aucun moteur (rien sur la Golf, « 1.8L L4 DOHC
-  // 16V FWD » sur la Prius) : elle ne trancherait donc pas une motorisation
-  // ambiguë, alors que la cylindrée NHTSA le fait déjà. Le budget — 8 appels
-  // par minute pour toute la plateforme — va là où il paie.
-  if (!modelKey) {
+  // Second appel quand il reste quelque chose à trouver : le modèle, ou la
+  // motorisation. Sa fiche porte un bloc moteur détaillé (cylindrée nominale,
+  // puissance, carburant) que NHTSA ne donne pas — sur NMTEX28E8… elle sort
+  // « 2.0 / 110 ch / Diesel » et ramène seize motorisations à deux. Une fiche
+  // déjà complète ne consomme rien du budget de 8 appels/minute.
+  if (!modelKey || engines.length !== 1) {
     const free = await fetchFreeVinDecoder(upperVin)
     if (free) {
       brandKey = brandKey ?? (free.make ? resolveBrandKey(free.make) : null)
       const freeModelKey = brandKey && free.model ? resolveModelKey(brandKey, free.model) : null
       if (freeModelKey) modelKey = freeModelKey
       year = free.year ?? year
+      power = free.power ?? power
       if (brandKey && modelKey) {
-        const all = getEnginesData(brandKey, modelKey, year)
-        // Les deux sources se cumulent : NHTSA donne cylindrée et carburant,
-        // freevindecoder un libellé moteur complet. Ce qui reste après les
-        // deux tamis est la motorisation ; si l'un vide la liste, il est
-        // ignoré par narrowEngines.
-        engines = narrowEngines(narrowEngines(all, nhtsa), free)
+        // Les deux sources se cumulent : chaque tamis resserre le précédent, et
+        // celui qui ne laisserait rien est ignoré par narrowEngines.
+        engines = narrowEngines(narrowEngines(getEnginesData(brandKey, modelKey, year), nhtsa), free)
       }
     }
   }
@@ -251,7 +285,7 @@ export async function decodeVin(vin: string): Promise<VinDecodeResult> {
     make: brandKey,
     model: modelKey,
     year,
-    engine: engines.length === 1 ? (engines[0] ?? null) : null,
+    engine: engines.length === 1 ? (engines[0] ?? null) : pickEngineByPower(engines, power),
     engines,
     models: modelKey ? [] : modelsForYear(brandKey, year),
     decoded: true,

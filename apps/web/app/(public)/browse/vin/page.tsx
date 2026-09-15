@@ -186,10 +186,10 @@ function VinDecodeInner() {
 
           <div className="mt-3">
             <p className="text-xs text-muted">Motorisation</p>
-            {result.engine ? (
-              <p className="text-sm font-semibold text-ink">{result.engine}</p>
-            ) : engineOptions.length === 0 ? (
+            {engineOptions.length === 0 ? (
               <p className="text-sm text-muted-2">{model ? 'Non répertoriée' : '—'}</p>
+            ) : engineOptions.length === 1 ? (
+              <p className="text-sm font-semibold text-ink">{engineOptions[0]}</p>
             ) : engineOptions.length <= 6 ? (
               // Peu de candidates : des puces, choisies d'un geste, plutôt
               // qu'un menu à ouvrir.
@@ -224,10 +224,13 @@ function VinDecodeInner() {
                 ))}
               </select>
             )}
-            {!result.engine && engineOptions.length > 0 && (
+            {engineOptions.length > 1 && (
               <p className="mt-1.5 text-xs text-muted">
-                Le VIN ne désigne pas la motorisation — affinez si vous la connaissez, sinon
-                continuez, la liste reste valable.
+                {result.engine
+                  ? // Déduite d'une puissance approchante : jamais imposée en
+                    // silence, l'autre candidate reste à un clic.
+                    'Déduite du VIN — corrigez d’un clic si ce n’est pas la bonne.'
+                  : 'Le VIN ne désigne pas la motorisation — affinez si vous la connaissez, sinon continuez, la liste reste valable.'}
               </p>
             )}
           </div>
