@@ -1,5 +1,17 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
+import { transitionOrder } from '../order/order.service.js'
+
+// Fire-and-forget : la livraison est la source de vérité opérationnelle (le
+// rider avance même si la commande traîne dans un état inattendu, ex. COD qui
+// a sauté PENDING_PAYMENT). Une commande qui n'a jamais atteint l'état attendu
+// ne doit jamais bloquer le rider — seule la transition échoue, silencieusement.
+function syncOrderStatus(orderId: string, toStatus: string, actor: string, note: string) {
+  void transitionOrder(orderId, toStatus, actor, note).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error('[order-sync] failed to transition order', orderId, toStatus, err)
+  })
+}
 
 export async function createDelivery(orderId: string, options: {
   pickupAddress?: string
@@ -49,10 +61,12 @@ export async function assignRider(deliveryId: string, riderId: string) {
     throw new AppError('DELIVERY_ALREADY_ASSIGNED', 400, { message: 'Livraison déjà assignée' })
   }
 
-  return prisma.delivery.update({
+  const updated = await prisma.delivery.update({
     where: { id: deliveryId },
     data: { riderId, status: 'ASSIGNED' },
   })
+  syncOrderStatus(delivery.orderId, 'DISPATCHED', 'system', 'Livreur assigné')
+  return updated
 }
 
 export async function startPickup(deliveryId: string, riderId: string) {
@@ -79,10 +93,12 @@ export async function startTransit(deliveryId: string, riderId: string) {
     throw new AppError('DELIVERY_INVALID_STATUS', 400)
   }
 
-  return prisma.delivery.update({
+  const updated = await prisma.delivery.update({
     where: { id: deliveryId },
     data: { status: 'IN_TRANSIT', pickedUpAt: new Date() },
   })
+  syncOrderStatus(delivery.orderId, 'IN_TRANSIT', riderId, 'Livreur en route')
+  return updated
 }
 
 export async function confirmDelivery(deliveryId: string, riderId: string) {
@@ -94,10 +110,12 @@ export async function confirmDelivery(deliveryId: string, riderId: string) {
     throw new AppError('DELIVERY_INVALID_STATUS', 400)
   }
 
-  return prisma.delivery.update({
+  const updated = await prisma.delivery.update({
     where: { id: deliveryId },
     data: { status: 'DELIVERED', deliveredAt: new Date() },
   })
+  syncOrderStatus(delivery.orderId, 'DELIVERED', riderId, 'Livraison confirmée par le livreur')
+  return updated
 }
 
 export async function markClientAbsent(deliveryId: string, riderId: string) {

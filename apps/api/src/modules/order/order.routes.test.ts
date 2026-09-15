@@ -246,6 +246,58 @@ describe('Order Routes', () => {
     })
   })
 
+  describe('POST /api/v1/orders/:orderId/confirm-receipt', () => {
+    const TOK = 'e'.repeat(32)
+
+    it('returns 200 when the buyer confirms a delivered order', async () => {
+      mockOrderFindUnique
+        .mockResolvedValueOnce({ id: 'order-1', status: 'DELIVERED', shareToken: TOK })
+        .mockResolvedValueOnce({ id: 'order-1', status: 'DELIVERED' })
+      mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'CONFIRMED', items: [] })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/orders/order-1/confirm-receipt',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ shareToken: TOK }),
+      })
+
+      expect(response.statusCode).toBe(200)
+      expect(response.json().data.status).toBe('CONFIRMED')
+    })
+
+    it('returns 400 when the order is not yet delivered', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'IN_TRANSIT', shareToken: TOK })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/orders/order-1/confirm-receipt',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ shareToken: TOK }),
+      })
+
+      expect(response.statusCode).toBe(400)
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+
+    it('returns 403 when shareToken does not match', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DELIVERED', shareToken: TOK })
+
+      const app = buildApp()
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/orders/order-1/confirm-receipt',
+        headers: { 'content-type': 'application/json' },
+        payload: JSON.stringify({ shareToken: 'f'.repeat(32) }),
+      })
+
+      expect(response.statusCode).toBe(403)
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+  })
+
   describe('POST /api/v1/orders/:orderId/confirm', () => {
     it('returns 200 when the order vendor confirms', async () => {
       mockOrderFindUnique

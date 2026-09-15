@@ -19,6 +19,7 @@ import {
   payImportBalance,
   cancelOrder,
   vendorConfirmOrder,
+  confirmReceipt,
   getOpenDraft,
   upsertDraft,
   getDeliveryTier,
@@ -297,6 +298,25 @@ export async function orderRoutes(fastify: FastifyInstance) {
       const { orderId } = request.params as { orderId: string }
       const { reason, shareToken } = request.body as { reason?: string; shareToken: string }
       const order = await cancelOrder(orderId, 'buyer', reason, shareToken)
+      return reply.status(200).send({ data: order })
+    },
+  )
+
+  // Buyer confirms receipt after delivery — sale becomes final. Same
+  // proof-of-possession pattern as /cancel: shareToken in the body, no auth.
+  fastify.post(
+    '/:orderId/confirm-receipt',
+    {
+      schema: {
+        tags: ['Orders'],
+        description: 'Acheteur confirme la réception de la commande livrée',
+        body: zodToFastify(cancelOrderSchema.pick({ shareToken: true })),
+      },
+    },
+    async (request, reply) => {
+      const { orderId } = request.params as { orderId: string }
+      const { shareToken } = request.body as { shareToken: string }
+      const order = await confirmReceipt(orderId, shareToken)
       return reply.status(200).send({ data: order })
     },
   )

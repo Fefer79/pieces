@@ -63,7 +63,7 @@ vi.mock('../../lib/prisma.js', () => ({
   },
 }))
 
-const { createOrder, getOrderById, cancelOrder, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDelivery, payImportBalance } = await import('./order.service.js')
+const { createOrder, getOrderById, cancelOrder, confirmReceipt, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDelivery, payImportBalance } = await import('./order.service.js')
 
 describe('order.service', () => {
   beforeEach(() => {
@@ -401,6 +401,40 @@ describe('order.service', () => {
 
       await expect(cancelOrder('order-1', 'user-1', undefined, 'd'.repeat(32))).rejects.toThrow()
       expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('confirmReceipt', () => {
+    const TOK = 'e'.repeat(32)
+
+    it('confirms a DELIVERED order (DELIVERED → CONFIRMED)', async () => {
+      mockOrderFindUnique
+        .mockResolvedValueOnce({ id: 'order-1', status: 'DELIVERED', shareToken: TOK }) // confirmReceipt check
+        .mockResolvedValueOnce({ id: 'order-1', status: 'DELIVERED' }) // transitionOrder check
+      mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'CONFIRMED', items: [] })
+
+      const result = await confirmReceipt('order-1', TOK)
+      expect(result.status).toBe('CONFIRMED')
+    })
+
+    it('rejects confirmation before delivery', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'IN_TRANSIT', shareToken: TOK })
+
+      await expect(confirmReceipt('order-1', TOK)).rejects.toThrow()
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+
+    it('rejects a wrong shareToken (possession proof)', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce({ id: 'order-1', status: 'DELIVERED', shareToken: TOK })
+
+      await expect(confirmReceipt('order-1', 'f'.repeat(32))).rejects.toThrow()
+      expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+
+    it('rejects an unknown order', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(null)
+
+      await expect(confirmReceipt('order-1', TOK)).rejects.toThrow()
     })
   })
 

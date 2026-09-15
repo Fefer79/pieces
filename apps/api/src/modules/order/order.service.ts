@@ -1053,3 +1053,28 @@ export async function cancelOrder(
 
   return transitionOrder(orderId, 'CANCELLED', actor, reason ?? 'Annulation demandée')
 }
+
+/**
+ * L'acheteur confirme la réception après livraison : la vente devient
+ * définitive. Sans confirmation manuelle, ORDER_AUTO_CONFIRM_SCAN fait la même
+ * transition après 24h sans litige ouvert (délai du socle de reprise).
+ */
+export async function confirmReceipt(orderId: string, shareToken: string) {
+  const order = await prisma.order.findUnique({ where: { id: orderId } })
+  if (!order) {
+    throw new AppError('ORDER_NOT_FOUND', 404, { message: 'Commande introuvable' })
+  }
+
+  // Preuve de possession : confirmation par le propriétaire via le lien partagé.
+  if (order.shareToken !== shareToken) {
+    throw new AppError('ORDER_FORBIDDEN', 403, { message: 'Lien de partage invalide' })
+  }
+
+  if (order.status !== 'DELIVERED') {
+    throw new AppError('ORDER_NOT_DELIVERED', 400, {
+      message: 'La commande doit être livrée avant confirmation',
+    })
+  }
+
+  return transitionOrder(orderId, 'CONFIRMED', 'buyer', 'Réception confirmée par l’acheteur')
+}

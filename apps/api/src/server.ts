@@ -54,6 +54,7 @@ import {
   ensureVendorRelanceScheduled,
   ensureEnrichmentSourcingScheduled,
   ensureCrmDueTasksScheduled,
+  ensureOrderAutoConfirmScheduled,
 } from './modules/queue/worker.js'
 
 // Fail-fast: validate environment variables at startup
@@ -150,6 +151,7 @@ const start = async () => {
     void ensureVendorRelanceScheduled(fastify.log)
     void ensureEnrichmentSourcingScheduled(fastify.log)
     void ensureCrmDueTasksScheduled(fastify.log)
+    void ensureOrderAutoConfirmScheduled(fastify.log)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)

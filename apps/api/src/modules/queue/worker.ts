@@ -8,6 +8,7 @@ import { handleCrmDueTasksScan } from './handlers/crmDueTasks.js'
 import { handleMarketingCampaignSend } from './handlers/marketingCampaignSend.js'
 import { handleSourcingSearchRun } from './handlers/sourcingSearch.js'
 import { handleProspectionExtract } from './handlers/prospectionExtract.js'
+import { handleOrderAutoConfirmScan } from './handlers/orderAutoConfirm.js'
 import {
   handleEnrichmentFitments,
   handleEnrichmentSourcingScan,
@@ -22,7 +23,7 @@ type Logger = {
 }
 
 const POLL_INTERVAL = 30_000 // 30 seconds
-const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN', 'ENRICHMENT_FITMENTS', 'ENRICHMENT_SOURCING_SCAN', 'ENRICHMENT_SOURCING_COLLECT', 'CRM_DUE_TASKS_SCAN', 'MARKETING_CAMPAIGN_SEND', 'SOURCING_SEARCH_RUN', 'PROSPECTION_EXTRACT'] as const
+const JOB_TYPES = ['IMAGE_PROCESS_VARIANTS', 'CATALOG_AI_IDENTIFY', 'MAINTENANCE_REMINDER_SCAN', 'BUFFER_STOCK_REPLENISH_SCAN', 'RELANCE_INCOMPLETE_VENDORS_SCAN', 'ENRICHMENT_FITMENTS', 'ENRICHMENT_SOURCING_SCAN', 'ENRICHMENT_SOURCING_COLLECT', 'CRM_DUE_TASKS_SCAN', 'MARKETING_CAMPAIGN_SEND', 'SOURCING_SEARCH_RUN', 'PROSPECTION_EXTRACT', 'ORDER_AUTO_CONFIRM_SCAN'] as const
 
 const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   IMAGE_PROCESS_VARIANTS: handleImageProcess,
@@ -40,6 +41,7 @@ const handlers: Record<string, (job: Job, logger: Logger) => Promise<void>> = {
   SOURCING_SEARCH_RUN: handleSourcingSearchRun,
   // Idem : créé par POST /prospection/interviews/:id/extract.
   PROSPECTION_EXTRACT: handleProspectionExtract,
+  ORDER_AUTO_CONFIRM_SCAN: handleOrderAutoConfirmScan,
 }
 
 /**
@@ -146,6 +148,27 @@ export async function ensureCrmDueTasksScheduled(logger: Logger) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     logger.error({ event: 'CRM_DUE_TASKS_SCHEDULE_ERROR', error: message }, 'Failed to schedule CRM due tasks scan')
+  }
+}
+
+/**
+ * Idem pour le scan d'auto-confirmation des commandes livrées. Idempotent : un
+ * seul job PENDING/PROCESSING à la fois. Premier scan dans ~5 min, puis le
+ * handler se replanifie à +1h (fenêtre de 24h à respecter, contrairement aux
+ * autres scans qui tournent une fois par jour).
+ */
+export async function ensureOrderAutoConfirmScheduled(logger: Logger) {
+  try {
+    const existing = await prisma.job.findFirst({
+      where: { type: 'ORDER_AUTO_CONFIRM_SCAN', status: { in: ['PENDING', 'PROCESSING'] } },
+      select: { id: true },
+    })
+    if (existing) return
+    await enqueue('ORDER_AUTO_CONFIRM_SCAN', {}, { scheduledAt: new Date(Date.now() + 300_000) })
+    logger.info({ event: 'ORDER_AUTO_CONFIRM_SCHEDULED' }, 'Order auto-confirm scan scheduled')
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    logger.error({ event: 'ORDER_AUTO_CONFIRM_SCHEDULE_ERROR', error: message }, 'Failed to schedule order auto-confirm')
   }
 }
 
