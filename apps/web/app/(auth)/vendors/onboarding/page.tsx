@@ -370,7 +370,7 @@ export default function VendorOnboardingPage() {
           🛡️ Vous fixez librement la garantie de chaque pièce, ou n&apos;en donnez aucune.
           En créant votre profil, vous acceptez seulement le socle de reprise : reprise si la
           livraison échoue, si l&apos;acheteur refuse la pièce à la livraison, ou en cas de
-          non-conformité signalée sous 48 h.
+          non-conformité signalée sous 24 h.
         </div>
 
         {error && (

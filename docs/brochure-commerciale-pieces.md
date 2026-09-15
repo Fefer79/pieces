@@ -40,7 +40,7 @@ Le tout encadré par une règle simple — **aucune pièce n'est remise sans êt
 
 - **Devis transparent** envoyé par le mécanicien : prix vendeur, main-d'œuvre, livraison, frais plateforme — tout est ventilé avant le paiement.
 - **Vous choisissez quand payer** : en ligne à la commande (Orange Money, MTN Money, Wave, carte via CinetPay), ou au livreur au moment où il vous remet la pièce. Aucun des deux n'est un mode dégradé.
-- **Vous voyez la pièce avant de payer** si vous réglez à la remise. Et si elle ne correspond pas à l'annonce, le retour sous 48 h s'applique.
+- **Vous voyez la pièce avant de payer** si vous réglez à la remise. Et si elle ne correspond pas à l'annonce, le retour sous 24 h s'applique.
 - **Notation du vendeur et du livreur** après chaque transaction.
 - **Ouverture de litige** en un clic en cas de problème.
 
@@ -104,10 +104,10 @@ Vous préférez WhatsApp ? Envoyez :
 
 | Engagement | Comment ça marche |
 |---|---|
-| **Pièce conforme** ou remboursée | Rien n'est remis sans être payé, et le client peut régler à la remise, après avoir vu la pièce. En cas de non-conformité, retour sous 48 h : Pièces reprend la pièce et rembourse |
+| **Pièce conforme** ou remboursée | Rien n'est remis sans être payé, et le client peut régler à la remise, après avoir vu la pièce. En cas de non-conformité, retour sous 24 h : Pièces reprend la pièce et rembourse |
 | **État de la pièce affiché clairement** | Chaque fiche porte un *condition chip* visible (Neuf / Occasion / Ré-usiné) et une étiquette de source (OEM / Aftermarket / Compatible) |
 | **Garantie vendeur** | Chaque pièce affiche la garantie fixée par le vendeur — une durée, ou aucune. C'est annoncé avant l'achat, jamais découvert après |
-| **Reprise garantie, même sans garantie** | Livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité signalée sous 48 h : Pièces reprend la pièce et rembourse |
+| **Reprise garantie, même sans garantie** | Livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité signalée sous 24 h : Pièces reprend la pièce et rembourse |
 | **Prix transparent** | Le ventilé complet (vendeur / main-d'œuvre / livraison / frais plateforme) est affiché avant tout paiement |
 | **Protection des données (ARTCI)** | Conformité loi n°2013-450 de Côte d'Ivoire ; consentement explicite à la première connexion |
 | **Litiges suivis** | Toute commande peut être contestée ; un médiateur Pièces tranche sous 72h |

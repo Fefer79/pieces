@@ -126,7 +126,7 @@ Ce que vous acceptez avant de vendre est le **socle de reprise** : le minimum d�
 | Engagement | Ce que vous acceptez |
 |----------|-----------|
 | **DELIVERY_REFUSAL** — Reprise à la livraison | La livraison n'a pas pu être effectuée, ou l'acheteur refuse la pièce à la livraison parce qu'elle ne correspond pas à l'annonce : reprise et remboursement intégral |
-| **RETURN_48H** — Retour sous 48 h | Non-conformité à l'annonce signalée dans les 48 heures suivant la livraison : reprise et remboursement intégral |
+| **RETURN_48H** — Retour sous 24 h | Non-conformité à l'annonce signalée dans les 24 heures suivant la livraison : reprise et remboursement intégral |
 
 Dans les deux cas, la pièce vous revient et **la commission n'est pas due**.
 
@@ -472,7 +472,7 @@ Dès l'encaissement. Si l'acheteur paie en ligne à la commande, votre part part
 
 ### En cas de retour ou de litige
 
-Il n'y a pas de fonds à débloquer : le remboursement est une **reprise traitée par Pièces avec vous**, dans les limites du contrat d'adhésion — socle de reprise : livraison échouée, refus à la livraison, ou non-conformité signalée sous 48 h. Quand le retour est justifié, **la commission n'est pas due**.
+Il n'y a pas de fonds à débloquer : le remboursement est une **reprise traitée par Pièces avec vous**, dans les limites du contrat d'adhésion — socle de reprise : livraison échouée, refus à la livraison, ou non-conformité signalée sous 24 h. Quand le retour est justifié, **la commission n'est pas due**.
 
 ### Consulter le statut de paiement
 
@@ -651,7 +651,7 @@ Voici le parcours complet d'une commande du point de vue du vendeur :
 ┌───────────┐
 │ DELIVERED │ Le client a reçu la pièce
 └────┬──────┘
-     │ Confirmation par le client ou auto-confirmation (48h)
+     │ Confirmation par le client ou auto-confirmation (24h)
      ▼
 ÉTAPE 8 : Confirmé puis complété
 ┌───────────┐     ┌───────────┐
@@ -745,7 +745,7 @@ Contactez un agent terrain Pièces ou accédez directement à la page d'inscript
 
 Celle que vous voulez. Depuis le contrat v1.2, **vous fixez la garantie pièce par pièce** — une durée en jours, semaines ou mois, ou aucune garantie. Aucune famille de pièces n'est imposée ni exclue : vous décidez sur toutes. La garantie retenue est affichée à l'acheteur avant l'achat et figée sur la commande.
 
-Ce que vous acceptez à l'activation est le **socle de reprise**, dû sur toute pièce même sans garantie : livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité à l'annonce signalée sous 48 h. Dans ces cas, la pièce vous revient et la commission n'est pas due.
+Ce que vous acceptez à l'activation est le **socle de reprise**, dû sur toute pièce même sans garantie : livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité à l'annonce signalée sous 24 h. Dans ces cas, la pièce vous revient et la commission n'est pas due.
 
 ### Q3 : Comment l'IA identifie-t-elle mes pièces ?
 

@@ -568,7 +568,7 @@ DISPATCHED
 IN_TRANSIT
   ↓ delivered
 DELIVERED
-  ↓ recipient confirms (48h auto)
+  ↓ recipient confirms (24h auto)
 CONFIRMED
   ↓ payout to vendor
 COMPLETED
@@ -688,7 +688,7 @@ L'acheteur paie **au choix en ligne à la commande ou au livreur à la remise**.
 ### Cycle
 
 1. **Order paid** → `EscrowTransaction.status = HELD`
-2. **Delivery confirmed by buyer** (manuellement ou auto 48h) → `RELEASED` → payout vendeur déclenché
+2. **Delivery confirmed by buyer** (manuellement ou auto 24h) → `RELEASED` → payout vendeur déclenché
 3. **Litige résolu en faveur de l'acheteur** → `REFUNDED` (remboursement intégral ou partiel selon décision)
 
 ### Webhook CinetPay

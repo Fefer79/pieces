@@ -169,7 +169,7 @@ export async function getGuaranteeStatus(userId: string) {
     shopName: vendor.shopName,
     vendorType: vendor.vendorType,
     status: vendor.status,
-    // Socle de reprise du contrat v1.2 : ce que doit tout vendeur, même sur une
+    // Socle de reprise du contrat v1.3 : ce que doit tout vendeur, même sur une
     // pièce vendue sans garantie. La garantie commerciale, elle, se décide
     // pièce par pièce à la publication.
     guarantees: [
@@ -184,7 +184,7 @@ export async function getGuaranteeStatus(userId: string) {
       {
         type: 'RETURN_48H',
         label:
-          'Retour sous 48 h : pièce non conforme à l’annonce signalée après la livraison — reprise et remboursement',
+          'Retour sous 24 h : pièce non conforme à l’annonce signalée après la livraison — reprise et remboursement',
         signed: vendor.guaranteeSignatures.some((s) => s.guaranteeType === 'RETURN_48H'),
         signedAt: vendor.guaranteeSignatures.find((s) => s.guaranteeType === 'RETURN_48H')?.signedAt ?? null,
       },

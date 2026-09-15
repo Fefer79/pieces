@@ -296,7 +296,7 @@ Vous choisissez **quand** payer : en ligne au moment de la commande, ou au livre
 Vous payez en ligne ──────► Encaissé ──────► Le vendeur est payé immédiatement
 Vous payez au livreur ────► Encaissé à la remise, après que vous ayez vu la pièce
 Vous ne payez pas ────────► Le livreur ne vous remet rien : la pièce repart
-Pièce non conforme ───────► Retour sous 48 h, Pièces reprend et rembourse
+Pièce non conforme ───────► Retour sous 24 h, Pièces reprend et rembourse
 ```
 
 ### Endpoint API
@@ -787,7 +787,7 @@ Tout nouveau compte reçoit le rôle **MECHANIC**, qui donne accès à :
 
 ### Q : Que se passe-t-il si la pièce est défectueuse ?
 
-**R :** Si vous avez payé via un lien partagé sans compte, vous bénéficiez du **socle de reprise** au même titre qu'un client inscrit : livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité signalée sous 48 h. La garantie commerciale, elle, est celle qu'annonçait la fiche de la pièce au moment de l'achat. Pour ouvrir un litige formel dans l'application, vous devrez créer un compte. Contactez votre mécanicien ou le support Pièces en attendant.
+**R :** Si vous avez payé via un lien partagé sans compte, vous bénéficiez du **socle de reprise** au même titre qu'un client inscrit : livraison non effectuée, pièce refusée à la livraison pour non-conformité, ou non-conformité signalée sous 24 h. La garantie commerciale, elle, est celle qu'annonçait la fiche de la pièce au moment de l'achat. Pour ouvrir un litige formel dans l'application, vous devrez créer un compte. Contactez votre mécanicien ou le support Pièces en attendant.
 
 ### Q : Mes données sont-elles protégées sans compte ?
 

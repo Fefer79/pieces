@@ -1064,7 +1064,7 @@ DRAFT ─────────► PENDING_PAYMENT ────► PAID
                               ┌───┴───┐
                               ▼       ▼
                           CONFIRMED  COMPLETED
-                              │       (auto 48h)
+                              │       (auto 24h)
                               ▼
                           COMPLETED
 ```

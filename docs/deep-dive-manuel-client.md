@@ -409,7 +409,7 @@ La **garantie commerciale est fixée par le vendeur, pièce par pièce** : une d
 Quelle que soit cette garantie, le **socle de reprise** vaut sur toute pièce :
 - La livraison n'a pas pu être effectuée
 - Vous refusez la pièce à la livraison parce qu'elle ne correspond pas à l'annonce
-- Vous signalez la non-conformité dans les 48 heures suivant la livraison
+- Vous signalez la non-conformité dans les 24 heures suivant la livraison
 
 Dans ces trois cas, Pièces reprend la pièce et vous rembourse.
 
@@ -538,7 +538,7 @@ Vous ne payez pas ─────────► Pas de remise ─────�
 
 - **Vous voyez la pièce avant de payer** si vous avez choisi le paiement à la remise. C'est la protection la plus directe qui soit : ce qui ne vous convient pas, vous ne le payez pas.
 - **Le prix est verrouillé** à la commande. Il ne peut pas bouger entre la commande et la livraison.
-- **Le socle de reprise** reste acquis : livraison non effectuée, refus à la livraison, ou non-conformité signalée sous 48 h. Au-delà, seule s'applique la garantie que le vendeur a annoncée sur la pièce.
+- **Le socle de reprise** reste acquis : livraison non effectuée, refus à la livraison, ou non-conformité signalée sous 24 h. Au-delà, seule s'applique la garantie que le vendeur a annoncée sur la pièce.
 - **Si vous avez payé en ligne** et que la pièce ne correspond pas, ouvrez un litige : Pièces reprend la pièce et traite le remboursement avec le vendeur.
 
 ### Consulter l'état de votre paiement
@@ -567,7 +567,7 @@ Accédez à vos commandes via l'onglet **"Commandes"** dans la barre de navigati
 | **IN_TRANSIT** | En cours de livraison | Préparer la réception |
 | **DELIVERED** | Livré | Vérifier et confirmer |
 | **CONFIRMED** | Vous avez confirmé la réception | Rien — terminé |
-| **COMPLETED** | Auto-confirmé après 48h | Rien — terminé |
+| **COMPLETED** | Auto-confirmé après 24h | Rien — terminé |
 
 ### Suivi de la livraison
 
@@ -595,7 +595,7 @@ Cet endpoint est **public** (pas d'authentification requise) — vous pouvez par
 ```
 ASSIGNED ─► PICKUP_IN_PROGRESS ─► IN_TRANSIT ─► DELIVERED ─► CONFIRMED
                                                      │
-                                                     └─► COMPLETED (auto 48h)
+                                                     └─► COMPLETED (auto 24h)
 ```
 
 ### Client absent
@@ -627,11 +627,11 @@ Après réception de votre pièce :
 
 ### Confirmation automatique
 
-Si vous ne confirmez pas manuellement, la commande est **automatiquement confirmée après 48 heures**. Après la confirmation :
+Si vous ne confirmez pas manuellement, la commande est **automatiquement confirmée après 24 heures**. Après la confirmation :
 - La vente devient définitive
 - Vous pouvez toujours évaluer le vendeur et le livreur
 
-**Important :** Si la pièce ne correspond pas ou est défectueuse, **ouvrez un litige AVANT les 48 heures** — c'est le délai de retour prévu au contrat.
+**Important :** Si la pièce ne correspond pas ou est défectueuse, **ouvrez un litige AVANT les 24 heures** — c'est le délai de retour prévu au contrat, aligné sur l'auto-confirmation de commande.
 
 ---
 
@@ -747,7 +747,7 @@ Un **administrateur Pièces** examine le litige et rend une décision :
 
 ### Délai important
 
-**Ouvrez votre litige dans les 48 heures suivant la livraison.** Passé ce délai, la vente est définitive et le droit de retour ne s'applique plus.
+**Ouvrez votre litige dans les 24 heures suivant la livraison.** Passé ce délai, la vente est définitive et le droit de retour ne s'applique plus.
 
 ### Endpoint API
 
@@ -878,7 +878,7 @@ Body: { whatsapp: true, sms: false, push: true }
               │
               ▼
 8. VÉRIFICATION                       Vous vérifiez
-   (Vous avez 48h)                    la pièce
+   (Vous avez 24h)                    la pièce
               │
               ├─── Tout OK ──────► 9. CONFIRMATION
               │                       (CONFIRMED/COMPLETED)
@@ -917,10 +917,10 @@ Body: { whatsapp: true, sms: false, push: true }
 | Formats photo | JPG, PNG, WebP |
 | Caractères recherche min | 2 |
 | SLA confirmation vendeur | 45 minutes |
-| Auto-confirmation livraison | 48 heures |
+| Auto-confirmation livraison | 24 heures |
 | Évaluation | 1 à 5 étoiles |
 | Socle — reprise à la livraison | Livraison échouée ou refus pour non-conformité (DELIVERY_REFUSAL) |
-| Socle — retour après livraison | 48 heures (RETURN_48H) |
+| Socle — retour après livraison | 24 heures (RETURN_48H) |
 | Garantie commerciale | Fixée par le vendeur sur chaque pièce, ou aucune |
 
 ### Méthodes de paiement
@@ -948,11 +948,11 @@ Body: { whatsapp: true, sms: false, push: true }
 
 **R :** Cela dépend de la pièce, et c'est annoncé avant l'achat. Chaque vendeur fixe la garantie qu'il accorde sur chacune de ses pièces — une durée, ou aucune. La fiche produit et le récapitulatif avant paiement affichent toujours ce qu'il en est.
 
-Ce qui ne dépend d'aucun vendeur, c'est le **socle de reprise**, valable sur toute pièce : livraison non effectuée, pièce refusée à la livraison parce qu'elle ne correspond pas à l'annonce, ou non-conformité signalée dans les 48 heures. Dans ces cas, Pièces reprend la pièce et vous rembourse.
+Ce qui ne dépend d'aucun vendeur, c'est le **socle de reprise**, valable sur toute pièce : livraison non effectuée, pièce refusée à la livraison parce qu'elle ne correspond pas à l'annonce, ou non-conformité signalée dans les 24 heures. Dans ces cas, Pièces reprend la pièce et vous rembourse.
 
 ### Q : Mon argent est-il protégé ?
 
-**R :** Oui. Vous pouvez choisir de **payer à la remise** : le livreur ne vous laisse la pièce que contre paiement, et vous la voyez avant de payer. Si vous avez payé en ligne et que la pièce ne correspond pas, ouvrez un litige sous 48 h — Pièces reprend la pièce et vous rembourse.
+**R :** Oui. Vous pouvez choisir de **payer à la remise** : le livreur ne vous laisse la pièce que contre paiement, et vous la voyez avant de payer. Si vous avez payé en ligne et que la pièce ne correspond pas, ouvrez un litige sous 24 h — Pièces reprend la pièce et vous rembourse.
 
 ### Q : Puis-je payer en espèces ?
 
@@ -964,7 +964,7 @@ Ce qui ne dépend d'aucun vendeur, c'est le **socle de reprise**, valable sur to
 
 ### Q : Que faire si la pièce reçue ne correspond pas ?
 
-**R :** Ouvrez un **litige** dans les 48 heures suivant la livraison. Un administrateur Pièces examinera votre cas. Si le litige est résolu en votre faveur, Pièces reprend la pièce et vous rembourse. Vous pouvez aussi exercer votre droit de retour sous 48 h, qui fait partie du socle de reprise dû par tout vendeur.
+**R :** Ouvrez un **litige** dans les 24 heures suivant la livraison. Un administrateur Pièces examinera votre cas. Si le litige est résolu en votre faveur, Pièces reprend la pièce et vous rembourse. Vous pouvez aussi exercer votre droit de retour sous 24 h, qui fait partie du socle de reprise dû par tout vendeur.
 
 ### Q : Puis-je annuler une commande ?
 

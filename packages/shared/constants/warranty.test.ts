@@ -48,6 +48,6 @@ describe('resolveWarranty', () => {
 describe('RETURN_POLICY', () => {
   it('couvre les trois cas de reprise du contrat v1.2', () => {
     expect(RETURN_POLICY.points).toHaveLength(3)
-    expect(RETURN_POLICY.points.join(' ')).toMatch(/48 h/)
+    expect(RETURN_POLICY.points.join(' ')).toMatch(/24 h/)
   })
 })

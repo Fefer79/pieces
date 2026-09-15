@@ -69,11 +69,11 @@ export function formatWarranty(
  */
 export const RETURN_POLICY = {
   title: 'Reprise garantie, même sans garantie commerciale',
-  short: 'Reprise si la livraison échoue, si vous refusez à la livraison, ou sous 48 h en cas de non-conformité.',
+  short: 'Reprise si la livraison échoue, si vous refusez à la livraison, ou sous 24 h en cas de non-conformité.',
   points: [
     'La livraison n’a pas pu être effectuée.',
     'Vous refusez la pièce à la livraison : elle ne correspond pas à l’annonce.',
-    'Non-conformité à l’annonce signalée dans les 48 h suivant la livraison.',
+    'Non-conformité à l’annonce signalée dans les 24 h suivant la livraison.',
   ],
 } as const
 

@@ -198,7 +198,7 @@ Un bandeau vert s'affiche :
 
 ### Comment votre paiement est protégé
 
-Vous choisissez **quand** payer : en ligne au moment de la commande, ou au livreur à la remise de la pièce. Si vous payez à la remise, vous voyez la pièce avant de la régler — et le livreur ne vous la laisse pas sans encaissement. Si vous avez payé en ligne et que la pièce ne correspond pas, le retour sous 48 h s'applique (voir section [Paiements](#13-paiements)).
+Vous choisissez **quand** payer : en ligne au moment de la commande, ou au livreur à la remise de la pièce. Si vous payez à la remise, vous voyez la pièce avant de la régler — et le livreur ne vous la laisse pas sans encaissement. Si vous avez payé en ligne et que la pièce ne correspond pas, le retour sous 24 h s'applique (voir section [Paiements](#13-paiements)).
 
 ---
 
@@ -377,14 +377,14 @@ Payez au livreur ───────────► Encaissé à la remise ─
 
 - **Vous voyez la pièce avant de payer**, si vous avez choisi le paiement à la remise. Ce qui ne vous convient pas, vous ne le réglez pas.
 - **Le prix est verrouillé** à la commande : il ne bouge plus entre la commande et la livraison.
-- **Le socle de reprise** s'applique : livraison non effectuée, refus à la livraison, ou non-conformité signalée sous 48 h. Au-delà, c'est la garantie annoncée par le vendeur sur la pièce qui joue — elle est affichée avant le paiement.
+- **Le socle de reprise** s'applique : livraison non effectuée, refus à la livraison, ou non-conformité signalée sous 24 h. Au-delà, c'est la garantie annoncée par le vendeur sur la pièce qui joue — elle est affichée avant le paiement.
 - **Si vous avez payé en ligne** et qu'il y a un problème, ouvrez un litige : Pièces reprend la pièce et traite votre remboursement.
 
 ### Ce qui se passe en cas de problème
 
 | Situation | Résultat |
 |-----------|---------|
-| Livraison confirmée, pas de litige sous 48 h | La vente est définitive |
+| Livraison confirmée, pas de litige sous 24 h | La vente est définitive |
 | Litige résolu en faveur du vendeur | La vente est maintenue |
 | Litige résolu en votre faveur | Pièce reprise, vous êtes remboursé |
 | Commande annulée avant l'expédition | Rien n'est encaissé, ou vous êtes remboursé |
@@ -445,7 +445,7 @@ Voici tout ce qui se passe du moment où vous recevez le lien jusqu'à la fin :
 ┌───────────┐
 │ DELIVERED │ ✅ Pièces livrées
 └────┬──────┘
-     │ Confirmation (manuelle ou automatique après 48h)
+     │ Confirmation (manuelle ou automatique après 24h)
      ▼
 ┌───────────┐     ┌───────────┐
 │ CONFIRMED │ ──► │ COMPLETED │ Fonds libérés au vendeur
@@ -465,7 +465,7 @@ Voici tout ce qui se passe du moment où vous recevez le lien jusqu'à la fin :
 | Consultation | Vérifier les pièces et les prix |
 | Paiement | Choisir la méthode et payer |
 | Annulation (si besoin) | Annuler avant l'expédition |
-| Après livraison | Rien — confirmation automatique après 48h |
+| Après livraison | Rien — confirmation automatique après 24h |
 
 ---
 
@@ -513,7 +513,7 @@ Quatre options : **Orange Money**, **MTN MoMo**, **Wave** (mobile money), ou **e
 
 ### Q3 : Mon paiement est-il sécurisé ?
 
-Oui. Vous pouvez choisir de **payer à la remise** : le livreur ne vous laisse la pièce que contre paiement, et vous la voyez avant de la régler. Si vous payez en ligne, le prix est verrouillé et le retour sous 48 h s'applique en cas de pièce non conforme.
+Oui. Vous pouvez choisir de **payer à la remise** : le livreur ne vous laisse la pièce que contre paiement, et vous la voyez avant de la régler. Si vous payez en ligne, le prix est verrouillé et le retour sous 24 h s'applique en cas de pièce non conforme.
 
 ### Q4 : Puis-je annuler ma commande après avoir payé ?
 

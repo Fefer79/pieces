@@ -483,7 +483,7 @@ PRÉPARATION (par l'administrateur)
 ┌───────────┐
 │ DELIVERED │ ✅ Mission accomplie
 └────┬──────┘
-     │ Le client confirme la réception (ou auto-confirmation 48h)
+     │ Le client confirme la réception (ou auto-confirmation 24h)
      ▼
 ┌───────────┐
 │ CONFIRMED │ Vente définitive — le vendeur a été payé à l'encaissement 💰

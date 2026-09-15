@@ -118,7 +118,7 @@ Avant d'aller voir un nouveau vendeur, rassembler les informations suivantes :
 
 L'activation est l'étape qui passe le vendeur du statut PENDING_ACTIVATION à **ACTIVE**. Elle requiert :
 
-- L'**acceptation du socle de reprise** (reprise si la livraison échoue, si l'acheteur refuse la pièce à la livraison, ou en cas de non-conformité signalée sous 48 h). La garantie commerciale, elle, reste au choix du vendeur, pièce par pièce.
+- L'**acceptation du socle de reprise** (reprise si la livraison échoue, si l'acheteur refuse la pièce à la livraison, ou en cas de non-conformité signalée sous 24 h). La garantie commerciale, elle, reste au choix du vendeur, pièce par pièce.
 - La validation du KYC par un administrateur Pièces.
 
 Tant que le vendeur n'est pas ACTIVE, ses pièces peuvent être ajoutées au catalogue mais les **commandes ne pourront pas être finalisées**.

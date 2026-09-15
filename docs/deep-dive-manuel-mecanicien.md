@@ -776,7 +776,7 @@ Voici le parcours complet d'une commande du point de vue du mécanicien :
 │ DELIVERED │ Vous recevez les pièces
 └────┬──────┘
      │ Vous pouvez évaluer le vendeur et le livreur
-     │ Confirmation automatique après 48h si pas de litige
+     │ Confirmation automatique après 24h si pas de litige
      ▼
 ÉTAPE 9 : Confirmé et complété
 ┌───────────┐     ┌───────────┐

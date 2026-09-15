@@ -203,7 +203,7 @@ export async function acceptVendorContract(
  * La signature du contrat vaut activation du vendeur.
  *
  * Le contrat porte lui-même le socle de reprise (article 7 : livraison non
- * effectuée, refus à la livraison, non-conformité signalée sous 48 h) — le même
+ * effectuée, refus à la livraison, non-conformité signalée sous 24 h) — le même
  * que celui signé depuis l'espace vendeur via `signGuarantees`. Sans cette bascule, un vendeur onboardé sur le terrain
  * resterait en attente d'activation indéfiniment et ses pièces ne sortiraient
  * jamais dans la recherche, qui exige un vendeur ACTIVE.

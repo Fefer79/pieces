@@ -1,58 +1,16 @@
-/**
- * Source de vérité unique du contrat d'adhésion vendeur (CGU).
- * Consommé par la page d'acceptation web ET le générateur de PDF API,
- * pour garantir que le vendeur signe exactement le texte qu'il lit.
- *
- * Toute modification de fond DOIT incrémenter VENDOR_CONTRACT_VERSION, archiver
- * le texte sortant dans son propre fichier (`vendor-membership-v<x_y>.ts`) et
- * l'inscrire dans VENDOR_CONTRACT_VERSIONS : la version est figée sur chaque
- * acceptation, et le PDF d'un contrat signé doit rejouer le texte de SA version
- * — pas le texte courant.
- */
-import {
-  VENDOR_CONTRACT_1_1,
-  VENDOR_CONTRACT_VERSION_1_1,
-  VENDOR_CONTRACT_EFFECTIVE_DATE_1_1,
-} from './vendor-membership-v1_1.js'
-import {
-  VENDOR_CONTRACT_1_2,
-  VENDOR_CONTRACT_VERSION_1_2,
-  VENDOR_CONTRACT_EFFECTIVE_DATE_1_2,
-} from './vendor-membership-v1_2.js'
+// ARCHIVE — contrat d'adhésion vendeur, version 1.2 (en vigueur du 2026-08-29
+// au 2026-09-15). NE PAS MODIFIER : ce texte est celui qu'ont signé les
+// vendeurs dont `VendorContract.contractVersion` vaut « 1.2 ». Le PDF et la
+// page de consultation le rejouent tel quel pour eux — la preuve de
+// consentement porte sur le texte lu, pas sur la version courante.
 
-export const VENDOR_CONTRACT_VERSION = '1.3'
+import type { VendorContract } from './vendor-membership.js'
 
-/** Date d'entrée en vigueur de la présente version (affichée et figée). */
-export const VENDOR_CONTRACT_EFFECTIVE_DATE = '2026-09-15'
+export const VENDOR_CONTRACT_VERSION_1_2 = '1.2'
 
-export interface ContractArticle {
-  /** Numéro d'article (1-indexé). */
-  number: number
-  title: string
-  /** Paragraphes de prose. */
-  paragraphs: string[]
-  /** Puces optionnelles affichées sous les paragraphes. */
-  bullets?: string[]
-}
+export const VENDOR_CONTRACT_EFFECTIVE_DATE_1_2 = '2026-08-29'
 
-export interface VendorContract {
-  title: string
-  /** Sous-titre / accroche affiché sous le titre. */
-  subtitle: string
-  /** Identité de l'éditeur de la plateforme. */
-  editor: {
-    name: string
-    description: string
-    contact: string
-  }
-  /** Préambule (paragraphes introductifs). */
-  preamble: string[]
-  articles: ContractArticle[]
-  /** Mentions de clôture (droit applicable, etc.). */
-  closing: string[]
-}
-
-export const VENDOR_CONTRACT: VendorContract = {
+export const VENDOR_CONTRACT_1_2: VendorContract = {
   title: 'Conditions générales d’adhésion vendeur',
   subtitle:
     'Contrat de commercialisation des pièces sur la marketplace Pièces — Côte d’Ivoire',
@@ -133,7 +91,7 @@ export const VENDOR_CONTRACT: VendorContract = {
       bullets: [
         'La livraison n’a pas pu être effectuée, pour une cause tenant au Vendeur, à la pièce ou à son acheminement.',
         'L’acheteur a refusé la pièce au moment de la livraison pour non-conformité constatée : pièce différente de l’annonce, référence, état ou compatibilité erronés.',
-        'La non-conformité à l’annonce est signalée dans les 24 heures suivant l’acceptation de la livraison.',
+        'La non-conformité à l’annonce est signalée dans les 48 heures suivant l’acceptation de la livraison.',
         'Dans ces cas, la pièce est restituée au Vendeur et la commission correspondante n’est pas due.',
       ],
     },
@@ -199,48 +157,4 @@ export const VENDOR_CONTRACT: VendorContract = {
   closing: [
     'Fait pour valoir ce que de droit. L’acceptation électronique du présent Contrat est horodatée et conservée par Pièces à titre de preuve.',
   ],
-}
-
-/**
- * Registre des versions publiées.
- *
- * La version acceptée est figée sur chaque signature : on doit pouvoir rejouer
- * le texte exact qu'un vendeur a lu, et non le texte courant. Toute nouvelle
- * version archive la précédente dans son propre fichier et l'inscrit ici.
- */
-export const VENDOR_CONTRACT_VERSIONS: Record<
-  string,
-  { contract: VendorContract; effectiveDate: string }
-> = {
-  [VENDOR_CONTRACT_VERSION_1_1]: {
-    contract: VENDOR_CONTRACT_1_1,
-    effectiveDate: VENDOR_CONTRACT_EFFECTIVE_DATE_1_1,
-  },
-  [VENDOR_CONTRACT_VERSION_1_2]: {
-    contract: VENDOR_CONTRACT_1_2,
-    effectiveDate: VENDOR_CONTRACT_EFFECTIVE_DATE_1_2,
-  },
-  [VENDOR_CONTRACT_VERSION]: {
-    contract: VENDOR_CONTRACT,
-    effectiveDate: VENDOR_CONTRACT_EFFECTIVE_DATE,
-  },
-}
-
-/**
- * Texte d'une version donnée. Une version inconnue (contrat émis par un code
- * plus récent, base restaurée…) retombe sur la version courante plutôt que de
- * casser l'affichage ou le PDF.
- */
-export function getVendorContractVersion(version: string | null | undefined): {
-  contract: VendorContract
-  effectiveDate: string
-  version: string
-} {
-  const known = version ? VENDOR_CONTRACT_VERSIONS[version] : undefined
-  if (known) return { ...known, version: version as string }
-  return {
-    contract: VENDOR_CONTRACT,
-    effectiveDate: VENDOR_CONTRACT_EFFECTIVE_DATE,
-    version: VENDOR_CONTRACT_VERSION,
-  }
 }

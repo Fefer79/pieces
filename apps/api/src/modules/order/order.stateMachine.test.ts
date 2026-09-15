@@ -38,7 +38,7 @@ describe('order.stateMachine', () => {
     expect(canTransition('DELIVERED', 'CONFIRMED')).toBe(true)
   })
 
-  it('allows DELIVERED → COMPLETED (48h auto)', () => {
+  it('allows DELIVERED → COMPLETED (24h auto)', () => {
     expect(canTransition('DELIVERED', 'COMPLETED')).toBe(true)
   })
 
