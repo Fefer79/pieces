@@ -1,12 +1,16 @@
 /**
- * Backfill de la catégorie des pièces sans catégorie, à partir de leur TITRE.
+ * Backfill de la catégorie des pièces sans catégorie EXPLOITABLE, à partir de
+ * leur TITRE.
  *
- * Les pipelines de scraping (CoinAfrique via `data-ad-category` absent, Mobristore
- * qui ne fournit jamais de catégorie, etc.) laissent `CatalogItem.category` à `null`
- * quand la source ne l'expose pas. Le filtre browse (`where.category = "Freinage"`)
- * fait une égalité stricte : une pièce sans catégorie disparaît silencieusement de
- * tous les filtres catégorie, même quand son titre est sans ambiguïté (ex. « Kia
- * Sportage 2011 jeu de plaquettes de frein »).
+ * Deux cas laissent une pièce hors de tous les filtres catégorie du browse
+ * (`where.category = "Freinage"`, égalité stricte) :
+ *  1. `category IS NULL` — la source ne fournit pas de catégorie (CoinAfrique
+ *     sans `data-ad-category`, Mobristore qui n'en fournit jamais).
+ *  2. `category` renseigné mais avec le libellé BRUT du site source, jamais
+ *     mappé vers la taxonomie Pièces (`PART_CATEGORIES`) — ex. GLOBAL_AUTO_CI
+ *     stocke littéralement « Plaquettes de frein et chaussures » au lieu de
+ *     « Freinage ». Ce cas est silencieux : la pièce a l'air catégorisée en
+ *     base, mais ne matche jamais un filtre catalogue.
  *
  * Ce script déduit `category` depuis `name` via le moteur de mots-clés déjà testé
  * de `matchLogisticsFamily` (packages/shared/constants/logistics.ts), en ne gardant
@@ -15,7 +19,9 @@
  * électronique...) sont volontairement laissées de côté plutôt que de risquer un
  * mauvais classement.
  *
- * Idempotent : ne cible que les pièces avec `category IS NULL`.
+ * Idempotent : ne cible que les pièces avec `category IS NULL` ou hors taxonomie ;
+ * une fois réécrite avec une valeur de `PART_CATEGORIES`, une pièce sort du filtre
+ * et n'est plus retouchée aux exécutions suivantes.
  * Dry-run par défaut — n'écrit en base qu'avec le flag `--commit`.
  *
  * ⚠️ La prod (Prisma Postgres, db.prisma.io) n'est PAS la cible par défaut : le
@@ -26,7 +32,8 @@
  *   DATABASE_URL='postgres://…prod…' \
  *     pnpm -F ingest tsx src/scripts/backfill-catalog-categories.ts --commit # écriture
  */
-import { matchLogisticsFamily, type PartCategory } from 'shared/constants'
+import type { Prisma } from '@prisma/client'
+import { matchLogisticsFamily, PART_CATEGORIES, type PartCategory } from 'shared/constants'
 import { prisma } from '../lib/prisma.ts'
 
 /**
@@ -69,25 +76,32 @@ async function main(): Promise<void> {
   console.log(`[backfill-categories] mode = ${commit ? 'COMMIT (écriture)' : 'DRY-RUN (lecture seule)'}`)
   console.log(`[backfill-categories] DATABASE_URL host = ${dbHost()}`)
 
+  // Hors taxonomie = category non-null mais dont la valeur n'est pas l'une des
+  // PART_CATEGORIES canoniques (libellé brut du site source, jamais mappé).
+  const where: Prisma.CatalogItemWhereInput = {
+    OR: [{ category: null }, { category: { notIn: [...PART_CATEGORIES] } }],
+  }
+
   const bySource = await prisma.catalogItem.groupBy({
     by: ['externalSource'],
-    where: { category: null },
+    where,
     _count: { _all: true },
   })
-  console.log(`[backfill-categories] répartition des pièces sans catégorie par source :`)
+  console.log(`[backfill-categories] répartition des pièces sans catégorie exploitable par source :`)
   for (const row of bySource.sort((a, b) => b._count._all - a._count._all)) {
     console.log(`  ${row.externalSource ?? '(manuel / vendeur direct)'}: ${row._count._all}`)
   }
 
   const items = await prisma.catalogItem.findMany({
-    where: { category: null },
-    select: { id: true, name: true },
+    where,
+    select: { id: true, name: true, category: true },
   })
-  console.log(`\n[backfill-categories] ${items.length} pièces candidates (0 catégorie)`)
+  console.log(`\n[backfill-categories] ${items.length} pièces candidates (catégorie nulle ou hors taxonomie)`)
 
   let matched = 0
   let written = 0
   const matchedByFamily = new Map<string, number>()
+  const rawCategorySamples = new Map<string, string>()
   const unmatched: string[] = []
 
   for (const item of items) {
@@ -99,6 +113,9 @@ async function main(): Promise<void> {
     }
     matched += 1
     matchedByFamily.set(category, (matchedByFamily.get(category) ?? 0) + 1)
+    if (item.category && item.category !== category && !rawCategorySamples.has(item.category)) {
+      rawCategorySamples.set(item.category, category)
+    }
     if (commit) {
       await prisma.catalogItem.update({
         where: { id: item.id },
@@ -116,6 +133,12 @@ async function main(): Promise<void> {
     console.log(`\n[backfill-categories] détail par catégorie déduite :`)
     for (const [category, count] of [...matchedByFamily.entries()].sort((a, b) => b[1] - a[1])) {
       console.log(`  ${category}: ${count}`)
+    }
+  }
+  if (rawCategorySamples.size > 0) {
+    console.log(`\n[backfill-categories] exemples de libellés bruts remplacés (source → taxonomie) :`)
+    for (const [raw, category] of rawCategorySamples) {
+      console.log(`  "${raw}" → "${category}"`)
     }
   }
   if (unmatched.length > 0) {
