@@ -101,18 +101,39 @@ const EXCLUDE_IF_CONTAINS: Partial<Record<PartCategory, string[]>> = {
   Vitrage: ['lave vitre', 'lave glace'],
 }
 
-function resolveCategory(name: string | null): PartCategory | undefined {
-  const family = matchLogisticsFamily(name)
-  if (!family) return undefined
-  const category = FAMILY_TO_CATEGORY[family.id]
-  if (!category) return undefined
+function containsWord(haystack: string, word: string): boolean {
+  return new RegExp(`(?:^| )${word}s?(?:$| )`).test(haystack)
+}
 
+/**
+ * "capteur"/"sonde"/"calculateur" ne sont pas retenus via `matchLogisticsFamily`
+ * (famille SMALL_ELECTRIC, trop générique — mélange aussi bougies, ampoules,
+ * fusibles, injecteurs...). Ce sont pourtant des cas fréquents et sans
+ * ambiguïté une fois isolés : PART_CATALOG liste « Capteur de température »,
+ * « Capteur de pression », « Calculateur moteur (ECU) »... sous
+ * `Capteurs & calculateurs` — SAUF « Capteur ABS avant/arrière », qui est
+ * explicitement listé sous `Freinage` (le capteur de vitesse de roue fait
+ * partie du système de freinage, pas de l'électronique générique).
+ */
+function resolveSensorCategory(normalized: string): PartCategory | undefined {
+  const isSensor = ['capteur', 'sonde', 'calculateur'].some((k) => containsWord(normalized, k))
+  if (!isSensor) return undefined
+  if (containsWord(normalized, 'capteur') && containsWord(normalized, 'abs')) return 'Freinage'
+  return 'Capteurs & calculateurs'
+}
+
+function resolveCategory(name: string | null): PartCategory | undefined {
   const normalized = normalize(name ?? '')
+  const family = matchLogisticsFamily(name)
+  const category = family ? FAMILY_TO_CATEGORY[family.id] : undefined
+
+  if (!family || !category) return resolveSensorCategory(normalized)
+
   const requireList = REQUIRE_IF_FAMILY[family.id]
-  if (requireList && !requireList.some((k) => normalized.includes(k))) return undefined
+  if (requireList && !requireList.some((k) => normalized.includes(k))) return resolveSensorCategory(normalized)
 
   const excludeList = EXCLUDE_IF_CONTAINS[category]
-  if (excludeList && excludeList.some((k) => normalized.includes(k))) return undefined
+  if (excludeList && excludeList.some((k) => normalized.includes(k))) return resolveSensorCategory(normalized)
 
   return category
 }
