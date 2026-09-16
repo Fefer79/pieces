@@ -133,8 +133,17 @@ function resolveSensorCategory(normalized: string): PartCategory | undefined {
  *    (mot-clé "calculateur"), qui le classe correctement en
  *    Capteurs & calculateurs — cette règle ne voit donc que les airbags
  *    physiques.
+ *  - Rétroviseur (gauche/droit/intérieur, coque, glace) → Vitrage.
+ *  - Aileron → Carrosserie extérieure (spoiler, absent de PART_CATALOG mais
+ *    sans ambiguïté comme pièce de carrosserie).
+ *  - Balai (d'essuie-glace) → Essuie-glace & lave-glace. "Balai" seul est déjà
+ *    sans ambiguïté en pièces auto (quasi toujours un balai d'essuie-glace).
  *  - Caméra (de recul, écran caméra de recul, radar de recul) → Navigation &
- *    connectivité, comme le reste du bloc GPS/Bluetooth/dashcam.
+ *    connectivité, comme le reste du bloc GPS/Bluetooth/dashcam. Vérifiée
+ *    AVANT « écran » générique pour que « ÉCRAN CAMÉRA DE RECUL » aille bien
+ *    en Navigation, pas en Audio.
+ *  - Écran (générique, sans "caméra") → Audio & multimédia, comme
+ *    « Écran tactile ».
  */
 function resolveDashboardCategory(normalized: string): PartCategory | undefined {
   const isCompteur =
@@ -144,7 +153,11 @@ function resolveDashboardCategory(normalized: string): PartCategory | undefined 
     normalized.includes('combine d instruments')
   if (isCompteur) return 'Carrosserie intérieure'
   if (containsWord(normalized, 'airbag')) return 'Carrosserie intérieure'
+  if (containsWord(normalized, 'retroviseur')) return 'Vitrage'
+  if (containsWord(normalized, 'aileron')) return 'Carrosserie extérieure'
+  if (containsWord(normalized, 'balai')) return 'Essuie-glace & lave-glace'
   if (containsWord(normalized, 'camera')) return 'Navigation & connectivité'
+  if (containsWord(normalized, 'ecran')) return 'Audio & multimédia'
   return undefined
 }
 
