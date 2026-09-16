@@ -101,8 +101,9 @@ async function main(): Promise<void> {
   let matched = 0
   let written = 0
   const matchedByFamily = new Map<string, number>()
-  const rawCategorySamples = new Map<string, string>()
+  const namesByCategory = new Map<string, string[]>()
   const unmatched: string[] = []
+  const SAMPLE_SIZE = 8
 
   for (const item of items) {
     const family = matchLogisticsFamily(item.name)
@@ -113,8 +114,10 @@ async function main(): Promise<void> {
     }
     matched += 1
     matchedByFamily.set(category, (matchedByFamily.get(category) ?? 0) + 1)
-    if (item.category && item.category !== category && !rawCategorySamples.has(item.category)) {
-      rawCategorySamples.set(item.category, category)
+    const samples = namesByCategory.get(category) ?? []
+    if (samples.length < SAMPLE_SIZE) {
+      samples.push(item.name ?? '(sans nom)')
+      namesByCategory.set(category, samples)
     }
     if (commit) {
       await prisma.catalogItem.update({
@@ -130,15 +133,12 @@ async function main(): Promise<void> {
   console.log(`  écritures en base              : ${commit ? written : 0}${commit ? '' : ' (dry-run)'}`)
   console.log(`  sans catégorie déduite         : ${unmatched.length}`)
   if (matchedByFamily.size > 0) {
-    console.log(`\n[backfill-categories] détail par catégorie déduite :`)
+    console.log(`\n[backfill-categories] détail par catégorie déduite, avec échantillon de TITRES réels (à relire avant --commit) :`)
     for (const [category, count] of [...matchedByFamily.entries()].sort((a, b) => b[1] - a[1])) {
-      console.log(`  ${category}: ${count}`)
-    }
-  }
-  if (rawCategorySamples.size > 0) {
-    console.log(`\n[backfill-categories] exemples de libellés bruts remplacés (source → taxonomie) :`)
-    for (const [raw, category] of rawCategorySamples) {
-      console.log(`  "${raw}" → "${category}"`)
+      console.log(`\n  ${category}: ${count}`)
+      for (const name of namesByCategory.get(category) ?? []) {
+        console.log(`    - ${name}`)
+      }
     }
   }
   if (unmatched.length > 0) {
