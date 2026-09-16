@@ -71,6 +71,52 @@ const FAMILY_TO_CATEGORY: Partial<Record<string, PartCategory>> = {
   EV_HV_COMPONENT: 'Électrique & batterie',
 }
 
+const stripAccents = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '')
+const normalize = (s: string) => stripAccents(s.toLowerCase()).replace(/[^a-z0-9]+/g, ' ')
+
+/**
+ * Certains mots-clés de `matchLogisticsFamily` sont trop génériques hors
+ * contexte "poids logistique" et créent de faux positifs de catégorie, vus en
+ * dry-run sur données réelles :
+ *  - "butee" (CLUTCH_KIT) matche aussi « butée de porte » → Embrayage à tort.
+ *  - "condenseur" (RADIATOR) est quasi toujours le condenseur de clim, pas le
+ *    radiateur moteur, sans le mot "radiateur" en plus.
+ * On exige un second mot-clé plus spécifique avant de retenir ces familles.
+ */
+const REQUIRE_IF_FAMILY: Partial<Record<string, string[]>> = {
+  CLUTCH_KIT: ['embrayage'],
+  RADIATOR: ['radiateur', 'refroidissement'],
+}
+
+/**
+ * Faux positifs vus en dry-run : le mot déclencheur apparaît dans un sens
+ * différent de celui visé par la famille logistique.
+ *  - "pneumatique" (TYRE) matche « suspension pneumatique », sans rapport
+ *    avec les pneus.
+ *  - "vitre" (WINDSHIELD) matche « lave-vitre »/« lave-glace », qui est le
+ *    système de lave-glace, pas le vitrage.
+ */
+const EXCLUDE_IF_CONTAINS: Partial<Record<PartCategory, string[]>> = {
+  'Roues & pneus': ['suspension'],
+  Vitrage: ['lave vitre', 'lave glace'],
+}
+
+function resolveCategory(name: string | null): PartCategory | undefined {
+  const family = matchLogisticsFamily(name)
+  if (!family) return undefined
+  const category = FAMILY_TO_CATEGORY[family.id]
+  if (!category) return undefined
+
+  const normalized = normalize(name ?? '')
+  const requireList = REQUIRE_IF_FAMILY[family.id]
+  if (requireList && !requireList.some((k) => normalized.includes(k))) return undefined
+
+  const excludeList = EXCLUDE_IF_CONTAINS[category]
+  if (excludeList && excludeList.some((k) => normalized.includes(k))) return undefined
+
+  return category
+}
+
 async function main(): Promise<void> {
   const commit = process.argv.includes('--commit')
   console.log(`[backfill-categories] mode = ${commit ? 'COMMIT (écriture)' : 'DRY-RUN (lecture seule)'}`)
@@ -106,8 +152,7 @@ async function main(): Promise<void> {
   const SAMPLE_SIZE = 8
 
   for (const item of items) {
-    const family = matchLogisticsFamily(item.name)
-    const category = family ? FAMILY_TO_CATEGORY[family.id] : undefined
+    const category = resolveCategory(item.name)
     if (!category) {
       unmatched.push(item.name ?? '(sans nom)')
       continue
