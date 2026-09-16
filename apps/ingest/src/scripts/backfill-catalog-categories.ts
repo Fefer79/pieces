@@ -122,18 +122,48 @@ function resolveSensorCategory(normalized: string): PartCategory | undefined {
   return 'Capteurs & calculateurs'
 }
 
+/**
+ * Autres concepts hors du vocabulaire de `matchLogisticsFamily` (sans rapport
+ * avec le poids/volume logistique), fréquents et sans ambiguïté dans les
+ * titres scrapés, mappés d'après `PART_CATALOG` :
+ *  - Compteur (de vitesse, compte-tours, tableau de bord, combiné
+ *    d'instruments) → Carrosserie intérieure.
+ *  - Airbag (conducteur/passager/rideau/latéral) → Carrosserie intérieure.
+ *    « Calculateur airbag » est déjà capté avant, par `resolveSensorCategory`
+ *    (mot-clé "calculateur"), qui le classe correctement en
+ *    Capteurs & calculateurs — cette règle ne voit donc que les airbags
+ *    physiques.
+ *  - Caméra (de recul, écran caméra de recul, radar de recul) → Navigation &
+ *    connectivité, comme le reste du bloc GPS/Bluetooth/dashcam.
+ */
+function resolveDashboardCategory(normalized: string): PartCategory | undefined {
+  const isCompteur =
+    containsWord(normalized, 'compteur') ||
+    normalized.includes('compte tours') ||
+    normalized.includes('tableau de bord') ||
+    normalized.includes('combine d instruments')
+  if (isCompteur) return 'Carrosserie intérieure'
+  if (containsWord(normalized, 'airbag')) return 'Carrosserie intérieure'
+  if (containsWord(normalized, 'camera')) return 'Navigation & connectivité'
+  return undefined
+}
+
+function resolveFallbackCategory(normalized: string): PartCategory | undefined {
+  return resolveSensorCategory(normalized) ?? resolveDashboardCategory(normalized)
+}
+
 function resolveCategory(name: string | null): PartCategory | undefined {
   const normalized = normalize(name ?? '')
   const family = matchLogisticsFamily(name)
   const category = family ? FAMILY_TO_CATEGORY[family.id] : undefined
 
-  if (!family || !category) return resolveSensorCategory(normalized)
+  if (!family || !category) return resolveFallbackCategory(normalized)
 
   const requireList = REQUIRE_IF_FAMILY[family.id]
-  if (requireList && !requireList.some((k) => normalized.includes(k))) return resolveSensorCategory(normalized)
+  if (requireList && !requireList.some((k) => normalized.includes(k))) return resolveFallbackCategory(normalized)
 
   const excludeList = EXCLUDE_IF_CONTAINS[category]
-  if (excludeList && excludeList.some((k) => normalized.includes(k))) return resolveSensorCategory(normalized)
+  if (excludeList && excludeList.some((k) => normalized.includes(k))) return resolveFallbackCategory(normalized)
 
   return category
 }
