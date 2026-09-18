@@ -72,6 +72,21 @@ describe('browse/compareParts value scoring', () => {
     expect(groups[0]!.offers[0]!.id).toBe('quality')
     expect(groups[0]!.bestValueOfferId).toBe('quality')
   })
+
+  it('remonte le stock local avant un import moins cher, quel que soit le tri', async () => {
+    // Le moins cher est à importer, le plus cher est déjà à Abidjan.
+    const [cheap, quality] = offers()
+    catalogFindMany.mockResolvedValue([
+      { ...cheap!, supplyMode: 'IMPORT' },
+      { ...quality!, supplyMode: 'LOCAL' },
+    ])
+
+    const byPrice = await compareParts({ oem: 'OEM-1' })
+    expect(byPrice.groups[0]!.offers.map((o) => o.id)).toEqual(['quality', 'cheap'])
+
+    const byValue = await compareParts({ oem: 'OEM-1', sort: 'value' })
+    expect(byValue.groups[0]!.offers.map((o) => o.id)).toEqual(['quality', 'cheap'])
+  })
 })
 
 describe('compareParts — filtre motorisation', () => {

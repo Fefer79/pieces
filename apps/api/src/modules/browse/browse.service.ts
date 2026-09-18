@@ -548,6 +548,7 @@ export interface CompareOffer {
   price: number | null
   condition: string | null
   partSource: string | null
+  supplyMode: SupplyMode
   warrantyValue: number | null
   warrantyUnit: WarrantyUnit | null
   inStock: boolean
@@ -714,6 +715,7 @@ export async function compareParts(
       price: item.price,
       condition: item.condition,
       partSource: item.partSource,
+      supplyMode: item.supplyMode,
       warrantyValue: item.warrantyValue,
       warrantyUnit: item.warrantyUnit,
       inStock: item.inStock,
@@ -756,6 +758,9 @@ export async function compareParts(
     g.bestValueOfferId = best?.id ?? null
 
     g.offers.sort((a, b) => {
+      // Le stock local passe avant l'import, avant même le prix : une pièce
+      // livrable en heures ne se compare pas à une pièce à faire venir.
+      if (a.supplyMode !== b.supplyMode) return a.supplyMode === 'LOCAL' ? -1 : 1
       if (sort === 'value') {
         const av = a.valueScore ?? -1
         const bv = b.valueScore ?? -1
