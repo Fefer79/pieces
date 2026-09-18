@@ -790,7 +790,9 @@ function ThemeSection({
   answers: ProspectionInterview['answers']
   onAnswer: (qid: string, text: string) => void
 }) {
-  const [open, setOpen] = useState(false)
+  // Ouvert par défaut : en entretien on déroule la trame en scrollant, on n'a
+  // pas une main libre pour déplier chaque bloc.
+  const [open, setOpen] = useState(true)
   const done = questions.filter((q) => answers[q.id]?.text?.trim()).length
 
   return (
