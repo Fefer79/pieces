@@ -38,7 +38,9 @@ Les quatre ont une réponse. Elles sont en section 6.
 
 > **« Un agent vient chez vous, photographie votre stock, le publie en ligne. Nous passons prendre la pièce, nous encaissons le client à la livraison, et nous vous transmettons votre argent immédiatement. »**
 
-Cette phrase se dit à la porte du magasin, avant tout le reste. Les cinq preuves qui la soutiennent :
+Attention à l'ordre : **cette phrase ne se dit pas à la porte.** À la porte, on dit l'accroche de la section 4.1 (« nous mettons en relation les vendeurs et les acheteurs — le Jumia des pièces détachées »), puis on écoute. La promesse ci-dessus se prononce **après la découverte**, une fois qu'on sait à quoi elle répond chez ce commerçant-là.
+
+Les cinq preuves qui la soutiennent :
 
 - **Aucun frais d'entrée, aucun abonnement.** Pièces ne facture rien au vendeur pour être présent sur la plateforme.
 - **La saisie de départ est faite par nous.** Un agent Liaison passe, photographie, décrit, publie : le vendeur ne tape rien. C'est vrai **au démarrage**, et c'est là qu'il faut être exact — notre agent lance le catalogue, puis **c'est un de ses employés à lui qui prend le relais** pour les arrivages suivants. Nous le formons sur place, en une demi-heure, sur son propre téléphone.
@@ -59,68 +61,144 @@ Avant d'entrer, on sait déjà : le nom de l'enseigne, sa zone, son score, ce qu
 - **Matériel** : le téléphone chargé, la fiche prospect ouverte, deux ou trois exemples de fiches produits déjà en ligne chez d'autres vendeurs, et rien d'autre. Pas de dossier imprimé à la première visite.
 - **Qui décide** : dans un magasin indépendant, c'est le propriétaire, presque jamais le vendeur au comptoir. Si le patron n'est pas là, on ne fait pas la présentation complète : on prend son nom, son heure de présence, et on revient. Une présentation faite à quelqu'un qui ne décide pas est une présentation à refaire.
 - **Horaires utiles** : à Adjamé et Treichville, entre 7 h 30 et 10 h le patron est présent et le magasin n'est pas encore saturé. Après 11 h, on parle à un homme qui sert trois clients en même temps.
-- **Premier geste** : acheter ou faire chercher une référence précise. On voit en trois minutes la profondeur du stock, la vitesse à sortir une pièce, et l'organisation de la réserve — trois choses que le patron ne dira jamais en mots.
+- **Premier geste, avant de se présenter** : demander une référence précise, comme un client. On voit en trois minutes la profondeur du stock, la vitesse à sortir une pièce et l'organisation de la réserve — trois choses que le patron ne dira jamais en mots. Puis on enchaîne sur l'accroche (4.1) : « Je vais être honnête avec vous, je ne suis pas venue que pour ça. Je suis Farida, de Pièces… ». C'est aussi la seule façon utile de sortir d'un magasin où le patron est absent.
 
-## 4. Guide d'entretien — découverte et qualification du stock
+## 4. Trame d'entretien — ce qu'on dit, mot pour mot
 
-Vingt-cinq questions, six blocs. On ne les pose pas toutes : on suit le fil et on note les réponses dans la fiche de compte-rendu. Chaque question a une intention ; la colonne de droite indique le signal à retenir.
+Ce qui suit n'est pas une liste de thèmes à couvrir : ce sont **les phrases telles qu'on les prononce**, dans l'ordre où on les prononce. Les blocs en retrait se disent tels quels. Les tableaux donnent la question à poser à gauche, et à droite ce qu'on écoute dans la réponse.
 
-### Bloc 1 — Activité et clientèle
+L'entretien complet tient en **quinze à vingt minutes**, cinq blocs, une vingtaine de questions. On ne les pose jamais toutes : on suit le fil du commerçant, et on note dans la fiche de compte-rendu (section 8).
 
-| Question | Ce qu'on cherche à savoir |
+### 4.1 L'accroche — les quinze premières secondes
+
+On entre, on salue, et on dit ceci **debout, sans sortir le téléphone** :
+
+> « Bonjour Monsieur. / Bonjour Madame.
+> Je suis **Farida**, de **Pièces** — pieces.ci.
+> Nous sommes une plateforme qui met en relation les **vendeurs de pièces** et les **acheteurs** : entreprises, flottes, professionnels et particuliers.
+> Nous sommes **le Jumia des pièces détachées**. »
+
+Puis **on s'arrête**. On laisse la phrase tomber. C'est la seule pause volontaire de tout l'entretien, et elle fait tout le travail : le commerçant comprend en trois secondes qu'on lui amène des acheteurs, et c'est lui qui relance.
+
+Quelques règles sur cette accroche :
+
+- **On donne son prénom, pas une fonction.** « Farida de Pièces » passe ; « chargée de développement commercial » ferme la porte.
+- **On dit « Jumia » sans complexe.** C'est la seule référence que tout le monde à Adjamé et à Treichville comprend immédiatement. Elle vaut mieux que dix minutes d'explication.
+- **On ne dit pas « je peux vous prendre cinq minutes ? »** — c'est une demande de permission qui invite au non. On salue, on se présente, on continue.
+- **On ne tend rien.** Pas de carte, pas de flyer, pas d'écran. Les mains restent libres.
+
+### 4.2 Savoir à qui on parle — avant tout le reste
+
+Immédiatement après l'accroche, une seule question :
+
+> « À qui je parle ? »
+
+Puis, selon la réponse :
+
+> « C'est vous le propriétaire du magasin ? »
+
+**C'est la question qui décide de la suite de la visite.** Une présentation complète faite à quelqu'un qui ne décide pas est une présentation à refaire.
+
+| Ce qu'on a en face | Ce qu'on fait | Ce qu'on dit |
+|---|---|---|
+| **Le patron / le propriétaire** | On déroule tout l'entretien | « Parfait, c'est vous que je cherchais. » |
+| **Le patron est absent** | On ne présente pas. On repart avec son nom et son heure de présence | « Il passe à quelle heure d'habitude ? Je repasse demain matin à la même heure, c'est bien ? Je note son nom ? » |
+| **Le gérant / le fils / celui qui tient la caisse** | Découverte oui, closing non. On qualifie et on fixe le rendez-vous avec le patron | « Vous, vous décidez pour le magasin, ou c'est le patron ? … D'accord. Alors racontez-moi comment vous travaillez, et on voit ensemble quand je peux rencontrer le patron. » |
+| **Un vendeur au comptoir, patron injoignable** | On achète une pièce, on observe, on repart. Fiche à requalifier | « Merci, je repasse. » |
+
+### 4.3 La bascule vers la découverte
+
+Une fois qu'on sait qu'on parle au bon interlocuteur, on ne présente **pas encore** l'offre. On bascule en découverte avec cette phrase :
+
+> « Avant de vous expliquer comment ça marche, j'aimerais d'abord comprendre comment vous travaillez, pour vous dire ce qui vous sert vraiment. Vous permettez ? »
+
+Ce renversement est volontaire : le commerçant qui a parlé de sa maison pendant quinze minutes écoute la proposition autrement. **Celui qui subit un argumentaire d'entrée écoute une publicité.**
+
+Puis une seule question avant d'entrer dans le stock, celle qui ouvre la porte de l'offre flotte :
+
+> « Vous travaillez avec des sociétés ? Des transporteurs, des taxis, des entreprises qui ont des véhicules ? »
+
+S'il dit oui, on le note et on y revient à l'argumentaire (accroche « flottes », section 5). On n'enchaîne pas dessus maintenant.
+
+### 4.4 Bloc 1 — Le stock, sa profondeur, ce qui dort
+
+C'est par là qu'on entre vraiment. Transition :
+
+> « Parlons de votre stock. »
+
+| La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
-| Depuis combien de temps vous êtes installés ici ? | Ancienneté = stock accumulé, réputation, réseau de mécaniciens |
-| Qui sont vos clients : des mécaniciens, des particuliers, des flottes ? | Une clientèle de mécaniciens signifie du volume et de la récurrence |
-| Vous travaillez avec des entreprises ou des sociétés de transport ? | Ouvre directement la porte de l'offre flotte |
-| Combien de clients vous servez un bon jour ? Un mauvais jour ? | Écart entre les deux = mesure de la dépendance au passage |
-| D'où viennent vos nouveaux clients aujourd'hui ? | S'il répond « le bouche-à-oreille », le manque est identifié sans qu'on ait à le nommer |
+| « À peu près, vous avez combien de références différentes ? » | L'ordre de grandeur suffit — c'est lui qui classe la fiche |
+| « Tout est ici, ou vous avez une réserve ailleurs ? » | Un entrepôt séparé = grossiste réel, priorité haute |
+| « Vous vendez du neuf, de l'occasion importée, du ré-usiné ? Les trois ? » | Détermine la condition affichée sur les annonces — c'est la première chose que l'acheteur regarde |
+| « Vous êtes fort sur quoi ? Le freinage, le moteur, la filtration, la suspension, l'électricité, la carrosserie ? » | Sa spécialité est son argument de vente en ligne |
+| « Et qu'est-ce qui dort dans vos rayons depuis six mois ? » | **La question la plus rentable de l'entretien.** Ce stock dormant est exactement ce que la mise en ligne fait bouger. On la pose lentement, et on laisse le silence |
+| « Ça vous arrive de refuser une vente parce que vous n'avez pas la pièce ? » | Ouvre le sujet de la mise en relation entre vendeurs |
 
-### Bloc 2 — Profondeur et nature du stock
+<div class="callout">
+<p class="lead">« Qu'est-ce qui dort dans vos rayons ? » est la charnière de toute la visite.</p>
+<p>S'il répond, il vient de nommer son problème lui-même — et l'accroche « votre argent est immobilisé dans des rayons que personne ne voit » (section 5) tombe toute seule vingt minutes plus tard. S'il élude, on n'insiste pas : on y revient en fin d'entretien avec « et les pièces dont on parlait tout à l'heure… ».</p>
+</div>
 
-| Question | Ce qu'on cherche à savoir |
+### 4.5 Bloc 2 — Marques et références
+
+Transition :
+
+> « Vous couvrez quelles marques ? »
+
+| La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
-| Vous avez combien de références différentes, à peu près ? | Le chiffre exact importe peu ; c'est l'ordre de grandeur qui classe la fiche |
-| Vous avez une réserve ailleurs, ou tout est ici ? | Un entrepôt séparé = grossiste réel, priorité haute |
-| Vous vendez du neuf, de l'occasion importée, du ré-usiné, ou les trois ? | Détermine les chips de condition sur les annonces — c'est ce que l'acheteur regarde en premier |
-| Sur quelles familles vous êtes les plus forts : freinage, moteur, filtration, suspension, électricité, carrosserie ? | Sa spécialité est son argument de vente en ligne |
-| Qu'est-ce qui dort dans vos rayons depuis six mois ? | **La question la plus rentable de l'entretien** : ce stock dormant est exactement ce que la mise en ligne fait bouger |
-| Il vous arrive de refuser une vente parce que vous n'avez pas la pièce ? | Ouvre le sujet de la mise en relation entre vendeurs |
+| « Vous couvrez quelles marques de véhicules ? » | Largeur de gamme ; les coréennes et les chinoises sont les segments qui montent |
+| « Vos pièces ont les références du constructeur dessus ? » | Conditionne la qualité des fiches et la recherche par compatibilité |
+| « Vous vendez de l'origine, de l'adaptable, ou les deux ? » | Un vendeur qui assume l'adaptable est un vendeur honnête : c'est bon signe |
+| « Quand un client vient, il vous dit quoi ? Il apporte la pièce, la carte grise, une photo ? » | Il décrit le vrai parcours d'achat — celui qu'on reproduit en ligne |
 
-### Bloc 3 — Marques et références
+### 4.6 Bloc 3 — Comment il suit tout ça
 
-| Question | Ce qu'on cherche à savoir |
+Transition :
+
+> « Et pour suivre tout ce stock, vous faites comment ? »
+
+| La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
-| Vous couvrez quelles marques de véhicules ? | Largeur de gamme ; les chinoises et coréennes sont les segments qui montent |
-| Vos pièces portent les références constructeur ? | Conditionne la qualité des fiches et la recherche par compatibilité |
-| Vous vendez de l'origine, de l'adaptable, ou les deux ? | Un vendeur qui assume l'adaptable est un vendeur honnête : c'est bon signe |
-| Comment un client vous dit ce qu'il veut : il apporte la pièce, la carte grise, une photo ? | Décrit le vrai parcours d'achat, celui qu'on reproduit en ligne |
+| « Vous suivez ça dans un cahier, sur un ordinateur, ou c'est de tête ? » | Détermine l'effort de saisie initial — et qui doit le porter |
+| « Et ici, qui connaît le stock par cœur ? » | **Identifie l'employé qui prendra le relais de l'agent Liaison.** On note son nom et son numéro dès maintenant |
+| « Vous avez déjà essayé de vendre en ligne ? Ça a donné quoi ? » | Une mauvaise expérience est une objection : on la traite tout de suite, pas au closing |
+| « Vous avez une page Facebook, un WhatsApp Business ? » | Un vendeur déjà en ligne comprend la proposition en deux minutes |
 
-### Bloc 4 — Gestion et informatisation
+### 4.7 Bloc 4 — La livraison
 
-| Question | Ce qu'on cherche à savoir |
+Transition :
+
+> « Quand un client commande, c'est vous qui livrez ou il vient chercher ? »
+
+| La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
-| Comment vous suivez votre stock : un cahier, un tableur, un logiciel ? | Détermine l'effort de saisie initial — et qui doit le porter |
-| Qui connaît le stock par cœur ici ? | Identifie l'interlocuteur opérationnel de l'agent Liaison |
-| Vous avez déjà essayé de vendre en ligne ? Ça a donné quoi ? | Une expérience ratée est une objection à traiter maintenant, pas au closing |
-| Vous avez une page Facebook ou WhatsApp Business ? | Un vendeur déjà en ligne comprend la proposition en deux minutes |
+| « Vous livrez, ou le client vient toujours chercher ? » | S'il livre déjà, il connaît le coût réel et la contrainte |
+| « Vous allez jusqu'où dans Abidjan ? » | Alimente les zones de livraison de sa fiche vendeur |
+| « Entre la commande et la remise de la pièce, il se passe combien de temps ? » | Le délai est notre argument produit numéro un |
+| « Et une pièce cassée ou perdue en route, ça vous est déjà arrivé ? » | Prépare le sujet de la reprise et de la garantie |
 
-### Bloc 5 — Logistique et livraison
+### 4.8 Bloc 5 — Prix, paiement, et le crédit qui ne rentre pas
 
-| Question | Ce qu'on cherche à savoir |
+Transition — on annonce que c'est la fin, ça libère la parole :
+
+> « Dernière chose, et après je vous explique ce qu'on fait. »
+
+| La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
-| Vous livrez, ou le client vient toujours chercher ? | S'il livre déjà, il connaît le coût réel et la contrainte |
-| Jusqu'où vous acceptez de livrer dans Abidjan ? | Alimente les zones de livraison de sa fiche vendeur |
-| Combien de temps entre la commande et la remise de la pièce ? | Le délai est notre argument produit numéro un |
-| Vous avez déjà eu des problèmes de pièce cassée ou perdue en route ? | Prépare le sujet de la reprise et de la garantie |
+| « Vos prix sont fixes, ou vous négociez au cas par cas ? » | Détermine si le prix affiché en ligne sera tenable |
+| « Vous prenez le mobile money, ou seulement le cash ? » | Par quel canal on lui transmettra son argent après l'encaissement |
+| « Vous faites crédit à certains mécaniciens ? … Et ils vous paient à temps ? » | **Le point de douleur le plus exploitable de tout l'entretien.** On laisse le silence après la seconde question |
+| « Et quand une pièce vendue revient, ça se passe comment chez vous ? » | Prépare la conversation sur le socle de reprise et sur la garantie qu'il choisira d'accorder |
 
-### Bloc 6 — Prix, marge et paiement
+### 4.9 La reformulation — on ferme la découverte avant d'argumenter
 
-| Question | Ce qu'on cherche à savoir |
-|---|---|
-| Vos prix sont fixes ou vous négociez ? | Détermine si le prix affiché en ligne sera tenable |
-| Vous acceptez le mobile money, ou seulement le cash ? | Par quel canal on lui transmettra son argent après l'encaissement |
-| Vous faites du crédit à certains mécaniciens ? Vous êtes payés à temps ? | **Le point de douleur le plus exploitable** : il ouvre directement sur « rien ne part sans être payé, et vous êtes payé tout de suite » |
-| Une pièce vendue et rendue, ça se passe comment chez vous ? | Prépare la conversation sur le socle de reprise et sur la garantie qu'il choisira d'accorder |
+On ne passe jamais à l'offre sans avoir rendu au commerçant ce qu'il vient de dire. Deux phrases, dans ses mots à lui :
+
+> « Si je résume : vous êtes fort sur **[sa famille de pièces]**, et vous avez **[son stock dormant]** qui ne bouge pas. Et sur le crédit, vous m'avez dit que **[ce qu'il a dit]**. C'est bien ça ? »
+
+Un « oui, c'est ça » ici vaut plus que n'importe quel argument. **C'est à ce oui qu'on enchaîne** sur l'accroche de la section 5 qui correspond à ce qu'il vient de confirmer — une seule, jamais deux.
 
 <div class="callout">
 <p class="lead">Trois réponses suffisent à qualifier une fiche en A : <strong>une réserve séparée, un patron qui décide sur place, et du stock qui dort</strong>.</p>
@@ -129,39 +207,151 @@ Vingt-cinq questions, six blocs. On ne les pose pas toutes : on suit le fil et o
 
 ## 5. Argumentaire
 
-Quatre accroches, à choisir selon ce que la découverte a révélé. Une seule à la fois.
+On arrive ici **après le « oui, c'est ça »** de la reformulation (4.9).
 
-**Si le stock dort** — « Vous avez de l'argent immobilisé dans des rayons que personne ne voit. En ligne, votre stock est visible 24 h sur 24 par tous les mécaniciens d'Abidjan qui cherchent exactement cette référence. On ne vous demande pas de bouger vos prix : juste de vous montrer. »
+### 5.1 D'abord la promesse, en entier
 
-**Si le client se plaint des impayés** — « Chez nous, aucune pièce n'est remise sans être payée : notre livreur encaisse avant de la lâcher, et votre argent vous est transmis immédiatement. Vous ne courez plus après personne, et vous n'attendez pas la fin du mois. »
+On la dit lentement, sans l'abréger :
 
-**Si le client sert des flottes** — « Le parc VTC d'Abidjan tourne autour de 30 000 véhicules, et chacun consomme de l'ordre de 1,3 million de francs de pièces par an. Ces gestionnaires-là cherchent un fournisseur fiable et traçable. C'est le type de client que nous vous amenons. »
+> « Voilà ce qu'on fait. **Un agent vient chez vous, photographie votre stock, et le publie en ligne.** Quand un client commande, **nous venons prendre la pièce, notre livreur encaisse le client au moment de la remise, et votre argent vous est transmis immédiatement.**
+> Vous ne payez rien pour être présent. **C'est vous qui fixez votre commission, pièce par pièce.** Et si le client ne paie pas, il n'a pas la pièce : elle vous revient. »
 
-**Si le client est déjà en ligne** — « Vous savez donc déjà que la publicité amène des curieux, pas des commandes. Nous, on ne vous amène pas un curieux : on vous amène une commande ferme, pour une référence choisie et vérifiée sur le véhicule. Vous sortez la pièce, on passe la prendre, on encaisse à la livraison et on vous paie. »
+Trois choses qu'on ne dit **pas** dans cette phrase : que le client le contactera (il ne le contactera jamais), qu'un agent repassera à chaque arrivage (c'est son employé qui prend le relais), et que la commande est payée d'avance (l'encaissement a lieu à la livraison). Détail en section 2.
 
-Les chiffres autorisés en visite sont ceux-là et uniquement ceux-là : **~30 000 véhicules VTC**, **~1,3 M FCFA de pièces par véhicule et par an**, **24 à 48 h d'immobilisation** pour une pièce manquante. Ils viennent de notre étude sectorielle. On ne les arrondit pas vers le haut.
+### 5.2 Puis une seule accroche
+
+**Une seule.** Celle qui répond à ce que la découverte a révélé — empiler les arguments dilue celui qui portait.
+
+**Si le stock dort** — *il a nommé des pièces qui ne bougent pas, au bloc 1*
+
+> « Ces pièces-là, c'est votre argent qui dort dans un rayon que personne ne voit. En ligne, votre stock est visible 24 heures sur 24 par tous les mécaniciens d'Abidjan qui cherchent exactement cette référence. On ne vous demande pas de baisser vos prix : juste de vous montrer. »
+>
+> *Relance :* « Vous en avez pour combien, à peu près, de ces pièces qui ne bougent pas ? »
+
+**S'il se plaint des impayés** — *il a soupiré au bloc 5, sur le crédit*
+
+> « Chez nous, aucune pièce n'est remise sans être payée. Notre livreur encaisse avant de la lâcher, et votre argent vous est transmis dans la foulée. Vous ne courez après personne, et vous n'attendez pas la fin du mois. »
+>
+> *Relance :* « Aujourd'hui, combien de clients ont votre pièce et pas encore votre argent ? »
+
+**S'il sert des flottes** — *il a dit oui à la question sociétés, en 4.3*
+
+> « Le parc VTC d'Abidjan, c'est autour de 30 000 véhicules, et chacun consomme à peu près 1,3 million de francs de pièces par an. Ces gestionnaires-là cherchent un fournisseur fiable, qui livre vite et qui laisse une trace écrite. C'est exactement le type de client qu'on vous amène. »
+>
+> *Relance :* « Vous en servez combien aujourd'hui, de sociétés comme ça ? »
+
+**S'il est déjà en ligne** — *Facebook, WhatsApp Business ou tentative passée, au bloc 3*
+
+> « Alors vous savez déjà que la publicité amène des curieux, pas des commandes. Nous, on ne vous amène pas un curieux : on vous amène **une commande ferme**, pour une référence choisie et vérifiée sur le véhicule. Vous sortez la pièce, on passe la prendre, on encaisse à la livraison, et on vous paie. Vous n'avez ni à discuter avec le client, ni à le livrer. »
+>
+> *Relance :* « Sur Facebook, sur dix personnes qui vous écrivent, il y en a combien qui achètent ? »
+
+### 5.3 Les seuls chiffres qu'on a le droit de citer
+
+**~30 000 véhicules VTC** à Abidjan · **~1,3 M FCFA de pièces par véhicule et par an** · **24 à 48 h d'immobilisation** pour une pièce manquante.
+
+Ces trois-là, et aucun autre. Ils viennent de notre étude sectorielle. **On ne les arrondit pas vers le haut**, et on ne les complète jamais par un chiffre inventé sur le moment : un commerçant qui vérifie et trouve faux ne rappelle pas.
 
 ## 6. Objections et réponses
 
-La méthode est toujours la même en trois temps : **reformuler** (montrer qu'on a compris), **prouver** (un fait, pas une promesse), **relancer** (une question qui rend la parole).
+### 6.1 La méthode, en trois temps
 
-| Objection | Réponse |
-|---|---|
-| « Ça va faire baisser mes prix » | *Reformuler :* vous craignez la guerre des prix. *Prouver :* l'acheteur ne compare pas que le prix — il compare l'état de la pièce, la garantie et le délai. Un vendeur noté, avec des photos réelles, vend plus cher qu'une annonce anonyme. *Relancer :* aujourd'hui, sur quoi vos clients vous choisissent, le prix ou la confiance ? |
-| « Mes concurrents vont voir mon stock » | Ils voient déjà votre magasin, il est sur la rue. Ce qu'ils ne voient pas, c'est votre carnet de clients — et ça, ça reste chez vous. *Relancer :* qu'est-ce qui vous gênerait le plus qu'ils sachent ? |
-| « Je n'ai pas le temps de saisir tout ça » | C'est notre agent qui saisit au démarrage : il vient, photographie, décrit, publie, vous validez. Ensuite, pour vos nouveaux arrivages, on forme un de vos employés — une demi-heure, sur son téléphone, il photographie et publie lui-même. *Relancer :* qui, chez vous, pourrait prendre ça en main ? On commence par dix références ? |
-| « Et si le client ne paie pas ? » | Alors il n'a pas la pièce. Notre livreur ne la remet jamais sans encaisser : pas de paiement, pas de livraison — la pièce vous revient. Et dès qu'il paie, votre part vous est transmise immédiatement. *Relancer :* aujourd'hui, combien de clients ont votre pièce et pas encore votre argent ? |
-| « Vous partez avec ma pièce sans me payer » | C'est exact, et c'est nous qui portons ce risque, pas vous : la pièce est tracée à l'enlèvement et sous notre responsabilité jusqu'à la remise. À l'arrivée, il n'y a que deux issues — soit elle est payée et vous recevez votre argent tout de suite, soit elle vous revient. Il n'y a pas de troisième cas. |
-| « Vous prenez combien ? » | C'est vous qui fixez la commission, pièce par pièce, au moment de la publication. Nous ne l'imposons pas et il n'y a pas de montant minimum. Elle est prélevée uniquement quand la vente est faite et livrée. *Relancer :* sur une pièce à 25 000 F, vous mettriez combien pour un client que vous n'auriez pas eu autrement ? |
-| « Je ne suis pas en règle, je n'ai pas de RCCM » | On accepte les vendeurs formels comme informels : une pièce d'identité suffit pour démarrer. La régularisation, on en reparle plus tard, quand le volume la justifie. |
-| « J'ai déjà Facebook, ça ne marche pas » | Facebook vous amène des gens qui demandent le prix et disparaissent. Chez nous, ce n'est pas un curieux qui vous appelle : c'est une commande ferme, référence et véhicule vérifiés, encaissée à la livraison par notre livreur. Et vous n'avez ni à discuter avec le client, ni à le livrer. |
-| « Je ne veux pas être exclusif » | Le contrat est explicitement non exclusif. Vous continuez à vendre à votre comptoir, sur Facebook, à vos habitués, exactement comme aujourd'hui. |
-| « Mes clients me doivent de l'argent, je ne peux pas arrêter le crédit » | Personne ne vous le demande. Gardez le crédit pour vos habitués, et servez-vous de la plateforme pour les clients que vous ne connaissez pas — ceux à qui vous n'auriez jamais fait crédit. |
-| « Et si le client rend la pièce ? » | Trois cas seulement : la livraison n'a pas pu se faire, le client refuse la pièce à la livraison parce qu'elle ne correspond pas à l'annonce, ou il signale la non-conformité dans les 24 h. En dehors de ça, il n'y a de retour que si **vous** avez accordé une garantie. Une annonce honnête sur l'état vous protège : c'est pour ça que l'état est affiché en gros sur chaque fiche. |
-| « Vos garanties, c'est un risque pour moi » | Nous ne vous en imposons aucune : **c'est vous qui décidez de la garantie, pièce par pièce**, et vous pouvez n'en donner aucune. Le seul minimum, c'est la reprise quand la livraison échoue ou que la pièce ne correspond pas à l'annonce. Le risque, c'est de vendre une pièce mal décrite : si la description est juste, le retour n'arrive pas. Et quand un retour est justifié, la commission n'est pas due non plus. |
-| « Si tout passe par vous, je deviens dépendant » | Vous gardez vos clients, votre magasin, vos prix et votre stock. Nous ne sommes qu'un canal de plus — et vous pouvez le couper quand vous voulez. |
-| « Et la livraison, c'est moi qui la fais ? » | Non. Vous préparez la pièce, nous venons la prendre et nous livrons le client. Vous n'avez ni livreur à payer, ni course à faire, ni rendez-vous à honorer. *Relancer :* aujourd'hui, combien vous coûte une course pour porter une pièce à Yopougon ? |
-| « Je ne vous connais pas, vous n'existez pas encore » | C'est exact, et c'est justement le moment : nous ouvrons dans les trente jours. Les vendeurs qui entrent maintenant sont ceux dont le stock est en ligne le premier jour, quand toute la demande arrive sur un catalogue encore court. Ceux qui viendront après entreront dans un catalogue déjà rempli. *Relancer :* vous préférez être parmi les premiers, ou attendre de voir la place que les autres auront prise ? |
+Toujours la même, quelle que soit l'objection :
+
+1. **Reformuler** — on lui montre qu'on a compris, avant de répondre. « Vous avez peur que… », « Si je comprends bien… ». Une objection à laquelle on répond trop vite est une objection qu'on n'a pas entendue.
+2. **Prouver** — un fait, jamais une promesse. Ce qui est écrit dans le contrat, ce que fait le livreur, ce qui s'affiche sur la fiche.
+3. **Relancer** — on rend la parole par une question. **C'est le temps qu'on oublie le plus souvent**, et c'est celui qui évite de rester seul à parler après avoir eu raison.
+
+Les réponses ci-dessous se disent telles quelles.
+
+### 6.2 « Ça va toucher à mes prix »
+
+**« Ça va faire baisser mes prix. »**
+
+> « Vous avez peur de la guerre des prix, je comprends. Mais l'acheteur ne compare pas que le prix : il regarde **l'état de la pièce, la garantie et le délai**. Un vendeur noté, avec de vraies photos, vend plus cher qu'une annonce anonyme sans visage. »
+>
+> *Relance :* « Aujourd'hui, vos clients vous choisissent sur quoi — le prix, ou la confiance ? »
+
+**« Mes concurrents vont voir mon stock. »**
+
+> « Ils voient déjà votre magasin, il est sur la rue. Ce qu'ils ne voient pas, c'est **votre carnet de clients** — et ça, ça reste chez vous. »
+>
+> *Relance :* « Qu'est-ce qui vous gênerait le plus qu'ils sachent ? »
+
+**« Vous prenez combien ? »**
+
+> « C'est **vous** qui fixez la commission, pièce par pièce, au moment où on publie. Nous ne l'imposons pas, il n'y a pas de minimum, et elle n'est prélevée que quand la vente est faite **et** livrée. »
+>
+> *Relance :* « Sur une pièce à 25 000 F, vous mettriez combien pour un client que vous n'auriez pas eu autrement ? »
+
+<div class="callout">
+<p class="lead">On ne donne jamais de chiffre à cette question, même s'il insiste.</p>
+<p>Pas de taux, pas de fourchette, pas de « la plupart mettent tant ». On renvoie la question : « à combien vous seriez à l'aise ? ». C'est lui qui fixe — c'est tout l'argument, et le premier chiffre qu'on prononcerait deviendrait le barème de tout le marché.</p>
+</div>
+
+### 6.3 « Et mon argent ? »
+
+**« Et si le client ne paie pas ? »**
+
+> « Alors il n'a pas la pièce. Notre livreur ne la remet **jamais** sans encaisser : pas de paiement, pas de livraison — et la pièce vous revient. Dès qu'il paie, votre part vous est transmise immédiatement. »
+>
+> *Relance :* « Aujourd'hui, combien de clients ont votre pièce et pas encore votre argent ? »
+
+**« Vous partez avec ma pièce sans me payer. »**
+
+> « C'est exact — et c'est **nous** qui portons ce risque, pas vous. La pièce est tracée à l'enlèvement et sous notre responsabilité jusqu'à la remise. À l'arrivée, il n'y a que deux issues : soit elle est payée et vous recevez votre argent tout de suite, soit elle vous revient. **Il n'y a pas de troisième cas.** »
+
+**« Mes clients me doivent de l'argent, je ne peux pas arrêter le crédit. »**
+
+> « Personne ne vous demande de l'arrêter. Gardez le crédit pour vos habitués, ceux que vous connaissez. Et servez-vous de la plateforme pour **les clients que vous ne connaissez pas** — ceux à qui vous n'auriez de toute façon jamais fait crédit. »
+
+### 6.4 « Je n'ai pas le temps »
+
+**« Je n'ai pas le temps de saisir tout ça. »**
+
+> « C'est notre agent qui saisit au démarrage : il vient, il photographie, il décrit, il publie, et vous validez. Ensuite, pour vos nouveaux arrivages, on forme **un de vos employés** — une demi-heure, sur son propre téléphone, et il publie lui-même. »
+>
+> *Relance :* « Qui, chez vous, pourrait prendre ça en main ? On commence par dix références ? »
+
+**« Et la livraison, c'est moi qui la fais ? »**
+
+> « Non. Vous préparez la pièce, **nous venons la prendre et nous livrons le client.** Ni livreur à payer, ni course à faire, ni rendez-vous à honorer. »
+>
+> *Relance :* « Aujourd'hui, ça vous coûte combien, une course pour porter une pièce à Yopougon ? »
+
+**« J'ai déjà Facebook, ça ne marche pas. »**
+
+> « Facebook vous amène des gens qui demandent le prix et qui disparaissent. Chez nous, ce n'est pas un curieux qui vous appelle : c'est **une commande ferme**, référence et véhicule vérifiés, encaissée à la livraison par notre livreur. Et vous n'avez ni à discuter avec le client, ni à le livrer. »
+
+### 6.5 « Et si ça tourne mal ? »
+
+**« Et si le client rend la pièce ? »**
+
+> « Il n'y a que trois cas : la livraison n'a pas pu se faire ; le client refuse la pièce à la remise parce qu'elle ne correspond pas à l'annonce ; ou il signale la non-conformité dans les 24 heures. En dehors de ça, **il n'y a de retour que si vous avez vous-même accordé une garantie.** Une annonce honnête sur l'état vous protège — c'est pour ça que l'état est affiché en gros sur chaque fiche. »
+
+**« Vos garanties, c'est un risque pour moi. »**
+
+> « On ne vous en impose aucune. **C'est vous qui décidez de la garantie, pièce par pièce**, et vous pouvez n'en donner aucune. Le seul minimum, c'est la reprise quand la livraison échoue ou quand la pièce ne correspond pas à l'annonce. Le vrai risque, c'est de vendre une pièce mal décrite : si la description est juste, le retour n'arrive pas. Et quand un retour est justifié, **la commission n'est pas due non plus.** »
+
+**« Je ne suis pas en règle, je n'ai pas de RCCM. »**
+
+> « Ce n'est pas un problème : on accepte les vendeurs formels comme informels. **Une pièce d'identité suffit pour démarrer.** La régularisation, on en reparlera plus tard, quand le volume la justifiera. »
+
+### 6.6 « Je ne vous connais pas »
+
+**« Je ne veux pas être exclusif. »**
+
+> « Le contrat est **explicitement non exclusif**. Vous continuez à vendre à votre comptoir, sur Facebook, à vos habitués, exactement comme aujourd'hui. »
+
+**« Si tout passe par vous, je deviens dépendant. »**
+
+> « Vous gardez vos clients, votre magasin, vos prix et votre stock. Nous ne sommes **qu'un canal de plus** — et vous pouvez le couper quand vous voulez. »
+
+**« Je ne vous connais pas, vous n'existez pas encore. »**
+
+> « C'est vrai, et c'est justement pour ça que je suis là aujourd'hui : **nous ouvrons dans les trente jours.** Les vendeurs qui entrent maintenant sont ceux dont le stock est en ligne le premier jour, quand toute la demande arrive sur un catalogue encore court. Ceux qui viendront après entreront dans un catalogue déjà rempli. »
+>
+> *Relance :* « Vous préférez être parmi les premiers, ou attendre de voir la place que les autres auront prise ? »
 
 ## 7. Modèle économique et closing
 
