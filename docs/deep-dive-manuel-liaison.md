@@ -47,6 +47,8 @@ Un vendeur peut soit :
 
 Dans les deux cas, le Liaison reste l'interlocuteur de premier niveau pour le vendeur.
 
+> **Ce manuel couvre l'outil, pas la conversation.** Pour le démarchage proprement dit — ce qu'on dit en entrant dans le magasin, la trame d'entretien, l'argumentaire, les objections et le closing — la référence est la [Bible du démarchage vendeurs](./guide-prospection-vendeurs-2026-08.md). Les deux documents se lisent ensemble : la bible amène le « oui », ce manuel l'exécute.
+
 ---
 
 ## 2. Connexion et accès au tableau de bord
@@ -88,8 +90,13 @@ Avant d'aller voir un nouveau vendeur, rassembler les informations suivantes :
 | Commune et adresse | Localisation client |
 | Coordonnées GPS approximatives | Idéalement prises sur place |
 | Zones de livraison acceptées | Communes où le vendeur peut livrer |
+| **Employé désigné pour la saisie** (nom + téléphone) | **C'est lui qui publiera les arrivages après le passage du Liaison.** Sans ce nom, le catalogue s'arrête au jour de la visite |
+
+Les six dernières lignes ne se remplissent pas au bureau : elles sortent de la découverte menée en magasin (blocs 1 à 5 de la trame d'entretien). Le nom de l'employé, en particulier, est la réponse à la question « qui connaît le stock par cœur ici ? ».
 
 **Astuce :** prendre les coordonnées GPS pendant la visite via l'application Maps de son téléphone, puis les noter avant de remplir le formulaire dans Pièces.
+
+**Après l'onboarding — la formation de l'employé.** La bible du démarchage promet au vendeur que son employé sera formé sur place, **en une demi-heure, sur son propre téléphone**. C'est un engagement pris en visite : il se tient. Concrètement, on lui fait publier deux ou trois pièces lui-même pendant qu'on est là — photo, état, prix, commission énoncée par le patron — plutôt que de le regarder faire. Un employé qui n'a jamais publié seul devant nous ne publiera pas après notre départ.
 
 ---
 
@@ -153,34 +160,31 @@ L'upload de photos détaillées (jusqu'à 3 par pièce) se fait via le flux vend
 
 ---
 
-## 6. Négocier et enregistrer la commission
+## 6. Faire fixer et enregistrer la commission
 
-Chaque pièce mise en vente sur Pièces porte une **commission** : la part du prix de vente qui revient à la plateforme. Cette commission est **agréée avec le vendeur** lors de l'onboarding ou de l'ajout de chaque pièce.
+Chaque pièce mise en vente sur Pièces porte une **commission** : la part du prix de vente qui revient à la plateforme. **C'est le vendeur qui la fixe**, pièce par pièce, au moment de la publication. Le rôle du Liaison est de lui poser la question, d'enregistrer sa réponse telle quelle, et de la faire agréer (section 7).
 
-### Comment fixer le montant
+### Le Liaison ne propose jamais de montant
 
-Il n'y a **pas de pourcentage imposé**. Le Liaison négocie de bonne foi avec le vendeur en fonction :
+C'est la règle la plus importante de cette section, et elle est sans exception : **on ne suggère ni taux, ni fourchette, ni montant**, même quand le vendeur insiste, même quand il demande « et vous, vous mettez combien d'habitude ? ».
 
-- du type de pièce (rotative vs. lente),
-- du prix de vente,
-- de la marge habituelle du vendeur,
-- de la complexité de la transaction.
+On lui renvoie la question :
 
-> **À titre indicatif** : on observe que les commissions s'établissent généralement entre **5 % et 10 %** du prix de vente, souvent autour de 8 %. Cela peut varier selon les vendeurs et les types de pièces ; à terme, les données collectées permettront d'affiner.
+> « C'est vous qui décidez. Sur une pièce à 25 000 F, vous seriez à l'aise à combien, pour un client que vous n'auriez pas eu autrement ? »
 
-### Plancher de sécurité
+La raison est commerciale, pas administrative : **le premier chiffre qu'un Liaison prononce devient le barème de tout le marché**, et il ne redescend jamais. Nous voulons observer ce que les vendeurs acceptent réellement — c'est cette donnée qui permettra plus tard de construire une politique. Un chiffre soufflé la détruit.
 
-Pour protéger l'équilibre économique de la plateforme, un **plancher minimum** est appliqué automatiquement :
+Ce que le Liaison a le droit de savoir, et que le vendeur n'a pas à entendre : sur le terrain, les commissions retenues se situent le plus souvent entre 5 et 10 %. **C'est une observation interne, jamais un argument de visite.**
 
-> **Commission minimale = max(1 000 FCFA, 5 % du prix de vente)**
+### Il n'y a pas de plancher
 
-Si le Liaison saisit un montant inférieur à ce plancher, le système l'enregistre automatiquement à la valeur du plancher. Un message discret prévient le Liaison quand cela arrive (`Plancher de sécurité : sera enregistrée à X FCFA minimum`).
+Le système **enregistre le montant tel qu'il est saisi**, et **0 est accepté** : un vendeur peut publier une pièce sans commission. On gagne peu sur cette annonce-là, mais la donnée a de la valeur et le vendeur est entré dans le catalogue.
 
-Le plancher est une **règle technique de sécurité**, pas une cible commerciale. La cible commerciale est celle qu'on a négociée avec le vendeur.
+Il n'y a donc **aucun rattrapage automatique** : le montant saisi est exactement le montant qui sera prélevé à la vente. Et le message à tenir en visite — « il n'y a pas de montant minimum » — est exact, on peut le dire sans réserve.
 
 ### Cas particulier — vendeur qui saisit lui-même
 
-Quand le vendeur a son propre compte et saisit ses propres pièces, **il doit lui-même indiquer la commission** dans son interface vendeur. La même règle de plancher s'applique. Le Liaison peut accompagner le vendeur dans cette étape lors de l'onboarding, mais à terme c'est au vendeur de définir la commission de chacune de ses pièces.
+Quand le vendeur a son propre compte et saisit ses propres pièces, **il indique lui-même la commission** dans son interface vendeur — là encore sans plancher, et 0 accepté. Le Liaison peut l'accompagner sur cette étape lors de l'onboarding, mais c'est bien au vendeur de définir la commission de chacune de ses pièces. C'est d'ailleurs le cas cible : à terme, tout passe par lui.
 
 ---
 
@@ -270,7 +274,8 @@ La tuile *"Commissions à agréer"* s'affiche en orange dès qu'au moins une pi�
 
 ### À éviter
 
-- ❌ Saisir une commission à 0 ou très basse en pensant "on verra plus tard" — le plancher de sécurité va corriger automatiquement, mais l'agrément vendeur ne sera plus aligné avec ce qui est vraiment perçu.
+- ❌ Saisir un montant de commission que le vendeur n'a pas énoncé lui-même — **il n'y a pas de plancher pour rattraper** : ce qui est saisi est ce qui sera prélevé, et l'agrément ne correspondra plus à ce que le vendeur croit avoir accepté.
+- ❌ Souffler un taux ou une fourchette au vendeur, même « pour l'aider à se décider » — voir section 6.
 - ❌ Modifier le prix d'une pièce sans en informer le vendeur — risque de litige.
 - ❌ Marquer une commission comme agréée sans avoir eu l'accord oral du vendeur — c'est une fausse déclaration.
 - ❌ Créer un doublon de vendeur (même numéro de téléphone) — le système refusera mais cela perd du temps.

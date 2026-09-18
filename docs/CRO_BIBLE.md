@@ -109,7 +109,7 @@ Chaque trimestre, la part de récurrent doit monter. C'est ce qui transforme un 
 
 ### 4.1 Architecture de prix actuelle (référence)
 
-- **Commission marketplace** : 5 à 10% côté vendeur, prélevée sur l'encaissement à la remise. Le floor de commission Liaison reste **server-side**, jamais affiché comme recommandation UI (voir `memory/feedback-liaison-commission.md` — règle load-bearing : on observe ce que les vendeurs acceptent, on ne suggère pas de prix).
+- **Commission marketplace** : 5 à 10% côté vendeur observés sur le terrain, prélevés sur l'encaissement à la remise. **Le vendeur fixe lui-même sa commission, pièce par pièce, et il n'y a plus aucun plancher** (0 est accepté) — règle load-bearing : on observe ce que les vendeurs acceptent, on ne leur suggère jamais de taux, ni en UI, ni en visite. Le 5–10% est une observation interne, pas un barème à citer.
 - **Flotte Pro** : 5 000 F / véhicule / mois.
 - **Flotte Pro +** : 10 000 F / véhicule / mois (express prioritaire, urgence, support dédié).
 - **Pricing grand compte** : dégressif par volume (voir `pricing-flotte-2026-05-27.md`, `offre-vtc-6000-vehicules-2026-05.md`, `offre-btp-800-vehicules-2026-05.md`).
@@ -194,7 +194,7 @@ Canal de volume, pas de marge unitaire. Modèle :
 
 ### 5.4 Le rôle du réseau Liaison dans le revenu
 
-Les Liaisons sourcent l'offre (vendeurs) mais sont aussi un **canal de demande** : ils recommandent Pièces aux mécaniciens qu'ils croisent. Leur commission (3–5% sur ventes générées, floor server-side) est un **coût d'acquisition variable** qui doit rester sous le seuil de marge. Le CRO arbitre en continu : commission Liaison vs take rate vs marge nette. Si la commission Liaison + remises dépasse la take rate, la transaction perd de l'argent.
+Les Liaisons sourcent l'offre (vendeurs) mais sont aussi un **canal de demande** : ils recommandent Pièces aux mécaniciens qu'ils croisent. Leur commission (3–5% sur ventes générées) est un **coût d'acquisition variable** qui doit rester sous le seuil de marge. Le CRO arbitre en continu : commission Liaison vs take rate vs marge nette. Si la commission Liaison + remises dépasse la take rate, la transaction perd de l'argent.
 
 ---
 

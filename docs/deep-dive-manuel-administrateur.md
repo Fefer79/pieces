@@ -343,16 +343,13 @@ Colonnes : photo thumb, nom, catégorie, état (chip coloré), source (OEM/After
 
 ### Politique commission
 
-**Plancher de sécurité** automatiquement appliqué côté serveur :
+**Il n'y a pas de plancher.** La commission est enregistrée telle qu'elle est soumise, et **0 est accepté** : un vendeur peut publier une pièce sans commission.
 
-> commission minimum = max(1 000 FCFA, 5 % × prix de vente)
+> Le plancher `max(1 000 FCFA, 5 % × prix)` et la fonction `minCommissionFor()` ont été retirés. Aucun clamp serveur ne s'applique plus, et le frontend n'affiche plus de message de plancher.
 
-Implémentation : `minCommissionFor(price)` dans `packages/shared/validators/catalog.ts`.
+C'est la même logique produit qu'à l'origine, poussée au bout : **observer les commissions réelles plutôt que les forcer.** Un montant relevé dans la base est ce que le vendeur a effectivement accepté, sans correction automatique — c'est ce qui rend la donnée exploitable.
 
-**Comportement de clamp :**
-- Quand un Liaison ou un vendeur soumet une commission, le serveur la compare au plancher.
-- Si elle est inférieure, le serveur l'enregistre automatiquement au plancher. **Pas de rejet** — c'est volontaire (cf. décision produit mai 2026 : observer les commissions réelles plutôt que les forcer à 5 %).
-- Le frontend affiche un message discret quand le clamp va s'appliquer.
+Voir `createPartForVendor()` dans `apps/api/src/modules/liaison/liaison.service.ts` et `catalog.service.ts` : `commissionAmount = parsed.data.commissionAmount ?? 0`.
 
 **Workflow d'agrément :**
 - Une commission proposée n'est pas engageante. Le vendeur doit explicitement la valider.
@@ -1093,7 +1090,7 @@ WHERE 'ADMIN' = ANY(roles) AND NOT 'LIAISON' = ANY(roles);
 ```
 
 **Q. Une commission semble bloquée à 1000 FCFA alors que le Liaison a entré 500.**
-R. C'est le plancher de sécurité `max(1000, 5 % × prix)`. Le serveur clamp automatiquement au minimum (cf. §7). C'est volontaire.
+R. Ce n'est plus possible : le plancher a été retiré et le serveur n'applique aucun clamp (cf. §7). Une commission qui ne correspond pas à la saisie vient d'une modification ultérieure — vérifier le journal d'activité de la pièce.
 
 **Q. La page Liaisons est vide.**
 R. Vérifier qu'il y a bien des utilisateurs avec `'LIAISON'` dans leur tableau `roles`. La table `activity_logs` n'est alimentée qu'après le déploiement du commit du 27 mai 2026 — les actions Liaison antérieures à cette date ne seront pas tracées rétroactivement.
