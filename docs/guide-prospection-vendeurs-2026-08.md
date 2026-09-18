@@ -164,8 +164,7 @@ Transition :
 |---|---|
 | « Vous suivez ça dans un cahier, sur un ordinateur, ou c'est de tête ? » | Détermine l'effort de saisie initial — et qui doit le porter |
 | « Et ici, qui connaît le stock par cœur ? » | **Identifie l'employé qui prendra le relais de l'agent Liaison.** On note son nom et son numéro dès maintenant |
-| « Est-ce que vous vendez déjà en ligne ? Et comment ça se passe ? » | On demande au présent, sans supposer un échec : un vendeur actif en ligne comprendra la proposition en deux minutes, un vendeur déçu formule une objection qu'on traite tout de suite plutôt qu'au closing |
-| « Vous avez une page Facebook, un WhatsApp Business ? » | Un vendeur déjà en ligne comprend la proposition en deux minutes |
+| « Est-ce que vous vendez déjà en ligne — Facebook, WhatsApp Business ? Et comment ça se passe ? » | On demande au présent, sans supposer un échec. Un vendeur actif en ligne comprendra la proposition en deux minutes ; un vendeur déçu formule une objection qu'on traite tout de suite plutôt qu'au closing |
 
 ### 4.7 Bloc 4 — La livraison
 
