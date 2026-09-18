@@ -37,7 +37,7 @@ C'est la première personne que voit le vendeur. C'est aussi celle qui rend le c
 Le Liaison a trois responsabilités principales :
 
 1. **Démarcher** les vendeurs de pièces auto sur le terrain (casses, garages, magasins, marchés).
-2. **Onboarder** les vendeurs sur la plateforme Pièces : créer leur compte, saisir leur KYC, prendre la photo des premières pièces, fixer une commission agréée pour chaque article.
+2. **Onboarder** les vendeurs sur la plateforme Pièces : créer leur compte, saisir leur KYC, **recenser tout le stock** (photo et description, rayon par rayon — pas un échantillon), fixer une commission agréée pour chaque article.
 3. **Coordonner** les commandes pour les vendeurs qui n'ont pas encore leur propre compte actif : transmettre les demandes, suivre la livraison, faire le pont avec un employé du vendeur ou le vendeur lui-même.
 
 Un vendeur peut soit :
@@ -268,6 +268,7 @@ La tuile *"Commissions à agréer"* s'affiche en orange dès qu'au moins une pi�
 
 - **Toujours prendre les coordonnées GPS sur place** — l'adresse postale seule ne suffit pas à Abidjan, et le livreur en aura besoin.
 - **Saisir au moins une photo claire de la pièce** à l'onboarding initial — une fiche sans photo se vend mal.
+- **Prendre tout le stock au premier passage** — nous sommes en phase de recensement avant l'ouverture : ce qui n'est pas photographié ce jour-là n'existera pas au lancement. Si le magasin est trop grand pour une demi-journée, on repasse jusqu'à l'avoir fini plutôt que de s'arrêter à un échantillon.
 - **Faire agréer la commission le jour même** de la saisie, idéalement avant de quitter la boutique.
 - **Mettre à jour le statut "En stock"** dès qu'une pièce part — vendre une pièce indisponible dégrade la confiance dans Pièces.
 - **Mettre à jour les zones de livraison** quand le vendeur étend son rayon.

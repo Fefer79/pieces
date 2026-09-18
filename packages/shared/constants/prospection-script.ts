@@ -73,7 +73,7 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     theme: 'ACCROCHE',
     label:
       '« Bonjour Monsieur / Madame. Je suis [prénom], de Pièces — pieces.ci. Nous sommes une plateforme qui met en relation les vendeurs de pièces et les acheteurs : entreprises, flottes, professionnels et particuliers. Nous sommes le Jumia des pièces détachées. »',
-    hint: 'Puis on s’arrête et on laisse la phrase tomber — c’est lui qui relance. Debout, sans sortir le téléphone, sans rien tendre. On donne son prénom, pas une fonction, et on ne demande jamais « je peux vous prendre cinq minutes ? ».',
+    hint: 'Puis on s’arrête et on laisse la phrase tomber — c’est lui qui relance. Debout, sans sortir le téléphone, sans rien tendre. On donne son prénom, pas une fonction, et on ne demande jamais « je peux vous prendre cinq minutes ? ». S’il demande « ça marche déjà ? » : « Pas encore — nous ne sommes pas en activité, nous recensons d’abord les vendeurs professionnels. Ceux qui seront présents au lancement auront un nouveau canal de distribution pour vendre plus. »',
   },
   {
     id: 'accroche_interlocuteur',
@@ -291,8 +291,8 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     id: 'catalogue_demarrage',
     theme: 'CLOTURE',
     label:
-      'Niveau d’engagement obtenu : dix références pour l’ouverture, mandat Liaison, contrat signé, nouveau rendez-vous, refus ?',
-    hint: 'Trois réponses suffisent à qualifier une fiche en A : une réserve séparée, un patron qui décide sur place, et du stock qui dort.',
+      '« On recense TOUT votre stock : j’envoie un agent, il photographie et décrit rayon par rayon, et le jour de l’ouverture c’est votre magasin entier qui est en ligne. On le fait jeudi ou vendredi ? »',
+    hint: 'L’objectif par défaut est le stock entier, jamais un échantillon : l’agent passe une fois, ce qu’il n’a pas photographié n’existera pas au lancement. Noter le niveau obtenu : contrat signé + recensement complet / mandat de recensement complet / premier lot seulement (repli, à ne proposer que s’il refuse d’ouvrir tout le stock) / nouveau rendez-vous / refus.',
     target: 'remarques',
   },
   {

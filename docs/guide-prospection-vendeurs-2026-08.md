@@ -86,6 +86,7 @@ Quelques règles sur cette accroche :
 - **On dit « Jumia » sans complexe.** C'est la seule référence que tout le monde à Adjamé et à Treichville comprend immédiatement. Elle vaut mieux que dix minutes d'explication.
 - **On ne dit pas « je peux vous prendre cinq minutes ? »** — c'est une demande de permission qui invite au non. On salue, on se présente, on continue.
 - **On ne tend rien.** Pas de carte, pas de flyer, pas d'écran. Les mains restent libres.
+- **Si on demande « et ça marche déjà ? » dès la porte**, on répond sans détour et on enchaîne : « Pas encore — **nous ne sommes pas en activité, nous recensons d'abord les vendeurs professionnels.** Ceux qui seront présents au lancement auront un nouveau canal de distribution pour vendre plus. C'est pour ça que je passe vous voir. » Puis on bascule en découverte (4.3). Le développement complet est en 6.6.
 
 ### 4.2 Savoir à qui on parle — avant tout le reste
 
@@ -312,7 +313,7 @@ Les réponses ci-dessous se disent telles quelles.
 
 > « C'est notre agent qui saisit au démarrage : il vient, il photographie, il décrit, il publie, et vous validez. Ensuite, pour vos nouveaux arrivages, on forme **un de vos employés** — une demi-heure, sur son propre téléphone, et il publie lui-même. »
 >
-> *Relance :* « Qui, chez vous, pourrait prendre ça en main ? On commence par dix références ? »
+> *Relance :* « Qui, chez vous, pourrait prendre ça en main ? Et on prend tout le stock d'un coup, tant que l'agent est chez vous — c'est le même déplacement. »
 
 **« Et la livraison, c'est moi qui la fais ? »**
 
@@ -350,9 +351,9 @@ Les réponses ci-dessous se disent telles quelles.
 
 **« Je ne vous connais pas, vous n'existez pas encore. »**
 
-> « C'est vrai, et c'est justement pour ça que je suis là aujourd'hui : **nous ouvrons dans les trente jours.** Les vendeurs qui entrent maintenant sont ceux dont le stock est en ligne le premier jour, quand toute la demande arrive sur un catalogue encore court. Ceux qui viendront après entreront dans un catalogue déjà rempli. »
+> « C'est vrai, et je vous le dis franchement : **nous ne sommes pas encore en activité.** Aujourd'hui, nous recensons les vendeurs professionnels de la place, un par un — c'est pour ça que je suis dans votre magasin. Ceux qui seront présents au lancement auront **un nouveau canal de distribution, moderne et efficace, pour vendre plus** : leur stock en ligne le premier jour, quand toute la demande arrive sur un catalogue encore court. Ceux qui viendront après entreront dans un catalogue déjà rempli. »
 >
-> *Relance :* « Vous préférez être parmi les premiers, ou attendre de voir la place que les autres auront prise ? »
+> *Relance :* « Vous préférez être recensé maintenant, avec tout votre stock, ou attendre de voir la place que les autres auront prise ? »
 
 ## 7. Modèle économique et closing
 
@@ -368,24 +369,29 @@ Sur le terrain, les commissions que les vendeurs retiennent se situent le plus s
 
 ### Le contexte de prélancement
 
-**Pièces ouvre dans les trente jours.** Ce n'est pas une information qu'on cache : c'est le cadre de toute la conversation de closing. On ne vend pas des résultats passés — il n'y en a pas encore — **on vend une place à l'ouverture**. Deux conséquences directes :
+**Pièces ouvre dans les trente jours, et nous ne sommes pas encore en activité.** Ce n'est pas une information qu'on cache : c'est le cadre de toute la conversation de closing, et c'est même l'argument d'entrée. Ce qu'on dit, tel quel : **« nous ne vendons pas encore, nous recensons d'abord les vendeurs professionnels de la place. Ceux qui seront présents auront un nouveau canal de distribution, moderne et efficace, pour augmenter leurs ventes. »** On ne vend pas des résultats passés — il n'y en a pas encore — **on vend une place à l'ouverture**. Deux conséquences directes :
 
 - **On ne propose jamais « d'observer pendant quinze jours ».** Il n'y a pas encore de ventes à observer, et un rendez-vous de bilan à quinze jours serait démenti par les faits. La date qu'on pose en sortie de visite, c'est **le jour de la mise en ligne**, pas un bilan de résultats.
 - **On vend la primauté.** Être présent au lancement, c'est avoir son stock dans le catalogue du premier jour, apparaître en tête des recherches quand la demande arrive sur un catalogue encore court, et être cité dans la campagne d'ouverture.
+- **On recense tout le stock, pas un échantillon.** Comme il n'y a pas encore de ventes à observer, il n'y a aucune raison de « commencer petit pour voir » : un stock partiellement recensé, c'est un vendeur qui sera invisible sur les neuf dixièmes des recherches du premier jour. L'objectif de la visite, c'est **le stock entier**.
 
 La phrase de positionnement, à dire telle quelle : **« Nous construisons le Jumia des pièces détachées, pour les professionnels comme pour les particuliers. Le jour de l'ouverture, il n'y aura qu'une poignée de grossistes en ligne. La seule question, c'est de savoir si vous en faites partie. »**
 
-### Les trois niveaux d'engagement de sortie de visite
+### Le niveau d'engagement de sortie de visite
 
-On ne sort jamais d'un magasin sans un de ces trois oui. Du plus facile au plus engageant :
+**L'objectif par défaut, à la première visite, c'est tout le stock.** Pas un échantillon, pas « on commence par quelques pièces pour voir » : on est en phase de recensement, l'agent passe une fois, et ce qu'il n'a pas photographié ce jour-là n'existera pas au lancement. La question de closing se pose donc d'emblée à ce niveau :
+
+> « On recense **tout votre stock** : j'envoie un agent, il reste le temps qu'il faut, il photographie et il décrit rayon par rayon. Le jour de l'ouverture, c'est votre magasin entier qui est en ligne, pas trois pièces. On le fait jeudi ou vendredi ? »
+
+On ne sort jamais du magasin sans un de ces oui. Du plus engageant au plus modeste :
 
 | Niveau | Engagement | Question de closing |
 |---|---|---|
-| 1 | **Dix références pour l'ouverture** — le vendeur choisit dix pièces, on les publie, elles sont dans le catalogue du premier jour | « On prend dix pièces que vous voulez faire bouger, on les met en ligne cette semaine : elles seront là le jour de l'ouverture, dans le premier catalogue que les acheteurs verront. On commence par lesquelles ? » |
-| 2 | **Mandat Liaison** — un agent vient photographier et décrire une partie du stock | « Je vous envoie un agent jeudi matin, il reste deux heures, il photographie ce que vous lui montrez. Jeudi ou vendredi ? » |
-| 3 | **Contrat d'adhésion signé** — KYC, socle de reprise accepté, compte vendeur actif | « On ouvre votre compte aujourd'hui : il me faut votre pièce d'identité ou votre RCCM, et vous signez en ligne en deux minutes. On le fait maintenant ? » |
+| 1 | **Contrat d'adhésion signé + recensement complet** — KYC, socle de reprise accepté, compte actif, et l'agent passe prendre tout le stock | « On ouvre votre compte aujourd'hui : il me faut votre pièce d'identité ou votre RCCM, vous signez en ligne en deux minutes, et on cale le passage de l'agent pour tout recenser. On le fait maintenant ? » |
+| 2 | **Mandat de recensement complet** — un agent vient photographier et décrire **l'ensemble du stock**, sur une ou plusieurs demi-journées si le magasin est grand | « Je vous envoie un agent jeudi matin, il photographie tout ce que vous avez, rayon par rayon, et il revient s'il n'a pas fini. Jeudi ou vendredi ? » |
+| 3 | **Repli : un premier lot, puis le reste** — seulement si le vendeur refuse d'ouvrir tout son stock à la première visite | « D'accord, on commence par ce que vous voulez faire bouger en priorité — et l'agent revient finir le reste avant l'ouverture. On part sur quel rayon ? » |
 
-Le niveau 1 est le bon objectif par défaut à la première visite. Un vendeur qui refuse dix références refusera un contrat. Et comme il n'y a rien à montrer avant l'ouverture, la relance qu'on programme n'est pas « on se revoit pour voir les résultats » : c'est **l'appel du jour de la mise en ligne**, puis celui du lancement.
+Le niveau 3 est **un repli, pas un objectif**. On ne l'ouvre jamais en premier : un vendeur à qui on propose « dix pièces pour commencer » donnera dix pièces, alors que le même vendeur, à qui on propose de tout recenser en un seul passage, laisse souvent faire — c'est le même déplacement pour lui, et ça ne lui coûte rien. Et comme il n'y a rien à montrer avant l'ouverture, la relance qu'on programme n'est pas « on se revoit pour voir les résultats » : c'est **l'appel du jour de la mise en ligne**, puis celui du lancement.
 
 ### Ce qu'on ne promet jamais
 
@@ -412,7 +418,7 @@ En prélancement, deux interdits s'ajoutent : **aucune promesse de ventes ou de 
 | Moyens de paiement acceptés | Par quel canal on lui transmet son argent après l'encaissement |
 | Objections entendues | Textuellement, dans ses mots — c'est ce qui fait progresser ce guide |
 | Commission évoquée | Uniquement si **lui** a avancé un chiffre |
-| Niveau d'engagement obtenu | Dix références pour l'ouverture / mandat Liaison / contrat signé / nouveau rendez-vous / refus |
+| Niveau d'engagement obtenu | Contrat signé + recensement complet / mandat de recensement complet / premier lot seulement (repli) / nouveau rendez-vous / refus. **Si c'est un repli : noter ce qui a bloqué, et la date de passage pour le reste du stock** |
 | Prochaine étape + date | Une action, une date. Sans date, ce n'est pas une action |
 | Score revu | La note corrigée par ce que la visite a montré |
 
@@ -423,9 +429,9 @@ En prélancement, deux interdits s'ajoutent : **aucune promesse de ventes ou de 
 
 ## 9. Après le oui
 
-Le relais opérationnel se prend en quatre gestes, dans cet ordre : **création de la fiche vendeur** (statut « activation en attente »), **KYC** (RCCM ou pièce d'identité), **passage de l'agent Liaison** pour la saisie des premières pièces, puis **formation de l'employé désigné** par le vendeur, qui publiera les arrivages suivants. Le nom de cet employé se note dès la visite : sans lui, le catalogue s'arrête au jour du passage de l'agent. Le contrat d'adhésion se signe en ligne, par lien, avec le nom du signataire et une case d'acceptation — il n'y a rien à imprimer.
+Le relais opérationnel se prend en quatre gestes, dans cet ordre : **création de la fiche vendeur** (statut « activation en attente »), **KYC** (RCCM ou pièce d'identité), **passage de l'agent Liaison** pour le recensement du stock — l'objectif est de le prendre **en entier**, quitte à revenir une deuxième demi-journée —, puis **formation de l'employé désigné** par le vendeur, qui publiera les arrivages suivants. Le nom de cet employé se note dès la visite : sans lui, le catalogue s'arrête au jour du passage de l'agent. Le contrat d'adhésion se signe en ligne, par lien, avec le nom du signataire et une case d'acceptation — il n'y a rien à imprimer.
 
-À partir de là, Pièces lui transmet ses commandes par WhatsApp ; il confirme et prépare la pièce, nous venons l'enlever, notre livreur encaisse le client à la remise, et l'argent du vendeur lui est transmis dans la foulée. Si le client ne paie pas, la pièce lui revient. Notre travail commercial n'est pas fini pour autant : **la première vente est l'événement qui convertit vraiment**. Avant l'ouverture, le seul indicateur qui compte est le **nombre de références réellement en ligne** par vendeur signé ; après l'ouverture, c'est la **première vente sous quinze jours** — un vendeur qui ne l'a pas faite est un vendeur perdu.
+À partir de là, Pièces lui transmet ses commandes par WhatsApp ; il confirme et prépare la pièce, nous venons l'enlever, notre livreur encaisse le client à la remise, et l'argent du vendeur lui est transmis dans la foulée. Si le client ne paie pas, la pièce lui revient. Notre travail commercial n'est pas fini pour autant : **la première vente est l'événement qui convertit vraiment**. Avant l'ouverture, le seul indicateur qui compte est le **nombre de références réellement en ligne** par vendeur signé — rapporté au stock qu'il a annoncé : un vendeur signé dont un dixième du stock est publié est un vendeur à moitié recensé, et l'agent doit repasser ; après l'ouverture, c'est la **première vente sous quinze jours** — un vendeur qui ne l'a pas faite est un vendeur perdu.
 
 ---
 
