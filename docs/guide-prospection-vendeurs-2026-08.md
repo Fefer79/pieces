@@ -86,7 +86,7 @@ Quelques règles sur cette accroche :
 - **On dit « Jumia » sans complexe.** C'est la seule référence que tout le monde à Adjamé et à Treichville comprend immédiatement. Elle vaut mieux que dix minutes d'explication.
 - **On ne dit pas « je peux vous prendre cinq minutes ? »** — c'est une demande de permission qui invite au non. On salue, on se présente, on continue.
 - **On ne tend rien.** Pas de carte, pas de flyer, pas d'écran. Les mains restent libres.
-- **Si on demande « et ça marche déjà ? » dès la porte**, on répond sans détour et on enchaîne : « Pas encore — **nous ne sommes pas en activité, nous recensons d'abord les vendeurs professionnels.** Ceux qui seront présents au lancement auront un nouveau canal de distribution pour vendre plus. C'est pour ça que je passe vous voir. » Puis on bascule en découverte (4.3). Le développement complet est en 6.6.
+- **Si on demande « et ça marche déjà ? » dès la porte**, on répond sans détour et on enchaîne : « **Nous sommes dans la phase de recrutement des vendeurs professionnels** — c'est pour ça que je passe vous voir. Ceux qui seront présents au lancement auront un nouveau canal de distribution pour vendre plus. » Puis on bascule en découverte (4.3). Le développement complet est en 6.6.
 
 ### 4.2 Savoir à qui on parle — avant tout le reste
 
@@ -351,9 +351,9 @@ Les réponses ci-dessous se disent telles quelles.
 
 **« Je ne vous connais pas, vous n'existez pas encore. »**
 
-> « C'est vrai, et je vous le dis franchement : **nous ne sommes pas encore en activité.** Aujourd'hui, nous recensons les vendeurs professionnels de la place, un par un — c'est pour ça que je suis dans votre magasin. Ceux qui seront présents au lancement auront **un nouveau canal de distribution, moderne et efficace, pour vendre plus** : leur stock en ligne le premier jour, quand toute la demande arrive sur un catalogue encore court. Ceux qui viendront après entreront dans un catalogue déjà rempli. »
+> « C'est vrai, et c'est exactement pour ça que je suis dans votre magasin aujourd'hui : **nous sommes dans la phase de recrutement des vendeurs professionnels**, et **nous ouvrons dans les trente jours.** Ceux qui seront présents au lancement auront **un nouveau canal de distribution, moderne et efficace, pour vendre plus** : leur stock en ligne le premier jour, quand toute la demande arrive sur un catalogue encore court. Ceux qui viendront après entreront dans un catalogue déjà rempli. »
 >
-> *Relance :* « Vous préférez être recensé maintenant, avec tout votre stock, ou attendre de voir la place que les autres auront prise ? »
+> *Relance :* « Vous préférez entrer maintenant, avec tout votre stock, ou attendre de voir la place que les autres auront prise ? »
 
 ## 7. Modèle économique et closing
 
@@ -369,19 +369,21 @@ Sur le terrain, les commissions que les vendeurs retiennent se situent le plus s
 
 ### Le contexte de prélancement
 
-**Pièces ouvre dans les trente jours, et nous ne sommes pas encore en activité.** Ce n'est pas une information qu'on cache : c'est le cadre de toute la conversation de closing, et c'est même l'argument d'entrée. Ce qu'on dit, tel quel : **« nous ne vendons pas encore, nous recensons d'abord les vendeurs professionnels de la place. Ceux qui seront présents auront un nouveau canal de distribution, moderne et efficace, pour augmenter leurs ventes. »** On ne vend pas des résultats passés — il n'y en a pas encore — **on vend une place à l'ouverture**. Deux conséquences directes :
+**Pièces ouvre dans les trente jours, et nous sommes dans la phase de recrutement des vendeurs professionnels.** Ce n'est pas une information qu'on cache : c'est le cadre de toute la conversation de closing, et c'est même l'argument d'entrée. Ce qu'on dit, tel quel : **« nous sommes dans la phase de recrutement des vendeurs professionnels de la place. Ceux qui seront présents auront un nouveau canal de distribution, moderne et efficace, pour augmenter leurs ventes. »** On ne vend pas des résultats passés — il n'y en a pas encore — **on vend une place à l'ouverture**. Deux conséquences directes :
+
+**Ce qu'on ne dit jamais**, même pour être honnête : « nous ne sommes pas encore en activité », « nous ne vendons pas encore », « on démarre à peine ». C'est la même réalité, mais formulée comme une faiblesse, et le commerçant entend « entreprise qui n'existe pas ». On dit **recrutement**, et le vendeur entend une sélection à laquelle il a intérêt à appartenir.
 
 - **On ne propose jamais « d'observer pendant quinze jours ».** Il n'y a pas encore de ventes à observer, et un rendez-vous de bilan à quinze jours serait démenti par les faits. La date qu'on pose en sortie de visite, c'est **le jour de la mise en ligne**, pas un bilan de résultats.
 - **On vend la primauté.** Être présent au lancement, c'est avoir son stock dans le catalogue du premier jour, apparaître en tête des recherches quand la demande arrive sur un catalogue encore court, et être cité dans la campagne d'ouverture.
-- **On recense tout le stock, pas un échantillon.** Comme il n'y a pas encore de ventes à observer, il n'y a aucune raison de « commencer petit pour voir » : un stock partiellement recensé, c'est un vendeur qui sera invisible sur les neuf dixièmes des recherches du premier jour. L'objectif de la visite, c'est **le stock entier**.
+- **On met en ligne tout le stock, pas un échantillon.** Comme il n'y a pas encore de ventes à observer, il n'y a aucune raison de « commencer petit pour voir » : un stock partiellement recensé, c'est un vendeur qui sera invisible sur les neuf dixièmes des recherches du premier jour. L'objectif de la visite, c'est **le stock entier**.
 
 La phrase de positionnement, à dire telle quelle : **« Nous construisons le Jumia des pièces détachées, pour les professionnels comme pour les particuliers. Le jour de l'ouverture, il n'y aura qu'une poignée de grossistes en ligne. La seule question, c'est de savoir si vous en faites partie. »**
 
 ### Le niveau d'engagement de sortie de visite
 
-**L'objectif par défaut, à la première visite, c'est tout le stock.** Pas un échantillon, pas « on commence par quelques pièces pour voir » : on est en phase de recensement, l'agent passe une fois, et ce qu'il n'a pas photographié ce jour-là n'existera pas au lancement. La question de closing se pose donc d'emblée à ce niveau :
+**L'objectif par défaut, à la première visite, c'est tout le stock.** Pas un échantillon, pas « on commence par quelques pièces pour voir » : nous recrutons les vendeurs pour le lancement, l'agent passe une fois, et ce qu'il n'a pas photographié ce jour-là n'existera pas au lancement. La question de closing se pose donc d'emblée à ce niveau :
 
-> « On recense **tout votre stock** : j'envoie un agent, il reste le temps qu'il faut, il photographie et il décrit rayon par rayon. Le jour de l'ouverture, c'est votre magasin entier qui est en ligne, pas trois pièces. On le fait jeudi ou vendredi ? »
+> « On met **tout votre stock** en ligne : j'envoie un agent, il reste le temps qu'il faut, il photographie et il décrit rayon par rayon. Le jour de l'ouverture, c'est votre magasin entier qui est en ligne, pas trois pièces. On le fait jeudi ou vendredi ? »
 
 On ne sort jamais du magasin sans un de ces oui. Du plus engageant au plus modeste :
 

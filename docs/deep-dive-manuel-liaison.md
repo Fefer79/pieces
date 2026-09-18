@@ -268,7 +268,7 @@ La tuile *"Commissions à agréer"* s'affiche en orange dès qu'au moins une pi�
 
 - **Toujours prendre les coordonnées GPS sur place** — l'adresse postale seule ne suffit pas à Abidjan, et le livreur en aura besoin.
 - **Saisir au moins une photo claire de la pièce** à l'onboarding initial — une fiche sans photo se vend mal.
-- **Prendre tout le stock au premier passage** — nous sommes en phase de recensement avant l'ouverture : ce qui n'est pas photographié ce jour-là n'existera pas au lancement. Si le magasin est trop grand pour une demi-journée, on repasse jusqu'à l'avoir fini plutôt que de s'arrêter à un échantillon.
+- **Prendre tout le stock au premier passage** — nous sommes en phase de recrutement des vendeurs et de constitution du catalogue avant l'ouverture : ce qui n'est pas photographié ce jour-là n'existera pas au lancement. Si le magasin est trop grand pour une demi-journée, on repasse jusqu'à l'avoir fini plutôt que de s'arrêter à un échantillon.
 - **Faire agréer la commission le jour même** de la saisie, idéalement avant de quitter la boutique.
 - **Mettre à jour le statut "En stock"** dès qu'une pièce part — vendre une pièce indisponible dégrade la confiance dans Pièces.
 - **Mettre à jour les zones de livraison** quand le vendeur étend son rayon.
