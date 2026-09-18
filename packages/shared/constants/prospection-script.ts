@@ -18,9 +18,9 @@ export const PROSPECTION_THEMES = [
   'ACCROCHE',
   'ACTIVITE',
   'GAMME',
-  'PRIX',
   'CATALOGUE',
   'LOGISTIQUE',
+  'PRIX',
   'GARANTIE',
   'OBJECTIONS',
   'CLOTURE',
@@ -29,15 +29,15 @@ export const PROSPECTION_THEMES = [
 export type ProspectionThemeKey = (typeof PROSPECTION_THEMES)[number]
 
 export const PROSPECTION_THEME_LABELS: Record<ProspectionThemeKey, string> = {
-  ACCROCHE: 'Accroche & présentation',
-  ACTIVITE: 'Activité & stock',
-  GAMME: 'Gamme & marques',
-  PRIX: 'Prix & marge',
-  CATALOGUE: 'Catalogue & photos',
-  LOGISTIQUE: 'Livraison & zones',
+  ACCROCHE: 'Accroche & interlocuteur',
+  ACTIVITE: 'Bloc 1 — Le stock, et ce qui dort',
+  GAMME: 'Bloc 2 — Marques & références',
+  CATALOGUE: 'Bloc 3 — Suivi du stock & vente en ligne',
+  LOGISTIQUE: 'Bloc 4 — Livraison',
+  PRIX: 'Bloc 5 — Prix, paiement & crédit',
   GARANTIE: 'Garanties & retours',
   OBJECTIONS: 'Objections fréquentes',
-  CLOTURE: 'Engagement & suite',
+  CLOTURE: 'Reformulation & engagement',
 }
 
 /**
@@ -72,150 +72,200 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     id: 'accroche_pitch',
     theme: 'ACCROCHE',
     label:
-      'Se présenter : « Pièces met en relation les mécaniciens et les propriétaires de véhicules avec des vendeurs de pièces à Abidjan. On vous amène des clients, vous ne payez que sur les ventes. »',
-    hint: 'Vérifier que l’interlocuteur est bien le patron / décideur du stock.',
+      '« Bonjour Monsieur / Madame. Je suis [prénom], de Pièces — pieces.ci. Nous sommes une plateforme qui met en relation les vendeurs de pièces et les acheteurs : entreprises, flottes, professionnels et particuliers. Nous sommes le Jumia des pièces détachées. »',
+    hint: 'Puis on s’arrête et on laisse la phrase tomber — c’est lui qui relance. Debout, sans sortir le téléphone, sans rien tendre. On donne son prénom, pas une fonction, et on ne demande jamais « je peux vous prendre cinq minutes ? ».',
   },
   {
     id: 'accroche_interlocuteur',
     theme: 'ACCROCHE',
-    label: 'À qui je parle ? Êtes-vous le propriétaire de la boutique ?',
-    hint: 'Nom du décideur, rôle. Si employé : demander quand repasser voir le patron.',
+    label: '« À qui je parle ? » puis « C’est vous le propriétaire du magasin ? »',
+    hint: 'La question qui décide de la suite. Patron absent → on ne présente pas, on repart avec son nom et son heure de présence. Gérant / fils / caissier → découverte oui, closing non.',
+  },
+  {
+    id: 'accroche_bascule',
+    theme: 'ACCROCHE',
+    label:
+      '« Avant de vous expliquer comment ça marche, j’aimerais d’abord comprendre comment vous travaillez, pour vous dire ce qui vous sert vraiment. Vous permettez ? »',
+    hint: 'On bascule en découverte AVANT d’argumenter. Et on n’interroge jamais un commerçant sur sa clientèle : ni ancienneté, ni qui sont ses clients, ni combien il en sert par jour. Il le dira de lui-même en parlant de son stock.',
   },
   {
     id: 'accroche_nom_boutique',
     theme: 'ACCROCHE',
-    label: 'Quel est le nom de la boutique / du magasin ?',
+    label: 'Noter l’enseigne du magasin — telle qu’elle est sur la devanture, sans la demander si elle est visible.',
     target: 'shopName',
-  },
-  // --- Activité & stock -------------------------------------------------
-  {
-    id: 'activite_anciennete',
-    theme: 'ACTIVITE',
-    label: 'Depuis combien de temps vendez-vous des pièces ici ?',
-    hint: 'Ancienneté = fiabilité de l’approvisionnement.',
-  },
-  {
-    id: 'activite_volume_stock',
-    theme: 'ACTIVITE',
-    label: 'Combien de références avez-vous en stock, à peu près ? Le magasin est plein ou vous commandez à la demande ?',
-    hint: 'Ordre de grandeur : dizaines / centaines / milliers de références.',
-    target: 'remarques',
-  },
-  {
-    id: 'activite_rotation',
-    theme: 'ACTIVITE',
-    label: 'Vous vendez combien de pièces par jour en moyenne ?',
-    hint: 'Sert à prioriser les vendeurs à fort volume.',
   },
   {
     id: 'activite_localisation',
-    theme: 'ACTIVITE',
-    label: 'Où est exactement la boutique ? Quel repère pour la trouver ?',
-    hint: 'Commune + quartier + repère (carrefour, pharmacie, station).',
+    theme: 'ACCROCHE',
+    label: 'Noter l’adresse et le repère pour retrouver la boutique (carrefour, pharmacie, station).',
     target: 'address',
   },
   {
     id: 'activite_commune',
-    theme: 'ACTIVITE',
-    label: 'Dans quelle commune se trouve la boutique ?',
+    theme: 'ACCROCHE',
+    label: 'Noter la commune.',
     target: 'commune',
   },
-  // --- Gamme & marques -------------------------------------------------
+  // --- Bloc 1 : le stock -------------------------------------------------
+  // Transition : « Parlons de votre stock. »
   {
-    id: 'gamme_familles',
-    theme: 'GAMME',
-    label: 'Vous êtes plutôt sur quelles familles de pièces ? (freinage, filtration, moteur, suspension, carrosserie, électricité…)',
-    target: 'pieces',
+    id: 'activite_volume_stock',
+    theme: 'ACTIVITE',
+    label: '« Vous avez combien de références disponibles ? Et elles portent les références du constructeur ? »',
+    hint: 'Deux réponses en une : le volume classe la fiche, les références constructeur conditionnent la qualité des annonces et la recherche par compatibilité.',
+    target: 'remarques',
   },
   {
-    id: 'gamme_marques_vehicules',
-    theme: 'GAMME',
-    label: 'Vous couvrez quelles marques de véhicules en priorité ? (Toyota, Hyundai, Kia, Peugeot, Mercedes…)',
-    target: 'piecesLibre',
+    id: 'activite_reserve',
+    theme: 'ACTIVITE',
+    label: '« Tout est ici, ou vous avez une réserve ailleurs ? »',
+    hint: 'Un entrepôt séparé = grossiste réel, priorité haute.',
+    target: 'remarques',
   },
   {
     id: 'gamme_etat',
+    theme: 'ACTIVITE',
+    label: '« Vous vendez du neuf, de l’occasion importée, du ré-usiné ? Les trois ? »',
+    hint: 'Détermine la condition affichée sur les annonces — c’est la première chose que l’acheteur regarde.',
+  },
+  {
+    id: 'gamme_familles',
+    theme: 'ACTIVITE',
+    label:
+      '« Vous êtes fort sur quoi ? Le freinage, le moteur, la filtration, la suspension, l’électricité, la carrosserie ? »',
+    hint: 'Sa spécialité est son argument de vente en ligne.',
+    target: 'pieces',
+  },
+  {
+    id: 'activite_stock_dormant',
+    theme: 'ACTIVITE',
+    label: '« Et qu’est-ce qui dort dans vos rayons depuis six mois ? »',
+    hint: 'La question la plus rentable de l’entretien : on la pose lentement et on laisse le silence. S’il répond, il nomme lui-même le problème qu’on résout. S’il élude, on y revient en fin d’entretien.',
+    target: 'remarques',
+  },
+  {
+    id: 'activite_ventes_refusees',
+    theme: 'ACTIVITE',
+    label: '« Ça vous arrive de refuser une vente parce que vous n’avez pas la pièce ? »',
+    hint: 'Ouvre le sujet de la mise en relation entre vendeurs.',
+  },
+  // --- Bloc 2 : marques & références -------------------------------------
+  // Transition : « Vous couvrez quelles marques ? »
+  {
+    id: 'gamme_marques_vehicules',
     theme: 'GAMME',
-    label: 'Vos pièces sont neuves, d’occasion importée, ré-usinées, adaptables ? Dans quelles proportions ?',
-    hint: 'Important pour le chip « état » sur les fiches. Demander la provenance (Dubaï, Europe, casse locale).',
+    label: '« Vous couvrez quelles marques de véhicules ? »',
+    hint: 'Largeur de gamme ; les coréennes et les chinoises sont les segments qui montent.',
+    target: 'piecesLibre',
   },
   {
-    id: 'gamme_origine',
+    id: 'gamme_origine_adaptable',
     theme: 'GAMME',
-    label: 'Vous vous approvisionnez où ? (import direct, grossiste local, casse…)',
-  },
-  // --- Prix & marge --------------------------------------------------
-  {
-    id: 'prix_niveau',
-    theme: 'PRIX',
-    label: 'Sur une pièce courante (ex. plaquettes de frein Corolla), vous vendez à combien aujourd’hui ?',
-    hint: 'Récupérer 2–3 prix concrets pour situer le vendeur vs le marché.',
+    label: '« Vous vendez de l’origine, de l’adaptable, ou les deux ? »',
+    hint: 'Un vendeur qui assume l’adaptable est un vendeur honnête : c’est bon signe.',
   },
   {
-    id: 'prix_negociation',
-    theme: 'PRIX',
-    label: 'Vos prix sont fixes ou négociables ? Vous faites des remises aux garages ?',
+    id: 'gamme_demande_client',
+    theme: 'GAMME',
+    label: '« Quand un client vient, il vous dit quoi ? Il apporte la pièce, la carte grise, une photo ? »',
+    hint: 'Il décrit le vrai parcours d’achat — celui qu’on reproduit en ligne.',
   },
+  // --- Bloc 3 : suivi du stock & vente en ligne --------------------------
+  // Transition : « Et pour suivre tout ce stock, vous faites comment ? »
   {
-    id: 'prix_commission',
-    theme: 'PRIX',
-    label: 'Expliquer la commission Pièces sur chaque vente et vérifier que le principe est compris et accepté.',
-    hint: 'Pas de frais d’inscription, pas d’abonnement : on prélève seulement quand ça vend.',
-  },
-  // --- Catalogue & photos -----------------------------------------
-  {
-    id: 'catalogue_photos',
+    id: 'suivi_gestion_stock',
     theme: 'CATALOGUE',
-    label: 'Vous avez déjà des photos de vos pièces ? Un cahier / un fichier des références ?',
-    hint: 'Proposer la fiche express par photo pour démarrer le catalogue tout de suite.',
+    label: '« Vous suivez ça dans un cahier, sur un ordinateur, ou c’est de tête ? »',
+    hint: 'Détermine l’effort de saisie initial — et qui doit le porter.',
   },
   {
     id: 'catalogue_smartphone',
     theme: 'CATALOGUE',
-    label: 'Vous avez un smartphone Android ? Qui s’en occuperait pour mettre les pièces en ligne ?',
-    hint: 'Identifier la personne qui tiendra le catalogue (patron, fils, vendeur).',
-  },
-  {
-    id: 'catalogue_demarrage',
-    theme: 'CATALOGUE',
-    label: 'On commence par combien de pièces ? Lesquelles sont vos meilleures ventes à mettre en avant ?',
+    label: '« Et ici, qui connaît le stock par cœur ? »',
+    hint: 'Identifie l’employé désigné qui prendra le relais de l’agent Liaison pour publier les arrivages. On note son nom et son numéro dès maintenant.',
     target: 'remarques',
   },
-  // --- Livraison & zones -----------------------------------------
+  {
+    id: 'suivi_vente_en_ligne',
+    theme: 'CATALOGUE',
+    label: '« Est-ce que vous vendez déjà en ligne — Facebook, WhatsApp Business ? Et comment ça se passe ? »',
+    hint: 'On demande au présent, sans supposer un échec. Un vendeur déjà actif comprend la proposition en deux minutes ; un vendeur déçu formule une objection qu’on traite tout de suite plutôt qu’au closing.',
+  },
+  // --- Bloc 4 : livraison ------------------------------------------------
+  // Transition : « Quand un client commande, c’est vous qui livrez ou il vient chercher ? »
   {
     id: 'logistique_livraison',
     theme: 'LOGISTIQUE',
-    label: 'Aujourd’hui, comment le client récupère la pièce ? Vous livrez, ou il vient chercher ?',
+    label: '« Vous livrez, ou le client vient toujours chercher ? »',
+    hint: 'S’il livre déjà, il connaît le coût réel et la contrainte.',
   },
   {
     id: 'logistique_zones',
     theme: 'LOGISTIQUE',
-    label: 'Vous livrez dans quelles communes ? Vous avez un livreur / un taxi habituel ?',
+    label: '« Vous allez jusqu’où dans Abidjan ? »',
+    hint: 'Alimente les zones de livraison de sa fiche vendeur.',
     target: 'piecesLibre',
   },
   {
-    id: 'logistique_delai',
+    id: 'logistique_hors_abidjan',
     theme: 'LOGISTIQUE',
-    label: 'Quand une pièce n’est pas en stock, vous la trouvez en combien de temps ?',
+    label: '« Est-ce que vous livrez en dehors d’Abidjan ? Et si oui, comment ? »',
+    hint: 'Un vendeur qui expédie déjà sur Bouaké ou San Pedro a une solution de transport réutilisable — et une clientèle hors zone que la plateforme élargit.',
+    target: 'remarques',
   },
-  // --- Garanties & retours -------------------------------------
+  {
+    id: 'logistique_casse',
+    theme: 'LOGISTIQUE',
+    label: '« Et une pièce cassée ou perdue en route, ça vous est déjà arrivé ? »',
+    hint: 'Prépare le sujet de la reprise et de la garantie.',
+  },
+  // --- Bloc 5 : prix, paiement & crédit ----------------------------------
+  // Transition : « Dernière chose, et après je vous explique ce qu’on fait. »
+  {
+    id: 'prix_negociation',
+    theme: 'PRIX',
+    label: '« Vos prix sont fixes, ou vous négociez au cas par cas ? »',
+    hint: 'Détermine si le prix affiché en ligne sera tenable.',
+  },
+  {
+    id: 'prix_paiement',
+    theme: 'PRIX',
+    label: '« Vous prenez le mobile money, ou seulement le cash ? »',
+    hint: 'Par quel canal on lui transmettra son argent après l’encaissement.',
+  },
+  {
+    id: 'prix_credit',
+    theme: 'PRIX',
+    label: '« Vous faites crédit à certains mécaniciens ? … Et ils vous paient à temps ? »',
+    hint: 'Le point de douleur le plus exploitable de tout l’entretien. On laisse le silence après la seconde question.',
+    target: 'remarques',
+  },
+  {
+    id: 'prix_commission',
+    theme: 'PRIX',
+    label: 'Commission : c’est le vendeur qui la fixe, pièce par pièce. On ne suggère aucun taux, ni ici ni sur le terrain. Noter un chiffre uniquement s’il l’avance lui-même.',
+    hint: 'Ce qu’on explique : pas de frais d’inscription, pas d’abonnement — on est payé seulement quand ça vend.',
+    target: 'remarques',
+  },
+  // --- Garanties & retours ----------------------------------------------
   {
     id: 'garantie_politique',
     theme: 'GARANTIE',
-    label: 'Vous donnez une garantie sur les pièces ? Combien de temps ? Sur quel type de pièces ?',
-    hint: 'Neuf vs occasion : la garantie diffère. Noter la durée annoncée.',
+    label: '« Quelles sont les garanties que vous donnez sur vos pièces ? »',
+    hint: 'Sa pratique réelle, avant qu’on lui parle des nôtres. C’est ce qu’on reprendra pièce par pièce à la publication.',
   },
   {
     id: 'garantie_retours',
     theme: 'GARANTIE',
-    label: 'Si une pièce ne va pas, vous reprenez / échangez ? Sous quelles conditions ?',
+    label: '« Et quand une pièce vendue revient, ça se passe comment chez vous ? »',
+    hint: 'Prépare la conversation sur le socle de reprise et sur la garantie qu’il choisira d’accorder.',
   },
-  // --- Objections ---------------------------------------------
+  // --- Objections --------------------------------------------------------
   {
     id: 'objection_principale',
     theme: 'OBJECTIONS',
-    label: 'Quelle est sa principale réticence ? (commission, temps à passer, concurrence entre vendeurs, confiance dans le paiement…)',
-    hint: 'Noter l’objection telle qu’elle est formulée, pour préparer la relance.',
+    label: 'Noter l’objection telle qu’elle est formulée, dans ses mots.',
+    hint: 'Commission, temps à passer, concurrence entre vendeurs, confiance dans le paiement, « j’ai déjà essayé Facebook »… C’est ce qui fait progresser la trame.',
     target: 'remarques',
   },
   {
@@ -223,7 +273,14 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     theme: 'OBJECTIONS',
     label: 'Reformuler l’objection et y répondre. Est-ce que la réponse le rassure ?',
   },
-  // --- Clôture ----------------------------------------------
+  // --- Reformulation & engagement ---------------------------------------
+  {
+    id: 'cloture_reformulation',
+    theme: 'CLOTURE',
+    label:
+      '« Si je résume : vous êtes fort sur [sa famille de pièces], et vous avez [son stock dormant] qui ne bouge pas. Et sur le crédit, vous m’avez dit que [ce qu’il a dit]. C’est bien ça ? »',
+    hint: 'On ne passe jamais à l’offre sans rendre au commerçant ce qu’il vient de dire. C’est à ce « oui, c’est ça » qu’on enchaîne sur UNE accroche d’argumentaire, jamais deux.',
+  },
   {
     id: 'cloture_decision',
     theme: 'CLOTURE',
@@ -231,9 +288,18 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     hint: 'Traduire en statut : Conclu / À relancer / À revoir / Rejeté.',
   },
   {
+    id: 'catalogue_demarrage',
+    theme: 'CLOTURE',
+    label:
+      'Niveau d’engagement obtenu : dix références pour l’ouverture, mandat Liaison, contrat signé, nouveau rendez-vous, refus ?',
+    hint: 'Trois réponses suffisent à qualifier une fiche en A : une réserve séparée, un patron qui décide sur place, et du stock qui dort.',
+    target: 'remarques',
+  },
+  {
     id: 'cloture_prochaine_etape',
     theme: 'CLOTURE',
-    label: 'Prochaine étape concrète : signature du contrat d’adhésion, RDV pour les photos, rappel à une date ?',
+    label: 'Prochaine étape concrète et sa date : signature du contrat, RDV photos, rappel ?',
+    hint: 'Une action, une date. Sans date, ce n’est pas une action.',
     target: 'notesAppel',
   },
   {
