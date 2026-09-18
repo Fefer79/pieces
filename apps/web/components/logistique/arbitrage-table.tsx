@@ -56,7 +56,7 @@ export function ArbitrageTable({
 
   return (
     <div className="overflow-x-auto rounded-md border border-border bg-card">
-      <table className="w-full min-w-[680px] border-collapse text-sm">
+      <table className="pi-table w-full border-collapse text-sm sm:min-w-[680px]">
         <thead>
           <tr className="border-b border-border bg-surface text-left">
             <th className="px-4 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">

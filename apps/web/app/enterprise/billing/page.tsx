@@ -680,7 +680,7 @@ function PaymentHistory({ payments }: { payments: SubscriptionPayment[] }) {
     <section className="mt-6 rounded-xl border border-border bg-card p-6">
       <h2 className="font-display text-2xl text-ink">Historique des règlements</h2>
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="pi-table w-full text-sm sm:min-w-[560px]">
           <thead>
             <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
               <th className="py-2 pr-3 font-normal">Date</th>

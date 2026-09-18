@@ -81,7 +81,7 @@ export default function AdminEnrichmentsPage() {
 
       {!loading && list && (
         <div className="overflow-x-auto rounded-md border border-border bg-card">
-          <table className="w-full text-sm">
+          <table className="pi-table w-full text-sm">
             <thead>
               <tr className="bg-surface text-left font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
                 <th className="px-4 py-2.5">Pièce</th>

@@ -218,7 +218,7 @@ export default function EntreprisesPage() {
               nom du véhicule : le tableau tient dans l'écran sans défilement
               horizontal.
             */}
-            <table className="w-full text-sm">
+            <table className="pi-table w-full text-sm">
               <thead>
                 <tr className="bg-surface">
                   <th className="px-3 py-2.5 text-left font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted sm:px-4">
@@ -403,7 +403,7 @@ export default function EntreprisesPage() {
 
         {/* Tableau comparatif */}
         <div className="mt-14 overflow-x-auto rounded-lg border border-border bg-card">
-          <table className="w-full min-w-[640px] text-sm">
+          <table className="pi-table w-full text-sm sm:min-w-[640px]">
             <thead>
               <tr className="border-b border-border bg-surface">
                 <th className="px-4 py-3.5 text-left font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">

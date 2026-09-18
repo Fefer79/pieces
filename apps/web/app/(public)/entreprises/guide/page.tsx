@@ -155,7 +155,7 @@ export default function EnterpriseGuidePage() {
               permissions à chaque collaborateur.
             </p>
             <div className="my-4 overflow-hidden rounded-md border border-border">
-              <table className="w-full text-sm">
+              <table className="pi-table w-full text-sm">
                 <thead className="bg-surface font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-muted">
                   <tr>
                     <th className="px-4 py-2 text-left">Rôle</th>
@@ -245,7 +245,7 @@ export default function EnterpriseGuidePage() {
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">
               Format CSV (alternative)
             </p>
-            <pre className="my-3 overflow-x-auto rounded-md bg-surface p-4 text-xs text-ink">
+            <pre className="my-3 whitespace-pre-wrap break-words rounded-md bg-surface p-4 text-xs text-ink">
 {`marque,modele,annee,immatriculation,kilometrage,usage,groupe,chauffeur
 Toyota,Hilux,2018,AB-1234-CI,145000,CHANTIER,Yopougon,Koffi Yao
 Renault,Master,2020,EF-9012-CI,68000,LIVRAISON,Treichville,Awa Traoré

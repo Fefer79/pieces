@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Instrument_Sans, DM_Mono, Gloock } from 'next/font/google'
 import { AuthProvider } from '@/lib/auth-context'
+import { StackedTableLabels } from '@/components/stacked-table-labels'
 import './globals.css'
 
 const instrumentSans = Instrument_Sans({
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" dir="ltr" className={`${instrumentSans.variable} ${dmMono.variable} ${gloock.variable}`}>
       <body className="bg-surface text-ink antialiased">
+        <StackedTableLabels />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

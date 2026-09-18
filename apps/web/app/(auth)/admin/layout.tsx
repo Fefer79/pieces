@@ -202,7 +202,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
       </aside>
-      <main className="flex-1">
+      {/* min-w-0 : sans lui, la largeur intrinsèque du <select> de navigation
+          (dictée par son option la plus longue, ~665px) impose sa taille au main
+          et fait déborder toutes les pages /admin sur mobile. */}
+      <main className="min-w-0 flex-1">
         <div className="border-b border-border bg-card px-4 py-2 lg:hidden">
           <select
             value={activeHref ?? ''}

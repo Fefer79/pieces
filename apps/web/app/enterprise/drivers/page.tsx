@@ -49,12 +49,12 @@ export default function DriversPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">Chauffeurs</h1>
           <p className="mt-1 text-sm text-muted">Onboarding, affectation et performance de vos chauffeurs.</p>
         </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/enterprise/drivers/import"
             className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-ink hover:bg-surface"

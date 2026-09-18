@@ -12,9 +12,14 @@ const alignClass = (a: Align) =>
  * mise en forme uniforme. Le markup reste sémantique (table/thead/tbody/tr).
  */
 export function Table({ children, className = '' }: { children: ReactNode; className?: string }) {
+  // `pi-table` : sous 640px la table s'empile en cartes (cf. globals.css), les
+  // libellés de colonne étant recopiés dans chaque cellule par
+  // `components/stacked-table-labels.tsx`, monté dans le layout racine.
   return (
     <div className="overflow-x-auto">
-      <table className={`w-full border-collapse text-[13.5px] ${className}`}>{children}</table>
+      <table className={`pi-table w-full border-collapse text-[13.5px] ${className}`}>
+        {children}
+      </table>
     </div>
   )
 }

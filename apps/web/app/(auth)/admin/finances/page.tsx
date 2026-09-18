@@ -632,7 +632,7 @@ export default function AdminFinancesPage() {
               </button>
             </div>
             <div className="max-h-[480px] overflow-auto">
-              <table className="w-full text-xs">
+              <table className="pi-table w-full text-xs">
                 <thead className="sticky top-0 bg-surface">
                   <tr className="text-left font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
                     <th className="px-3 py-2">Mois</th>

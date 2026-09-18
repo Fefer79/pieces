@@ -258,7 +258,7 @@ export default function CalculateurRoiPage() {
         <h2 className="font-display text-2xl text-ink">Comparaison détaillée</h2>
         <p className="mt-1 text-sm text-muted">Tous les chiffres sont annuels sauf indication.</p>
         <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-card">
-          <table className="w-full text-sm">
+          <table className="pi-table w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-surface text-left">
                 <th className="px-4 py-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-muted">

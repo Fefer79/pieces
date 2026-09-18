@@ -139,7 +139,7 @@ export default function LogistiqueFlottesVtcPage() {
           Le prix de la pièce n&apos;est presque jamais ce qui coûte le plus cher.
         </h2>
         <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">{TOTAL_COST_INTRO}</p>
-        <pre className="mt-7 overflow-x-auto rounded-md border-l-[3px] border-accent bg-card p-5 font-mono text-[12.5px] leading-relaxed text-ink">
+        <pre className="mt-7 whitespace-pre-wrap break-words rounded-md border-l-[3px] border-accent bg-card p-5 font-mono text-[11.5px] leading-relaxed text-ink sm:text-[12.5px]">
           {TOTAL_COST_FORMULA.join('\n')}
         </pre>
       </section>
