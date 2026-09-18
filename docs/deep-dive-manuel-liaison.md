@@ -94,6 +94,8 @@ Avant d'aller voir un nouveau vendeur, rassembler les informations suivantes :
 
 Les six dernières lignes ne se remplissent pas au bureau : elles sortent de la découverte menée en magasin (blocs 1 à 5 de la trame d'entretien). Le nom de l'employé, en particulier, est la réponse à la question « qui connaît le stock par cœur ici ? ».
 
+**Pour un vendeur qui n'est pas encore au CRM, il n'y a rien à préparer du tout.** L'entretien se démarre à blanc — *Prospection* → *Nouvel entretien* → onglet **Nouveau** → **Démarrer l'entretien**, aucun champ à saisir. Le nom du patron, l'enseigne, le téléphone et la commune se relèvent **à la fin**, dans le bloc « Identité de la boutique » sous la trame, et ce sont eux qui créent la fiche prospect à la clôture. Demander ces informations en entrant ferme la porte ; les demander à la fin, après le oui, ne coûte rien (voir la bible, section 7, « Le relevé d'identité »). La clôture de l'entretien reste bloquée tant qu'un nom ou une enseigne n'est pas renseigné.
+
 **Astuce :** prendre les coordonnées GPS pendant la visite via l'application Maps de son téléphone, puis les noter avant de remplir le formulaire dans Pièces.
 
 **Après l'onboarding — la formation de l'employé.** La bible du démarchage promet au vendeur que son employé sera formé sur place, **en une demi-heure, sur son propre téléphone**. C'est un engagement pris en visite : il se tient. Concrètement, on lui fait publier deux ou trois pièces lui-même pendant qu'on est là — photo, état, prix, commission énoncée par le patron — plutôt que de le regarder faire. Un employé qui n'a jamais publié seul devant nous ne publiera pas après notre départ.

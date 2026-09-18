@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ABIDJAN_COMMUNES } from 'shared/constants/communes'
 import { contactsFetch } from '@/lib/contacts-api'
 import { liaisonFetch } from '@/lib/liaison-api'
 import { prospectionFetch, type ProspectionInterview } from '@/lib/prospection-api'
@@ -40,13 +39,6 @@ export default function NewProspectionInterviewPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  // Saisie au vol : le démarcheur commence l'entretien avec ce qu'il a sous les
-  // yeux — un nom, une enseigne. Le reste se remplit pendant la conversation.
-  const [leadName, setLeadName] = useState('')
-  const [leadShopName, setLeadShopName] = useState('')
-  const [leadPhone, setLeadPhone] = useState('')
-  const [leadCommune, setLeadCommune] = useState('')
-
   useEffect(() => {
     contactsFetch<{ contacts: ProspectOption[] }>('/?limit=100').then((r) => {
       if (r.ok) setProspects(r.data.contacts)
@@ -72,28 +64,16 @@ export default function NewProspectionInterviewPage() {
     )
   }, [vendors, search])
 
+  // Un vendeur hors CRM démarre sans rien : l'identité se note à la fin.
   const valid =
-    mode === 'nouveau'
-      ? leadName.trim().length >= 2
-      : mode === 'prospect'
-        ? Boolean(prospectId)
-        : Boolean(vendorId)
+    mode === 'nouveau' ? true : mode === 'prospect' ? Boolean(prospectId) : Boolean(vendorId)
 
   async function submit() {
     if (!valid) return
     setSubmitting(true)
     setError(null)
     const payload =
-      mode === 'nouveau'
-        ? {
-            leadName: leadName.trim(),
-            leadShopName: leadShopName.trim() || undefined,
-            leadPhone: leadPhone.trim() || undefined,
-            leadCommune: leadCommune || undefined,
-          }
-        : mode === 'prospect'
-          ? { prospectId }
-          : { vendorId }
+      mode === 'nouveau' ? {} : mode === 'prospect' ? { prospectId } : { vendorId }
     const r = await prospectionFetch<ProspectionInterview>('/interviews', {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -113,8 +93,9 @@ export default function NewProspectionInterviewPage() {
       </Link>
       <h1 className="mb-1 font-display text-2xl text-ink">Nouvel entretien de démarchage</h1>
       <p className="mb-5 text-sm text-muted">
-        Le nom du patron ou de l’enseigne suffit pour démarrer. La fiche prospect se crée à la
-        clôture, avec ce que l’entretien a révélé.
+        On démarre tout de suite, sans rien saisir. Le nom du patron, l’enseigne, le téléphone et la
+        commune se notent <strong className="font-medium text-ink">à la fin de l’entretien</strong>,
+        quand il a parlé.
       </p>
 
       {error && <p className="mb-4 rounded-md bg-error-bg p-3 text-sm text-error-fg">{error}</p>}
@@ -136,60 +117,13 @@ export default function NewProspectionInterviewPage() {
       </div>
 
       {mode === 'nouveau' ? (
-        <div className="grid gap-3 rounded-md border border-border bg-card p-4">
-          <label className="grid gap-1 text-sm">
-            <span className="font-medium text-ink">
-              Nom du prospect <span className="text-accent">*</span>
-            </span>
-            <input
-              value={leadName}
-              onChange={(e) => setLeadName(e.target.value)}
-              placeholder="Ex. M. Koffi, patron"
-              autoFocus
-              className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted-2"
-              style={{ minHeight: 44 }}
-            />
-          </label>
-          <label className="grid gap-1 text-sm">
-            <span className="font-medium text-ink">Enseigne / boutique</span>
-            <input
-              value={leadShopName}
-              onChange={(e) => setLeadShopName(e.target.value)}
-              placeholder="Ex. Auto Pièces Adjamé"
-              className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted-2"
-              style={{ minHeight: 44 }}
-            />
-          </label>
-          <label className="grid gap-1 text-sm">
-            <span className="font-medium text-ink">Téléphone</span>
-            <input
-              value={leadPhone}
-              onChange={(e) => setLeadPhone(e.target.value)}
-              inputMode="tel"
-              placeholder="+2250700000000"
-              className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted-2"
-              style={{ minHeight: 44 }}
-            />
-          </label>
-          <label className="grid gap-1 text-sm">
-            <span className="font-medium text-ink">Commune</span>
-            <select
-              value={leadCommune}
-              onChange={(e) => setLeadCommune(e.target.value)}
-              className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink"
-              style={{ minHeight: 44 }}
-            >
-              <option value="">— À préciser —</option>
-              {ABIDJAN_COMMUNES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </label>
-          <p className="text-xs text-muted">
-            Seul le nom est obligatoire. Le téléphone est nécessaire pour créer la fiche prospect —
-            vous pourrez l’ajouter pendant l’entretien.
+        <div className="rounded-md border border-ink/15 bg-[rgba(0,35,102,0.05)] p-4">
+          <p className="text-sm font-medium text-ink">Vendeur qui n’est pas encore au CRM</p>
+          <p className="mt-1 text-sm text-muted">
+            Rien à remplir : vous entrez, vous saluez, vous démarrez l’enregistrement. Relever
+            l’identité d’un commerçant avant de lui parler installe la méfiance — on la note au
+            dernier bloc de la trame, une fois l’entretien fait. La fiche prospect se crée à la
+            clôture.
           </p>
         </div>
       ) : (

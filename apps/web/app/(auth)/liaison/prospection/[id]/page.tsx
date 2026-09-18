@@ -55,12 +55,16 @@ function vendorPrefillParams(interview: ProspectionInterview): URLSearchParams {
   return params
 }
 
-/** Libellé de la cible : fiche prospect, vendeur onboardé, ou nom saisi au vol. */
+/**
+ * Libellé de la cible : fiche prospect, vendeur onboardé, ou nom saisi en fin
+ * d'entretien. Un entretien démarré à blanc n'a pas encore de nom — c'est
+ * normal, on l'annonce comme tel plutôt que d'inventer un libellé.
+ */
 function targetLabel(interview: ProspectionInterview): string {
   if (interview.prospect) return interview.prospect.shopName ?? interview.prospect.name
   if (interview.vendor) return interview.vendor.shopName
-  if (interview.lead) return interview.lead.shopName ?? interview.lead.name
-  return 'Prospect'
+  const leadLabel = interview.lead?.shopName ?? interview.lead?.name
+  return leadLabel ?? 'Vendeur à identifier'
 }
 
 export default function ProspectionInterviewPage({
@@ -452,6 +456,31 @@ function Cockpit({
 
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers])
 
+  // Vendeur hors CRM : son identité se saisit en fin d'entretien, et on ne
+  // clôture pas un entretien anonyme (rien ne serait rattachable ensuite).
+  const needsIdentity = !interview.prospect && !interview.vendor
+  const identityMissing =
+    needsIdentity && !interview.lead?.name?.trim() && !interview.lead?.shopName?.trim()
+
+  // Quand le formulaire d'identité est affiché, il porte déjà l'enseigne et la
+  // commune : on ne les fait pas saisir deux fois dans la trame.
+  const themes = useMemo(
+    () =>
+      needsIdentity
+        ? THEMES.map((t) =>
+            t.theme === 'IDENTITE'
+              ? {
+                  ...t,
+                  questions: t.questions.filter(
+                    (q) => q.id !== 'accroche_nom_boutique' && q.id !== 'activite_commune',
+                  ),
+                }
+              : t,
+          )
+        : THEMES,
+    [needsIdentity],
+  )
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       {/* En-tête collant : cible + statut + pastille d'enregistrement */}
@@ -568,11 +597,11 @@ function Cockpit({
         <div className="mb-2 flex items-center justify-between">
           <h2 className="font-display text-lg text-ink">Trame d’entretien</h2>
           <span className="font-mono text-xs text-muted">
-            {answeredCount}/{THEMES.reduce((n, t) => n + t.questions.length, 0)} répondu
+            {answeredCount}/{themes.reduce((n, t) => n + t.questions.length, 0)} répondu
           </span>
         </div>
         <div className="grid gap-2">
-          {THEMES.map((theme) => (
+          {themes.map((theme) => (
             <ThemeSection
               key={theme.theme}
               label={theme.label}
@@ -595,9 +624,10 @@ function Cockpit({
         </div>
       </section>
 
-      {/* Coordonnées du prospect saisi au vol — le téléphone conditionne la
-          création de la fiche CRM et l'onboarding du vendeur. */}
-      {interview.lead && !interview.prospect && (
+      {/* Identité de la boutique — dernière étape de l'entretien pour un vendeur
+          hors CRM. Le nom conditionne la clôture, le téléphone la création de la
+          fiche CRM et l'onboarding du vendeur. */}
+      {needsIdentity && (
         <LeadFields interview={interview} onChange={onChange} onError={setBanner} />
       )}
 
@@ -606,12 +636,18 @@ function Cockpit({
         <button
           type="button"
           onClick={() => void finishInterview()}
-          disabled={busy !== null}
+          disabled={busy !== null || identityMissing}
           className="rounded-md bg-ink px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
           style={{ minHeight: 44 }}
         >
           {busy === 'finish' ? 'Clôture…' : 'Terminer l’entretien et créer le vendeur'}
         </button>
+        {identityMissing && (
+          <p className="text-xs text-muted">
+            Renseignez au moins le nom du patron ou l’enseigne dans « Identité de la boutique »
+            ci-dessus pour clôturer.
+          </p>
+        )}
         <button
           type="button"
           onClick={() => void extract()}
@@ -648,7 +684,9 @@ function Cockpit({
 }
 
 /**
- * Complétion des coordonnées d'un prospect saisi au vol, pendant l'entretien.
+ * Identité de la boutique — DERNIÈRE étape de l'entretien pour un vendeur hors
+ * CRM. On ne relève pas ces informations à l'ouverture de la visite : un
+ * commerçant à qui un inconnu demande son nom avant de lui parler se ferme.
  * Chaque champ est enregistré à la sortie du champ (blur) : pas de bouton à
  * chercher entre deux questions.
  */
@@ -680,11 +718,15 @@ function LeadFields({
   }
 
   return (
-    <section className="mb-4 rounded-md border border-border bg-card p-4">
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h2 className="font-display text-lg text-ink">Coordonnées du prospect</h2>
+    <section className="mb-4 rounded-md border border-accent/40 bg-card p-4">
+      <div className="mb-1 flex items-baseline justify-between gap-3">
+        <h2 className="font-display text-lg text-ink">Identité de la boutique</h2>
         {saved && <span className="font-mono text-[11px] uppercase tracking-wider text-muted">Enregistré</span>}
       </div>
+      <p className="mb-3 text-xs text-muted">
+        Dernière étape, maintenant qu’il a parlé : « Je note comment ? » — le nom du patron,
+        l’enseigne sur la devanture, son WhatsApp et la commune.
+      </p>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
           <span className="font-medium text-ink">Nom</span>

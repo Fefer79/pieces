@@ -2695,16 +2695,18 @@ enum ProspectionConsentMethod {
 model ProspectionInterview {
   id String @id @default(cuid())
 
-  // Rattachement souple : un prospect CRM, un vendeur onboardé, ou un simple nom
-  // saisi sur le terrain (leadName) — au moins l'un des trois (CHECK SQL).
+  // Rattachement souple : un prospect CRM, un vendeur onboardé, un simple nom
+  // saisi sur le terrain (leadName) — ou rien du tout. Un entretien démarré à
+  // blanc sur un vendeur hors CRM n'a d'identité qu'en fin d'entretien : aucune
+  // cible n'est donc exigée (la contrainte CHECK a été levée en 09/2026).
   prospectId String?        @map("prospect_id")
   prospect   VendorContact? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
   vendorId   String?        @map("vendor_id")
   vendor     Vendor?        @relation(fields: [vendorId], references: [id], onDelete: SetNull)
 
-  // Prospect saisi au vol : le démarcheur commence l'entretien avec le seul nom
-  // du patron ou de la boutique, sans fiche CRM préalable. La fiche prospect
-  // est créée plus tard (report des réponses ou onboarding du vendeur).
+  // Prospect hors CRM : ces champs se remplissent en FIN d'entretien, une fois
+  // la conversation faite. La fiche prospect est créée ensuite (report des
+  // réponses ou onboarding du vendeur).
   leadName     String? @map("lead_name")
   leadShopName String? @map("lead_shop_name")
   leadPhone    String? @map("lead_phone")

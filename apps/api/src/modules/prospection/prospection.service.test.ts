@@ -122,13 +122,20 @@ beforeEach(() => {
 })
 
 describe('createInterview', () => {
-  it('rejette proprement (400) si ni prospect ni vendeur', async () => {
-    // `zodToFastify` perd le refine inter-champs : le service doit garder la règle.
-    await expect(createInterview(liaison, {})).rejects.toMatchObject({
-      code: 'PROSPECTION_TARGET_REQUIRED',
-      statusCode: 400,
+  it('démarre à blanc : l’identité se saisit en fin d’entretien', async () => {
+    mockInterviewCreate.mockResolvedValue({
+      ...baseInterview,
+      id: 'itw-blanc',
+      prospectId: null,
+      prospect: null,
     })
-    expect(mockInterviewCreate).not.toHaveBeenCalled()
+    const res = await createInterview(liaison, {})
+    expect(res.lead).toBeNull()
+    expect(mockInterviewCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ leadName: null, prospectId: null, vendorId: null }),
+      }),
+    )
   })
 
   it('démarre sur un simple nom, sans fiche prospect', async () => {
@@ -319,6 +326,42 @@ describe('clôture — de l’entretien au vendeur', () => {
       where: { id: 'itw-lead' },
       data: { prospectId: 'prospect-neuf' },
     })
+  })
+
+  it('refuse le report d’un entretien resté anonyme', async () => {
+    mockInterviewFindUnique.mockResolvedValue({
+      ...leadInterview,
+      leadName: null,
+      leadShopName: null,
+    })
+    await expect(applyInterview(liaison, 'itw-lead', { overwrite: false })).rejects.toMatchObject({
+      code: 'PROSPECTION_NO_PROSPECT',
+      statusCode: 409,
+    })
+  })
+
+  it('prend l’enseigne comme nom de fiche quand le patron n’a donné que ça', async () => {
+    mockInterviewFindUnique.mockResolvedValue({
+      ...leadInterview,
+      leadName: null,
+      leadPhone: '+2250700000000',
+    })
+    mockVendorContactCreate.mockResolvedValue({
+      id: 'prospect-neuf',
+      name: 'Auto Pièces Adjamé',
+      shopName: 'Auto Pièces Adjamé',
+      commune: null,
+      pieces: [],
+      remarques: null,
+    })
+
+    await applyInterview(liaison, 'itw-lead', { overwrite: false })
+
+    expect(mockVendorContactCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'Auto Pièces Adjamé' }),
+      }),
+    )
   })
 
   it('rattache le vendeur créé à l’issue de l’entretien', async () => {

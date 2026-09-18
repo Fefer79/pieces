@@ -76,35 +76,11 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     hint: 'Puis on s’arrête et on laisse la phrase tomber — c’est lui qui relance. Debout, sans sortir le téléphone, sans rien tendre. On donne son prénom, pas une fonction, et on ne demande jamais « je peux vous prendre cinq minutes ? ». S’il demande « ça marche déjà ? » : « Nous sommes dans la phase de recrutement des vendeurs professionnels — c’est pour ça que je passe vous voir. Ceux qui seront présents au lancement auront un nouveau canal de distribution pour vendre plus. » On ne dit jamais « nous ne sommes pas encore en activité ».',
   },
   {
-    id: 'accroche_interlocuteur',
-    theme: 'ACCROCHE',
-    label: '« À qui je parle ? » puis « C’est vous le propriétaire du magasin ? »',
-    hint: 'La question qui décide de la suite. Patron absent → on ne présente pas, on repart avec son nom et son heure de présence. Gérant / fils / caissier → découverte oui, closing non.',
-  },
-  {
     id: 'accroche_bascule',
     theme: 'ACCROCHE',
     label:
       '« Avant de vous expliquer comment ça marche, j’aimerais d’abord comprendre comment vous travaillez, pour vous dire ce qui vous sert vraiment. Vous permettez ? »',
-    hint: 'On bascule en découverte AVANT d’argumenter. Et on n’interroge jamais un commerçant sur sa clientèle : ni ancienneté, ni qui sont ses clients, ni combien il en sert par jour. Il le dira de lui-même en parlant de son stock.',
-  },
-  {
-    id: 'accroche_nom_boutique',
-    theme: 'ACCROCHE',
-    label: 'Noter l’enseigne du magasin — telle qu’elle est sur la devanture, sans la demander si elle est visible.',
-    target: 'shopName',
-  },
-  {
-    id: 'activite_localisation',
-    theme: 'ACCROCHE',
-    label: 'Noter l’adresse et le repère pour retrouver la boutique (carrefour, pharmacie, station).',
-    target: 'address',
-  },
-  {
-    id: 'activite_commune',
-    theme: 'ACCROCHE',
-    label: 'Noter la commune.',
-    target: 'commune',
+    hint: 'On bascule en découverte AVANT d’argumenter. On ne relève ni le nom, ni l’enseigne, ni le téléphone à ce stade : ça se note en fin d’entretien (dernier bloc). Et on n’interroge jamais un commerçant sur sa clientèle : ni ancienneté, ni qui sont ses clients, ni combien il en sert par jour. Il le dira de lui-même en parlant de son stock.',
   },
   // --- Bloc 1 : le stock -------------------------------------------------
   // Transition : « Parlons de votre stock. »
@@ -161,8 +137,8 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
   {
     id: 'gamme_origine_adaptable',
     theme: 'GAMME',
-    label: '« Vous vendez de l’origine, de l’adaptable, ou les deux ? »',
-    hint: 'Un vendeur qui assume l’adaptable est un vendeur honnête : c’est bon signe.',
+    label: '« Vous vendez des pièces du constructeur, OEM, ou les deux ? »',
+    hint: 'Constructeur (pièce à la marque du véhicule) et OEM (le même équipementier, sans la marque) n’ont ni le même prix ni le même acheteur. Un vendeur qui distingue les deux sait ce qu’il vend — et l’annonce sera juste.',
   },
   {
     id: 'gamme_demande_client',
@@ -175,7 +151,7 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
   {
     id: 'suivi_gestion_stock',
     theme: 'CATALOGUE',
-    label: '« Vous suivez ça dans un cahier, sur un ordinateur, ou c’est de tête ? »',
+    label: '« Vous suivez ça comment ? Avec un logiciel, sur Excel, ou sur papier ? »',
     hint: 'Détermine l’effort de saisie initial — et qui doit le porter.',
   },
   {
@@ -307,6 +283,10 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     theme: 'CLOTURE',
     label: 'Confirmer le numéro WhatsApp sur lequel envoyer le contrat et le lien.',
   },
+  // L'identité de la boutique — enseigne, commune, adresse, téléphone — n'est
+  // PAS une question de la trame : elle se saisit dans le bloc « Identité de la
+  // boutique », après la clôture. Ouvrir la visite par un relevé d'identité fait
+  // fuir le commerçant ; à la fin, il donne ses coordonnées de lui-même.
 ]
 
 /** Regroupe la trame par thème, dans l'ordre de `PROSPECTION_THEMES`. */

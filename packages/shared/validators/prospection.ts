@@ -10,22 +10,19 @@ export const prospectionAnswerSourceSchema = z.enum(['MANUEL', 'TRANSCRIPTION', 
 
 /**
  * Un entretien se rattache à un prospect (VendorContact du CRM), à un vendeur
- * déjà onboardé, ou à un simple nom relevé sur place (`leadName`) — le
- * démarcheur n'a pas à créer une fiche prospect avant de commencer à parler.
+ * déjà onboardé, ou à rien du tout : pour un vendeur qui n'est pas au CRM, le
+ * démarcheur démarre l'entretien à blanc et l'identité (nom, enseigne,
+ * téléphone, commune) se saisit EN FIN d'entretien. Aucun champ n'est donc
+ * requis à la création.
  */
-export const createProspectionInterviewSchema = z
-  .object({
-    prospectId: z.string().min(1).optional().nullable(),
-    vendorId: z.string().min(1).optional().nullable(),
-    leadName: z.string().min(2).max(120).optional().nullable(),
-    leadShopName: z.string().min(2).max(120).optional().nullable(),
-    leadPhone: z.string().max(30).optional().nullable(),
-    leadCommune: z.string().max(80).optional().nullable(),
-  })
-  .refine((d) => Boolean(d.prospectId) || Boolean(d.vendorId) || Boolean(d.leadName?.trim()), {
-    message: 'Indiquez le nom du prospect, ou rattachez l’entretien à une fiche existante',
-    path: ['leadName'],
-  })
+export const createProspectionInterviewSchema = z.object({
+  prospectId: z.string().min(1).optional().nullable(),
+  vendorId: z.string().min(1).optional().nullable(),
+  leadName: z.string().min(2).max(120).optional().nullable(),
+  leadShopName: z.string().min(2).max(120).optional().nullable(),
+  leadPhone: z.string().max(30).optional().nullable(),
+  leadCommune: z.string().max(80).optional().nullable(),
+})
 
 /**
  * Consentement du vendeur — préalable obligatoire à tout enregistrement audio ou

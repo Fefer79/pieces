@@ -92,7 +92,14 @@ export interface ProspectionInterviewListItem {
   prospect: { id: string; name: string; shopName: string | null; phone: string; commune: string | null; statut: string } | null
   vendor: { id: string; shopName: string; phone: string; commune: string | null; status: string } | null
   /** Prospect saisi au vol, sans fiche CRM. */
-  lead: { name: string; shopName: string | null; phone: string | null; commune: string | null } | null
+  // Identité saisie en fin d'entretien : le nom peut manquer alors que
+  // l'enseigne est déjà notée (ou l'inverse).
+  lead: {
+    name: string | null
+    shopName: string | null
+    phone: string | null
+    commune: string | null
+  } | null
   conductedBy: { id: string; name: string | null }
   createdAt: string
 }

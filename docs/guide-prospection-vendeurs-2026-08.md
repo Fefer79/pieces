@@ -86,6 +86,7 @@ Quelques règles sur cette accroche :
 - **On dit « Jumia » sans complexe.** C'est la seule référence que tout le monde à Adjamé et à Treichville comprend immédiatement. Elle vaut mieux que dix minutes d'explication.
 - **On ne dit pas « je peux vous prendre cinq minutes ? »** — c'est une demande de permission qui invite au non. On salue, on se présente, on continue.
 - **On ne tend rien.** Pas de carte, pas de flyer, pas d'écran. Les mains restent libres.
+- **On ne relève aucune information d'identité en entrant** : ni son nom, ni l'enseigne, ni son téléphone, ni sa commune. Un inconnu qui entre et commence par noter qui vous êtes, c'est un contrôleur, pas un partenaire. Tout ça se note **à la toute fin** (7, « Le relevé d'identité »). Dans l'app, l'entretien se démarre à blanc : il n'y a rien à saisir avant de parler.
 - **Si on demande « et ça marche déjà ? » dès la porte**, on répond sans détour et on enchaîne : « **Nous sommes dans la phase de recrutement des vendeurs professionnels** — c'est pour ça que je passe vous voir. Ceux qui seront présents au lancement auront un nouveau canal de distribution pour vendre plus. » Puis on bascule en découverte (4.3). Le développement complet est en 6.6.
 
 ### 4.2 Savoir à qui on parle — avant tout le reste
@@ -115,7 +116,7 @@ Une fois qu'on sait qu'on parle au bon interlocuteur, on ne présente **pas enco
 
 Ce renversement est volontaire : le commerçant qui a parlé de sa maison pendant quinze minutes écoute la proposition autrement. **Celui qui subit un argumentaire d'entrée écoute une publicité.**
 
-On enchaîne directement sur le stock (bloc 1). **Aucune question sur ses clients** ne vient avant.
+On enchaîne directement sur le stock (bloc 1). **Aucune question sur ses clients** ne vient avant — et **aucune question d'identité** non plus : le nom, l'enseigne et le numéro se relèvent à la fin de la visite (7, « Le relevé d'identité »).
 
 <div class="callout">
 <p class="lead">On n'interroge pas un commerçant sur sa clientèle. Jamais.</p>
@@ -395,6 +396,22 @@ On ne sort jamais du magasin sans un de ces oui. Du plus engageant au plus modes
 
 Le niveau 3 est **un repli, pas un objectif**. On ne l'ouvre jamais en premier : un vendeur à qui on propose « dix pièces pour commencer » donnera dix pièces, alors que le même vendeur, à qui on propose de tout recenser en un seul passage, laisse souvent faire — c'est le même déplacement pour lui, et ça ne lui coûte rien. Et comme il n'y a rien à montrer avant l'ouverture, la relance qu'on programme n'est pas « on se revoit pour voir les résultats » : c'est **l'appel du jour de la mise en ligne**, puis celui du lancement.
 
+### Le relevé d'identité — en dernier, jamais en premier
+
+**Le nom du patron, l'enseigne, le téléphone et la commune se notent à la fin de la visite**, une fois le closing fait. C'est l'inverse de ce que fait un démarcheur ordinaire, et c'est volontaire : demander « vous vous appelez comment ? c'est quoi le nom de la boutique ? votre numéro ? » **avant** d'avoir parlé, c'est se présenter comme quelqu'un qui fiche un commerçant. À l'arrivée, on repart avec une fiche vide et une porte fermée.
+
+À la fin, la même demande ne coûte rien : il vient de parler vingt minutes de sa maison, il a dit oui à un passage d'agent, et le numéro est ce qui rend ce oui concret. La phrase, telle quelle :
+
+> « Parfait. Je note comment, alors ? Vous, c'est quel nom ? Et l'enseigne, c'est bien celle de la devanture ? Et le WhatsApp sur lequel je vous envoie le contrat et le lien ? »
+
+Trois règles :
+
+- **On ne demande pas ce qu'on peut lire.** L'enseigne est sur la devanture : on la recopie. La commune, on la connaît. On ne demande que le nom et le numéro.
+- **Le numéro WhatsApp est le seul champ réellement indispensable** : sans lui, aucune fiche prospect ne peut être créée, et le contrat ne peut pas partir. C'est le dernier oui de la visite, pas une formalité administrative.
+- **Si le patron est absent**, on relève quand même l'enseigne et l'heure de sa présence, et l'entretien reste en attente : une fiche sans nom ne se clôture pas.
+
+Dans l'app (espace Liaison → « Nouvel entretien » → onglet *Nouveau*), il n'y a **rien à saisir pour démarrer**. Le bloc « Identité de la boutique » est le dernier de l'entretien, sous la trame, et la clôture reste bloquée tant qu'un nom ou une enseigne n'y est pas renseigné.
+
 ### Ce qu'on ne promet jamais
 
 Aucun délai contractuel, aucune pénalité, aucun engagement de volume, aucune exclusivité, aucun remboursement garanti par Pièces au-delà de ce que prévoit le contrat. La rapidité de livraison se présente comme un **bénéfice de service**, jamais comme une garantie. Et on ne cite jamais de plancher ni de barème de commission : le vendeur fixe, nous constatons.
@@ -407,7 +424,7 @@ En prélancement, deux interdits s'ajoutent : **aucune promesse de ventes ou de 
 
 | Champ | Ce qu'on note |
 |---|---|
-| Date, ID prospect, enseigne | L'identifiant de la ligne du classeur, pour ne pas créer de doublon |
+| Date, ID prospect, enseigne | L'identifiant de la ligne du classeur, pour ne pas créer de doublon. **Pour un vendeur qui n'était pas au classeur, ces champs se remplissent en fin de visite** (7, « Le relevé d'identité »), pas en arrivant |
 | Interlocuteur et rôle réel | Nom, fonction, et surtout : **décide-t-il, oui ou non** |
 | Références disponibles | Le nombre qu'il annonce, et si les pièces portent les références constructeur |
 | Familles couvertes, marques dominantes | Ce qu'on publiera en premier |

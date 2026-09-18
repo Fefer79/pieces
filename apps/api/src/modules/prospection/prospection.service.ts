@@ -90,16 +90,9 @@ function assertConsent(interview: { consentGivenAt: Date | null }) {
 }
 
 export async function createInterview(actor: Actor, input: CreateProspectionInterviewInput) {
+  // Entretien à blanc autorisé : pour un vendeur hors CRM, l'identité se
+  // renseigne en fin d'entretien (cf. bloc IDENTITE de la trame).
   const leadName = input.leadName?.trim() || null
-
-  // `zodToFastify` ne transpose pas le `.refine` inter-champs du schéma : on
-  // rejoue la règle ici pour renvoyer un 400 propre plutôt que laisser le
-  // CHECK SQL lever un 500.
-  if (!input.prospectId && !input.vendorId && !leadName) {
-    throw new AppError('PROSPECTION_TARGET_REQUIRED', 400, {
-      message: 'Indiquez le nom du prospect, ou rattachez l’entretien à une fiche existante.',
-    })
-  }
 
   if (input.prospectId) {
     const prospect = await prisma.vendorContact.findUnique({
@@ -410,7 +403,7 @@ export async function runExtraction(interviewId: string, logger: Logger) {
  * au démarcheur de le compléter plutôt que d'inventer une fiche muette.
  */
 async function promoteLeadToProspect(actor: Actor, interviewId: string, lead: {
-  leadName: string
+  leadName: string | null
   leadShopName: string | null
   leadPhone: string | null
   leadCommune: string | null
@@ -423,9 +416,18 @@ async function promoteLeadToProspect(actor: Actor, interviewId: string, lead: {
     })
   }
 
+  // Sur le terrain, l'enseigne est parfois le seul « nom » qu'on obtient : elle
+  // tient lieu de nom de fiche plutôt que de bloquer le report.
+  const name = lead.leadName?.trim() || lead.leadShopName?.trim()
+  if (!name) {
+    throw new AppError('PROSPECTION_LEAD_NAME_REQUIRED', 409, {
+      message: 'Renseignez le nom du patron ou l’enseigne pour créer la fiche prospect.',
+    })
+  }
+
   const prospect = await prisma.vendorContact.create({
     data: {
-      name: lead.leadName,
+      name,
       shopName: lead.leadShopName,
       phone,
       commune: lead.leadCommune,
@@ -446,7 +448,8 @@ async function promoteLeadToProspect(actor: Actor, interviewId: string, lead: {
 
 /**
  * Reporte les réponses de l'entretien sur la fiche prospect (VendorContact).
- * Si l'entretien a été démarré sur un simple nom, la fiche est créée ici.
+ * Si l'entretien a été démarré à blanc, la fiche est créée ici, à partir de
+ * l'identité relevée en fin d'entretien.
  */
 export async function applyInterview(
   actor: Actor,
@@ -454,9 +457,10 @@ export async function applyInterview(
   input: ApplyProspectionInterviewInput,
 ) {
   const interview = await loadOwned(actor, id, true)
-  if (!interview.prospectId && !interview.leadName) {
+  if (!interview.prospectId && !interview.leadName && !interview.leadShopName) {
     throw new AppError('PROSPECTION_NO_PROSPECT', 409, {
-      message: 'Rattachez un prospect à l’entretien pour reporter les réponses.',
+      message:
+        'Renseignez le nom du patron ou l’enseigne dans le bloc « Identité de la boutique » pour reporter les réponses.',
     })
   }
 
@@ -464,7 +468,7 @@ export async function applyInterview(
   const prospect = interview.prospectId
     ? await prisma.vendorContact.findUnique({ where: { id: interview.prospectId } })
     : await promoteLeadToProspect(actor, id, {
-        leadName: interview.leadName as string,
+        leadName: interview.leadName,
         leadShopName: interview.leadShopName,
         leadPhone: interview.leadPhone,
         leadCommune: interview.leadCommune,
@@ -574,14 +578,17 @@ function publicView(interview: InterviewRow) {
     status: interview.status,
     prospect: interview.prospect,
     vendor: interview.vendor,
-    lead: interview.leadName
-      ? {
-          name: interview.leadName,
-          shopName: interview.leadShopName,
-          phone: interview.leadPhone,
-          commune: interview.leadCommune,
-        }
-      : null,
+    // Dès qu'un champ d'identité est saisi (et ils le sont en fin d'entretien),
+    // on expose le bloc lead — le nom peut manquer alors que l'enseigne est là.
+    lead:
+      interview.leadName || interview.leadShopName || interview.leadPhone || interview.leadCommune
+        ? {
+            name: interview.leadName,
+            shopName: interview.leadShopName,
+            phone: interview.leadPhone,
+            commune: interview.leadCommune,
+          }
+        : null,
     conductedBy: interview.conductedBy,
     consent: interview.consentGivenAt
       ? {
