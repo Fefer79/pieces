@@ -128,6 +128,17 @@ describe('browse.service', () => {
       expect(result.pagination.total).toBe(1)
     })
 
+    it('trie le stock local avant les pièces à importer', async () => {
+      mockCatalogItemFindMany.mockResolvedValueOnce([])
+      mockCatalogItemCount.mockResolvedValueOnce(0)
+
+      await browseParts({ brand: 'Toyota', model: 'Corolla', year: 2015 })
+
+      const orderBy = mockCatalogItemFindMany.mock.calls[0][0].orderBy as Record<string, string>[]
+      expect(orderBy[0]).toEqual({ supplyMode: 'asc' })
+      expect(orderBy[1]).toEqual({ createdAt: 'desc' })
+    })
+
     it('filters STRICTLY by structured fitments (no legacy text fallback)', async () => {
       mockCatalogItemFindMany.mockResolvedValueOnce([])
       mockCatalogItemCount.mockResolvedValueOnce(0)

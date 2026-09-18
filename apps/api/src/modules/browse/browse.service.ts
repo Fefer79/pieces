@@ -507,7 +507,10 @@ export async function browseParts(filters: BrowsePartsFilters = {}) {
   const [items, total] = await Promise.all([
     prisma.catalogItem.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      // Le stock local passe avant l'import : l'acheteur est livré en heures,
+      // pas en semaines. L'enum SupplyMode déclare LOCAL avant IMPORT, donc
+      // 'asc' met bien le local en tête.
+      orderBy: [{ supplyMode: 'asc' }, { createdAt: 'desc' }],
       skip,
       take: limit,
       select: {
@@ -803,7 +806,10 @@ export async function searchParts(query: string, filters: { category?: string; p
   const [items, total] = await Promise.all([
     prisma.catalogItem.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      // Le stock local passe avant l'import : l'acheteur est livré en heures,
+      // pas en semaines. L'enum SupplyMode déclare LOCAL avant IMPORT, donc
+      // 'asc' met bien le local en tête.
+      orderBy: [{ supplyMode: 'asc' }, { createdAt: 'desc' }],
       skip,
       take: limit,
       select: {
