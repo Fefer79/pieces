@@ -78,6 +78,7 @@ function NewVendorForm() {
       contactName: searchParams.get('contactName'),
       phone: searchParams.get('phone'),
       commune: searchParams.get('commune'),
+      address: searchParams.get('address'),
     }
     if (prefill.shopName) setShopName(prefill.shopName)
     if (prefill.contactName) setContactName(prefill.contactName)
@@ -85,6 +86,7 @@ function NewVendorForm() {
     if (prefill.commune && (ABIDJAN_COMMUNES as readonly string[]).includes(prefill.commune)) {
       setCommune(prefill.commune)
     }
+    if (prefill.address) setAddress(prefill.address)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PROSPECTION_PREFLIGHT } from 'shared/constants'
 import { contactsFetch } from '@/lib/contacts-api'
 import { liaisonFetch } from '@/lib/liaison-api'
 import { prospectionFetch, type ProspectionInterview } from '@/lib/prospection-api'
@@ -201,6 +202,24 @@ export default function NewProspectionInterviewPage() {
           </div>
         </>
       )}
+
+      {/* Rappel de seuil : ce qui se règle AVANT de parler, donc avant tout
+          enregistrement — à commencer par « est-ce bien le patron ? ». */}
+      <section className="mt-4 rounded-md border border-border bg-card p-4">
+        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-ink-2">
+          Avant de commencer
+        </p>
+        <ul className="mt-2 grid gap-1.5">
+          {PROSPECTION_PREFLIGHT.map((item) => (
+            <li key={item} className="flex gap-2 text-sm text-ink">
+              <span aria-hidden className="text-accent">
+                →
+              </span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <button
         type="button"

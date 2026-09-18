@@ -66,6 +66,19 @@ export interface ProspectionQuestion {
   target?: ProspectionAnswerTarget
 }
 
+/**
+ * À vérifier AVANT de démarrer l'entretien — donc avant même l'accroche. Ce
+ * n'est pas une question de la trame : savoir à qui on parle se règle au seuil
+ * du magasin, pas au milieu d'un entretien enregistré. L'app l'affiche sur
+ * l'écran « Nouvel entretien ».
+ */
+export const PROSPECTION_PREFLIGHT: readonly string[] = [
+  'Je parle au patron / propriétaire — c’est lui qui décide. Sinon : découverte oui, closing non.',
+  'Patron absent : je ne présente pas. Je repars avec son nom et son heure de présence, et je repasse.',
+  'Je suis debout, sans téléphone à la main, sans rien à tendre.',
+  'Je ne relève aucune information d’identité maintenant : nom, enseigne, téléphone et commune se notent à la fin.',
+]
+
 export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
   // --- Accroche -----------------------------------------------------------
   {
@@ -200,8 +213,8 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
   {
     id: 'prix_negociation',
     theme: 'PRIX',
-    label: '« Vos prix sont fixes, ou vous négociez au cas par cas ? »',
-    hint: 'Détermine si le prix affiché en ligne sera tenable.',
+    label: '« Vous pouvez nous donner votre meilleur prix ? On peut négocier ? »',
+    hint: 'On demande d’emblée le prix de gros, pas le prix du comptoir : c’est celui qui sera affiché en ligne. Sa réponse dit aussi s’il négocie au cas par cas — donc si le prix publié sera tenable.',
   },
   {
     id: 'prix_paiement',

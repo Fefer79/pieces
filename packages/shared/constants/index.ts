@@ -160,6 +160,7 @@ export type { StaffRoleKey, BusinessUnitKey, ErpCapability } from './erp-rbac'
 export {
   PROSPECTION_THEMES,
   PROSPECTION_THEME_LABELS,
+  PROSPECTION_PREFLIGHT,
   PROSPECTION_SCRIPT,
   prospectionQuestionsByTheme,
   prospectionQuestion,

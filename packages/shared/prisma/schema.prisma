@@ -2711,6 +2711,7 @@ model ProspectionInterview {
   leadShopName String? @map("lead_shop_name")
   leadPhone    String? @map("lead_phone")
   leadCommune  String? @map("lead_commune")
+  leadAddress  String? @map("lead_address")
 
   conductedById String @map("conducted_by_id")
   conductedBy   User   @relation("ProspectionInterviewConductedBy", fields: [conductedById], references: [id], onDelete: Cascade)

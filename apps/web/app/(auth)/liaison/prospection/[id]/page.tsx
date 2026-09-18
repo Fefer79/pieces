@@ -46,6 +46,7 @@ function vendorPrefillParams(interview: ProspectionInterview): URLSearchParams {
         contactName: interview.lead?.name ?? null,
         phone: interview.lead?.phone ?? null,
         commune: interview.lead?.commune ?? null,
+        address: interview.lead?.address ?? null,
       }
 
   const params = new URLSearchParams({ interviewId: interview.id })
@@ -462,25 +463,6 @@ function Cockpit({
   const identityMissing =
     needsIdentity && !interview.lead?.name?.trim() && !interview.lead?.shopName?.trim()
 
-  // Quand le formulaire d'identité est affiché, il porte déjà l'enseigne et la
-  // commune : on ne les fait pas saisir deux fois dans la trame.
-  const themes = useMemo(
-    () =>
-      needsIdentity
-        ? THEMES.map((t) =>
-            t.theme === 'IDENTITE'
-              ? {
-                  ...t,
-                  questions: t.questions.filter(
-                    (q) => q.id !== 'accroche_nom_boutique' && q.id !== 'activite_commune',
-                  ),
-                }
-              : t,
-          )
-        : THEMES,
-    [needsIdentity],
-  )
-
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       {/* En-tête collant : cible + statut + pastille d'enregistrement */}
@@ -597,11 +579,11 @@ function Cockpit({
         <div className="mb-2 flex items-center justify-between">
           <h2 className="font-display text-lg text-ink">Trame d’entretien</h2>
           <span className="font-mono text-xs text-muted">
-            {answeredCount}/{themes.reduce((n, t) => n + t.questions.length, 0)} répondu
+            {answeredCount}/{THEMES.reduce((n, t) => n + t.questions.length, 0)} répondu
           </span>
         </div>
         <div className="grid gap-2">
-          {themes.map((theme) => (
+          {THEMES.map((theme) => (
             <ThemeSection
               key={theme.theme}
               label={theme.label}
@@ -704,6 +686,7 @@ function LeadFields({
   const [shopName, setShopName] = useState(lead?.shopName ?? '')
   const [phone, setPhone] = useState(lead?.phone ?? '')
   const [commune, setCommune] = useState(lead?.commune ?? '')
+  const [address, setAddress] = useState(lead?.address ?? '')
   const [saved, setSaved] = useState(false)
 
   async function patch(payload: Record<string, string | null>) {
@@ -724,12 +707,12 @@ function LeadFields({
         {saved && <span className="font-mono text-[11px] uppercase tracking-wider text-muted">Enregistré</span>}
       </div>
       <p className="mb-3 text-xs text-muted">
-        Dernière étape, maintenant qu’il a parlé : « Je note comment ? » — le nom du patron,
-        l’enseigne sur la devanture, son WhatsApp et la commune.
+        Dernière étape, maintenant qu’il a parlé : « Je note comment ? » — le nom du patron, son
+        WhatsApp, et l’enseigne, la commune et le repère qu’on relève soi-même.
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
-          <span className="font-medium text-ink">Nom</span>
+          <span className="font-medium text-ink">Nom du patron</span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -778,6 +761,20 @@ function LeadFields({
               </option>
             ))}
           </select>
+        </label>
+        <label className="grid gap-1 text-sm sm:col-span-2">
+          <span className="font-medium text-ink">Adresse & repère</span>
+          <input
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            onBlur={() =>
+              address.trim() !== (lead?.address ?? '') &&
+              void patch({ leadAddress: address.trim() || null })
+            }
+            placeholder="Ex. rue du Commerce, en face de la pharmacie du carrefour"
+            className="rounded-sm border border-border-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted-2"
+            style={{ minHeight: 44 }}
+          />
         </label>
       </div>
       {!phone.trim() && (

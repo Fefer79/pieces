@@ -91,6 +91,7 @@ const baseInterview = {
   leadShopName: null,
   leadPhone: null,
   leadCommune: null,
+  leadAddress: null,
   prospect: {
     id: 'prospect-1',
     name: 'M. Koné',
@@ -149,6 +150,7 @@ describe('createInterview', () => {
       shopName: 'Auto Pièces Adjamé',
       phone: null,
       commune: null,
+      address: null,
     })
     expect(mockInterviewCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -269,15 +271,18 @@ describe('extraction IA', () => {
     mockInterviewFindUnique.mockResolvedValue({
       ...baseInterview,
       transcript: 'Le vendeur fait du freinage depuis dix ans à Adjamé.',
-      answers: { accroche_nom_boutique: { text: 'Stand 12', source: 'MANUEL' } },
+      answers: { gamme_marques_vehicules: { text: 'Toyota, Hyundai', source: 'MANUEL' } },
     })
     mockExtractInterviewAnswers.mockResolvedValue({
-      answers: { accroche_nom_boutique: 'Autre nom', gamme_familles: 'Freinage' },
+      answers: { gamme_marques_vehicules: 'Renault', gamme_familles: 'Freinage' },
       summary: 'Vendeur sérieux.',
     })
     await runExtraction('itw-1', { info: vi.fn(), warn: vi.fn() })
     const data = mockInterviewUpdate.mock.calls[0][0].data
-    expect(data.answers.accroche_nom_boutique).toEqual({ text: 'Stand 12', source: 'MANUEL' })
+    expect(data.answers.gamme_marques_vehicules).toEqual({
+      text: 'Toyota, Hyundai',
+      source: 'MANUEL',
+    })
     expect(data.answers.gamme_familles).toEqual({ text: 'Freinage', source: 'IA' })
     expect(data.status).toBe('TRANSCRIT')
   })

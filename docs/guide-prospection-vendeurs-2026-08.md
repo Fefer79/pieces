@@ -63,6 +63,21 @@ Avant d'entrer, on sait déjà : le nom de l'enseigne, sa zone, son score, ce qu
 - **Horaires utiles** : à Adjamé et Treichville, entre 7 h 30 et 10 h le patron est présent et le magasin n'est pas encore saturé. Après 11 h, on parle à un homme qui sert trois clients en même temps.
 - **Premier geste, avant de se présenter** : demander une référence précise, comme un client. On voit en trois minutes la profondeur du stock, la vitesse à sortir une pièce et l'organisation de la réserve — trois choses que le patron ne dira jamais en mots. Puis on enchaîne sur l'accroche (4.1) : « Je vais être honnête avec vous, je ne suis pas venue que pour ça. Je suis Farida, de Pièces… ». C'est aussi la seule façon utile de sortir d'un magasin où le patron est absent.
 
+### Avant de parler : s'assurer qu'on est devant le patron
+
+**Ce n'est pas une question de la trame** : ça se règle au seuil du magasin, avant l'accroche et avant tout enregistrement. Deux phrases, sur le ton de quelqu'un qui cherche quelqu'un :
+
+> « À qui je parle ? » — puis « C'est vous le propriétaire du magasin ? »
+
+**C'est ce qui décide de la suite de la visite.** Une présentation complète faite à quelqu'un qui ne décide pas est une présentation à refaire. On ne démarre l'entretien qu'une fois cette réponse obtenue — c'est pour ça que l'app affiche ce rappel sur l'écran « Nouvel entretien », avant le bouton de démarrage, et non dans la trame.
+
+| Ce qu'on a en face | Ce qu'on fait | Ce qu'on dit |
+|---|---|---|
+| **Le patron / le propriétaire** | On déroule tout l'entretien | « Parfait, c'est vous que je cherchais. » |
+| **Le patron est absent** | On ne présente pas. On repart avec son nom et son heure de présence | « Il passe à quelle heure d'habitude ? Je repasse demain matin à la même heure, c'est bien ? Je note son nom ? » |
+| **Le gérant / le fils / celui qui tient la caisse** | Découverte oui, closing non. On qualifie et on fixe le rendez-vous avec le patron | « Vous, vous décidez pour le magasin, ou c'est le patron ? … D'accord. Alors racontez-moi comment vous travaillez, et on voit ensemble quand je peux rencontrer le patron. » |
+| **Un vendeur au comptoir, patron injoignable** | On achète une pièce, on observe, on repart. Fiche à requalifier | « Merci, je repasse. » |
+
 ## 4. Trame d'entretien — ce qu'on dit, mot pour mot
 
 Ce qui suit n'est pas une liste de thèmes à couvrir : ce sont **les phrases telles qu'on les prononce**, dans l'ordre où on les prononce. Les blocs en retrait se disent tels quels. Les tableaux donnent la question à poser à gauche, et à droite ce qu'on écoute dans la réponse.
@@ -87,28 +102,9 @@ Quelques règles sur cette accroche :
 - **On ne dit pas « je peux vous prendre cinq minutes ? »** — c'est une demande de permission qui invite au non. On salue, on se présente, on continue.
 - **On ne tend rien.** Pas de carte, pas de flyer, pas d'écran. Les mains restent libres.
 - **On ne relève aucune information d'identité en entrant** : ni son nom, ni l'enseigne, ni son téléphone, ni sa commune. Un inconnu qui entre et commence par noter qui vous êtes, c'est un contrôleur, pas un partenaire. Tout ça se note **à la toute fin** (7, « Le relevé d'identité »). Dans l'app, l'entretien se démarre à blanc : il n'y a rien à saisir avant de parler.
-- **Si on demande « et ça marche déjà ? » dès la porte**, on répond sans détour et on enchaîne : « **Nous sommes dans la phase de recrutement des vendeurs professionnels** — c'est pour ça que je passe vous voir. Ceux qui seront présents au lancement auront un nouveau canal de distribution pour vendre plus. » Puis on bascule en découverte (4.3). Le développement complet est en 6.6.
+- **Si on demande « et ça marche déjà ? » dès la porte**, on répond sans détour et on enchaîne : « **Nous sommes dans la phase de recrutement des vendeurs professionnels** — c'est pour ça que je passe vous voir. Ceux qui seront présents au lancement auront un nouveau canal de distribution pour vendre plus. » Puis on bascule en découverte (4.2). Le développement complet est en 6.6.
 
-### 4.2 Savoir à qui on parle — avant tout le reste
-
-Immédiatement après l'accroche, une seule question :
-
-> « À qui je parle ? »
-
-Puis, selon la réponse :
-
-> « C'est vous le propriétaire du magasin ? »
-
-**C'est la question qui décide de la suite de la visite.** Une présentation complète faite à quelqu'un qui ne décide pas est une présentation à refaire.
-
-| Ce qu'on a en face | Ce qu'on fait | Ce qu'on dit |
-|---|---|---|
-| **Le patron / le propriétaire** | On déroule tout l'entretien | « Parfait, c'est vous que je cherchais. » |
-| **Le patron est absent** | On ne présente pas. On repart avec son nom et son heure de présence | « Il passe à quelle heure d'habitude ? Je repasse demain matin à la même heure, c'est bien ? Je note son nom ? » |
-| **Le gérant / le fils / celui qui tient la caisse** | Découverte oui, closing non. On qualifie et on fixe le rendez-vous avec le patron | « Vous, vous décidez pour le magasin, ou c'est le patron ? … D'accord. Alors racontez-moi comment vous travaillez, et on voit ensemble quand je peux rencontrer le patron. » |
-| **Un vendeur au comptoir, patron injoignable** | On achète une pièce, on observe, on repart. Fiche à requalifier | « Merci, je repasse. » |
-
-### 4.3 La bascule vers la découverte
+### 4.2 La bascule vers la découverte
 
 Une fois qu'on sait qu'on parle au bon interlocuteur, on ne présente **pas encore** l'offre. On bascule en découverte avec cette phrase :
 
@@ -124,7 +120,7 @@ On enchaîne directement sur le stock (bloc 1). **Aucune question sur ses client
 <p>Ce qu'on veut savoir de sa clientèle, <strong>il le dira de lui-même</strong> en parlant de son stock : qui lui prend telle pièce, pour quels véhicules, qui lui doit de l'argent. On écoute, on note, on ne demande pas.</p>
 </div>
 
-### 4.4 Bloc 1 — Le stock, sa profondeur, ce qui dort
+### 4.3 Bloc 1 — Le stock, sa profondeur, ce qui dort
 
 C'est par là qu'on entre vraiment. Transition :
 
@@ -144,7 +140,7 @@ C'est par là qu'on entre vraiment. Transition :
 <p>S'il répond, il vient de nommer son problème lui-même — et l'accroche « votre argent est immobilisé dans des rayons que personne ne voit » (section 5) tombe toute seule vingt minutes plus tard. S'il élude, on n'insiste pas : on y revient en fin d'entretien avec « et les pièces dont on parlait tout à l'heure… ».</p>
 </div>
 
-### 4.5 Bloc 2 — Marques et références
+### 4.4 Bloc 2 — Marques et références
 
 Transition :
 
@@ -153,10 +149,10 @@ Transition :
 | La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
 | « Vous couvrez quelles marques de véhicules ? » | Largeur de gamme ; les coréennes et les chinoises sont les segments qui montent |
-| « Vous vendez de l'origine, de l'adaptable, ou les deux ? » | Un vendeur qui assume l'adaptable est un vendeur honnête : c'est bon signe |
+| « Vous vendez des pièces du constructeur, OEM, ou les deux ? » | Constructeur (à la marque du véhicule) et OEM (le même équipementier, sans la marque) n'ont ni le même prix ni le même acheteur. Un vendeur qui distingue les deux sait ce qu'il vend — et l'annonce sera juste |
 | « Quand un client vient, il vous dit quoi ? Il apporte la pièce, la carte grise, une photo ? » | Il décrit le vrai parcours d'achat — celui qu'on reproduit en ligne |
 
-### 4.6 Bloc 3 — Comment il suit tout ça
+### 4.5 Bloc 3 — Comment il suit tout ça
 
 Transition :
 
@@ -164,11 +160,11 @@ Transition :
 
 | La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
-| « Vous suivez ça dans un cahier, sur un ordinateur, ou c'est de tête ? » | Détermine l'effort de saisie initial — et qui doit le porter |
+| « Vous suivez ça comment ? Avec un logiciel, sur Excel, ou sur papier ? » | Détermine l'effort de saisie initial — et qui doit le porter |
 | « Et ici, qui connaît le stock par cœur ? » | **Identifie l'employé qui prendra le relais de l'agent Liaison.** On note son nom et son numéro dès maintenant |
 | « Est-ce que vous vendez déjà en ligne — Facebook, WhatsApp Business ? Et comment ça se passe ? » | On demande au présent, sans supposer un échec. Un vendeur actif en ligne comprendra la proposition en deux minutes ; un vendeur déçu formule une objection qu'on traite tout de suite plutôt qu'au closing |
 
-### 4.7 Bloc 4 — La livraison
+### 4.6 Bloc 4 — La livraison
 
 Transition :
 
@@ -181,7 +177,7 @@ Transition :
 | « Est-ce que vous livrez en dehors d'Abidjan ? Et si oui, comment ? » | Un vendeur qui expédie déjà sur Bouaké ou San Pedro a une solution de transport qu'on peut réutiliser — et une clientèle hors zone que la plateforme peut élargir |
 | « Et une pièce cassée ou perdue en route, ça vous est déjà arrivé ? » | Prépare le sujet de la reprise et de la garantie |
 
-### 4.8 Bloc 5 — Prix, paiement, et le crédit qui ne rentre pas
+### 4.7 Bloc 5 — Prix, paiement, et le crédit qui ne rentre pas
 
 Transition — on annonce que c'est la fin, ça libère la parole :
 
@@ -189,13 +185,13 @@ Transition — on annonce que c'est la fin, ça libère la parole :
 
 | La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
-| « Vos prix sont fixes, ou vous négociez au cas par cas ? » | Détermine si le prix affiché en ligne sera tenable |
+| « Vous pouvez nous donner votre meilleur prix ? On peut négocier ? » | On demande d'emblée le prix de gros, pas le prix du comptoir : c'est celui qui sera affiché en ligne. Sa réponse dit aussi s'il négocie au cas par cas, donc si le prix publié sera tenable |
 | « Vous prenez le mobile money, ou seulement le cash ? » | Par quel canal on lui transmettra son argent après l'encaissement |
 | « Vous faites crédit à certains mécaniciens ? … Et ils vous paient à temps ? » | **Le point de douleur le plus exploitable de tout l'entretien.** On laisse le silence après la seconde question |
 | « Quelles sont les garanties que vous donnez sur vos pièces ? » | Sa pratique réelle, avant qu'on lui parle des nôtres. C'est ce qu'on reprendra pièce par pièce à la publication — et la réponse désamorce à l'avance l'objection « vos garanties, c'est un risque pour moi » (6.5) |
 | « Et quand une pièce vendue revient, ça se passe comment chez vous ? » | Prépare la conversation sur le socle de reprise et sur la garantie qu'il choisira d'accorder |
 
-### 4.9 La reformulation — on ferme la découverte avant d'argumenter
+### 4.8 La reformulation — on ferme la découverte avant d'argumenter
 
 On ne passe jamais à l'offre sans avoir rendu au commerçant ce qu'il vient de dire. Deux phrases, dans ses mots à lui :
 
@@ -210,7 +206,7 @@ Un « oui, c'est ça » ici vaut plus que n'importe quel argument. **C'est à ce
 
 ## 5. Argumentaire
 
-On arrive ici **après le « oui, c'est ça »** de la reformulation (4.9).
+On arrive ici **après le « oui, c'est ça »** de la reformulation (4.8).
 
 ### 5.1 D'abord la promesse, en entier
 
@@ -398,7 +394,7 @@ Le niveau 3 est **un repli, pas un objectif**. On ne l'ouvre jamais en premier :
 
 ### Le relevé d'identité — en dernier, jamais en premier
 
-**Le nom du patron, l'enseigne, le téléphone et la commune se notent à la fin de la visite**, une fois le closing fait. C'est l'inverse de ce que fait un démarcheur ordinaire, et c'est volontaire : demander « vous vous appelez comment ? c'est quoi le nom de la boutique ? votre numéro ? » **avant** d'avoir parlé, c'est se présenter comme quelqu'un qui fiche un commerçant. À l'arrivée, on repart avec une fiche vide et une porte fermée.
+**Le nom du patron, l'enseigne, le téléphone, la commune et le repère d'adresse se notent à la fin de la visite**, une fois le closing fait. C'est l'inverse de ce que fait un démarcheur ordinaire, et c'est volontaire : demander « vous vous appelez comment ? c'est quoi le nom de la boutique ? votre numéro ? » **avant** d'avoir parlé, c'est se présenter comme quelqu'un qui fiche un commerçant. À l'arrivée, on repart avec une fiche vide et une porte fermée.
 
 À la fin, la même demande ne coûte rien : il vient de parler vingt minutes de sa maison, il a dit oui à un passage d'agent, et le numéro est ce qui rend ce oui concret. La phrase, telle quelle :
 
@@ -406,11 +402,11 @@ Le niveau 3 est **un repli, pas un objectif**. On ne l'ouvre jamais en premier :
 
 Trois règles :
 
-- **On ne demande pas ce qu'on peut lire.** L'enseigne est sur la devanture : on la recopie. La commune, on la connaît. On ne demande que le nom et le numéro.
+- **On ne demande pas ce qu'on peut lire.** L'enseigne est sur la devanture : on la recopie. La commune et le repère (carrefour, pharmacie, station), on les relève soi-même. On ne demande que le nom et le numéro.
 - **Le numéro WhatsApp est le seul champ réellement indispensable** : sans lui, aucune fiche prospect ne peut être créée, et le contrat ne peut pas partir. C'est le dernier oui de la visite, pas une formalité administrative.
 - **Si le patron est absent**, on relève quand même l'enseigne et l'heure de sa présence, et l'entretien reste en attente : une fiche sans nom ne se clôture pas.
 
-Dans l'app (espace Liaison → « Nouvel entretien » → onglet *Nouveau*), il n'y a **rien à saisir pour démarrer**. Le bloc « Identité de la boutique » est le dernier de l'entretien, sous la trame, et la clôture reste bloquée tant qu'un nom ou une enseigne n'y est pas renseigné.
+Dans l'app (espace Liaison → « Nouvel entretien » → onglet *Nouveau*), il n'y a **rien à saisir pour démarrer** — juste le rappel de seuil à vérifier (parler au patron, ne rien relever tout de suite). Le bloc « Identité de la boutique » est le dernier de l'entretien, sous la trame, et la clôture reste bloquée tant qu'un nom ou une enseigne n'y est pas renseigné.
 
 ### Ce qu'on ne promet jamais
 

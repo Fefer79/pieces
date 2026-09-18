@@ -12,8 +12,8 @@ export const prospectionAnswerSourceSchema = z.enum(['MANUEL', 'TRANSCRIPTION', 
  * Un entretien se rattache à un prospect (VendorContact du CRM), à un vendeur
  * déjà onboardé, ou à rien du tout : pour un vendeur qui n'est pas au CRM, le
  * démarcheur démarre l'entretien à blanc et l'identité (nom, enseigne,
- * téléphone, commune) se saisit EN FIN d'entretien. Aucun champ n'est donc
- * requis à la création.
+ * téléphone, commune, adresse) se saisit EN FIN d'entretien. Aucun champ n'est
+ * donc requis à la création.
  */
 export const createProspectionInterviewSchema = z.object({
   prospectId: z.string().min(1).optional().nullable(),
@@ -22,6 +22,7 @@ export const createProspectionInterviewSchema = z.object({
   leadShopName: z.string().min(2).max(120).optional().nullable(),
   leadPhone: z.string().max(30).optional().nullable(),
   leadCommune: z.string().max(80).optional().nullable(),
+  leadAddress: z.string().max(255).optional().nullable(),
 })
 
 /**
@@ -44,11 +45,12 @@ export const updateProspectionInterviewSchema = z.object({
   status: prospectionInterviewStatusSchema.optional(),
   /** Rattachement a posteriori : le vendeur créé à l'issue de l'entretien. */
   vendorId: z.string().min(1).optional().nullable(),
-  /** Complétion du prospect saisi au vol (nom, boutique, téléphone, commune). */
+  /** Identité relevée en fin d'entretien (nom, enseigne, téléphone, commune, adresse). */
   leadName: z.string().min(2).max(120).optional().nullable(),
   leadShopName: z.string().min(2).max(120).optional().nullable(),
   leadPhone: z.string().max(30).optional().nullable(),
   leadCommune: z.string().max(80).optional().nullable(),
+  leadAddress: z.string().max(255).optional().nullable(),
   notes: z.string().max(20000).optional().nullable(),
   answers: z.record(z.string().min(1).max(80), prospectionAnswerSchema).optional(),
   startedAt: z.string().datetime().optional().nullable(),

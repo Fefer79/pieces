@@ -119,6 +119,7 @@ export async function createInterview(actor: Actor, input: CreateProspectionInte
       leadShopName: input.leadShopName?.trim() || null,
       leadPhone: input.leadPhone?.trim() || null,
       leadCommune: input.leadCommune?.trim() || null,
+      leadAddress: input.leadAddress?.trim() || null,
       conductedById: actor.userId,
       status: 'BROUILLON',
     },
@@ -224,6 +225,7 @@ export async function updateInterview(
   if (input.leadShopName !== undefined) data.leadShopName = input.leadShopName?.trim() || null
   if (input.leadPhone !== undefined) data.leadPhone = input.leadPhone?.trim() || null
   if (input.leadCommune !== undefined) data.leadCommune = input.leadCommune?.trim() || null
+  if (input.leadAddress !== undefined) data.leadAddress = input.leadAddress?.trim() || null
 
   // Rattachement du vendeur créé à l'issue de l'entretien.
   if (input.vendorId !== undefined) {
@@ -407,6 +409,7 @@ async function promoteLeadToProspect(actor: Actor, interviewId: string, lead: {
   leadShopName: string | null
   leadPhone: string | null
   leadCommune: string | null
+  leadAddress: string | null
 }) {
   const phone = lead.leadPhone?.trim()
   if (!phone) {
@@ -431,6 +434,7 @@ async function promoteLeadToProspect(actor: Actor, interviewId: string, lead: {
       shopName: lead.leadShopName,
       phone,
       commune: lead.leadCommune,
+      address: lead.leadAddress,
       statut: 'VISITE',
       source: 'MANUEL',
       createdById: actor.userId,
@@ -472,6 +476,7 @@ export async function applyInterview(
         leadShopName: interview.leadShopName,
         leadPhone: interview.leadPhone,
         leadCommune: interview.leadCommune,
+        leadAddress: interview.leadAddress,
       })
   if (!prospect) throw new AppError('PROSPECT_NOT_FOUND', 404, { message: 'Prospect introuvable' })
 
@@ -581,12 +586,17 @@ function publicView(interview: InterviewRow) {
     // Dès qu'un champ d'identité est saisi (et ils le sont en fin d'entretien),
     // on expose le bloc lead — le nom peut manquer alors que l'enseigne est là.
     lead:
-      interview.leadName || interview.leadShopName || interview.leadPhone || interview.leadCommune
+      interview.leadName ||
+      interview.leadShopName ||
+      interview.leadPhone ||
+      interview.leadCommune ||
+      interview.leadAddress
         ? {
             name: interview.leadName,
             shopName: interview.leadShopName,
             phone: interview.leadPhone,
             commune: interview.leadCommune,
+            address: interview.leadAddress,
           }
         : null,
     conductedBy: interview.conductedBy,
