@@ -120,6 +120,12 @@ Puis une seule question avant d'entrer dans le stock, celle qui ouvre la porte d
 
 S'il dit oui, on le note et on y revient à l'argumentaire (accroche « flottes », section 5). On n'enchaîne pas dessus maintenant.
 
+<div class="callout">
+<p class="lead">On n'interroge pas un commerçant sur sa clientèle. Jamais.</p>
+<p>Pas de « depuis quand vous êtes installés », pas de « qui sont vos clients », pas de « combien vous en servez par jour », pas de « d'où viennent vos nouveaux clients ». En Côte d'Ivoire, ces questions-là, posées par un inconnu qui entre dans un magasin, <strong>installent la méfiance immédiatement</strong> : on a l'air de compter sa recette ou de repérer son carnet d'adresses. Et l'information n'est pas décisive — on qualifie très bien une fiche sans elle.</p>
+<p>La seule exception est la question ci-dessus sur les sociétés, parce qu'elle porte sur un <em>type</em> de client, pas sur les siens, et qu'elle ouvre une offre concrète. Si elle passe mal, on l'abandonne aussi.</p>
+</div>
+
 ### 4.4 Bloc 1 — Le stock, sa profondeur, ce qui dort
 
 C'est par là qu'on entre vraiment. Transition :
@@ -128,7 +134,7 @@ C'est par là qu'on entre vraiment. Transition :
 
 | La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
-| « À peu près, vous avez combien de références différentes ? » | L'ordre de grandeur suffit — c'est lui qui classe la fiche |
+| « Vous avez combien de références disponibles ? Et elles portent les références du constructeur ? » | Deux réponses en une : le volume classe la fiche, et la présence des références constructeur conditionne la qualité des annonces et la recherche par compatibilité |
 | « Tout est ici, ou vous avez une réserve ailleurs ? » | Un entrepôt séparé = grossiste réel, priorité haute |
 | « Vous vendez du neuf, de l'occasion importée, du ré-usiné ? Les trois ? » | Détermine la condition affichée sur les annonces — c'est la première chose que l'acheteur regarde |
 | « Vous êtes fort sur quoi ? Le freinage, le moteur, la filtration, la suspension, l'électricité, la carrosserie ? » | Sa spécialité est son argument de vente en ligne |
@@ -149,7 +155,6 @@ Transition :
 | La question, telle qu'on la pose | Ce qu'on écoute dans la réponse |
 |---|---|
 | « Vous couvrez quelles marques de véhicules ? » | Largeur de gamme ; les coréennes et les chinoises sont les segments qui montent |
-| « Vos pièces ont les références du constructeur dessus ? » | Conditionne la qualité des fiches et la recherche par compatibilité |
 | « Vous vendez de l'origine, de l'adaptable, ou les deux ? » | Un vendeur qui assume l'adaptable est un vendeur honnête : c'est bon signe |
 | « Quand un client vient, il vous dit quoi ? Il apporte la pièce, la carte grise, une photo ? » | Il décrit le vrai parcours d'achat — celui qu'on reproduit en ligne |
 
@@ -163,7 +168,7 @@ Transition :
 |---|---|
 | « Vous suivez ça dans un cahier, sur un ordinateur, ou c'est de tête ? » | Détermine l'effort de saisie initial — et qui doit le porter |
 | « Et ici, qui connaît le stock par cœur ? » | **Identifie l'employé qui prendra le relais de l'agent Liaison.** On note son nom et son numéro dès maintenant |
-| « Vous avez déjà essayé de vendre en ligne ? Ça a donné quoi ? » | Une mauvaise expérience est une objection : on la traite tout de suite, pas au closing |
+| « Est-ce que vous vendez déjà en ligne ? Et comment ça se passe ? » | On demande au présent, sans supposer un échec : un vendeur actif en ligne comprendra la proposition en deux minutes, un vendeur déçu formule une objection qu'on traite tout de suite plutôt qu'au closing |
 | « Vous avez une page Facebook, un WhatsApp Business ? » | Un vendeur déjà en ligne comprend la proposition en deux minutes |
 
 ### 4.7 Bloc 4 — La livraison
@@ -176,7 +181,7 @@ Transition :
 |---|---|
 | « Vous livrez, ou le client vient toujours chercher ? » | S'il livre déjà, il connaît le coût réel et la contrainte |
 | « Vous allez jusqu'où dans Abidjan ? » | Alimente les zones de livraison de sa fiche vendeur |
-| « Entre la commande et la remise de la pièce, il se passe combien de temps ? » | Le délai est notre argument produit numéro un |
+| « Est-ce que vous livrez en dehors d'Abidjan ? Et si oui, comment ? » | Un vendeur qui expédie déjà sur Bouaké ou San Pedro a une solution de transport qu'on peut réutiliser — et une clientèle hors zone que la plateforme peut élargir |
 | « Et une pièce cassée ou perdue en route, ça vous est déjà arrivé ? » | Prépare le sujet de la reprise et de la garantie |
 
 ### 4.8 Bloc 5 — Prix, paiement, et le crédit qui ne rentre pas
@@ -190,6 +195,7 @@ Transition — on annonce que c'est la fin, ça libère la parole :
 | « Vos prix sont fixes, ou vous négociez au cas par cas ? » | Détermine si le prix affiché en ligne sera tenable |
 | « Vous prenez le mobile money, ou seulement le cash ? » | Par quel canal on lui transmettra son argent après l'encaissement |
 | « Vous faites crédit à certains mécaniciens ? … Et ils vous paient à temps ? » | **Le point de douleur le plus exploitable de tout l'entretien.** On laisse le silence après la seconde question |
+| « Quelles sont les garanties que vous donnez sur vos pièces ? » | Sa pratique réelle, avant qu'on lui parle des nôtres. C'est ce qu'on reprendra pièce par pièce à la publication — et la réponse désamorce à l'avance l'objection « vos garanties, c'est un risque pour moi » (6.5) |
 | « Et quand une pièce vendue revient, ça se passe comment chez vous ? » | Prépare la conversation sur le socle de reprise et sur la garantie qu'il choisira d'accorder |
 
 ### 4.9 La reformulation — on ferme la découverte avant d'argumenter
@@ -240,7 +246,7 @@ Trois choses qu'on ne dit **pas** dans cette phrase : que le client le contacter
 >
 > *Relance :* « Vous en servez combien aujourd'hui, de sociétés comme ça ? »
 
-**S'il est déjà en ligne** — *Facebook, WhatsApp Business ou tentative passée, au bloc 3*
+**S'il est déjà en ligne** — *il a dit qu'il vendait déjà en ligne, au bloc 3*
 
 > « Alors vous savez déjà que la publicité amène des curieux, pas des commandes. Nous, on ne vous amène pas un curieux : on vous amène **une commande ferme**, pour une référence choisie et vérifiée sur le véhicule. Vous sortez la pièce, on passe la prendre, on encaisse à la livraison, et on vous paie. Vous n'avez ni à discuter avec le client, ni à le livrer. »
 >
@@ -400,12 +406,14 @@ En prélancement, deux interdits s'ajoutent : **aucune promesse de ventes ou de 
 |---|---|
 | Date, ID prospect, enseigne | L'identifiant de la ligne du classeur, pour ne pas créer de doublon |
 | Interlocuteur et rôle réel | Nom, fonction, et surtout : **décide-t-il, oui ou non** |
-| Références en stock (estimation) | Ordre de grandeur, pas un chiffre exact |
+| Références disponibles | Le nombre qu'il annonce, et si les pièces portent les références constructeur |
 | Familles couvertes, marques dominantes | Ce qu'on publiera en premier |
 | Neuf / occasion importée / ré-usiné | Détermine la condition affichée sur les annonces |
 | Gestion du stock | Cahier, tableur, logiciel, rien |
 | Employé désigné pour la saisie | Nom et téléphone de celui qui publiera les arrivages après le passage de l'agent |
-| Livre-t-il ? Vend-il déjà en ligne ? | Effort d'intégration |
+| Livre-t-il ? Jusqu'où ? Hors Abidjan ? | Zones de livraison de sa fiche, et son moyen de transport s'il expédie à l'intérieur |
+| Garanties qu'il pratique | Ce qu'il accorde aujourd'hui, dans ses mots — base de ce qu'il choisira pièce par pièce |
+| Vend-il déjà en ligne ? Comment ça se passe ? | Effort d'intégration, et objection éventuelle à traiter |
 | Moyens de paiement acceptés | Par quel canal on lui transmet son argent après l'encaissement |
 | Objections entendues | Textuellement, dans ses mots — c'est ce qui fait progresser ce guide |
 | Commission évoquée | Uniquement si **lui** a avancé un chiffre |
