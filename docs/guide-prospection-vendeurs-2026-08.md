@@ -114,16 +114,12 @@ Une fois qu'on sait qu'on parle au bon interlocuteur, on ne présente **pas enco
 
 Ce renversement est volontaire : le commerçant qui a parlé de sa maison pendant quinze minutes écoute la proposition autrement. **Celui qui subit un argumentaire d'entrée écoute une publicité.**
 
-Puis une seule question avant d'entrer dans le stock, celle qui ouvre la porte de l'offre flotte :
-
-> « Vous travaillez avec des sociétés ? Des transporteurs, des taxis, des entreprises qui ont des véhicules ? »
-
-S'il dit oui, on le note et on y revient à l'argumentaire (accroche « flottes », section 5). On n'enchaîne pas dessus maintenant.
+On enchaîne directement sur le stock (bloc 1). **Aucune question sur ses clients** ne vient avant.
 
 <div class="callout">
 <p class="lead">On n'interroge pas un commerçant sur sa clientèle. Jamais.</p>
-<p>Pas de « depuis quand vous êtes installés », pas de « qui sont vos clients », pas de « combien vous en servez par jour », pas de « d'où viennent vos nouveaux clients ». En Côte d'Ivoire, ces questions-là, posées par un inconnu qui entre dans un magasin, <strong>installent la méfiance immédiatement</strong> : on a l'air de compter sa recette ou de repérer son carnet d'adresses. Et l'information n'est pas décisive — on qualifie très bien une fiche sans elle.</p>
-<p>La seule exception est la question ci-dessus sur les sociétés, parce qu'elle porte sur un <em>type</em> de client, pas sur les siens, et qu'elle ouvre une offre concrète. Si elle passe mal, on l'abandonne aussi.</p>
+<p>Pas de « depuis quand vous êtes installés », pas de « qui sont vos clients », pas de « combien vous en servez par jour », pas de « d'où viennent vos nouveaux clients », pas de « vous travaillez avec des sociétés ». En Côte d'Ivoire, ces questions-là, posées par un inconnu qui entre dans un magasin, <strong>installent la méfiance immédiatement</strong> : on a l'air de compter sa recette ou de repérer son carnet d'adresses. Et l'information n'est pas décisive — on qualifie très bien une fiche sans elle.</p>
+<p>Ce qu'on veut savoir de sa clientèle, <strong>il le dira de lui-même</strong> en parlant de son stock : qui lui prend telle pièce, pour quels véhicules, qui lui doit de l'argent. On écoute, on note, on ne demande pas.</p>
 </div>
 
 ### 4.4 Bloc 1 — Le stock, sa profondeur, ce qui dort
@@ -240,11 +236,11 @@ Trois choses qu'on ne dit **pas** dans cette phrase : que le client le contacter
 >
 > *Relance :* « Aujourd'hui, combien de clients ont votre pièce et pas encore votre argent ? »
 
-**S'il sert des flottes** — *il a dit oui à la question sociétés, en 4.3*
+**S'il sert des flottes** — *il a mentionné de lui-même des sociétés, des taxis ou des transporteurs ; on ne le lui a pas demandé*
 
 > « Le parc VTC d'Abidjan, c'est autour de 30 000 véhicules, et chacun consomme à peu près 1,3 million de francs de pièces par an. Ces gestionnaires-là cherchent un fournisseur fiable, qui livre vite et qui laisse une trace écrite. C'est exactement le type de client qu'on vous amène. »
 >
-> *Relance :* « Vous en servez combien aujourd'hui, de sociétés comme ça ? »
+> *Relance :* « Ces sociétés-là, elles vous demandent quoi le plus souvent ? »
 
 **S'il est déjà en ligne** — *il a dit qu'il vendait déjà en ligne, au bloc 3*
 
