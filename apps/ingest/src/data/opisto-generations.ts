@@ -23,7 +23,9 @@
  * `codes` liste les jetons tels qu'ils apparaissent entre parenthèses dans le
  * libellé, underscores retirés : « (JT, TE, TD) » et « (_E12_) » se ramènent
  * respectivement à JT/TE/TD et E12. Chez Peugeot, « S1 »/« S2 » ne sont pas des
- * codes châssis mais les phases — d'où une entrée par modèle.
+ * codes châssis mais les phases — d'où une entrée par modèle. La 406 regroupe
+ * ses deux phases sous une seule plage : ses libellés portent « (S1/S2) », donc
+ * les deux jetons à la fois, et deux entrées distinctes les rendaient ambigus.
  */
 export type OpistoGeneration = {
   /** Marque canonique du référentiel Pièces. */
@@ -49,8 +51,7 @@ export const OPISTO_GENERATIONS: OpistoGeneration[] = [
   { brand: 'HYUNDAI', model: 'Getz',          codes: ['TB'],               yearFrom: 2002, yearTo: 2009, verified: false, hits: 63 },
   { brand: 'HYUNDAI', model: 'Matrix',        codes: ['FC'],               yearFrom: 2001, yearTo: 2010, verified: false, hits: 49 },
   { brand: 'TOYOTA',  model: 'Corolla Verso', codes: ['R1'],               yearFrom: 2004, yearTo: 2009, verified: false, hits: 48 },
-  { brand: 'PEUGEOT', model: '406',           codes: ['S1'],               yearFrom: 1995, yearTo: 1999, verified: false, hits: 40 },
-  { brand: 'PEUGEOT', model: '406',           codes: ['S2'],               yearFrom: 1999, yearTo: 2004, verified: false, hits: 40 },
+  { brand: 'PEUGEOT', model: '406',           codes: ['S1', 'S2'],         yearFrom: 1995, yearTo: 2004, verified: false, hits: 40 },
   { brand: 'SUZUKI',  model: 'IGNIS',         codes: ['MH'],               yearFrom: 2003, yearTo: 2008, verified: false, hits: 40 },
   { brand: 'SUZUKI',  model: 'SX4',           codes: ['EY'],               yearFrom: 2006, yearTo: 2014, verified: false, hits: 39 },
   { brand: 'SUZUKI',  model: 'BALENO',        codes: ['EG'],               yearFrom: 1995, yearTo: 2002, verified: false, hits: 36 },

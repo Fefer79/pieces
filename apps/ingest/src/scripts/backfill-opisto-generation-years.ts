@@ -16,11 +16,10 @@
  * - un libellé dont les jetons touchent DEUX entrées est ambigu : ignoré ;
  * - `engine` n'est pas touché.
  *
- * ⚠ INTERACTION AVEC `enrich:opisto --prune` — la purge supprime tout fitment
- * sans année OU sans motorisation. Les fitments datés ici n'ont pas de
- * motorisation : la purge les effacerait au passage suivant. Ajuster sa
- * condition (purger sur année manquante seule) avant de lancer ce backfill en
- * écriture, sinon le gain est perdu au run suivant.
+ * INTERACTION AVEC `enrich:opisto --prune` — la purge ne vise plus que les
+ * fitments sans année (elle supprimait aussi ceux sans motorisation, ce qui
+ * aurait effacé au passage suivant les fitments datés ici, qui n'en portent
+ * pas). Vérifier que cette condition tient avant tout run en écriture.
  *
  * Idempotent. Dry-run par défaut — n'écrit qu'avec `--commit`.
  *
