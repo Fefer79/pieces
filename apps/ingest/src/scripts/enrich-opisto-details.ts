@@ -2,10 +2,14 @@
  * Enrichit les pièces Opisto depuis leur fiche produit, et fait respecter la
  * règle des fitments.
  *
- * RÈGLE — un fitment Opisto doit porter année ET motorisation. Sans l'une des
- * deux, le filtre de compatibilité ne peut rien en faire, et une compatibilité
- * approximative sur une pièce d'occasion fait vendre la mauvaise pièce. Un
- * fitment incomplet est donc supprimé plutôt que conservé.
+ * RÈGLE — un fitment Opisto doit porter l'année : sans elle le filtre de
+ * compatibilité ne peut rien en faire, et une compatibilité approximative sur
+ * une pièce d'occasion fait vendre la mauvaise pièce. Un fitment sans année est
+ * donc supprimé plutôt que conservé.
+ *
+ * La motorisation, elle, reste souhaitable mais n'est pas éliminatoire : les
+ * fitments datés par code châssis (voir `backfill-opisto-generation-years.ts`)
+ * n'en portent pas, et la purge ne doit pas les effacer au passage suivant.
  *
  * Le listing ne suffit pas : il ne donne la référence OEM que dans ~3 % des cas,
  * l'année une fois sur deux, et pas toujours la cylindrée. La fiche produit porte
@@ -16,7 +20,7 @@
  *
  *   pnpm -F ingest enrich:opisto -- --limit=50   # essai
  *   pnpm -F ingest enrich:opisto                 # tout le reliquat
- *   pnpm -F ingest enrich:opisto -- --prune      # + purge des fitments incomplets
+ *   pnpm -F ingest enrich:opisto -- --prune      # + purge des fitments sans année
  */
 import { parseArgs } from 'node:util'
 import { getEngines } from 'shared/constants'
@@ -228,12 +232,12 @@ async function main(): Promise<void> {
         prisma.catalogItemFitment.deleteMany({
           where: {
             catalogItem: { externalSource: EXTERNAL_SOURCE_SLUG },
-            OR: [{ yearFrom: null }, { engine: null }],
+            yearFrom: null,
           },
         }),
       reconnect,
     )
-    console.log(`[enrich] purge — ${pruned.count} fitments incomplets supprimés`)
+    console.log(`[enrich] purge — ${pruned.count} fitments sans année supprimés`)
   }
 
   await prisma.$disconnect()
