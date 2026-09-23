@@ -9,6 +9,7 @@ import { UniverseBar } from './universe-bar'
 import { SiteFooter } from './site-footer'
 import { LogistiqueSection } from './sections/logistique-section'
 import { FleetSection } from './sections/fleet-section'
+import { MecaniciensSection } from './sections/mecaniciens-section'
 import { useAuth } from '@/lib/auth-context'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
@@ -123,9 +124,10 @@ export function LandingPage({ children }: { children?: ReactNode }) {
         </div>
       </section>
 
-      {/* Les deux autres univers, développés en bas de page */}
+      {/* Les autres univers, développés en bas de page */}
       <LogistiqueSection />
       <FleetSection />
+      <MecaniciensSection />
 
       <SiteFooter />
     </div>

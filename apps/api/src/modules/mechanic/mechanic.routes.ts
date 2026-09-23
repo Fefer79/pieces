@@ -9,6 +9,9 @@ import {
   mechanicSearchQuerySchema,
   mechanicParamsSchema,
   createMechanicReviewSchema,
+  suggestMechanicSchema,
+  rejectMechanicSuggestionSchema,
+  mechanicSuggestionListQuerySchema,
 } from 'shared/validators'
 import type { MechanicSpecialty } from 'shared/constants'
 import {
@@ -22,8 +25,13 @@ import {
   createMechanicReview,
   listMechanicReviews,
   hideMechanicReview,
+  suggestMechanic,
+  listMechanicSuggestions,
+  approveMechanicSuggestion,
+  rejectMechanicSuggestion,
   type RegisterMechanicInput,
   type UpdateMechanicInput,
+  type SuggestMechanicInput,
 } from './mechanic.service.js'
 
 export async function mechanicRoutes(fastify: FastifyInstance) {
@@ -183,7 +191,88 @@ export async function mechanicRoutes(fastify: FastifyInstance) {
     },
   )
 
+  // Proposer un mécanicien absent de l'annuaire — dépôt ouvert, aucune
+  // authentification requise (contrairement à l'inscription self-service).
+  fastify.post(
+    '/suggestions',
+    {
+      schema: {
+        tags: ['Mechanics'],
+        description: "Proposer un mécanicien absent de l'annuaire",
+        body: zodToFastify(suggestMechanicSchema),
+      },
+    },
+    async (request, reply) => {
+      const body = request.body as SuggestMechanicInput
+      const result = await suggestMechanic(null, body)
+      request.log.info({ event: 'MECHANIC_SUGGESTION_CREATED', suggestionId: result.id })
+      return reply.status(201).send({ data: result })
+    },
+  )
+
   const moderationGuard = [requireAuth, requireRoleOrCapability(['LIAISON'], 'mechanics:moderate')]
+
+  fastify.get(
+    '/suggestions',
+    {
+      preHandler: moderationGuard,
+      schema: {
+        tags: ['Mechanics'],
+        description: 'Lister les suggestions de mécaniciens (modération)',
+        security: [{ BearerAuth: [] }],
+        querystring: zodToFastify(mechanicSuggestionListQuerySchema),
+      },
+    },
+    async (request, reply) => {
+      const query = request.query as { status?: 'PENDING' | 'APPROVED' | 'REJECTED'; page?: string; limit?: string }
+      const result = await listMechanicSuggestions({
+        status: query.status,
+        page: query.page !== undefined ? Number(query.page) : undefined,
+        limit: query.limit !== undefined ? Number(query.limit) : undefined,
+      })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/suggestions/:id/approve',
+    {
+      preHandler: moderationGuard,
+      schema: {
+        tags: ['Mechanics'],
+        description: 'Approuver une suggestion — crée la fiche mécanicien',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(mechanicParamsSchema),
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const result = await approveMechanicSuggestion(id, request.user.id)
+      request.log.info({ event: 'MECHANIC_SUGGESTION_APPROVED', userId: request.user.id, suggestionId: id })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.post(
+    '/suggestions/:id/reject',
+    {
+      preHandler: moderationGuard,
+      schema: {
+        tags: ['Mechanics'],
+        description: 'Rejeter une suggestion',
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(mechanicParamsSchema),
+        body: zodToFastify(rejectMechanicSuggestionSchema),
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const { reason } = request.body as { reason?: string }
+      const result = await rejectMechanicSuggestion(id, request.user.id, reason)
+      request.log.info({ event: 'MECHANIC_SUGGESTION_REJECTED', userId: request.user.id, suggestionId: id })
+      return reply.status(200).send({ data: result })
+    },
+  )
 
   fastify.post(
     '/:id/suspend',

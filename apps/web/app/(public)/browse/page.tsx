@@ -10,6 +10,7 @@ import { BottomNav } from '@/components/bottom-nav'
 import { UniverseBar } from '@/components/universe-bar'
 import { LogistiqueSection } from '@/components/sections/logistique-section'
 import { FleetSection } from '@/components/sections/fleet-section'
+import { MecaniciensSection } from '@/components/sections/mecaniciens-section'
 import { PromoCarousel, type PromoSlide } from '@/components/ui/promo-carousel'
 
 function PromoArt({ src, alt }: { src: string; alt: string }) {
@@ -168,6 +169,7 @@ export default function BrowsePage() {
         <div className="mt-6">
           <LogistiqueSection />
           <FleetSection />
+          <MecaniciensSection />
         </div>
 
         {/* Bottom nav */}

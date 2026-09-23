@@ -303,3 +303,142 @@ export async function hideMechanicReview(reviewId: string, moderatorId: string) 
 
   return updated
 }
+
+// ---------------------------------------------------------------------------
+// Suggestions — proposer un mécanicien absent de l'annuaire. Dépôt ouvert
+// (utilisateur authentifié ou non), modéré par LIAISON/mechanics:moderate
+// avant de devenir une fiche Mechanic. Distinct des avis (MechanicReview) qui
+// notent une fiche déjà publiée.
+// ---------------------------------------------------------------------------
+
+export interface SuggestMechanicInput {
+  name: string
+  phone: string
+  commune?: string
+  address?: string
+  specialty?: MechanicSpecialty
+  note?: string
+}
+
+export async function suggestMechanic(suggestedById: string | null, input: SuggestMechanicInput) {
+  return prisma.mechanicSuggestion.create({
+    data: {
+      name: input.name,
+      phone: input.phone,
+      commune: input.commune,
+      address: input.address,
+      specialty: input.specialty,
+      note: input.note,
+      suggestedById: suggestedById ?? undefined,
+    },
+  })
+}
+
+export async function listMechanicSuggestions(
+  options: { status?: 'PENDING' | 'APPROVED' | 'REJECTED'; page?: number; limit?: number } = {},
+) {
+  const page = Math.max(1, options.page ?? 1)
+  const limit = Math.min(100, Math.max(1, options.limit ?? 20))
+  const where = { status: options.status ?? 'PENDING' } as const
+
+  const [suggestions, total] = await Promise.all([
+    prisma.mechanicSuggestion.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.mechanicSuggestion.count({ where }),
+  ])
+
+  return { suggestions, total, page, limit }
+}
+
+/**
+ * Approuver une suggestion : crée la fiche Mechanic correspondante (statut
+ * ACTIVE, non géolocalisée — la géo se complète ensuite via update ou si le
+ * mécanicien revendique sa fiche). Si le téléphone proposé correspond déjà à
+ * une fiche existante, l'approbation échoue plutôt que de créer un doublon —
+ * au modérateur de rejeter la suggestion ou de rediriger vers la fiche
+ * existante.
+ */
+export async function approveMechanicSuggestion(suggestionId: string, moderatorId: string) {
+  const suggestion = await prisma.mechanicSuggestion.findUnique({ where: { id: suggestionId } })
+  if (!suggestion) {
+    throw new AppError('MECHANIC_SUGGESTION_NOT_FOUND', 404, { message: 'Suggestion introuvable' })
+  }
+  if (suggestion.status !== 'PENDING') {
+    throw new AppError('MECHANIC_SUGGESTION_ALREADY_MODERATED', 409, {
+      message: 'Cette suggestion a déjà été traitée',
+    })
+  }
+  if (!suggestion.phone) {
+    throw new AppError('MECHANIC_SUGGESTION_MISSING_PHONE', 422, {
+      message: 'Suggestion sans téléphone — impossible de créer la fiche',
+    })
+  }
+
+  const taken = await prisma.mechanic.findUnique({
+    where: { phone: suggestion.phone },
+    select: { id: true },
+  })
+  if (taken) {
+    throw new AppError('MECHANIC_PHONE_TAKEN', 409, {
+      message: 'Ce numéro correspond déjà à une fiche mécanicien existante',
+    })
+  }
+
+  const mechanic = await prisma.mechanic.create({
+    data: {
+      name: suggestion.name,
+      phone: suggestion.phone,
+      commune: suggestion.commune,
+      address: suggestion.address,
+      specialties: suggestion.specialty ? [suggestion.specialty as MechanicSpecialty] : [],
+      bio: suggestion.note ?? undefined,
+      createdByLiaisonId: moderatorId,
+      moderatedById: moderatorId,
+    },
+  })
+
+  const updated = await prisma.mechanicSuggestion.update({
+    where: { id: suggestionId },
+    data: {
+      status: 'APPROVED',
+      moderatedById: moderatorId,
+      moderatedAt: new Date(),
+      createdMechanicId: mechanic.id,
+    },
+  })
+
+  return { suggestion: updated, mechanic }
+}
+
+export async function rejectMechanicSuggestion(
+  suggestionId: string,
+  moderatorId: string,
+  reason?: string,
+) {
+  const suggestion = await prisma.mechanicSuggestion.findUnique({
+    where: { id: suggestionId },
+    select: { id: true, status: true },
+  })
+  if (!suggestion) {
+    throw new AppError('MECHANIC_SUGGESTION_NOT_FOUND', 404, { message: 'Suggestion introuvable' })
+  }
+  if (suggestion.status !== 'PENDING') {
+    throw new AppError('MECHANIC_SUGGESTION_ALREADY_MODERATED', 409, {
+      message: 'Cette suggestion a déjà été traitée',
+    })
+  }
+
+  return prisma.mechanicSuggestion.update({
+    where: { id: suggestionId },
+    data: {
+      status: 'REJECTED',
+      moderatedById: moderatorId,
+      moderatedAt: new Date(),
+      rejectionReason: reason,
+    },
+  })
+}

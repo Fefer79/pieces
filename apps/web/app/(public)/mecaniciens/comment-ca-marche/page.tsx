@@ -33,6 +33,15 @@ export default function CommentCaMarchePage() {
             se négocient directement avec l&apos;atelier.
           </p>
         </section>
+
+        <section>
+          <h2 className="mb-2 text-lg font-semibold text-ink">Pour proposer un mécanicien</h2>
+          <p className="text-[15px] leading-relaxed text-muted">
+            Vous connaissez un bon mécanicien qui n&apos;est pas encore dans l&apos;annuaire ?
+            Proposez-le en quelques champs, sans créer de compte. L&apos;équipe Pièces vérifie
+            l&apos;information avant de publier sa fiche.
+          </p>
+        </section>
       </div>
 
       <Link href="/mecaniciens" className="mt-10 inline-block text-sm font-semibold text-accent hover:underline">

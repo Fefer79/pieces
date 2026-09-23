@@ -21,6 +21,21 @@ interface SearchResponse {
   total: number
 }
 
+interface MechanicSuggestion {
+  id: string
+  name: string
+  phone: string | null
+  commune: string | null
+  specialty: string | null
+  note: string | null
+  createdAt: string
+}
+
+interface SuggestionListResponse {
+  suggestions: MechanicSuggestion[]
+  total: number
+}
+
 // Modération de l'annuaire mécaniciens — auto-publié à l'inscription, cet
 // écran est le filet de rattrapage a posteriori (signalement → suspension),
 // pas un flux de validation préalable.
@@ -31,6 +46,10 @@ export default function AdminMechanicsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
+
+  const [suggestions, setSuggestions] = useState<MechanicSuggestion[]>([])
+  const [suggestionsTotal, setSuggestionsTotal] = useState(0)
+  const [suggestionsLoading, setSuggestionsLoading] = useState(true)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -47,9 +66,55 @@ export default function AdminMechanicsPage() {
     }
   }, [q])
 
+  const loadSuggestions = useCallback(async () => {
+    setSuggestionsLoading(true)
+    try {
+      const data = await adminFetch<SuggestionListResponse>('/mechanics/suggestions?status=PENDING&limit=50')
+      setSuggestions(data.suggestions)
+      setSuggestionsTotal(data.total)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setSuggestionsLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    loadSuggestions()
+  }, [loadSuggestions])
+
+  const handleApproveSuggestion = async (id: string) => {
+    setBusyId(id)
+    try {
+      await adminFetch(`/mechanics/suggestions/${id}/approve`, { method: 'POST' })
+      await Promise.all([loadSuggestions(), load()])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const handleRejectSuggestion = async (id: string) => {
+    const reason = window.prompt('Motif du rejet (optionnel) :') ?? undefined
+    setBusyId(id)
+    try {
+      await adminFetch(`/mechanics/suggestions/${id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason || undefined }),
+      })
+      await loadSuggestions()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   const handleSuspend = async (id: string) => {
     const reason = window.prompt('Motif de la suspension :')
@@ -85,6 +150,63 @@ export default function AdminMechanicsPage() {
     <div className="p-4 lg:p-6">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="font-display text-2xl text-ink">Mécaniciens</h1>
+      </div>
+
+      <div className="mb-8">
+        <h2 className="mb-2 text-sm font-semibold text-ink">
+          Suggestions en attente {suggestionsTotal > 0 && `(${suggestionsTotal})`}
+        </h2>
+        {suggestionsLoading ? (
+          <div className="text-sm text-muted">Chargement…</div>
+        ) : suggestions.length === 0 ? (
+          <p className="text-sm text-muted">Aucune suggestion en attente.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-md border border-border bg-card">
+            <Table>
+              <Thead>
+                <Tr hover={false}>
+                  <Th>Nom</Th>
+                  <Th>Téléphone</Th>
+                  <Th>Commune</Th>
+                  <Th>Spécialité</Th>
+                  <Th>Note</Th>
+                  <Th align="right">Action</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {suggestions.map((s) => (
+                  <Tr key={s.id}>
+                    <Td className="font-medium">{s.name}</Td>
+                    <Td className="text-xs">{s.phone ?? '—'}</Td>
+                    <Td className="text-xs">{s.commune ?? '—'}</Td>
+                    <Td className="text-xs">{s.specialty ?? '—'}</Td>
+                    <Td className="max-w-xs truncate text-xs" title={s.note ?? undefined}>
+                      {s.note ?? '—'}
+                    </Td>
+                    <Td align="right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleApproveSuggestion(s.id)}
+                          disabled={busyId === s.id}
+                          className="rounded-sm border border-border-strong px-2 py-1 text-xs hover:bg-surface disabled:opacity-40"
+                        >
+                          Approuver
+                        </button>
+                        <button
+                          onClick={() => handleRejectSuggestion(s.id)}
+                          disabled={busyId === s.id}
+                          className="rounded-sm border border-error-fg/30 px-2 py-1 text-xs text-error-fg hover:bg-error-bg disabled:opacity-40"
+                        >
+                          Rejeter
+                        </button>
+                      </div>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </div>
+        )}
       </div>
 
       <div className="mb-3">

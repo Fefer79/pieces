@@ -52,3 +52,25 @@ export const createMechanicReviewSchema = z.object({
 export const mechanicParamsSchema = z.object({
   id: z.string().uuid(),
 })
+
+// Dépôt ouvert — aucune authentification requise. Le téléphone reste
+// obligatoire : c'est le seul moyen de contacter le mécanicien proposé et
+// l'identifiant unique qu'il deviendra sur Mechanic une fois approuvé.
+export const suggestMechanicSchema = z.object({
+  name: z.string().min(2).max(100),
+  phone: phoneSchema,
+  commune: z.string().max(100).optional(),
+  address: z.string().max(255).optional(),
+  specialty: mechanicSpecialtySchema.optional(),
+  note: z.string().max(500).optional(),
+})
+
+export const rejectMechanicSuggestionSchema = z.object({
+  reason: z.string().min(3).max(300).optional(),
+})
+
+export const mechanicSuggestionListQuerySchema = z.object({
+  status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+})

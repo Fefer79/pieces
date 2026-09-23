@@ -71,6 +71,8 @@ model User {
   mechanicsModerated       Mechanic[]              @relation("MechanicModerator")
   mechanicReviews          MechanicReview[]        @relation("MechanicReviewer")
   mechanicReviewsModerated MechanicReview[]        @relation("MechanicReviewModerator")
+  mechanicSuggestionsMade  MechanicSuggestion[]     @relation("MechanicSuggestionAuthor")
+  mechanicSuggestionsModerated MechanicSuggestion[] @relation("MechanicSuggestionModerator")
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -1148,6 +1150,12 @@ enum MechanicReviewStatus {
   HIDDEN
 }
 
+enum MechanicSuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // Fiche mécanicien/garage — annuaire géolocalisé public (mecanicien.pieces.ci).
 // Auto-publiée à l'inscription, modérée a posteriori (pas de KYC préalable,
 // contrairement à Vendor). userId reste optionnel : un agent LIAISON peut créer
@@ -1209,6 +1217,32 @@ model MechanicReview {
   @@unique([mechanicId, reviewerId], name: "uq_mechanic_review_mechanic_user")
   @@index([mechanicId], name: "idx_mechanic_reviews_mechanic")
   @@map("mechanic_reviews")
+}
+
+// Proposition d'un mécanicien absent de l'annuaire — dépôt ouvert (pas
+// d'inscription requise, contrairement à Mechanic self-service), modéré par
+// LIAISON/mechanics:moderate avant de devenir une fiche Mechanic. Distinct de
+// MechanicReview qui note une fiche déjà publiée.
+model MechanicSuggestion {
+  id               String                    @id @default(uuid())
+  name             String
+  phone            String?
+  commune          String?
+  address          String?
+  specialty        String?
+  note             String?
+  suggestedById    String?                   @map("suggested_by_id")
+  suggestedBy      User?                     @relation("MechanicSuggestionAuthor", fields: [suggestedById], references: [id], onDelete: SetNull)
+  status           MechanicSuggestionStatus  @default(PENDING)
+  moderatedById    String?                   @map("moderated_by_id")
+  moderatedBy      User?                     @relation("MechanicSuggestionModerator", fields: [moderatedById], references: [id], onDelete: SetNull)
+  moderatedAt      DateTime?                 @map("moderated_at")
+  rejectionReason  String?                   @map("rejection_reason")
+  createdMechanicId String?                  @map("created_mechanic_id")
+  createdAt        DateTime                  @default(now()) @map("created_at")
+
+  @@index([status], name: "idx_mechanic_suggestions_status")
+  @@map("mechanic_suggestions")
 }
 
 model Dispute {

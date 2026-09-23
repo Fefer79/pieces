@@ -17,6 +17,11 @@ const mechanicReviewFindMany = vi.fn()
 const mechanicReviewCount = vi.fn()
 const mechanicReviewCreate = vi.fn()
 const mechanicReviewUpdate = vi.fn()
+const mechanicSuggestionFindUnique = vi.fn()
+const mechanicSuggestionFindMany = vi.fn()
+const mechanicSuggestionCount = vi.fn()
+const mechanicSuggestionCreate = vi.fn()
+const mechanicSuggestionUpdate = vi.fn()
 
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
@@ -35,6 +40,13 @@ vi.mock('../../lib/prisma.js', () => ({
       create: (...a: unknown[]) => mechanicReviewCreate(...a),
       update: (...a: unknown[]) => mechanicReviewUpdate(...a),
     },
+    mechanicSuggestion: {
+      findUnique: (...a: unknown[]) => mechanicSuggestionFindUnique(...a),
+      findMany: (...a: unknown[]) => mechanicSuggestionFindMany(...a),
+      count: (...a: unknown[]) => mechanicSuggestionCount(...a),
+      create: (...a: unknown[]) => mechanicSuggestionCreate(...a),
+      update: (...a: unknown[]) => mechanicSuggestionUpdate(...a),
+    },
   },
 }))
 
@@ -49,6 +61,10 @@ const {
   createMechanicReview,
   listMechanicReviews,
   hideMechanicReview,
+  suggestMechanic,
+  listMechanicSuggestions,
+  approveMechanicSuggestion,
+  rejectMechanicSuggestion,
 } = await import('./mechanic.service.js')
 
 const BASE_INPUT = {
@@ -304,6 +320,119 @@ describe('mechanic.service', () => {
           data: { avgRating: null, reviewCount: 0 },
         }),
       )
+    })
+  })
+
+  describe('suggestMechanic', () => {
+    it('crée une suggestion PENDING sans auteur si non authentifié', async () => {
+      mechanicSuggestionCreate.mockResolvedValueOnce({ id: 'sugg-1', status: 'PENDING' })
+
+      const result = await suggestMechanic(null, { name: 'Garage X', phone: '+2250700000099' })
+
+      expect(result.id).toBe('sugg-1')
+      expect(mechanicSuggestionCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({ name: 'Garage X', phone: '+2250700000099', suggestedById: undefined }),
+      })
+    })
+  })
+
+  describe('listMechanicSuggestions', () => {
+    it('filtre par statut PENDING par défaut', async () => {
+      mechanicSuggestionFindMany.mockResolvedValueOnce([{ id: 'sugg-1' }])
+      mechanicSuggestionCount.mockResolvedValueOnce(1)
+
+      const result = await listMechanicSuggestions()
+
+      expect(result).toEqual({ suggestions: [{ id: 'sugg-1' }], total: 1, page: 1, limit: 20 })
+      expect(mechanicSuggestionFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { status: 'PENDING' } }),
+      )
+    })
+  })
+
+  describe('approveMechanicSuggestion', () => {
+    it('404 si la suggestion n’existe pas', async () => {
+      mechanicSuggestionFindUnique.mockResolvedValueOnce(null)
+      await expect(approveMechanicSuggestion('sugg-x', 'staff-1')).rejects.toMatchObject({
+        code: 'MECHANIC_SUGGESTION_NOT_FOUND',
+      })
+    })
+
+    it('409 si déjà modérée', async () => {
+      mechanicSuggestionFindUnique.mockResolvedValueOnce({ id: 'sugg-1', status: 'APPROVED' })
+      await expect(approveMechanicSuggestion('sugg-1', 'staff-1')).rejects.toMatchObject({
+        code: 'MECHANIC_SUGGESTION_ALREADY_MODERATED',
+        statusCode: 409,
+      })
+    })
+
+    it('409 si le téléphone correspond déjà à une fiche existante', async () => {
+      mechanicSuggestionFindUnique.mockResolvedValueOnce({
+        id: 'sugg-1',
+        status: 'PENDING',
+        phone: '+2250700000099',
+      })
+      mechanicFindUnique.mockResolvedValueOnce({ id: 'mech-existing' })
+
+      await expect(approveMechanicSuggestion('sugg-1', 'staff-1')).rejects.toMatchObject({
+        code: 'MECHANIC_PHONE_TAKEN',
+        statusCode: 409,
+      })
+    })
+
+    it('crée la fiche mécanicien et marque la suggestion APPROVED', async () => {
+      mechanicSuggestionFindUnique.mockResolvedValueOnce({
+        id: 'sugg-1',
+        status: 'PENDING',
+        name: 'Garage X',
+        phone: '+2250700000099',
+        commune: 'Yopougon',
+        address: null,
+        specialty: 'Mécanique générale',
+        note: 'Fiable',
+      })
+      mechanicFindUnique.mockResolvedValueOnce(null)
+      mechanicCreate.mockResolvedValueOnce({ id: 'mech-new', name: 'Garage X' })
+      mechanicSuggestionUpdate.mockResolvedValueOnce({ id: 'sugg-1', status: 'APPROVED' })
+
+      const result = await approveMechanicSuggestion('sugg-1', 'staff-1')
+
+      expect(result.mechanic.id).toBe('mech-new')
+      expect(mechanicCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: 'Garage X',
+          phone: '+2250700000099',
+          specialties: ['Mécanique générale'],
+          createdByLiaisonId: 'staff-1',
+          moderatedById: 'staff-1',
+        }),
+      })
+      expect(mechanicSuggestionUpdate).toHaveBeenCalledWith({
+        where: { id: 'sugg-1' },
+        data: expect.objectContaining({ status: 'APPROVED', createdMechanicId: 'mech-new' }),
+      })
+    })
+  })
+
+  describe('rejectMechanicSuggestion', () => {
+    it('404 si la suggestion n’existe pas', async () => {
+      mechanicSuggestionFindUnique.mockResolvedValueOnce(null)
+      await expect(rejectMechanicSuggestion('sugg-x', 'staff-1')).rejects.toMatchObject({
+        code: 'MECHANIC_SUGGESTION_NOT_FOUND',
+      })
+    })
+
+    it('rejette avec motif', async () => {
+      mechanicSuggestionFindUnique.mockResolvedValueOnce({ id: 'sugg-1', status: 'PENDING' })
+      mechanicSuggestionUpdate.mockResolvedValueOnce({ id: 'sugg-1', status: 'REJECTED' })
+
+      const result = await rejectMechanicSuggestion('sugg-1', 'staff-1', 'Doublon')
+
+      expect(result.status).toBe('REJECTED')
+      expect(mechanicSuggestionUpdate).toHaveBeenCalledWith({
+        where: { id: 'sugg-1' },
+        data: expect.objectContaining({ status: 'REJECTED', rejectionReason: 'Doublon' }),
+      })
     })
   })
 })

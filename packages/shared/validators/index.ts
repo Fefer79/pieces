@@ -385,6 +385,9 @@ export {
   mechanicSearchQuerySchema,
   createMechanicReviewSchema,
   mechanicParamsSchema,
+  suggestMechanicSchema,
+  rejectMechanicSuggestionSchema,
+  mechanicSuggestionListQuerySchema,
 } from './mechanic'
 export {
   prospectionInterviewStatusSchema,
