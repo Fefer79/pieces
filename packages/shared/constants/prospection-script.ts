@@ -34,7 +34,7 @@ export const PROSPECTION_THEME_LABELS: Record<ProspectionThemeKey, string> = {
   GAMME: 'Bloc 2 — Marques & références',
   CATALOGUE: 'Bloc 3 — Suivi du stock & vente en ligne',
   LOGISTIQUE: 'Bloc 4 — Livraison',
-  PRIX: 'Bloc 5 — Prix, paiement & crédit',
+  PRIX: 'Bloc 5 — Prix & paiement',
   GARANTIE: 'Garanties & retours',
   OBJECTIONS: 'Objections fréquentes',
   CLOTURE: 'Reformulation & engagement',
@@ -189,13 +189,6 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     hint: 'S’il livre déjà, il connaît le coût réel et la contrainte.',
   },
   {
-    id: 'logistique_zones',
-    theme: 'LOGISTIQUE',
-    label: '« Vous allez jusqu’où dans Abidjan ? »',
-    hint: 'Alimente les zones de livraison de sa fiche vendeur.',
-    target: 'piecesLibre',
-  },
-  {
     id: 'logistique_hors_abidjan',
     theme: 'LOGISTIQUE',
     label: '« Est-ce que vous livrez en dehors d’Abidjan ? Et si oui, comment ? »',
@@ -208,7 +201,7 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     label: '« Et une pièce cassée ou perdue en route, ça vous est déjà arrivé ? »',
     hint: 'Prépare le sujet de la reprise et de la garantie.',
   },
-  // --- Bloc 5 : prix, paiement & crédit ----------------------------------
+  // --- Bloc 5 : prix & paiement -------------------------------------------
   // Transition : « Dernière chose, et après je vous explique ce qu’on fait. »
   {
     id: 'prix_negociation',
@@ -221,13 +214,6 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     theme: 'PRIX',
     label: '« Vous prenez le mobile money, ou seulement le cash ? »',
     hint: 'Par quel canal on lui transmettra son argent après l’encaissement.',
-  },
-  {
-    id: 'prix_credit',
-    theme: 'PRIX',
-    label: '« Vous faites crédit à certains mécaniciens ? … Et ils vous paient à temps ? »',
-    hint: 'Le point de douleur le plus exploitable de tout l’entretien. On laisse le silence après la seconde question.',
-    target: 'remarques',
   },
   {
     id: 'prix_commission',
@@ -267,7 +253,7 @@ export const PROSPECTION_SCRIPT: readonly ProspectionQuestion[] = [
     id: 'cloture_reformulation',
     theme: 'CLOTURE',
     label:
-      '« Si je résume : vous êtes fort sur [sa famille de pièces], et vous avez [son stock dormant] qui ne bouge pas. Et sur le crédit, vous m’avez dit que [ce qu’il a dit]. C’est bien ça ? »',
+      '« Si je résume : vous êtes fort sur [sa famille de pièces], et vous avez [son stock dormant] qui ne bouge pas. C’est bien ça ? »',
     hint: 'On ne passe jamais à l’offre sans rendre au commerçant ce qu’il vient de dire. C’est à ce « oui, c’est ça » qu’on enchaîne sur UNE accroche d’argumentaire, jamais deux.',
   },
   {
