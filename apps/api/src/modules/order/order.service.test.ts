@@ -11,6 +11,7 @@ const mockOrderCreate = vi.fn()
 const mockOrderFindUnique = vi.fn()
 const mockOrderFindFirst = vi.fn()
 const mockOrderFindMany = vi.fn()
+const mockOrderCount = vi.fn()
 const mockOrderUpdate = vi.fn()
 const mockOrderDelete = vi.fn()
 const mockOrderItemDeleteMany = vi.fn()
@@ -19,10 +20,17 @@ const mockOrderEventDeleteMany = vi.fn()
 const mockVehicleFindUnique = vi.fn()
 const mockEnterpriseMemberFindUnique = vi.fn()
 const mockVendorFindFirst = vi.fn()
+const mockVendorFindUnique = vi.fn()
+const mockVendorFindMany = vi.fn()
 const mockCurrentTier = vi.fn()
+const mockNotifyVendorNewOrder = vi.fn()
 
 vi.mock('../enterprise/subscription.service.js', () => ({
   currentTier: (...args: unknown[]) => mockCurrentTier(...args),
+}))
+
+vi.mock('../notification/notification.service.js', () => ({
+  notifyVendorNewOrder: (...args: unknown[]) => mockNotifyVendorNewOrder(...args),
 }))
 
 vi.mock('../../lib/supabase.js', () => ({
@@ -41,6 +49,7 @@ vi.mock('../../lib/prisma.js', () => ({
       findUnique: (...args: unknown[]) => mockOrderFindUnique(...args),
       findFirst: (...args: unknown[]) => mockOrderFindFirst(...args),
       findMany: (...args: unknown[]) => mockOrderFindMany(...args),
+      count: (...args: unknown[]) => mockOrderCount(...args),
       update: (...args: unknown[]) => mockOrderUpdate(...args),
       delete: (...args: unknown[]) => mockOrderDelete(...args),
     },
@@ -59,17 +68,20 @@ vi.mock('../../lib/prisma.js', () => ({
     },
     vendor: {
       findFirst: (...args: unknown[]) => mockVendorFindFirst(...args),
+      findUnique: (...args: unknown[]) => mockVendorFindUnique(...args),
+      findMany: (...args: unknown[]) => mockVendorFindMany(...args),
     },
   },
 }))
 
-const { createOrder, getOrderById, cancelOrder, confirmReceipt, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDelivery, payImportBalance } = await import('./order.service.js')
+const { createOrder, getOrderById, cancelOrder, confirmReceipt, selectPaymentMethod, transitionOrder, vendorConfirmOrder, getOpenDraft, upsertDraft, getOrderByShareToken, setOrderDelivery, payImportBalance, getVendorOrders } = await import('./order.service.js')
 
 describe('order.service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockCurrentTier.mockResolvedValue('FREE')
     mockOrderItemFindMany.mockResolvedValue([])
+    mockNotifyVendorNewOrder.mockResolvedValue({ success: true })
   })
 
   describe('createOrder', () => {
@@ -269,6 +281,39 @@ describe('order.service', () => {
         statusCode: 400,
       })
       expect(mockOrderUpdate).not.toHaveBeenCalled()
+    })
+
+    it('notifie chaque vendeur distinct avec son propre nombre de pièces (chemin COD)', async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(payable())
+      mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'PAID', paymentMethod: 'COD', items: [] })
+      mockOrderItemFindMany.mockResolvedValue([
+        { vendorId: 'v1', quantity: 2 },
+        { vendorId: 'v1', quantity: 1 },
+        { vendorId: 'v2', quantity: 5 },
+      ])
+      mockVendorFindMany.mockResolvedValue([
+        { id: 'v1', phone: '+2250700000001' },
+        { id: 'v2', phone: '+2250700000002' },
+      ])
+
+      await selectPaymentMethod('order-1', 'COD', 'buyer', TOK)
+
+      await vi.waitFor(() => expect(mockNotifyVendorNewOrder).toHaveBeenCalledTimes(2))
+      expect(mockNotifyVendorNewOrder).toHaveBeenCalledWith('+2250700000001', 'order-1', 3)
+      expect(mockNotifyVendorNewOrder).toHaveBeenCalledWith('+2250700000002', 'order-1', 5)
+    })
+
+    it("n'interrompt pas le paiement si l'envoi de la notification vendeur échoue", async () => {
+      mockOrderFindUnique.mockResolvedValueOnce(payable())
+      mockOrderUpdate.mockResolvedValueOnce({ id: 'order-1', status: 'PAID', paymentMethod: 'COD', items: [] })
+      mockOrderItemFindMany.mockResolvedValue([{ vendorId: 'v1', quantity: 1 }])
+      mockVendorFindMany.mockResolvedValue([{ id: 'v1', phone: '+2250700000001' }])
+      mockNotifyVendorNewOrder.mockRejectedValue(new Error('whatsapp indisponible'))
+
+      const result = await selectPaymentMethod('order-1', 'COD', 'buyer', TOK)
+      expect(result.status).toBe('PAID')
+
+      await vi.waitFor(() => expect(mockNotifyVendorNewOrder).toHaveBeenCalled())
     })
   })
 
@@ -969,6 +1014,36 @@ describe('order.service', () => {
       await expect(transitionOrder('o1', 'DEPOSIT_PAID', 'admin')).rejects.toMatchObject({
         code: 'ORDER_INVALID_TRANSITION',
       })
+    })
+  })
+
+  describe('getVendorOrders', () => {
+    it("refuse un utilisateur sans profil vendeur", async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(getVendorOrders('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_NOT_FOUND',
+        statusCode: 404,
+      })
+    })
+
+    it('liste les commandes du vendeur, paginées, filtrables par statut', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockOrderFindMany.mockResolvedValueOnce([{ id: 'order-1', items: [] }])
+      mockOrderCount.mockResolvedValueOnce(1)
+
+      const result = await getVendorOrders('user-1', { status: 'PAID', page: 2, limit: 10 })
+
+      expect(result).toEqual({ orders: [{ id: 'order-1', items: [] }], total: 1, page: 2, limit: 10 })
+      const [findManyArgs] = mockOrderFindMany.mock.calls[0] as [
+        { where: { items: { some: { vendorId: string } } }; status?: string; skip: number; take: number },
+      ]
+      expect(findManyArgs.where).toMatchObject({
+        items: { some: { vendorId: 'vendor-1' } },
+        status: 'PAID',
+      })
+      expect(findManyArgs.skip).toBe(10)
+      expect(findManyArgs.take).toBe(10)
     })
   })
 

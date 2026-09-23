@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
 import { isLogistiqueSurface } from '@/lib/logistique-routes'
+import { isMecanicienSurface } from '@/lib/mecanicien-routes'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -21,7 +22,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     pathname === '/' ||
     pathname === '/info' ||
     pathname.startsWith('/entreprises') ||
-    isLogistiqueSurface(pathname)
+    isLogistiqueSurface(pathname) ||
+    isMecanicienSurface(pathname)
   ) {
     return <>{children}</>
   }

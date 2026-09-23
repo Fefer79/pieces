@@ -321,6 +321,178 @@ export async function getVendorDashboard(userId: string) {
   }
 }
 
+const DELIVERED_ORDER_STATUSES = ['DELIVERED', 'CONFIRMED', 'COMPLETED'] as const
+
+/**
+ * Chiffre d'affaires des 30 derniers jours — commandes marketplace livrées
+ * (revenu reconnu) + ventes hors-plateforme (VendorSale), par jour et par
+ * article. Donne au vendeur une visibilité qu'aucun carnet papier n'offre.
+ */
+export async function getVendorSalesSummary(userId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur trouvé pour cet utilisateur',
+    })
+  }
+
+  const since = new Date()
+  since.setDate(since.getDate() - 30)
+
+  const [orderItems, vendorSales] = await Promise.all([
+    prisma.orderItem.findMany({
+      where: {
+        vendorId: vendor.id,
+        createdAt: { gte: since },
+        order: { status: { in: [...DELIVERED_ORDER_STATUSES] } },
+      },
+      select: { name: true, priceSnapshot: true, quantity: true, createdAt: true },
+    }),
+    prisma.vendorSale.findMany({
+      where: { vendorId: vendor.id, soldAt: { gte: since } },
+      select: { itemName: true, totalAmount: true, quantity: true, soldAt: true },
+    }),
+  ])
+
+  const dayKey = (d: Date) => d.toISOString().slice(0, 10)
+  const byDay = new Map<string, { orders: number; offPlatform: number }>()
+  const byItem = new Map<string, { name: string; revenue: number; quantity: number }>()
+
+  for (const i of orderItems) {
+    const amount = i.priceSnapshot * i.quantity
+    const day = byDay.get(dayKey(i.createdAt)) ?? { orders: 0, offPlatform: 0 }
+    day.orders += amount
+    byDay.set(dayKey(i.createdAt), day)
+
+    const item = byItem.get(i.name) ?? { name: i.name, revenue: 0, quantity: 0 }
+    item.revenue += amount
+    item.quantity += i.quantity
+    byItem.set(i.name, item)
+  }
+
+  for (const s of vendorSales) {
+    const day = byDay.get(dayKey(s.soldAt)) ?? { orders: 0, offPlatform: 0 }
+    day.offPlatform += s.totalAmount
+    byDay.set(dayKey(s.soldAt), day)
+
+    const item = byItem.get(s.itemName) ?? { name: s.itemName, revenue: 0, quantity: 0 }
+    item.revenue += s.totalAmount
+    item.quantity += s.quantity
+    byItem.set(s.itemName, item)
+  }
+
+  const daily = [...byDay.entries()]
+    .map(([date, v]) => ({ date, orders: v.orders, offPlatform: v.offPlatform, total: v.orders + v.offPlatform }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+
+  const topItems = [...byItem.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 10)
+
+  const totalOrdersRevenue = orderItems.reduce((sum, i) => sum + i.priceSnapshot * i.quantity, 0)
+  const totalOffPlatformRevenue = vendorSales.reduce((sum, s) => sum + s.totalAmount, 0)
+
+  return {
+    periodDays: 30,
+    totalRevenue: totalOrdersRevenue + totalOffPlatformRevenue,
+    totalOrdersRevenue,
+    totalOffPlatformRevenue,
+    daily,
+    topItems,
+  }
+}
+
+/**
+ * Historique client dérivé — regroupement par téléphone des commandes
+ * marketplace et des ventes hors-plateforme. Vue calculée, pas de table
+ * persistée : VendorContact est le CRM de prospection du liaison, pas le
+ * carnet client d'un vendeur.
+ */
+export async function getVendorCustomers(userId: string) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur trouvé pour cet utilisateur',
+    })
+  }
+
+  const ACTIVE_ORDER_STATUSES = [
+    ...DELIVERED_ORDER_STATUSES,
+    'PAID',
+    'VENDOR_CONFIRMED',
+    'DISPATCHED',
+    'IN_TRANSIT',
+  ] as const
+
+  const [orders, vendorSales] = await Promise.all([
+    prisma.order.findMany({
+      where: {
+        items: { some: { vendorId: vendor.id } },
+        status: { in: [...ACTIVE_ORDER_STATUSES] },
+      },
+      select: {
+        totalAmount: true,
+        createdAt: true,
+        ownerPhone: true,
+        initiator: { select: { phone: true, name: true } },
+      },
+    }),
+    prisma.vendorSale.findMany({
+      where: { vendorId: vendor.id, buyerPhone: { not: null } },
+      select: { buyerPhone: true, buyerName: true, totalAmount: true, soldAt: true },
+    }),
+  ])
+
+  interface CustomerAgg {
+    phone: string
+    name: string | null
+    purchaseCount: number
+    lastActivityAt: Date
+    totalSpend: number
+  }
+  const byPhone = new Map<string, CustomerAgg>()
+
+  for (const o of orders) {
+    const phone = o.ownerPhone ?? o.initiator.phone
+    if (!phone) continue
+    const c = byPhone.get(phone) ?? {
+      phone,
+      name: o.initiator.name,
+      purchaseCount: 0,
+      lastActivityAt: o.createdAt,
+      totalSpend: 0,
+    }
+    c.purchaseCount += 1
+    c.totalSpend += o.totalAmount
+    if (o.createdAt > c.lastActivityAt) c.lastActivityAt = o.createdAt
+    if (!c.name && o.initiator.name) c.name = o.initiator.name
+    byPhone.set(phone, c)
+  }
+
+  for (const s of vendorSales) {
+    const phone = s.buyerPhone
+    if (!phone) continue
+    const c = byPhone.get(phone) ?? {
+      phone,
+      name: s.buyerName,
+      purchaseCount: 0,
+      lastActivityAt: s.soldAt,
+      totalSpend: 0,
+    }
+    c.purchaseCount += 1
+    c.totalSpend += s.totalAmount
+    if (s.soldAt > c.lastActivityAt) c.lastActivityAt = s.soldAt
+    if (!c.name && s.buyerName) c.name = s.buyerName
+    byPhone.set(phone, c)
+  }
+
+  return [...byPhone.values()].sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime())
+}
+
 /**
  * Photo de la pièce d'identité prise par le vendeur lui-même à l'inscription
  * (CNI, passeport, permis ou attestation pour un vendeur informel).

@@ -16,7 +16,7 @@ interface Logger {
 // CatalogItem.stockQuantity reste le comportement de référence.
 // ---------------------------------------------------------------------------
 
-async function firstTrackedLevel(catalogItemId: string) {
+export async function firstTrackedLevel(catalogItemId: string) {
   return prisma.stockLevel.findFirst({
     where: { catalogItemId, location: { actif: true } },
     orderBy: { location: { createdAt: 'asc' } },

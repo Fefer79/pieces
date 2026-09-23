@@ -29,42 +29,48 @@ model User {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  dataDeletionRequests   DataDeletionRequest[]
-  vendor                 Vendor?
-  vehicles               Vehicle[]
-  enterpriseMemberships  EnterpriseMember[]
-  initiatedOrders        Order[]                 @relation("OrderInitiator")
-  riderDeliveries        Delivery[]              @relation("DeliveryRider")
-  sellerReviews          SellerReview[]          @relation("SellerReviewer")
-  deliveryReviews        DeliveryReview[]        @relation("DeliveryReviewer")
-  disputes               Dispute[]               @relation("DisputeOpener")
-  returnRequests         ReturnOrder[]           @relation("ReturnOrderRequester")
-  notificationPreference NotificationPreference?
-  managedVendors         Vendor[]                @relation("VendorManagedByLiaison")
-  liaisonCatalogItems    CatalogItem[]           @relation("CatalogItemCreatedByLiaison")
-  activityLogs           ActivityLog[]
-  driverProfiles         Driver[]                @relation("UserDriverProfile")
-  partEnrichments        PartEnrichment[]        @relation("EnrichmentLiaison")
-  contacts               VendorContact[]         @relation("ContactCreatedBy")
-  contactActivities      ContactActivity[]       @relation("ContactActivityAuthor")
-  createdPartRequests    PartRequest[]           @relation("PartRequestCreator")
-  approvedPartRequests   PartRequest[]           @relation("PartRequestApprover")
-  partRequestEvents      PartRequestEvent[]      @relation("PartRequestEventActor")
-  logisticsQuoteRequests LogisticsQuoteRequest[] @relation("LogisticsLeadOwner")
-  assignedLogisticsLeads LogisticsQuoteRequest[] @relation("LogisticsLeadAssignee")
-  crmInteractions        CrmInteraction[]
-  crmTasksAssignees      CrmTask[]               @relation("CrmTaskAssignee")
-  crmTasksCreees         CrmTask[]               @relation("CrmTaskCreator")
-  stockMovements         StockMovement[]
-  purchaseOrdersCreated  PurchaseOrder[]         @relation("PurchaseOrderCreator")
-  teamProfile            TeamMemberProfile?
-  agentObjectives        AgentObjective[]
-  agentCommissions       AgentCommission[]
-  marketingCampaigns     MarketingCampaign[]
-  sourcingSearches       SourcingSearch[]        @relation("SourcingSearchCreator")
-  shipments              Shipment[]              @relation("ShipmentCreator")
-  shipmentEvents         ShipmentEvent[]         @relation("ShipmentEventActor")
-  prospectionInterviews  ProspectionInterview[]  @relation("ProspectionInterviewConductedBy")
+  dataDeletionRequests     DataDeletionRequest[]
+  vendor                   Vendor?
+  vehicles                 Vehicle[]
+  enterpriseMemberships    EnterpriseMember[]
+  initiatedOrders          Order[]                 @relation("OrderInitiator")
+  riderDeliveries          Delivery[]              @relation("DeliveryRider")
+  sellerReviews            SellerReview[]          @relation("SellerReviewer")
+  deliveryReviews          DeliveryReview[]        @relation("DeliveryReviewer")
+  disputes                 Dispute[]               @relation("DisputeOpener")
+  returnRequests           ReturnOrder[]           @relation("ReturnOrderRequester")
+  notificationPreference   NotificationPreference?
+  managedVendors           Vendor[]                @relation("VendorManagedByLiaison")
+  liaisonCatalogItems      CatalogItem[]           @relation("CatalogItemCreatedByLiaison")
+  activityLogs             ActivityLog[]
+  driverProfiles           Driver[]                @relation("UserDriverProfile")
+  partEnrichments          PartEnrichment[]        @relation("EnrichmentLiaison")
+  contacts                 VendorContact[]         @relation("ContactCreatedBy")
+  contactActivities        ContactActivity[]       @relation("ContactActivityAuthor")
+  createdPartRequests      PartRequest[]           @relation("PartRequestCreator")
+  approvedPartRequests     PartRequest[]           @relation("PartRequestApprover")
+  partRequestEvents        PartRequestEvent[]      @relation("PartRequestEventActor")
+  logisticsQuoteRequests   LogisticsQuoteRequest[] @relation("LogisticsLeadOwner")
+  assignedLogisticsLeads   LogisticsQuoteRequest[] @relation("LogisticsLeadAssignee")
+  crmInteractions          CrmInteraction[]
+  crmTasksAssignees        CrmTask[]               @relation("CrmTaskAssignee")
+  crmTasksCreees           CrmTask[]               @relation("CrmTaskCreator")
+  stockMovements           StockMovement[]
+  purchaseOrdersCreated    PurchaseOrder[]         @relation("PurchaseOrderCreator")
+  teamProfile              TeamMemberProfile?
+  agentObjectives          AgentObjective[]
+  agentCommissions         AgentCommission[]
+  marketingCampaigns       MarketingCampaign[]
+  sourcingSearches         SourcingSearch[]        @relation("SourcingSearchCreator")
+  shipments                Shipment[]              @relation("ShipmentCreator")
+  shipmentEvents           ShipmentEvent[]         @relation("ShipmentEventActor")
+  prospectionInterviews    ProspectionInterview[]  @relation("ProspectionInterviewConductedBy")
+  vendorSalesLogged        VendorSale[]            @relation("VendorSaleCreatedBy")
+  mechanicProfile          Mechanic?               @relation("MechanicOwner")
+  mechanicsCreated         Mechanic[]              @relation("MechanicCreatedByLiaison")
+  mechanicsModerated       Mechanic[]              @relation("MechanicModerator")
+  mechanicReviews          MechanicReview[]        @relation("MechanicReviewer")
+  mechanicReviewsModerated MechanicReview[]        @relation("MechanicReviewModerator")
 
   @@index([phone], name: "idx_users_phone")
   @@index([email], name: "idx_users_email")
@@ -146,6 +152,16 @@ enum PartSource {
   OEM
   AFTERMARKET
   COMPATIBLE
+}
+
+// Canal d'une vente enregistrée hors du parcours commande pieces.ci (carnet
+// numérique du vendeur) — la plupart des ventes d'un vendeur informel se
+// négocient en boutique ou par téléphone, jamais via /choose.
+enum VendorSaleChannel {
+  BOUTIQUE
+  WHATSAPP
+  TELEPHONE
+  AUTRE
 }
 
 // Où se trouve physiquement la pièce au moment où elle est mise en vente.
@@ -307,6 +323,7 @@ model Vendor {
   partEnrichments       PartEnrichment[]           @relation("EnrichmentVendeur")
   contacts              VendorContact[]
   prospectionInterviews ProspectionInterview[]
+  sales                 VendorSale[]
 
   @@unique([externalSource, externalSellerId], name: "uq_vendors_external_seller")
   @@index([phone], name: "idx_vendors_phone")
@@ -461,6 +478,7 @@ model CatalogItem {
   stockLevels             StockLevel[]
   stockMovements          StockMovement[]
   purchaseOrderItems      PurchaseOrderItem[]
+  vendorSales             VendorSale[]
   createdAt               DateTime                @default(now()) @map("created_at")
   updatedAt               DateTime                @updatedAt @map("updated_at")
 
@@ -504,6 +522,38 @@ model CatalogItemPhoto {
   @@unique([catalogItemId, position], name: "uq_catalog_photo_position")
   @@index([catalogItemId], name: "idx_catalog_photos_item")
   @@map("catalog_item_photos")
+}
+
+// Vente enregistrée par le vendeur hors du parcours commande pieces.ci (WhatsApp,
+// téléphone, en boutique) — le carnet numérique qui donne de la valeur à l'outil
+// de gestion même sans commande marketplace. Volontairement distinct d'Order/
+// OrderItem, qui portent l'escrow tripartite (initiateur/payeur/shareToken) sans
+// objet ici.
+model VendorSale {
+  id            String            @id @default(uuid())
+  vendorId      String            @map("vendor_id")
+  vendor        Vendor            @relation(fields: [vendorId], references: [id])
+  // Nullable : une vente peut porter sur un article hors catalogue digital.
+  catalogItemId String?           @map("catalog_item_id")
+  catalogItem   CatalogItem?      @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+  // Snapshot requis (même convention qu'OrderItem.name) : reste lisible même si
+  // catalogItemId est absent ou si la fiche catalogue change ensuite.
+  itemName      String            @map("item_name")
+  quantity      Int               @default(1)
+  unitPrice     Int               @map("unit_price")
+  totalAmount   Int               @map("total_amount")
+  buyerName     String?           @map("buyer_name")
+  buyerPhone    String?           @map("buyer_phone")
+  channel       VendorSaleChannel @default(BOUTIQUE)
+  note          String?
+  soldAt        DateTime          @default(now()) @map("sold_at")
+  createdById   String?           @map("created_by_id")
+  createdBy     User?             @relation("VendorSaleCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  @@index([vendorId, soldAt], name: "idx_vendor_sales_vendor_date")
+  @@index([catalogItemId], name: "idx_vendor_sales_catalog_item")
+  @@map("vendor_sales")
 }
 
 model Job {
@@ -1086,6 +1136,79 @@ model DeliveryReview {
   @@unique([deliveryId, reviewerId], name: "uq_delivery_review_delivery_user")
   @@index([riderId], name: "idx_delivery_reviews_rider")
   @@map("delivery_reviews")
+}
+
+enum MechanicStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum MechanicReviewStatus {
+  PUBLISHED
+  HIDDEN
+}
+
+// Fiche mécanicien/garage — annuaire géolocalisé public (mecanicien.pieces.ci).
+// Auto-publiée à l'inscription, modérée a posteriori (pas de KYC préalable,
+// contrairement à Vendor). userId reste optionnel : un agent LIAISON peut créer
+// une fiche pour un mécanicien qui ne se connecte jamais, comme
+// Vendor.managedByLiaisonId/userId.
+model Mechanic {
+  id                 String         @id @default(uuid())
+  userId             String?        @unique @map("user_id")
+  user               User?          @relation("MechanicOwner", fields: [userId], references: [id], onDelete: SetNull)
+  createdByLiaisonId String?        @map("created_by_liaison_id")
+  createdByLiaison   User?          @relation("MechanicCreatedByLiaison", fields: [createdByLiaisonId], references: [id], onDelete: SetNull)
+  name               String
+  phone              String         @unique
+  commune            String?
+  address            String?
+  lat                Float?
+  lng                Float?
+  specialties        String[]       @default([])
+  bio                String?
+  photos             String[]       @default([])
+  status             MechanicStatus @default(ACTIVE)
+  suspendedReason    String?        @map("suspended_reason")
+  suspendedAt        DateTime?      @map("suspended_at")
+  moderatedById      String?        @map("moderated_by_id")
+  moderatedBy        User?          @relation("MechanicModerator", fields: [moderatedById], references: [id], onDelete: SetNull)
+  avgRating          Float?         @map("avg_rating")
+  reviewCount        Int            @default(0) @map("review_count")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  reviews MechanicReview[]
+
+  @@index([lat, lng], name: "idx_mechanics_geo")
+  @@index([commune], name: "idx_mechanics_commune")
+  @@index([status], name: "idx_mechanics_status")
+  @@map("mechanics")
+}
+
+// Avis sur un mécanicien — ouvert à tout utilisateur authentifié (pas besoin
+// qu'une transaction pieces.ci existe, la plupart des interactions mécanicien
+// se passent hors plateforme). `verified`/`verifiedOrderId` sont réservés pour
+// un futur chemin d'avis vérifié une fois qu'une primitive de transaction liée
+// à un mécanicien existera — non exploités pour l'instant (voir plan produit).
+model MechanicReview {
+  id              String               @id @default(uuid())
+  mechanicId      String               @map("mechanic_id")
+  mechanic        Mechanic             @relation(fields: [mechanicId], references: [id])
+  reviewerId      String               @map("reviewer_id")
+  reviewer        User                 @relation("MechanicReviewer", fields: [reviewerId], references: [id])
+  rating          Int
+  comment         String?
+  verified        Boolean              @default(false)
+  verifiedOrderId String?              @map("verified_order_id")
+  status          MechanicReviewStatus @default(PUBLISHED)
+  moderatedById   String?              @map("moderated_by_id")
+  moderatedBy     User?                @relation("MechanicReviewModerator", fields: [moderatedById], references: [id], onDelete: SetNull)
+  createdAt       DateTime             @default(now()) @map("created_at")
+
+  @@unique([mechanicId, reviewerId], name: "uq_mechanic_review_mechanic_user")
+  @@index([mechanicId], name: "idx_mechanic_reviews_mechanic")
+  @@map("mechanic_reviews")
 }
 
 model Dispute {

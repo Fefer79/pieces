@@ -3,7 +3,7 @@ import { createVendorSchema, updateDeliveryZonesSchema } from 'shared/validators
 import { zodToFastify } from '../../lib/zodSchema.js'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
 import { AppError } from '../../lib/appError.js'
-import { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones, getVendorDashboard, uploadMyKycPhoto, getMyKycPhoto } from './vendor.service.js'
+import { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones, getVendorDashboard, uploadMyKycPhoto, getMyKycPhoto, getVendorSalesSummary, getVendorCustomers } from './vendor.service.js'
 
 export async function vendorRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -169,6 +169,38 @@ export async function vendorRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const result = await getVendorDashboard(request.user.id)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/me/sales-summary',
+    {
+      schema: {
+        tags: ['Vendors'],
+        description: 'Chiffre d\'affaires des 30 derniers jours (commandes + ventes hors-plateforme)',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const result = await getVendorSalesSummary(request.user.id)
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/me/customers',
+    {
+      schema: {
+        tags: ['Vendors'],
+        description: 'Historique client dérivé des commandes et ventes hors-plateforme',
+        security: [{ BearerAuth: [] }],
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const result = await getVendorCustomers(request.user.id)
       return reply.status(200).send({ data: result })
     },
   )

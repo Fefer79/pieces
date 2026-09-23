@@ -118,16 +118,26 @@ export default function VendorDashboardPage() {
                 onClick={() => router.push('/vendors/delivery-zones')}
               />
               <QuickAction
+                title="Mes commandes"
+                description="Commandes contenant vos pièces, à confirmer et à suivre"
+                onClick={() => router.push('/vendors/orders')}
+              />
+              <QuickAction
+                title="Mes ventes"
+                description="Chiffre d'affaires et ventes hors-plateforme (WhatsApp, téléphone)"
+                onClick={() => router.push('/vendors/sales')}
+              />
+              <QuickAction
+                title="Mes clients"
+                description="Historique des acheteurs, commandes et ventes confondues"
+                onClick={() => router.push('/vendors/customers')}
+              />
+              <QuickAction
                 title="Garanties"
                 description="Configurer les garanties par catégorie"
                 onClick={() => router.push('/vendors/guarantees')}
               />
             </div>
-          </div>
-
-          <div className="rounded-md border border-dashed border-border-strong bg-card/40 p-6 text-center">
-            <p className="text-sm font-medium text-muted">Commandes & paiements</p>
-            <p className="mt-1 text-xs text-muted-2">Bientôt disponible</p>
           </div>
 
           <div className="mt-8">

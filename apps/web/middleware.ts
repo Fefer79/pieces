@@ -5,6 +5,11 @@ import {
   isLogistiqueSlug,
   toLogistiqueInternalPath,
 } from './lib/logistique-routes'
+import {
+  isMecanicienHost,
+  isMecanicienSlug,
+  toMecanicienInternalPath,
+} from './lib/mecanicien-routes'
 
 const PROTECTED_PATHS = [
   '/dashboard',
@@ -72,6 +77,17 @@ export async function middleware(request: NextRequest) {
     )
   }
 
+  // Sous-domaine mecanicien.pieces.ci : annuaire mécaniciens géolocalisé.
+  //
+  // ⚠ Même piège d'ordre que logistique.* : doit passer AVANT la redirection
+  // racine → /dashboard. Vitrine identique connecté ou non (parcourir/consulter
+  // ne demande pas de compte, seul le dépôt d'avis exige requireAuth côté API).
+  if (isMecanicienHost(host) && isMecanicienSlug(request.nextUrl.pathname)) {
+    return NextResponse.rewrite(
+      new URL(toMecanicienInternalPath(request.nextUrl.pathname), request.url),
+    )
+  }
+
   // Sous-domaine erp.pieces.ci : back-office interne. Il n'a pas de vitrine —
   // la racine mène au login puis directement au cockpit d'administration.
   //
@@ -85,6 +101,23 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
     return NextResponse.redirect(new URL('/admin', request.url))
+  }
+
+  // Sous-domaine gesmag.pieces.ci : portail de gestion vendeur (marque distincte
+  // de l'app publique acheteur). Comme erp.*, pas de vitrine — la racine mène au
+  // login puis directement à l'espace vendeur. Les pages restent /vendors/* :
+  // ce sous-domaine n'est qu'une couche de marque/manifeste, pas un nouvel
+  // espace de routes.
+  //
+  // ⚠ Doit passer AVANT la redirection racine → /dashboard (même piège que
+  // erp.* : cookie scopé `.pieces.ci`).
+  if (host.startsWith('gesmag.') && request.nextUrl.pathname === '/') {
+    if (!isAuthed) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('returnTo', '/vendors/catalog')
+      return NextResponse.redirect(loginUrl)
+    }
+    return NextResponse.redirect(new URL('/vendors/catalog', request.url))
   }
 
   // Sous-domaine flotte.pieces.ci : portail entreprise dédié.

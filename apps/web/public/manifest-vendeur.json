@@ -1,0 +1,33 @@
+{
+  "name": "GesMag — Gestion de magasin",
+  "short_name": "GesMag",
+  "description": "Gérez votre boutique de pièces détachées : commandes, ventes et clients, depuis votre téléphone",
+  "start_url": "/vendors/catalog",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#002366",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouvelle vente",
+      "url": "/vendors/sales/new",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mes commandes",
+      "url": "/vendors/orders",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

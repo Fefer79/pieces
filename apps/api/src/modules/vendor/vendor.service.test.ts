@@ -15,6 +15,9 @@ const mockGuaranteeCreateMany = vi.fn()
 const mockTransaction = vi.fn()
 const mockCatalogItemGroupBy = vi.fn()
 const mockCatalogItemCount = vi.fn()
+const mockOrderItemFindMany = vi.fn()
+const mockOrderFindMany = vi.fn()
+const mockVendorSaleFindMany = vi.fn()
 
 vi.mock('../../lib/supabase.js', () => ({
   supabaseAdmin: {
@@ -32,11 +35,20 @@ vi.mock('../../lib/prisma.js', () => ({
       groupBy: (...args: unknown[]) => mockCatalogItemGroupBy(...args),
       count: (...args: unknown[]) => mockCatalogItemCount(...args),
     },
+    orderItem: {
+      findMany: (...args: unknown[]) => mockOrderItemFindMany(...args),
+    },
+    order: {
+      findMany: (...args: unknown[]) => mockOrderFindMany(...args),
+    },
+    vendorSale: {
+      findMany: (...args: unknown[]) => mockVendorSaleFindMany(...args),
+    },
     $transaction: (fn: (tx: unknown) => Promise<unknown>) => mockTransaction(fn),
   },
 }))
 
-const { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones, getVendorDashboard } = await import('./vendor.service.js')
+const { createVendor, getMyVendor, signGuarantees, getGuaranteeStatus, getDeliveryZones, updateDeliveryZones, getVendorDashboard, getVendorSalesSummary, getVendorCustomers } = await import('./vendor.service.js')
 
 describe('vendor.service', () => {
   beforeEach(() => {
@@ -417,6 +429,81 @@ describe('vendor.service', () => {
         code: 'VENDOR_NOT_FOUND',
         statusCode: 404,
       })
+    })
+  })
+
+  describe('getVendorSalesSummary', () => {
+    it('throws VENDOR_NOT_FOUND when no vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(getVendorSalesSummary('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_NOT_FOUND',
+        statusCode: 404,
+      })
+    })
+
+    it('combine le revenu des commandes livrées et des ventes hors-plateforme, par jour et par article', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockOrderItemFindMany.mockResolvedValueOnce([
+        { name: 'Plaquettes de frein', priceSnapshot: 4000, quantity: 2, createdAt: new Date('2026-09-20T10:00:00Z') },
+      ])
+      mockVendorSaleFindMany.mockResolvedValueOnce([
+        { itemName: 'Plaquettes de frein', totalAmount: 3000, quantity: 1, soldAt: new Date('2026-09-20T14:00:00Z') },
+        { itemName: 'Rétroviseur', totalAmount: 5000, quantity: 1, soldAt: new Date('2026-09-21T09:00:00Z') },
+      ])
+
+      const result = await getVendorSalesSummary('user-1')
+
+      expect(result.totalOrdersRevenue).toBe(8000)
+      expect(result.totalOffPlatformRevenue).toBe(8000)
+      expect(result.totalRevenue).toBe(16000)
+      expect(result.daily).toEqual([
+        { date: '2026-09-20', orders: 8000, offPlatform: 3000, total: 11000 },
+        { date: '2026-09-21', orders: 0, offPlatform: 5000, total: 5000 },
+      ])
+      expect(result.topItems[0]).toMatchObject({ name: 'Plaquettes de frein', revenue: 11000, quantity: 3 })
+    })
+  })
+
+  describe('getVendorCustomers', () => {
+    it('throws VENDOR_NOT_FOUND when no vendor', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce(null)
+
+      await expect(getVendorCustomers('user-1')).rejects.toMatchObject({
+        code: 'VENDOR_NOT_FOUND',
+        statusCode: 404,
+      })
+    })
+
+    it('regroupe commandes et ventes hors-plateforme par téléphone', async () => {
+      mockVendorFindUnique.mockResolvedValueOnce({ id: 'vendor-1' })
+      mockOrderFindMany.mockResolvedValueOnce([
+        {
+          totalAmount: 10000,
+          createdAt: new Date('2026-09-18T10:00:00Z'),
+          ownerPhone: '+2250700000001',
+          initiator: { phone: '+2250700000099', name: 'Amara' },
+        },
+      ])
+      mockVendorSaleFindMany.mockResolvedValueOnce([
+        {
+          buyerPhone: '+2250700000001',
+          buyerName: null,
+          totalAmount: 5000,
+          soldAt: new Date('2026-09-20T10:00:00Z'),
+        },
+      ])
+
+      const result = await getVendorCustomers('user-1')
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({
+        phone: '+2250700000001',
+        name: 'Amara',
+        purchaseCount: 2,
+        totalSpend: 15000,
+      })
+      expect(result[0].lastActivityAt).toEqual(new Date('2026-09-20T10:00:00Z'))
     })
   })
 })

@@ -6,6 +6,7 @@ import { recomputeVendorScore } from '../vendor/vendorScore.service.js'
 import { getOrCreateInvoiceForOrder } from '../enterprise/invoice.service.js'
 import { consumeStockForOrder, restockForOrder } from '../catalog/stock.service.js'
 import { refundAllHeldEscrows } from '../payment/payment.service.js'
+import { notifyVendorNewOrder } from '../notification/notification.service.js'
 import {
   computeDeliveryFee,
   DELIVERY_MODES,
@@ -38,6 +39,46 @@ function rescoreOrderVendors(orderId: string) {
       // Swallow — scoring is best-effort.
     }
   })()
+}
+
+// Alerte WhatsApp à chaque vendeur d'une commande qui vient de passer PAID —
+// un envoi par vendeur distinct, avec son propre nombre de pièces (pas le
+// total du panier). Fire-and-forget, ne throw jamais : un échec de
+// notification ne doit pas remettre en cause le paiement déjà encaissé.
+async function notifyVendorsOfNewOrder(orderId: string) {
+  try {
+    const items = await prisma.orderItem.findMany({
+      where: { orderId },
+      select: { vendorId: true, quantity: true },
+    })
+
+    const qtyByVendor = new Map<string, number>()
+    for (const i of items) {
+      qtyByVendor.set(i.vendorId, (qtyByVendor.get(i.vendorId) ?? 0) + i.quantity)
+    }
+    if (qtyByVendor.size === 0) return
+
+    const vendors = await prisma.vendor.findMany({
+      where: { id: { in: [...qtyByVendor.keys()] } },
+      select: { id: true, phone: true },
+    })
+
+    await Promise.all(
+      vendors
+        .filter((v) => v.phone)
+        .map((v) =>
+          notifyVendorNewOrder(v.phone as string, orderId, qtyByVendor.get(v.id) ?? 0).catch(
+            (err) => {
+              // eslint-disable-next-line no-console
+              console.error('[notification] échec alerte nouvelle commande', v.id, err)
+            },
+          ),
+        ),
+    )
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[notification] échec alerte nouvelle commande', orderId, err)
+  }
 }
 
 const COD_MAX_AMOUNT = 75_000
@@ -773,6 +814,61 @@ export async function getUserOrders(userId: string) {
   })
 }
 
+/**
+ * Commandes contenant au moins un article du vendeur associé à ce compte —
+ * la vue « mes commandes » de l'espace vendeur, absente jusqu'ici.
+ */
+export async function getVendorOrders(
+  userId: string,
+  options: { status?: string; page?: number; limit?: number } = {},
+) {
+  const vendor = await prisma.vendor.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+  if (!vendor) {
+    throw new AppError('VENDOR_NOT_FOUND', 404, {
+      message: 'Aucun profil vendeur trouvé pour cet utilisateur',
+    })
+  }
+
+  const page = Math.max(1, options.page ?? 1)
+  const limit = Math.min(50, Math.max(1, options.limit ?? 20))
+
+  type Status =
+    | 'DRAFT'
+    | 'PENDING_PAYMENT'
+    | 'DEPOSIT_PAID'
+    | 'IN_IMPORT'
+    | 'AWAITING_BALANCE'
+    | 'PAID'
+    | 'VENDOR_CONFIRMED'
+    | 'DISPATCHED'
+    | 'IN_TRANSIT'
+    | 'DELIVERED'
+    | 'CONFIRMED'
+    | 'COMPLETED'
+    | 'CANCELLED'
+
+  const where = {
+    items: { some: { vendorId: vendor.id } },
+    ...(options.status ? { status: options.status as Status } : {}),
+  }
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+      include: publicItemsInclude,
+    }),
+    prisma.order.count({ where }),
+  ])
+
+  return { orders, total, page, limit }
+}
+
 export async function transitionOrder(
   orderId: string,
   toStatus: string,
@@ -844,6 +940,10 @@ export async function transitionOrder(
     // Fire-and-forget : décrémente le stock des pièces à quantité suivie
     // et alerte les vendeurs sous le seuil. Ne throw jamais.
     void consumeStockForOrder(orderId)
+
+    // Fire-and-forget : alerte WhatsApp au(x) vendeur(s) qu'une commande vient
+    // d'arriver. Ne throw jamais.
+    void notifyVendorsOfNewOrder(orderId)
   }
 
   if (toStatus === 'CANCELLED' && order.paidAt) {
@@ -922,9 +1022,11 @@ export async function selectPaymentMethod(
     include: publicItemsInclude,
   })
 
-  // Le chemin COD passe en PAID sans transitionOrder : consommer le stock ici aussi.
+  // Le chemin COD passe en PAID sans transitionOrder : consommer le stock et
+  // alerter les vendeurs ici aussi.
   if (toStatus === 'PAID') {
     void consumeStockForOrder(orderId)
+    void notifyVendorsOfNewOrder(orderId)
   }
 
   return updated

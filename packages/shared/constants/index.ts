@@ -1,5 +1,7 @@
 export { ABIDJAN_COMMUNES, ABIDJAN_DELIVERY_FEES } from './communes'
 export type { AbidjanCommune } from './communes'
+export { MECHANIC_SPECIALTIES } from './mechanic-specialties'
+export type { MechanicSpecialty } from './mechanic-specialties'
 export {
   computeDeliveryFee,
   DELIVERY_MODES,

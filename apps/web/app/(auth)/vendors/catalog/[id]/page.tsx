@@ -122,6 +122,21 @@ export default function VendorCatalogDetailPage() {
         </p>
       )}
 
+      {item.suggestedPrice != null && item.price != null && item.price !== item.suggestedPrice && (
+        <p className="mb-4 text-xs text-muted">
+          Prix suggéré : <Price amount={item.suggestedPrice} className="text-xs" />
+          {item.price > item.suggestedPrice ? (
+            <span className="ml-1 text-warn-fg">
+              (+{Math.round(((item.price - item.suggestedPrice) / item.suggestedPrice) * 100)}% au-dessus du marché)
+            </span>
+          ) : (
+            <span className="ml-1">
+              ({Math.round(((item.suggestedPrice - item.price) / item.suggestedPrice) * 100)}% en dessous du marché)
+            </span>
+          )}
+        </p>
+      )}
+
       {item.imageJobStatus === 'FAILED' && (
         <div className="mb-4 flex items-center gap-2">
           <p className="text-xs text-status-err">Échec du traitement de la photo principale</p>

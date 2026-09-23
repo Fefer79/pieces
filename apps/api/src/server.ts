@@ -28,6 +28,7 @@ import { driverRoutes } from './modules/driver/driver.routes.js'
 import { returnRoutes } from './modules/returns/return.routes.js'
 import { vendorContractRoutes } from './modules/vendorContract/vendorContract.routes.js'
 import { enrichmentRoutes } from './modules/enrichment/enrichment.routes.js'
+import { mechanicRoutes } from './modules/mechanic/mechanic.routes.js'
 import { contactsRoutes } from './modules/contacts/contacts.routes.js'
 import { prospectionRoutes } from './modules/prospection/prospection.routes.js'
 import { crmRoutes } from './modules/crm/crm.routes.js'
@@ -111,6 +112,7 @@ export function buildApp() {
   fastify.register(returnRoutes, { prefix: '/api/v1' })
   fastify.register(vendorContractRoutes, { prefix: '/api/v1/vendor-contracts' })
   fastify.register(enrichmentRoutes, { prefix: '/api/v1/enrichments' })
+  fastify.register(mechanicRoutes, { prefix: '/api/v1/mechanics' })
   fastify.register(contactsRoutes, { prefix: '/api/v1/contacts' })
   fastify.register(prospectionRoutes, { prefix: '/api/v1/prospection' })
   fastify.register(crmRoutes, { prefix: '/api/v1/admin/crm' })

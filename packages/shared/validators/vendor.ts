@@ -46,3 +46,38 @@ export const adminUpdateVendorSchema = z
     phone: phoneSchema.optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: 'Aucun champ à modifier' })
+
+// ---------------------------------------------------------------------------
+// Ventes hors-plateforme (carnet numérique du vendeur) — WhatsApp, téléphone,
+// en boutique. Volontairement séparé d'Order : pas d'escrow, pas de shareToken.
+// ---------------------------------------------------------------------------
+
+export const vendorSaleChannelSchema = z.enum(['BOUTIQUE', 'WHATSAPP', 'TELEPHONE', 'AUTRE'])
+
+export const createVendorSaleSchema = z
+  .object({
+    catalogItemId: z.string().uuid().optional(),
+    // Requis si l'article n'est pas dans le catalogue digital (vente d'occasion
+    // ponctuelle) — sinon dérivé du nom de la fiche catalogue.
+    itemName: z.string().min(2).max(150).optional(),
+    quantity: z.number().int().min(1).max(999).default(1),
+    unitPrice: z.number().int().min(0).max(50_000_000),
+    buyerName: z.string().max(100).optional(),
+    buyerPhone: phoneSchema.optional(),
+    channel: vendorSaleChannelSchema.default('BOUTIQUE'),
+    note: z.string().max(500).optional(),
+    // Chaîne ISO reçue telle quelle depuis le JSON — la conversion en Date se
+    // fait côté service, pas ici (zodToFastify ne rejoue pas le .parse() Zod,
+    // seul le schéma JSON dérivé valide la requête).
+    soldAt: z.string().datetime().optional(),
+  })
+  .refine((data) => Boolean(data.catalogItemId) || Boolean(data.itemName), {
+    message: "Indiquez une pièce du catalogue ou un nom d'article",
+    path: ['itemName'],
+  })
+
+export const vendorSalesQuerySchema = z.object({
+  channel: vendorSaleChannelSchema.optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+})

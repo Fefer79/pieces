@@ -82,7 +82,7 @@ function getSections(
         { title: 'Vendre', items: [
           { href: '/dashboard', label: 'Accueil', icon: HomeIcon },
           { href: '/vendors/catalog', label: 'Boutique', icon: ShopIcon },
-          { href: '/orders', label: 'Commandes', icon: OrdersIcon },
+          { href: '/vendors/orders', label: 'Commandes', icon: OrdersIcon },
         ] },
         ...adminSection,
       ]

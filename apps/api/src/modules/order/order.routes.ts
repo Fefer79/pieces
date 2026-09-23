@@ -8,13 +8,14 @@ import {
   payImportBalanceSchema,
 } from 'shared/validators'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { requireAuth } from '../../plugins/auth.js'
+import { requireAuth, requireRole } from '../../plugins/auth.js'
 import {
   createOrder,
   getOrderByShareToken,
   setOrderDelivery,
   getOrderById,
   getUserOrders,
+  getVendorOrders,
   selectPaymentMethod,
   payImportBalance,
   cancelOrder,
@@ -97,6 +98,29 @@ export async function orderRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const orders = await getUserOrders(request.user.id)
       return reply.status(200).send({ data: orders })
+    },
+  )
+
+  // Commandes contenant un article du vendeur connecté — vue « mes commandes »
+  // de l'espace vendeur (jusqu'ici absente : seule la confirmation existait).
+  fastify.get(
+    '/vendor/mine',
+    {
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+      schema: {
+        tags: ['Orders'],
+        description: 'Lister les commandes du vendeur connecté',
+        security: [{ BearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const query = request.query as { status?: string; page?: string; limit?: string }
+      const result = await getVendorOrders(request.user.id, {
+        status: query.status,
+        page: Number(query.page) || 1,
+        limit: Number(query.limit) || 20,
+      })
+      return reply.status(200).send({ data: result })
     },
   )
 

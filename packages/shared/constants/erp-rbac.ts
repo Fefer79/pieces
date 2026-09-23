@@ -85,6 +85,9 @@ export const ERP_CAPABILITIES_LIST = [
   'stock:read',
   'stock:move',
   'stock:adjust',
+
+  'mechanics:read',
+  'mechanics:moderate',
 ] as const
 
 export type ErpCapability = (typeof ERP_CAPABILITIES_LIST)[number]
@@ -107,6 +110,8 @@ export const ERP_CAPABILITY_LABELS: Record<ErpCapability, string> = {
   'stock:read': 'Consulter le stock et le catalogue',
   'stock:move': 'Enregistrer des mouvements de stock',
   'stock:adjust': 'Ajuster le stock et valider les inventaires',
+  'mechanics:read': 'Consulter l’annuaire mécaniciens',
+  'mechanics:moderate': 'Modérer les fiches et avis mécaniciens (suspendre, masquer)',
 }
 
 /**
@@ -153,7 +158,10 @@ export const ERP_CAPABILITIES: Record<StaffRoleKey, readonly ErpCapability[]> = 
     'stock:read',
     'stock:move',
   ],
-  SUPPORT: ['erp:read', 'crm:read', 'sales:read'],
+  // mechanics:moderate reste hors de SUPPORT (rôle lecture seule par construction,
+  // cf. test d'intégrité ci-dessous) — LIAISON modère via son rôle plateforme,
+  // DIRECTION via la capacité (spread ERP_CAPABILITIES_LIST).
+  SUPPORT: ['erp:read', 'crm:read', 'sales:read', 'mechanics:read'],
 }
 
 /**

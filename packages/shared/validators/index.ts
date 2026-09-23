@@ -21,6 +21,9 @@ export {
   guaranteeTypeSchema,
   updateDeliveryZonesSchema,
   adminUpdateVendorSchema,
+  vendorSaleChannelSchema,
+  createVendorSaleSchema,
+  vendorSalesQuerySchema,
 } from './vendor'
 export {
   catalogItemStatusSchema,
@@ -374,6 +377,15 @@ export type {
 } from './sourcing'
 export { businessUnitSchema, cockpitQuerySchema } from './admin'
 export type { CockpitQuery } from './admin'
+export {
+  mechanicSpecialtySchema,
+  registerMechanicSchema,
+  updateMechanicSchema,
+  suspendMechanicSchema,
+  mechanicSearchQuerySchema,
+  createMechanicReviewSchema,
+  mechanicParamsSchema,
+} from './mechanic'
 export {
   prospectionInterviewStatusSchema,
   prospectionConsentMethodSchema,

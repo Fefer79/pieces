@@ -1,10 +1,11 @@
 import type { FastifyInstance } from 'fastify'
 import { requireAuth, requireRole } from '../../plugins/auth.js'
 import { uploadPartImage, createItem, uploadStandalonePartImage, getMyItems, getItem, updateItem, publishItem, toggleStock, retryImageJob, addPhoto, removePhoto, reorderPhotos, listPhotos, listFitments, replaceFitments, addFitment, deleteFitment, type UpdateCatalogItemData, type FitmentInput } from './catalog.service.js'
+import { createVendorSale, getVendorSales, type CreateVendorSaleInput } from './vendorSale.service.js'
 import { AppError } from '../../lib/appError.js'
 import { scanOemLabel } from '../../lib/oemScan.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
-import { catalogItemFilterSchema, catalogItemParamsSchema, createCatalogItemSchema, updateCatalogItemSchema, toggleStockSchema, photoParamsSchema, reorderPhotosSchema, fitmentSchema, fitmentParamsSchema, replaceFitmentsSchema } from 'shared/validators'
+import { catalogItemFilterSchema, catalogItemParamsSchema, createCatalogItemSchema, updateCatalogItemSchema, toggleStockSchema, photoParamsSchema, reorderPhotosSchema, fitmentSchema, fitmentParamsSchema, replaceFitmentsSchema, createVendorSaleSchema, vendorSalesQuerySchema } from 'shared/validators'
 
 export async function catalogRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -444,6 +445,52 @@ export async function catalogRoutes(fastify: FastifyInstance) {
       const result = await toggleStock(request.user.id, id, inStock, stockQuantity)
 
       request.log.info({ event: 'CATALOG_STOCK_TOGGLED', userId: request.user.id, itemId: id, inStock, stockQuantity })
+
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  // Carnet numérique du vendeur : vente enregistrée hors du parcours commande
+  // pieces.ci (WhatsApp, téléphone, en boutique).
+  fastify.post(
+    '/sales',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Enregistrer une vente hors-plateforme',
+        security: [{ BearerAuth: [] }],
+        body: zodToFastify(createVendorSaleSchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const body = request.body as CreateVendorSaleInput
+      const result = await createVendorSale(request.user.id, body, request.log)
+
+      request.log.info({ event: 'VENDOR_SALE_CREATED', userId: request.user.id, saleId: result.id })
+
+      return reply.status(201).send({ data: result })
+    },
+  )
+
+  fastify.get(
+    '/sales',
+    {
+      schema: {
+        tags: ['Catalog'],
+        description: 'Lister les ventes hors-plateforme du vendeur connecté',
+        security: [{ BearerAuth: [] }],
+        querystring: zodToFastify(vendorSalesQuerySchema),
+      },
+      preHandler: [requireAuth, requireRole('SELLER', 'ADMIN')],
+    },
+    async (request, reply) => {
+      const query = request.query as { channel?: CreateVendorSaleInput['channel']; page?: string; limit?: string }
+      const result = await getVendorSales(request.user.id, {
+        channel: query.channel,
+        page: query.page ? parseInt(query.page, 10) : undefined,
+        limit: query.limit ? parseInt(query.limit, 10) : undefined,
+      })
 
       return reply.status(200).send({ data: result })
     },

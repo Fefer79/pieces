@@ -65,6 +65,10 @@ export const ADMIN_NAV: AdminNavSection[] = [
       { href: '/admin/prospection/entretiens', label: 'Entretiens démarchage', capability: 'crm:read' },
       { href: '/admin/marketing', label: 'Marketing', capability: 'crm:read' },
       { href: '/admin/support', label: 'SAV', capability: 'crm:read' },
+      // Annuaire mécaniciens (mecanicien.pieces.ci) : consultation par
+      // `mechanics:read`, l'action de suspension reste gardée côté API par
+      // `mechanics:moderate` (requireRoleOrCapability, LIAISON ou la capacité).
+      { href: '/admin/mechanics', label: 'Mécaniciens', capability: 'mechanics:read' },
     ],
   },
   {
