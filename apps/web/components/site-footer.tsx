@@ -15,7 +15,7 @@ const COLUMNS: Array<{ title: string; links: FooterLink[] }> = [
       { href: '/browse', label: 'Catalogue' },
       { href: '/info#comment-ca-marche', label: 'Comment ça marche' },
       { href: '/info#a-propos', label: 'À propos' },
-      { href: '/seller/register', label: 'Devenir vendeur' },
+      { href: '/vendors/onboarding', label: 'Devenir vendeur' },
     ],
   },
   {
