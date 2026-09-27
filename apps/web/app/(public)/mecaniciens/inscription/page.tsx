@@ -4,7 +4,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { ABIDJAN_COMMUNES, MECHANIC_SPECIALTIES, type MechanicSpecialty } from 'shared/constants'
+import {
+  ABIDJAN_COMMUNES,
+  MECHANIC_SPECIALTIES,
+  nearestAbidjanCommune,
+  type MechanicSpecialty,
+} from 'shared/constants'
 import { getMechanicAuthToken, mechanicFetch } from '@/lib/mechanic-api'
 import { Button } from '@/components/ui/button'
 
@@ -14,6 +19,12 @@ const VendorMapPicker = dynamic(
   () => import('@/components/vendor-map-picker').then((m) => m.VendorMapPicker),
   { ssr: false },
 )
+
+// Nettoie une saisie téléphone au fil de la frappe — cf. mecaniciens/proposer,
+// même logique (l'API normalise aussi côté serveur en filet de sécurité).
+function sanitizePhoneInput(value: string) {
+  return value.replace(/[^\d+]/g, '')
+}
 
 export default function MechanicRegisterPage() {
   const router = useRouter()
@@ -133,7 +144,7 @@ export default function MechanicRegisterPage() {
           <input
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
             placeholder="+225…"
             className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
           />
@@ -172,7 +183,10 @@ export default function MechanicRegisterPage() {
           <VendorMapPicker
             lat={coords.lat}
             lng={coords.lng}
-            onChange={(c) => setCoords(c)}
+            onChange={(c) => {
+              setCoords(c)
+              setCommune(nearestAbidjanCommune(c.lat, c.lng))
+            }}
           />
         </div>
 

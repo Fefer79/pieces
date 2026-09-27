@@ -420,6 +420,42 @@ export async function listMechanicSuggestions(
   return { suggestions, total, page, limit }
 }
 
+export interface UpdateMechanicSuggestionInput {
+  name?: string
+  phone?: string
+  commune?: string
+  address?: string
+  lat?: number
+  lng?: number
+  specialty?: MechanicSpecialty
+  note?: string
+  photo?: string | null
+}
+
+/**
+ * Corriger une suggestion avant de l'approuver (typo, commune erronée,
+ * mauvais pin…) plutôt que de la rejeter pour la faire reproposer.
+ */
+export async function updateMechanicSuggestion(
+  suggestionId: string,
+  input: UpdateMechanicSuggestionInput,
+) {
+  const suggestion = await prisma.mechanicSuggestion.findUnique({ where: { id: suggestionId } })
+  if (!suggestion) {
+    throw new AppError('MECHANIC_SUGGESTION_NOT_FOUND', 404, { message: 'Suggestion introuvable' })
+  }
+  if (suggestion.status !== 'PENDING') {
+    throw new AppError('MECHANIC_SUGGESTION_ALREADY_MODERATED', 409, {
+      message: 'Cette suggestion a déjà été traitée',
+    })
+  }
+
+  return prisma.mechanicSuggestion.update({
+    where: { id: suggestionId },
+    data: input,
+  })
+}
+
 /**
  * Approuver une suggestion : crée la fiche Mechanic correspondante (statut
  * ACTIVE, reprenant le point géographique de la suggestion s'il existe —

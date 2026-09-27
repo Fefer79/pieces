@@ -11,6 +11,7 @@ import {
   mechanicParamsSchema,
   createMechanicReviewSchema,
   suggestMechanicSchema,
+  updateMechanicSuggestionSchema,
   rejectMechanicSuggestionSchema,
   mechanicSuggestionListQuerySchema,
 } from 'shared/validators'
@@ -30,11 +31,13 @@ import {
   uploadMechanicSuggestionPhoto,
   suggestMechanic,
   listMechanicSuggestions,
+  updateMechanicSuggestion,
   approveMechanicSuggestion,
   rejectMechanicSuggestion,
   type RegisterMechanicInput,
   type UpdateMechanicInput,
   type SuggestMechanicInput,
+  type UpdateMechanicSuggestionInput,
 } from './mechanic.service.js'
 
 export async function mechanicRoutes(fastify: FastifyInstance) {
@@ -295,6 +298,27 @@ export async function mechanicRoutes(fastify: FastifyInstance) {
         page: query.page !== undefined ? Number(query.page) : undefined,
         limit: query.limit !== undefined ? Number(query.limit) : undefined,
       })
+      return reply.status(200).send({ data: result })
+    },
+  )
+
+  fastify.patch(
+    '/suggestions/:id',
+    {
+      preHandler: moderationGuard,
+      schema: {
+        tags: ['Mechanics'],
+        description: "Corriger une suggestion avant de l'approuver",
+        security: [{ BearerAuth: [] }],
+        params: zodToFastify(mechanicParamsSchema),
+        body: zodToFastify(updateMechanicSuggestionSchema),
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string }
+      const body = request.body as UpdateMechanicSuggestionInput
+      const result = await updateMechanicSuggestion(id, body)
+      request.log.info({ event: 'MECHANIC_SUGGESTION_UPDATED', suggestionId: id })
       return reply.status(200).send({ data: result })
     },
   )

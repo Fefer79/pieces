@@ -386,6 +386,7 @@ export {
   createMechanicReviewSchema,
   mechanicParamsSchema,
   suggestMechanicSchema,
+  updateMechanicSuggestionSchema,
   rejectMechanicSuggestionSchema,
   mechanicSuggestionListQuerySchema,
 } from './mechanic'

@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { ABIDJAN_COMMUNES, MECHANIC_SPECIALTIES, type MechanicSpecialty } from 'shared/constants'
+import {
+  ABIDJAN_COMMUNES,
+  MECHANIC_SPECIALTIES,
+  nearestAbidjanCommune,
+  type MechanicSpecialty,
+} from 'shared/constants'
 import { Button } from '@/components/ui/button'
 
 // Leaflet touche `window` au chargement du module — cf. mecaniciens/inscription,
@@ -281,7 +286,10 @@ export default function ProposerMechanicPage() {
           <VendorMapPicker
             lat={coords.lat}
             lng={coords.lng}
-            onChange={(c) => setCoords(c)}
+            onChange={(c) => {
+              setCoords(c)
+              setCommune(nearestAbidjanCommune(c.lat, c.lng))
+            }}
             height={260}
           />
         </div>

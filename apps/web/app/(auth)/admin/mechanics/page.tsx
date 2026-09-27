@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { adminFetch } from '@/lib/admin-api'
 import { Table, Thead, Tbody, Tr, Th, Td } from '@/components/ui/table'
 import { Chip } from '@/components/ui/chip'
+import { ABIDJAN_COMMUNES, MECHANIC_SPECIALTIES, type MechanicSpecialty } from 'shared/constants'
 
 interface Mechanic {
   id: string
@@ -26,9 +27,40 @@ interface MechanicSuggestion {
   name: string
   phone: string | null
   commune: string | null
+  address: string | null
+  lat: number | null
+  lng: number | null
   specialty: string | null
   note: string | null
+  photo: string | null
+  suggestedById: string | null
   createdAt: string
+}
+
+interface SuggestionEditForm {
+  name: string
+  phone: string
+  commune: string
+  address: string
+  lat: string
+  lng: string
+  specialty: MechanicSpecialty | ''
+  note: string
+  photo: string | null
+}
+
+function toEditForm(s: MechanicSuggestion): SuggestionEditForm {
+  return {
+    name: s.name,
+    phone: s.phone ?? '',
+    commune: s.commune ?? '',
+    address: s.address ?? '',
+    lat: s.lat != null ? String(s.lat) : '',
+    lng: s.lng != null ? String(s.lng) : '',
+    specialty: (s.specialty as MechanicSpecialty) ?? '',
+    note: s.note ?? '',
+    photo: s.photo,
+  }
 }
 
 interface SuggestionListResponse {
@@ -50,6 +82,11 @@ export default function AdminMechanicsPage() {
   const [suggestions, setSuggestions] = useState<MechanicSuggestion[]>([])
   const [suggestionsTotal, setSuggestionsTotal] = useState(0)
   const [suggestionsLoading, setSuggestionsLoading] = useState(true)
+
+  const [editing, setEditing] = useState<MechanicSuggestion | null>(null)
+  const [editForm, setEditForm] = useState<SuggestionEditForm | null>(null)
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -114,6 +151,67 @@ export default function AdminMechanicsPage() {
     } finally {
       setBusyId(null)
     }
+  }
+
+  const openSuggestionDetails = (s: MechanicSuggestion) => {
+    setEditing(s)
+    setEditForm(toEditForm(s))
+    setEditError(null)
+  }
+
+  const closeSuggestionDetails = () => {
+    setEditing(null)
+    setEditForm(null)
+    setEditError(null)
+  }
+
+  // Renvoie la suggestion mise à jour (ou null en cas d'échec) — utilisé à la
+  // fois par « Enregistrer » et par « Enregistrer et approuver ».
+  const saveSuggestionEdits = async (): Promise<MechanicSuggestion | null> => {
+    if (!editing || !editForm) return null
+    setSavingEdit(true)
+    setEditError(null)
+    try {
+      const lat = editForm.lat.trim() ? Number(editForm.lat.trim()) : undefined
+      const lng = editForm.lng.trim() ? Number(editForm.lng.trim()) : undefined
+      const updated = await adminFetch<MechanicSuggestion>(`/mechanics/suggestions/${editing.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editForm.name.trim(),
+          phone: editForm.phone.trim() || undefined,
+          commune: editForm.commune || undefined,
+          address: editForm.address.trim() || undefined,
+          lat,
+          lng,
+          specialty: editForm.specialty || undefined,
+          note: editForm.note.trim() || undefined,
+          photo: editForm.photo,
+        }),
+      })
+      setEditing(updated)
+      setEditForm(toEditForm(updated))
+      setSuggestions((prev) => prev.map((s) => (s.id === updated.id ? updated : s)))
+      return updated
+    } catch (e) {
+      setEditError(e instanceof Error ? e.message : 'Erreur')
+      return null
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const handleApproveFromModal = async () => {
+    const saved = await saveSuggestionEdits()
+    if (!saved) return
+    await handleApproveSuggestion(saved.id)
+    closeSuggestionDetails()
+  }
+
+  const handleRejectFromModal = async () => {
+    if (!editing) return
+    await handleRejectSuggestion(editing.id)
+    closeSuggestionDetails()
   }
 
   const handleSuspend = async (id: string) => {
@@ -186,6 +284,13 @@ export default function AdminMechanicsPage() {
                     <Td align="right">
                       <div className="flex justify-end gap-2">
                         <button
+                          onClick={() => openSuggestionDetails(s)}
+                          disabled={busyId === s.id}
+                          className="rounded-sm border border-border-strong px-2 py-1 text-xs hover:bg-surface disabled:opacity-40"
+                        >
+                          Détails / Modifier
+                        </button>
+                        <button
                           onClick={() => handleApproveSuggestion(s.id)}
                           disabled={busyId === s.id}
                           className="rounded-sm border border-border-strong px-2 py-1 text-xs hover:bg-surface disabled:opacity-40"
@@ -246,7 +351,7 @@ export default function AdminMechanicsPage() {
                   <Tr key={m.id}>
                     <Td>
                       <Link
-                        href={`https://mecanicien.pieces.ci/atelier/${m.id}`}
+                        href={`https://pieces.ci/mecaniciens/atelier/${m.id}`}
                         target="_blank"
                         className="font-medium text-ink-2 hover:underline"
                       >
@@ -296,6 +401,182 @@ export default function AdminMechanicsPage() {
           </div>
           <p className="mt-3 text-sm text-muted">{total} mécanicien{total > 1 ? 's' : ''}</p>
         </>
+      )}
+
+      {editing && editForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-md bg-card p-5 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-lg text-ink">Suggestion — {editing.name}</h2>
+              <button onClick={closeSuggestionDetails} className="text-sm text-muted hover:text-ink">
+                Fermer
+              </button>
+            </div>
+
+            {editError && (
+              <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-2 text-xs text-error-fg">
+                {editError}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {editForm.photo && (
+                <div className="flex items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={editForm.photo}
+                    alt=""
+                    className="h-20 w-20 rounded-md border border-border object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditForm((f) => (f ? { ...f, photo: null } : f))}
+                    className="text-xs font-medium text-error-fg hover:underline"
+                  >
+                    Retirer la photo
+                  </button>
+                </div>
+              )}
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Nom</label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((f) => (f ? { ...f, name: e.target.value } : f))}
+                  className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Téléphone</label>
+                <input
+                  type="tel"
+                  value={editForm.phone}
+                  onChange={(e) =>
+                    setEditForm((f) =>
+                      f ? { ...f, phone: e.target.value.replace(/[^\d+]/g, '') } : f,
+                    )
+                  }
+                  className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Commune</label>
+                  <select
+                    value={editForm.commune}
+                    onChange={(e) => setEditForm((f) => (f ? { ...f, commune: e.target.value } : f))}
+                    className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                  >
+                    <option value="">—</option>
+                    {ABIDJAN_COMMUNES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Adresse</label>
+                  <input
+                    type="text"
+                    value={editForm.address}
+                    onChange={(e) => setEditForm((f) => (f ? { ...f, address: e.target.value } : f))}
+                    className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Latitude</label>
+                  <input
+                    type="text"
+                    value={editForm.lat}
+                    onChange={(e) => setEditForm((f) => (f ? { ...f, lat: e.target.value } : f))}
+                    className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Longitude</label>
+                  <input
+                    type="text"
+                    value={editForm.lng}
+                    onChange={(e) => setEditForm((f) => (f ? { ...f, lng: e.target.value } : f))}
+                    className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                  />
+                </div>
+              </div>
+              {editForm.lat && editForm.lng && (
+                <a
+                  href={`https://www.openstreetmap.org/?mlat=${editForm.lat}&mlon=${editForm.lng}#map=16/${editForm.lat}/${editForm.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-block text-xs font-medium text-accent hover:underline"
+                >
+                  Voir le point sur la carte →
+                </a>
+              )}
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Spécialité</label>
+                <select
+                  value={editForm.specialty}
+                  onChange={(e) =>
+                    setEditForm((f) =>
+                      f ? { ...f, specialty: e.target.value as MechanicSpecialty | '' } : f,
+                    )
+                  }
+                  className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                >
+                  <option value="">—</option>
+                  {MECHANIC_SPECIALTIES.map((sp) => (
+                    <option key={sp} value={sp}>{sp}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Note</label>
+                <textarea
+                  value={editForm.note}
+                  onChange={(e) => setEditForm((f) => (f ? { ...f, note: e.target.value } : f))}
+                  rows={3}
+                  className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                />
+              </div>
+
+              <p className="text-xs text-muted">
+                Proposée {editing.suggestedById ? 'par un utilisateur connecté' : 'anonymement'} le{' '}
+                {new Date(editing.createdAt).toLocaleDateString('fr-CI')}
+              </p>
+            </div>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                onClick={saveSuggestionEdits}
+                disabled={savingEdit || busyId === editing.id}
+                className="rounded-sm border border-border-strong px-3 py-1.5 text-xs hover:bg-surface disabled:opacity-40"
+              >
+                Enregistrer
+              </button>
+              <button
+                onClick={handleRejectFromModal}
+                disabled={savingEdit || busyId === editing.id}
+                className="rounded-sm border border-error-fg/30 px-3 py-1.5 text-xs text-error-fg hover:bg-error-bg disabled:opacity-40"
+              >
+                Rejeter
+              </button>
+              <button
+                onClick={handleApproveFromModal}
+                disabled={savingEdit || busyId === editing.id}
+                className="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-40"
+              >
+                Enregistrer et approuver
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

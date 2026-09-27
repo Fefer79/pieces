@@ -70,6 +70,22 @@ export const suggestMechanicSchema = z.object({
   photo: z.string().url().optional(),
 })
 
+// Modération : corriger la suggestion (typo, commune erronée, mauvais pin…)
+// avant approbation plutôt que de la rejeter pour la faire reproposer.
+export const updateMechanicSuggestionSchema = z
+  .object({
+    name: z.string().min(2).max(100).optional(),
+    phone: phoneSchema.optional(),
+    commune: z.string().max(100).optional(),
+    address: z.string().max(255).optional(),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
+    specialty: mechanicSpecialtySchema.optional(),
+    note: z.string().max(500).optional(),
+    photo: z.string().url().nullable().optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: 'Aucun champ à modifier' })
+
 export const rejectMechanicSuggestionSchema = z.object({
   reason: z.string().min(3).max(300).optional(),
 })
