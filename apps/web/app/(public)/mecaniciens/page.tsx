@@ -2,13 +2,22 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { ABIDJAN_COMMUNES, MECHANIC_SPECIALTIES } from 'shared/constants'
 import { Chip } from '@/components/ui/chip'
+import type { MechanicMapPoint } from '@/components/mechanics-map'
+
+const MechanicsMap = dynamic(
+  () => import('@/components/mechanics-map').then((m) => m.MechanicsMap),
+  { ssr: false },
+)
 
 interface MechanicResult {
   id: string
   name: string
   commune: string | null
+  lat: number | null
+  lng: number | null
   specialties: string[]
   avgRating: number | null
   reviewCount: number
@@ -138,6 +147,25 @@ export default function MecaniciensSearchPage() {
           ))}
         </select>
       </div>
+
+      {!loading && results.some((m) => m.lat != null && m.lng != null) && (
+        <div className="mb-6">
+          <MechanicsMap
+            height={340}
+            userLocation={coords}
+            points={results
+              .filter((m): m is MechanicResult & { lat: number; lng: number } => m.lat != null && m.lng != null)
+              .map((m): MechanicMapPoint => ({
+                id: m.id,
+                name: m.name,
+                commune: m.commune,
+                lat: m.lat,
+                lng: m.lng,
+                avgRating: m.avgRating,
+              }))}
+          />
+        </div>
+      )}
 
       {geoError && <p className="mb-4 text-xs text-warn-fg">{geoError}</p>}
       {error && (

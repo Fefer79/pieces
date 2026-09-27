@@ -171,19 +171,22 @@ export async function mechanicRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
-      const { rating, comment, amountPaid, photos, authorName, authorPhone } = request.body as {
-        rating: number
-        comment?: string
-        amountPaid?: number
-        photos?: string[]
-        authorName?: string
-        authorPhone?: string
-      }
+      const { rating, comment, partsAmount, laborAmount, photos, authorName, authorPhone } =
+        request.body as {
+          rating: number
+          comment?: string
+          partsAmount?: number
+          laborAmount?: number
+          photos?: string[]
+          authorName?: string
+          authorPhone?: string
+        }
       const reviewerId = request.user?.id ?? null
       const result = await createMechanicReview(reviewerId, id, {
         rating,
         comment,
-        amountPaid,
+        partsAmount,
+        laborAmount,
         photos,
         authorName,
         authorPhone,

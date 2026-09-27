@@ -275,7 +275,8 @@ describe('mechanic.service', () => {
           authorPhone: null,
           rating: 5,
           comment: 'Top',
-          amountPaid: undefined,
+          partsAmount: undefined,
+          laborAmount: undefined,
           photos: [],
         },
       })

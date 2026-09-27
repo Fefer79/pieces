@@ -43,7 +43,8 @@ function RecommanderPageContent() {
 
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
-  const [amountPaid, setAmountPaid] = useState('')
+  const [partsAmount, setPartsAmount] = useState('')
+  const [laborAmount, setLaborAmount] = useState('')
   const [photos, setPhotos] = useState<{ file: File; previewUrl: string }[]>([])
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -142,14 +143,16 @@ function RecommanderPageContent() {
       }
       const photoUrls = uploadResult.urls
 
-      const parsedAmount = amountPaid.trim() ? Number(amountPaid.trim()) : undefined
+      const parsedPartsAmount = partsAmount.trim() ? Number(partsAmount.trim()) : undefined
+      const parsedLaborAmount = laborAmount.trim() ? Number(laborAmount.trim()) : undefined
 
       const r = await mechanicFetchOptionalAuth(`/${selected.id}/reviews`, {
         method: 'POST',
         body: JSON.stringify({
           rating,
           comment: comment.trim() || undefined,
-          amountPaid: parsedAmount,
+          partsAmount: parsedPartsAmount,
+          laborAmount: parsedLaborAmount,
           photos: photoUrls.length > 0 ? photoUrls : undefined,
           authorName: !authed && authorName.trim() ? authorName.trim() : undefined,
           authorPhone: !authed && authorPhone.trim() ? authorPhone.trim() : undefined,
@@ -310,19 +313,35 @@ function RecommanderPageContent() {
           />
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-ink">
-            Montant payé en FCFA (optionnel)
-          </label>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            value={amountPaid}
-            onChange={(e) => setAmountPaid(e.target.value)}
-            placeholder="15000"
-            className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-ink">
+              Pièces en FCFA (optionnel)
+            </label>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={partsAmount}
+              onChange={(e) => setPartsAmount(e.target.value)}
+              placeholder="10000"
+              className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-ink">
+              Main d&apos;œuvre en FCFA (optionnel)
+            </label>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={laborAmount}
+              onChange={(e) => setLaborAmount(e.target.value)}
+              placeholder="5000"
+              className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
+            />
+          </div>
         </div>
 
         <div>

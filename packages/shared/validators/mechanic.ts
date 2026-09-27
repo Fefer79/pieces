@@ -49,7 +49,8 @@ export const mechanicSearchQuerySchema = z.object({
 export const createMechanicReviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
   comment: z.string().max(500).optional(),
-  amountPaid: z.number().int().min(0).max(50_000_000).optional(),
+  partsAmount: z.number().int().min(0).max(50_000_000).optional(),
+  laborAmount: z.number().int().min(0).max(50_000_000).optional(),
   photos: z.array(z.string().url()).max(5).optional(),
   authorName: z.string().min(2).max(100).optional(),
   authorPhone: phoneSchema.optional(),

@@ -1211,7 +1211,12 @@ model MechanicReview {
   authorPhone     String?              @map("author_phone")
   rating          Int
   comment         String?
+  // amountPaid : montant global, conservé pour les avis existants avant la
+  // séparation pièces/main d'œuvre. Les nouveaux avis renseignent
+  // partsAmount/laborAmount à la place.
   amountPaid      Int?                 @map("amount_paid")
+  partsAmount     Int?                 @map("parts_amount")
+  laborAmount     Int?                 @map("labor_amount")
   photos          String[]             @default([])
   verified        Boolean              @default(false)
   verifiedOrderId String?              @map("verified_order_id")

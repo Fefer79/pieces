@@ -17,6 +17,7 @@ interface MechanicResult {
   commune: string | null
   lat: number | null
   lng: number | null
+  avgRating: number | null
 }
 
 interface SearchResponse {
@@ -45,7 +46,14 @@ export default function MecaniciensCartePage() {
       const data = body.data as SearchResponse
       const geolocated = data.mechanics
         .filter((m): m is MechanicResult & { lat: number; lng: number } => m.lat != null && m.lng != null)
-        .map((m) => ({ id: m.id, name: m.name, commune: m.commune, lat: m.lat, lng: m.lng }))
+        .map((m) => ({
+          id: m.id,
+          name: m.name,
+          commune: m.commune,
+          lat: m.lat,
+          lng: m.lng,
+          avgRating: m.avgRating,
+        }))
       setPoints(geolocated)
     } catch {
       setError('Erreur réseau. Vérifiez votre connexion.')

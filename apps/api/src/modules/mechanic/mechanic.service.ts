@@ -227,7 +227,8 @@ export async function createMechanicReview(
   input: {
     rating: number
     comment?: string
-    amountPaid?: number
+    partsAmount?: number
+    laborAmount?: number
     photos?: string[]
     authorName?: string
     authorPhone?: string
@@ -268,7 +269,8 @@ export async function createMechanicReview(
       authorPhone: reviewerId ? null : input.authorPhone,
       rating: input.rating,
       comment: input.comment,
-      amountPaid: input.amountPaid,
+      partsAmount: input.partsAmount,
+      laborAmount: input.laborAmount,
       photos: input.photos ?? [],
     },
   })
@@ -351,6 +353,8 @@ export async function listMechanicReviews(
         rating: true,
         comment: true,
         amountPaid: true,
+        partsAmount: true,
+        laborAmount: true,
         photos: true,
         verified: true,
         createdAt: true,

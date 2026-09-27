@@ -24,6 +24,8 @@ interface MechanicReview {
   rating: number
   comment: string | null
   amountPaid: number | null
+  partsAmount: number | null
+  laborAmount: number | null
   photos: string[]
   verified: boolean
   createdAt: string
@@ -164,7 +166,14 @@ export default function MechanicProfilePage() {
                   </span>
                 </div>
                 {r.comment && <p className="mt-1.5 text-[14px] text-ink">{r.comment}</p>}
-                {r.amountPaid != null && (
+                {(r.partsAmount != null || r.laborAmount != null) && (
+                  <p className="mt-1 text-xs text-muted">
+                    {r.partsAmount != null && `Pièces : ${r.partsAmount.toLocaleString('fr-FR')} FCFA`}
+                    {r.partsAmount != null && r.laborAmount != null && ' · '}
+                    {r.laborAmount != null && `Main d'œuvre : ${r.laborAmount.toLocaleString('fr-FR')} FCFA`}
+                  </p>
+                )}
+                {r.partsAmount == null && r.laborAmount == null && r.amountPaid != null && (
                   <p className="mt-1 text-xs text-muted">
                     Payé : {r.amountPaid.toLocaleString('fr-FR')} FCFA
                   </p>
