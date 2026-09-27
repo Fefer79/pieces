@@ -268,7 +268,14 @@ describe('mechanic.service', () => {
 
       expect(result.id).toBe('review-1')
       expect(mechanicReviewCreate).toHaveBeenCalledWith({
-        data: { mechanicId: 'mech-1', reviewerId: 'user-1', rating: 5, comment: 'Top' },
+        data: {
+          mechanicId: 'mech-1',
+          reviewerId: 'user-1',
+          rating: 5,
+          comment: 'Top',
+          amountPaid: undefined,
+          photos: [],
+        },
       })
       await vi.waitFor(() =>
         expect(mechanicUpdate).toHaveBeenCalledWith({

@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import { AppError } from '../../lib/appError.js'
 import { requireAuth } from '../../plugins/auth.js'
 import { requireRoleOrCapability } from '../../plugins/erpAuth.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
@@ -25,6 +26,7 @@ import {
   createMechanicReview,
   listMechanicReviews,
   hideMechanicReview,
+  uploadMechanicReviewPhoto,
   suggestMechanic,
   listMechanicSuggestions,
   approveMechanicSuggestion,
@@ -164,10 +166,49 @@ export async function mechanicRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
-      const { rating, comment } = request.body as { rating: number; comment?: string }
-      const result = await createMechanicReview(request.user.id, id, { rating, comment })
+      const { rating, comment, amountPaid, photos } = request.body as {
+        rating: number
+        comment?: string
+        amountPaid?: number
+        photos?: string[]
+      }
+      const result = await createMechanicReview(request.user.id, id, {
+        rating,
+        comment,
+        amountPaid,
+        photos,
+      })
       request.log.info({ event: 'MECHANIC_REVIEW_CREATED', userId: request.user.id, mechanicId: id })
       return reply.status(201).send({ data: result })
+    },
+  )
+
+  // Upload d'une photo-preuve avant la création de l'avis (le formulaire attache
+  // ensuite les URLs obtenues au body de POST /:id/reviews).
+  fastify.post(
+    '/reviews/photo-upload',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Mechanics'],
+        description: "Uploader une photo à joindre à un avis",
+        security: [{ BearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+      },
+    },
+    async (request, reply) => {
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const url = await uploadMechanicReviewPhoto(
+        request.user.id,
+        buffer,
+        file.filename,
+        file.mimetype,
+      )
+      return reply.status(201).send({ data: { url } })
     },
   )
 

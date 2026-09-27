@@ -2,8 +2,16 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { ABIDJAN_COMMUNES, MECHANIC_SPECIALTIES, type MechanicSpecialty } from 'shared/constants'
 import { Button } from '@/components/ui/button'
+
+// Leaflet touche `window` au chargement du module — cf. mecaniciens/inscription,
+// même contrainte SSR.
+const VendorMapPicker = dynamic(
+  () => import('@/components/vendor-map-picker').then((m) => m.VendorMapPicker),
+  { ssr: false },
+)
 
 // Dépôt ouvert — aucune authentification requise, à la différence de
 // l'inscription self-service (mecaniciens/inscription) qui publie une fiche
@@ -15,6 +23,10 @@ export default function ProposerMechanicPage() {
   const [address, setAddress] = useState('')
   const [specialty, setSpecialty] = useState<MechanicSpecialty | ''>('')
   const [note, setNote] = useState('')
+  const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({
+    lat: null,
+    lng: null,
+  })
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,6 +51,8 @@ export default function ProposerMechanicPage() {
           phone: phone.trim(),
           commune: commune || undefined,
           address: address.trim() || undefined,
+          lat: coords.lat ?? undefined,
+          lng: coords.lng ?? undefined,
           specialty: specialty || undefined,
           note: note.trim() || undefined,
         }),
@@ -136,6 +150,21 @@ export default function ProposerMechanicPage() {
               className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink">
+            Localiser sur la carte (optionnel)
+          </label>
+          <p className="mb-2 text-xs text-muted">
+            Aide les autres à trouver l&apos;atelier précisément une fois publié.
+          </p>
+          <VendorMapPicker
+            lat={coords.lat}
+            lng={coords.lng}
+            onChange={(c) => setCoords(c)}
+            height={260}
+          />
         </div>
 
         <div>

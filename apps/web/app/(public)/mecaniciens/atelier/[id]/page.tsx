@@ -23,6 +23,8 @@ interface MechanicReview {
   id: string
   rating: number
   comment: string | null
+  amountPaid: number | null
+  photos: string[]
   verified: boolean
   createdAt: string
   reviewer: { name: string | null }
@@ -161,6 +163,24 @@ export default function MechanicProfilePage() {
                   </span>
                 </div>
                 {r.comment && <p className="mt-1.5 text-[14px] text-ink">{r.comment}</p>}
+                {r.amountPaid != null && (
+                  <p className="mt-1 text-xs text-muted">
+                    Payé : {r.amountPaid.toLocaleString('fr-FR')} FCFA
+                  </p>
+                )}
+                {r.photos.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {r.photos.map((url) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={url}
+                        src={url}
+                        alt=""
+                        className="h-20 w-20 rounded-md border border-border object-cover"
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

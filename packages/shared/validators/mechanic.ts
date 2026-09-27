@@ -47,6 +47,8 @@ export const mechanicSearchQuerySchema = z.object({
 export const createMechanicReviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
   comment: z.string().max(500).optional(),
+  amountPaid: z.number().int().min(0).max(50_000_000).optional(),
+  photos: z.array(z.string().url()).max(5).optional(),
 })
 
 export const mechanicParamsSchema = z.object({
@@ -61,6 +63,8 @@ export const suggestMechanicSchema = z.object({
   phone: phoneSchema,
   commune: z.string().max(100).optional(),
   address: z.string().max(255).optional(),
+  lat: z.number().min(-90).max(90).optional(),
+  lng: z.number().min(-180).max(180).optional(),
   specialty: mechanicSpecialtySchema.optional(),
   note: z.string().max(500).optional(),
 })

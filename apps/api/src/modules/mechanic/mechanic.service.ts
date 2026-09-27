@@ -1,7 +1,11 @@
 import { prisma } from '../../lib/prisma.js'
 import { AppError } from '../../lib/appError.js'
+import { uploadToR2 } from '../../lib/r2.js'
 import type { MechanicSpecialty } from 'shared/constants'
 import { recomputeMechanicScore } from './mechanicScore.service.js'
+
+const REVIEW_PHOTO_MAX_SIZE = 5 * 1024 * 1024
+const REVIEW_PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 export interface RegisterMechanicInput {
   name: string
@@ -220,7 +224,7 @@ export async function reinstateMechanic(mechanicId: string, moderatorId: string)
 export async function createMechanicReview(
   reviewerId: string,
   mechanicId: string,
-  input: { rating: number; comment?: string },
+  input: { rating: number; comment?: string; amountPaid?: number; photos?: string[] },
 ) {
   const mechanic = await prisma.mechanic.findUnique({
     where: { id: mechanicId },
@@ -246,6 +250,8 @@ export async function createMechanicReview(
       reviewerId,
       rating: input.rating,
       comment: input.comment,
+      amountPaid: input.amountPaid,
+      photos: input.photos ?? [],
     },
   })
 
@@ -253,6 +259,33 @@ export async function createMechanicReview(
   void recomputeMechanicScore(mechanicId).catch(() => {})
 
   return review
+}
+
+/**
+ * Upload d'une photo destinée à un avis, en amont de sa création — l'URL
+ * obtenue est ensuite passée dans `photos` à `createMechanicReview`. Pas de
+ * variantes (thumb/small/…) : ce sont des photos-preuve, pas des visuels
+ * catalogue.
+ */
+export async function uploadMechanicReviewPhoto(
+  userId: string,
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+) {
+  if (fileBuffer.length > REVIEW_PHOTO_MAX_SIZE) {
+    throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
+  }
+  if (!REVIEW_PHOTO_MIME_TYPES.includes(mimeType)) {
+    throw new AppError('INVALID_FILE_TYPE', 422, { message: 'Format accepté : JPEG, PNG ou WebP' })
+  }
+
+  const ext = mimeType.split('/')[1] ?? 'jpg'
+  const timestamp = Date.now()
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '')
+  const key = `mechanic-reviews/${userId}/${timestamp}_${safeName}.${ext}`
+
+  return uploadToR2(key, fileBuffer, mimeType)
 }
 
 export async function listMechanicReviews(
@@ -274,6 +307,8 @@ export async function listMechanicReviews(
         id: true,
         rating: true,
         comment: true,
+        amountPaid: true,
+        photos: true,
         verified: true,
         createdAt: true,
         reviewer: { select: { name: true } },
@@ -316,6 +351,8 @@ export interface SuggestMechanicInput {
   phone: string
   commune?: string
   address?: string
+  lat?: number
+  lng?: number
   specialty?: MechanicSpecialty
   note?: string
 }
@@ -327,6 +364,8 @@ export async function suggestMechanic(suggestedById: string | null, input: Sugge
       phone: input.phone,
       commune: input.commune,
       address: input.address,
+      lat: input.lat,
+      lng: input.lng,
       specialty: input.specialty,
       note: input.note,
       suggestedById: suggestedById ?? undefined,
@@ -356,8 +395,9 @@ export async function listMechanicSuggestions(
 
 /**
  * Approuver une suggestion : crée la fiche Mechanic correspondante (statut
- * ACTIVE, non géolocalisée — la géo se complète ensuite via update ou si le
- * mécanicien revendique sa fiche). Si le téléphone proposé correspond déjà à
+ * ACTIVE, reprenant le point géographique de la suggestion s'il existe —
+ * sinon la géo se complète ensuite via update ou si le mécanicien revendique
+ * sa fiche). Si le téléphone proposé correspond déjà à
  * une fiche existante, l'approbation échoue plutôt que de créer un doublon —
  * au modérateur de rejeter la suggestion ou de rediriger vers la fiche
  * existante.
@@ -394,6 +434,8 @@ export async function approveMechanicSuggestion(suggestionId: string, moderatorI
       phone: suggestion.phone,
       commune: suggestion.commune,
       address: suggestion.address,
+      lat: suggestion.lat,
+      lng: suggestion.lng,
       specialties: suggestion.specialty ? [suggestion.specialty as MechanicSpecialty] : [],
       bio: suggestion.note ?? undefined,
       createdByLiaisonId: moderatorId,

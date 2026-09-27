@@ -1207,6 +1207,8 @@ model MechanicReview {
   reviewer        User                 @relation("MechanicReviewer", fields: [reviewerId], references: [id])
   rating          Int
   comment         String?
+  amountPaid      Int?                 @map("amount_paid")
+  photos          String[]             @default([])
   verified        Boolean              @default(false)
   verifiedOrderId String?              @map("verified_order_id")
   status          MechanicReviewStatus @default(PUBLISHED)
@@ -1229,6 +1231,8 @@ model MechanicSuggestion {
   phone            String?
   commune          String?
   address          String?
+  lat              Float?
+  lng              Float?
   specialty        String?
   note             String?
   suggestedById    String?                   @map("suggested_by_id")

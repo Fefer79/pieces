@@ -36,9 +36,57 @@ function RecommanderPageContent() {
 
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
+  const [amountPaid, setAmountPaid] = useState('')
+  const [photos, setPhotos] = useState<{ file: File; previewUrl: string }[]>([])
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const MAX_PHOTOS = 5
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    e.target.value = ''
+    setPhotos((prev) =>
+      [...prev, ...files.map((file) => ({ file, previewUrl: URL.createObjectURL(file) }))].slice(
+        0,
+        MAX_PHOTOS,
+      ),
+    )
+  }
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  async function uploadPhotos(): Promise<string[]> {
+    if (photos.length === 0) return []
+    const token = await getMechanicAuthToken()
+    if (!token) return []
+
+    setUploadingPhotos(true)
+    try {
+      const urls: string[] = []
+      for (const { file } of photos) {
+        const form = new FormData()
+        form.append('file', file)
+        const res = await fetch('/api/v1/mechanics/reviews/photo-upload', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        })
+        const body = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          throw new Error(body?.error?.message ?? "Échec de l'envoi d'une photo")
+        }
+        urls.push(body.data.url)
+      }
+      return urls
+    } finally {
+      setUploadingPhotos(false)
+    }
+  }
 
   useEffect(() => {
     getMechanicAuthToken().then((token) => {
@@ -76,9 +124,24 @@ function RecommanderPageContent() {
     setError(null)
     setSubmitting(true)
     try {
+      let photoUrls: string[] = []
+      try {
+        photoUrls = await uploadPhotos()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Échec de l'envoi des photos")
+        return
+      }
+
+      const parsedAmount = amountPaid.trim() ? Number(amountPaid.trim()) : undefined
+
       const r = await mechanicFetch(`/${selected.id}/reviews`, {
         method: 'POST',
-        body: JSON.stringify({ rating, comment: comment.trim() || undefined }),
+        body: JSON.stringify({
+          rating,
+          comment: comment.trim() || undefined,
+          amountPaid: parsedAmount,
+          photos: photoUrls.length > 0 ? photoUrls : undefined,
+        }),
       })
       if (!r.ok) {
         setError(r.message)
@@ -210,18 +273,61 @@ function RecommanderPageContent() {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-ink">Commentaire (optionnel)</label>
+          <label className="mb-1.5 block text-sm font-medium text-ink">
+            Ce qui s&apos;est passé (optionnel)
+          </label>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows={3}
-            placeholder="Votre expérience avec cet atelier…"
+            placeholder="Votre expérience avec cet atelier — la panne, la réparation, le délai…"
             className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
           />
         </div>
 
-        <Button type="submit" variant="accent" size="lg" block disabled={submitting}>
-          {submitting ? 'Envoi…' : 'Publier mon avis'}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink">
+            Montant payé en FCFA (optionnel)
+          </label>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            value={amountPaid}
+            onChange={(e) => setAmountPaid(e.target.value)}
+            placeholder="15000"
+            className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink">Photos (optionnel)</label>
+          <div className="flex flex-wrap gap-2">
+            {photos.map((p, i) => (
+              <div key={i} className="relative h-16 w-16 overflow-hidden rounded-md border border-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.previewUrl} alt="" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(i)}
+                  className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-[10px] text-white"
+                  aria-label="Retirer la photo"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border border-dashed border-border-strong text-xs text-muted hover:border-ink-2">
+                +
+                <input type="file" accept="image/*" multiple hidden onChange={handlePhotoSelect} />
+              </label>
+            )}
+          </div>
+        </div>
+
+        <Button type="submit" variant="accent" size="lg" block disabled={submitting || uploadingPhotos}>
+          {uploadingPhotos ? 'Envoi des photos…' : submitting ? 'Envoi…' : 'Publier mon avis'}
         </Button>
       </form>
     </main>

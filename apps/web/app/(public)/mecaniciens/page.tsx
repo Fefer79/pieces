@@ -97,8 +97,8 @@ export default function MecaniciensSearchPage() {
       <div className="mb-8">
         <h1 className="font-display text-4xl text-ink">{heading}</h1>
         <p className="mt-2 max-w-2xl text-[15px] text-muted">
-          Un annuaire ouvert de mécaniciens et garages en Côte d&apos;Ivoire — inscrits par
-          eux-mêmes, recommandés par leurs clients.
+          Un annuaire ouvert de mécaniciens et garages en Côte d&apos;Ivoire : inscrits par
+          eux-mêmes, ou recommandés par leurs clients.
         </p>
       </div>
 
