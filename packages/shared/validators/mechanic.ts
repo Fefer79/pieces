@@ -67,6 +67,7 @@ export const suggestMechanicSchema = z.object({
   lng: z.number().min(-180).max(180).optional(),
   specialty: mechanicSpecialtySchema.optional(),
   note: z.string().max(500).optional(),
+  photo: z.string().url().optional(),
 })
 
 export const rejectMechanicSuggestionSchema = z.object({

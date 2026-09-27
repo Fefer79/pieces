@@ -4,8 +4,8 @@ import { uploadToR2 } from '../../lib/r2.js'
 import type { MechanicSpecialty } from 'shared/constants'
 import { recomputeMechanicScore } from './mechanicScore.service.js'
 
-const REVIEW_PHOTO_MAX_SIZE = 5 * 1024 * 1024
-const REVIEW_PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const MECHANIC_PHOTO_MAX_SIZE = 5 * 1024 * 1024
+const MECHANIC_PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 export interface RegisterMechanicInput {
   name: string
@@ -261,6 +261,15 @@ export async function createMechanicReview(
   return review
 }
 
+function assertValidMechanicPhoto(fileBuffer: Buffer, mimeType: string) {
+  if (fileBuffer.length > MECHANIC_PHOTO_MAX_SIZE) {
+    throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
+  }
+  if (!MECHANIC_PHOTO_MIME_TYPES.includes(mimeType)) {
+    throw new AppError('INVALID_FILE_TYPE', 422, { message: 'Format accepté : JPEG, PNG ou WebP' })
+  }
+}
+
 /**
  * Upload d'une photo destinée à un avis, en amont de sa création — l'URL
  * obtenue est ensuite passée dans `photos` à `createMechanicReview`. Pas de
@@ -273,17 +282,33 @@ export async function uploadMechanicReviewPhoto(
   fileName: string,
   mimeType: string,
 ) {
-  if (fileBuffer.length > REVIEW_PHOTO_MAX_SIZE) {
-    throw new AppError('FILE_TOO_LARGE', 422, { message: 'Image trop volumineuse (max 5 MB)' })
-  }
-  if (!REVIEW_PHOTO_MIME_TYPES.includes(mimeType)) {
-    throw new AppError('INVALID_FILE_TYPE', 422, { message: 'Format accepté : JPEG, PNG ou WebP' })
-  }
+  assertValidMechanicPhoto(fileBuffer, mimeType)
 
   const ext = mimeType.split('/')[1] ?? 'jpg'
   const timestamp = Date.now()
   const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '')
   const key = `mechanic-reviews/${userId}/${timestamp}_${safeName}.${ext}`
+
+  return uploadToR2(key, fileBuffer, mimeType)
+}
+
+/**
+ * Upload d'une photo destinée à une suggestion — dépôt ouvert, donc sans
+ * userId pour scoper la clé (contrairement aux avis). Même garde-fous
+ * taille/format ; l'abus reste borné par le rate limit global de l'API.
+ */
+export async function uploadMechanicSuggestionPhoto(
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+) {
+  assertValidMechanicPhoto(fileBuffer, mimeType)
+
+  const ext = mimeType.split('/')[1] ?? 'jpg'
+  const timestamp = Date.now()
+  const random = Math.random().toString(36).slice(2, 8)
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '')
+  const key = `mechanic-suggestions/${timestamp}_${random}_${safeName}.${ext}`
 
   return uploadToR2(key, fileBuffer, mimeType)
 }
@@ -355,6 +380,7 @@ export interface SuggestMechanicInput {
   lng?: number
   specialty?: MechanicSpecialty
   note?: string
+  photo?: string
 }
 
 export async function suggestMechanic(suggestedById: string | null, input: SuggestMechanicInput) {
@@ -368,6 +394,7 @@ export async function suggestMechanic(suggestedById: string | null, input: Sugge
       lng: input.lng,
       specialty: input.specialty,
       note: input.note,
+      photo: input.photo,
       suggestedById: suggestedById ?? undefined,
     },
   })
@@ -438,6 +465,7 @@ export async function approveMechanicSuggestion(suggestionId: string, moderatorI
       lng: suggestion.lng,
       specialties: suggestion.specialty ? [suggestion.specialty as MechanicSpecialty] : [],
       bio: suggestion.note ?? undefined,
+      photos: suggestion.photo ? [suggestion.photo] : [],
       createdByLiaisonId: moderatorId,
       moderatedById: moderatorId,
     },

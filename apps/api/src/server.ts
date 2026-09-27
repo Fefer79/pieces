@@ -1,5 +1,6 @@
 import Fastify from 'fastify'
 import { apiEnvSchema } from 'shared/env'
+import { normalizeIvorianPhone } from './lib/phone.js'
 import { helmet } from './plugins/helmet.js'
 import { cors } from './plugins/cors.js'
 import { rateLimit } from './plugins/rateLimit.js'
@@ -86,6 +87,25 @@ export function buildApp() {
   fastify.register(erpAuth)
   fastify.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } })
   setupErrorHandler(fastify)
+
+  // Un espace, un tiret ou des parenthèses dans un champ téléphone (copié-
+  // collé, clavier numérique, contact importé) fait échouer le regex strict
+  // de phoneSchema avant même la validation métier. Normalisé ici une fois
+  // pour toute la surface API, avec l'implémentation canonique du projet
+  // (cf. lib/phone.ts) plutôt qu'un strip ad-hoc par formulaire. Si la valeur
+  // ne se résout pas en numéro ivoirien valide, on la laisse telle quelle :
+  // le message d'erreur de phoneSchema doit rester explicite.
+  fastify.addHook('preValidation', async (request) => {
+    const body = request.body
+    if (body && typeof body === 'object' && !Buffer.isBuffer(body)) {
+      for (const [key, value] of Object.entries(body as Record<string, unknown>)) {
+        if (typeof value === 'string' && /phone/i.test(key)) {
+          const normalized = normalizeIvorianPhone(value)
+          if (normalized) (body as Record<string, unknown>)[key] = normalized
+        }
+      }
+    }
+  })
 
   // Health check
   fastify.get('/healthz', async () => ({ status: 'ok' }))

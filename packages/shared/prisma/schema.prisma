@@ -1235,6 +1235,7 @@ model MechanicSuggestion {
   lng              Float?
   specialty        String?
   note             String?
+  photo            String?
   suggestedById    String?                   @map("suggested_by_id")
   suggestedBy      User?                     @relation("MechanicSuggestionAuthor", fields: [suggestedById], references: [id], onDelete: SetNull)
   status           MechanicSuggestionStatus  @default(PENDING)

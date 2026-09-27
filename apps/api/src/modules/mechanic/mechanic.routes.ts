@@ -27,6 +27,7 @@ import {
   listMechanicReviews,
   hideMechanicReview,
   uploadMechanicReviewPhoto,
+  uploadMechanicSuggestionPhoto,
   suggestMechanic,
   listMechanicSuggestions,
   approveMechanicSuggestion,
@@ -248,6 +249,29 @@ export async function mechanicRoutes(fastify: FastifyInstance) {
       const result = await suggestMechanic(null, body)
       request.log.info({ event: 'MECHANIC_SUGGESTION_CREATED', suggestionId: result.id })
       return reply.status(201).send({ data: result })
+    },
+  )
+
+  // Upload d'une photo à joindre à une suggestion — dépôt ouvert comme la
+  // suggestion elle-même, appelé avant sa création (le formulaire attache
+  // ensuite l'URL obtenue au body de POST /suggestions).
+  fastify.post(
+    '/suggestions/photo-upload',
+    {
+      schema: {
+        tags: ['Mechanics'],
+        description: "Uploader une photo à joindre à une suggestion de mécanicien",
+        consumes: ['multipart/form-data'],
+      },
+    },
+    async (request, reply) => {
+      const file = await request.file()
+      if (!file) {
+        throw new AppError('MISSING_FILE', 422, { message: 'Aucun fichier fourni' })
+      }
+      const buffer = await file.toBuffer()
+      const url = await uploadMechanicSuggestionPhoto(buffer, file.filename, file.mimetype)
+      return reply.status(201).send({ data: { url } })
     },
   )
 
