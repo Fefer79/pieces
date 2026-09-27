@@ -271,6 +271,8 @@ describe('mechanic.service', () => {
         data: {
           mechanicId: 'mech-1',
           reviewerId: 'user-1',
+          authorName: null,
+          authorPhone: null,
           rating: 5,
           comment: 'Top',
           amountPaid: undefined,

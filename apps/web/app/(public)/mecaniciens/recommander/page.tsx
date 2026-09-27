@@ -3,8 +3,12 @@
 import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { getMechanicAuthToken, mechanicFetch } from '@/lib/mechanic-api'
+import { getMechanicAuthToken, mechanicFetchOptionalAuth } from '@/lib/mechanic-api'
 import { Button } from '@/components/ui/button'
+
+function sanitizePhoneInput(value: string) {
+  return value.replace(/[^\d+]/g, '')
+}
 
 interface MechanicOption {
   id: string
@@ -33,6 +37,9 @@ function RecommanderPageContent() {
   const [query, setQuery] = useState('')
   const [options, setOptions] = useState<MechanicOption[]>([])
   const [selected, setSelected] = useState<MechanicOption | null>(null)
+
+  const [authorName, setAuthorName] = useState('')
+  const [authorPhone, setAuthorPhone] = useState('')
 
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
@@ -121,6 +128,10 @@ function RecommanderPageContent() {
       setError('Choisissez un mécanicien à recommander')
       return
     }
+    if (!authed && !authorName.trim() && !authorPhone.trim()) {
+      setError('Indiquez votre nom ou votre téléphone (vous n’avez pas de compte connecté)')
+      return
+    }
     setError(null)
     setSubmitting(true)
     try {
@@ -133,13 +144,15 @@ function RecommanderPageContent() {
 
       const parsedAmount = amountPaid.trim() ? Number(amountPaid.trim()) : undefined
 
-      const r = await mechanicFetch(`/${selected.id}/reviews`, {
+      const r = await mechanicFetchOptionalAuth(`/${selected.id}/reviews`, {
         method: 'POST',
         body: JSON.stringify({
           rating,
           comment: comment.trim() || undefined,
           amountPaid: parsedAmount,
           photos: photoUrls.length > 0 ? photoUrls : undefined,
+          authorName: !authed && authorName.trim() ? authorName.trim() : undefined,
+          authorPhone: !authed && authorPhone.trim() ? authorPhone.trim() : undefined,
         }),
       })
       if (!r.ok) {
@@ -156,24 +169,6 @@ function RecommanderPageContent() {
     return (
       <main className="mx-auto w-full max-w-xl px-4 py-10 lg:px-8">
         <p className="text-sm text-muted">Chargement…</p>
-      </main>
-    )
-  }
-
-  if (!authed) {
-    return (
-      <main className="mx-auto w-full max-w-xl px-4 py-16 text-center lg:px-8">
-        <h1 className="font-display text-3xl text-ink">Recommander un mécanicien</h1>
-        <p className="mx-auto mt-3 max-w-md text-[15px] text-muted">
-          Connectez-vous pour laisser un avis — cela évite les faux avis et protège les
-          mécaniciens.
-        </p>
-        <Link
-          href={`/login?returnTo=/mecaniciens/recommander${preselectedId ? `?id=${preselectedId}` : ''}`}
-          className="mt-6 inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
-        >
-          Se connecter
-        </Link>
       </main>
     )
   }
@@ -252,6 +247,37 @@ function RecommanderPageContent() {
             </div>
           )}
         </div>
+
+        {!authed && (
+          <div className="rounded-md border border-border bg-surface p-3.5">
+            <p className="mb-3 text-[13px] text-muted">
+              Vous n&apos;êtes pas connecté — indiquez votre nom ou votre téléphone pour publier
+              votre avis (au moins l&apos;un des deux).
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-ink">Votre nom</label>
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="Koffi Bamba"
+                  className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-ink">Votre téléphone</label>
+                <input
+                  type="tel"
+                  value={authorPhone}
+                  onChange={(e) => setAuthorPhone(sanitizePhoneInput(e.target.value))}
+                  placeholder="+225 07 00 00 00 00"
+                  className="w-full rounded-md border border-border-strong bg-card px-3 py-2.5 text-sm outline-none focus:border-ink-2"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink">Note</label>

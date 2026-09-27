@@ -155,6 +155,16 @@ export async function requireAuth(request: FastifyRequest) {
   request.user = shapeUser(user as UserRow)
 }
 
+// Best-effort : renseigne request.user si un Bearer valide est fourni, sans
+// jamais bloquer la requête (routes ouvertes aux invités, ex. avis mécanicien).
+export async function tryAuth(request: FastifyRequest) {
+  try {
+    await requireAuth(request)
+  } catch {
+    // pas de token / token invalide → requête traitée comme anonyme
+  }
+}
+
 export async function requireConsent(request: FastifyRequest) {
   if (!request.user) {
     throw new AppError('AUTH_MISSING_TOKEN', 401)

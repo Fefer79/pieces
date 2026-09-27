@@ -12,9 +12,36 @@ interface Mechanic {
   name: string
   phone: string
   commune: string | null
+  address: string | null
+  lat: number | null
+  lng: number | null
+  specialties: MechanicSpecialty[]
+  bio: string | null
   status: 'ACTIVE' | 'SUSPENDED'
   avgRating: number | null
   reviewCount: number
+}
+
+interface MechanicEditForm {
+  name: string
+  commune: string
+  address: string
+  lat: string
+  lng: string
+  specialties: MechanicSpecialty[]
+  bio: string
+}
+
+function toMechanicEditForm(m: Mechanic): MechanicEditForm {
+  return {
+    name: m.name,
+    commune: m.commune ?? '',
+    address: m.address ?? '',
+    lat: m.lat != null ? String(m.lat) : '',
+    lng: m.lng != null ? String(m.lng) : '',
+    specialties: m.specialties ?? [],
+    bio: m.bio ?? '',
+  }
 }
 
 interface SearchResponse {
@@ -87,6 +114,11 @@ export default function AdminMechanicsPage() {
   const [editForm, setEditForm] = useState<SuggestionEditForm | null>(null)
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
+
+  const [editingMechanic, setEditingMechanic] = useState<Mechanic | null>(null)
+  const [mechanicEditForm, setMechanicEditForm] = useState<MechanicEditForm | null>(null)
+  const [savingMechanicEdit, setSavingMechanicEdit] = useState(false)
+  const [mechanicEditError, setMechanicEditError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -244,6 +276,60 @@ export default function AdminMechanicsPage() {
     }
   }
 
+  const openMechanicEdit = (m: Mechanic) => {
+    setEditingMechanic(m)
+    setMechanicEditForm(toMechanicEditForm(m))
+    setMechanicEditError(null)
+  }
+
+  const closeMechanicEdit = () => {
+    setEditingMechanic(null)
+    setMechanicEditForm(null)
+    setMechanicEditError(null)
+  }
+
+  const toggleMechanicSpecialty = (sp: MechanicSpecialty) => {
+    setMechanicEditForm((f) =>
+      f
+        ? {
+            ...f,
+            specialties: f.specialties.includes(sp)
+              ? f.specialties.filter((s) => s !== sp)
+              : [...f.specialties, sp],
+          }
+        : f,
+    )
+  }
+
+  const saveMechanicEdits = async () => {
+    if (!editingMechanic || !mechanicEditForm) return
+    setSavingMechanicEdit(true)
+    setMechanicEditError(null)
+    try {
+      const lat = mechanicEditForm.lat.trim() ? Number(mechanicEditForm.lat.trim()) : undefined
+      const lng = mechanicEditForm.lng.trim() ? Number(mechanicEditForm.lng.trim()) : undefined
+      const updated = await adminFetch<Mechanic>(`/mechanics/${editingMechanic.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: mechanicEditForm.name.trim(),
+          commune: mechanicEditForm.commune || undefined,
+          address: mechanicEditForm.address.trim() || undefined,
+          lat,
+          lng,
+          specialties: mechanicEditForm.specialties,
+          bio: mechanicEditForm.bio.trim() || undefined,
+        }),
+      })
+      setMechanics((prev) => prev.map((m) => (m.id === updated.id ? updated : m)))
+      closeMechanicEdit()
+    } catch (e) {
+      setMechanicEditError(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setSavingMechanicEdit(false)
+    }
+  }
+
   return (
     <div className="p-4 lg:p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -369,23 +455,32 @@ export default function AdminMechanicsPage() {
                       {m.avgRating != null ? `★ ${m.avgRating.toFixed(1)} (${m.reviewCount})` : '—'}
                     </Td>
                     <Td align="right">
-                      {m.status === 'ACTIVE' ? (
+                      <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => handleSuspend(m.id)}
-                          disabled={busyId === m.id}
-                          className="rounded-sm border border-error-fg/30 px-2 py-1 text-xs text-error-fg hover:bg-error-bg disabled:opacity-40"
-                        >
-                          Suspendre
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleReinstate(m.id)}
+                          onClick={() => openMechanicEdit(m)}
                           disabled={busyId === m.id}
                           className="rounded-sm border border-border-strong px-2 py-1 text-xs hover:bg-surface disabled:opacity-40"
                         >
-                          Réactiver
+                          Modifier
                         </button>
-                      )}
+                        {m.status === 'ACTIVE' ? (
+                          <button
+                            onClick={() => handleSuspend(m.id)}
+                            disabled={busyId === m.id}
+                            className="rounded-sm border border-error-fg/30 px-2 py-1 text-xs text-error-fg hover:bg-error-bg disabled:opacity-40"
+                          >
+                            Suspendre
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleReinstate(m.id)}
+                            disabled={busyId === m.id}
+                            className="rounded-sm border border-border-strong px-2 py-1 text-xs hover:bg-surface disabled:opacity-40"
+                          >
+                            Réactiver
+                          </button>
+                        )}
+                      </div>
                     </Td>
                   </Tr>
                 ))}
@@ -573,6 +668,167 @@ export default function AdminMechanicsPage() {
                 className="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-40"
               >
                 Enregistrer et approuver
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingMechanic && mechanicEditForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-md bg-card p-5 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-lg text-ink">Mécanicien — {editingMechanic.name}</h2>
+              <button onClick={closeMechanicEdit} className="text-sm text-muted hover:text-ink">
+                Fermer
+              </button>
+            </div>
+
+            {mechanicEditError && (
+              <div className="mb-3 rounded-md border border-error-fg/20 bg-error-bg p-2 text-xs text-error-fg">
+                {mechanicEditError}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Nom</label>
+                <input
+                  type="text"
+                  value={mechanicEditForm.name}
+                  onChange={(e) =>
+                    setMechanicEditForm((f) => (f ? { ...f, name: e.target.value } : f))
+                  }
+                  className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">
+                  Téléphone (non modifiable)
+                </label>
+                <input
+                  type="tel"
+                  value={editingMechanic.phone}
+                  disabled
+                  className="w-full rounded-sm border border-border bg-surface px-2.5 py-1.5 text-sm text-muted"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Commune</label>
+                  <select
+                    value={mechanicEditForm.commune}
+                    onChange={(e) =>
+                      setMechanicEditForm((f) => (f ? { ...f, commune: e.target.value } : f))
+                    }
+                    className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                  >
+                    <option value="">—</option>
+                    {ABIDJAN_COMMUNES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Adresse</label>
+                  <input
+                    type="text"
+                    value={mechanicEditForm.address}
+                    onChange={(e) =>
+                      setMechanicEditForm((f) => (f ? { ...f, address: e.target.value } : f))
+                    }
+                    className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Latitude</label>
+                  <input
+                    type="text"
+                    value={mechanicEditForm.lat}
+                    onChange={(e) =>
+                      setMechanicEditForm((f) => (f ? { ...f, lat: e.target.value } : f))
+                    }
+                    className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted">Longitude</label>
+                  <input
+                    type="text"
+                    value={mechanicEditForm.lng}
+                    onChange={(e) =>
+                      setMechanicEditForm((f) => (f ? { ...f, lng: e.target.value } : f))
+                    }
+                    className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                  />
+                </div>
+              </div>
+              {mechanicEditForm.lat && mechanicEditForm.lng && (
+                <a
+                  href={`https://www.openstreetmap.org/?mlat=${mechanicEditForm.lat}&mlon=${mechanicEditForm.lng}#map=16/${mechanicEditForm.lat}/${mechanicEditForm.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-block text-xs font-medium text-accent hover:underline"
+                >
+                  Voir le point sur la carte →
+                </a>
+              )}
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Spécialités</label>
+                <div className="flex flex-wrap gap-2">
+                  {MECHANIC_SPECIALTIES.map((sp) => {
+                    const active = mechanicEditForm.specialties.includes(sp)
+                    return (
+                      <button
+                        key={sp}
+                        type="button"
+                        onClick={() => toggleMechanicSpecialty(sp)}
+                        className={`rounded-full border px-2.5 py-1 text-xs ${
+                          active
+                            ? 'border-accent bg-accent/10 text-accent'
+                            : 'border-border-strong text-muted hover:bg-surface'
+                        }`}
+                      >
+                        {sp}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted">Bio</label>
+                <textarea
+                  value={mechanicEditForm.bio}
+                  onChange={(e) =>
+                    setMechanicEditForm((f) => (f ? { ...f, bio: e.target.value } : f))
+                  }
+                  rows={3}
+                  className="w-full rounded-sm border border-border-strong bg-card px-2.5 py-1.5 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                onClick={closeMechanicEdit}
+                disabled={savingMechanicEdit}
+                className="rounded-sm border border-border-strong px-3 py-1.5 text-xs hover:bg-surface disabled:opacity-40"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={saveMechanicEdits}
+                disabled={savingMechanicEdit}
+                className="rounded-sm bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-40"
+              >
+                Enregistrer
               </button>
             </div>
           </div>

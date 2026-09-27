@@ -44,11 +44,15 @@ export const mechanicSearchQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional(),
 })
 
+// authorName/authorPhone : renseignés seulement si l'auteur n'est pas connecté
+// (sinon le nom/téléphone du compte est repris automatiquement côté service).
 export const createMechanicReviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
   comment: z.string().max(500).optional(),
   amountPaid: z.number().int().min(0).max(50_000_000).optional(),
   photos: z.array(z.string().url()).max(5).optional(),
+  authorName: z.string().min(2).max(100).optional(),
+  authorPhone: phoneSchema.optional(),
 })
 
 export const mechanicParamsSchema = z.object({

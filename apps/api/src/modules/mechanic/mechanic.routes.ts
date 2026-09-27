@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { AppError } from '../../lib/appError.js'
-import { requireAuth } from '../../plugins/auth.js'
+import { requireAuth, tryAuth } from '../../plugins/auth.js'
 import { requireRoleOrCapability } from '../../plugins/erpAuth.js'
 import { zodToFastify } from '../../lib/zodSchema.js'
 import {
@@ -154,35 +154,41 @@ export async function mechanicRoutes(fastify: FastifyInstance) {
     },
   )
 
-  // Avis — ouvert à tout utilisateur authentifié, pas besoin d'une transaction
-  // pieces.ci (la plupart des interactions mécanicien se passent hors plateforme).
+  // Avis — ouvert aux invités (nom/téléphone déclarés) comme aux connectés
+  // (nom/téléphone repris automatiquement du compte), pas besoin d'une
+  // transaction pieces.ci (la plupart des interactions mécanicien se passent
+  // hors plateforme).
   fastify.post(
     '/:id/reviews',
     {
-      preHandler: [requireAuth],
+      preHandler: [tryAuth],
       schema: {
         tags: ['Mechanics'],
-        description: 'Laisser un avis sur un mécanicien',
-        security: [{ BearerAuth: [] }],
+        description: 'Laisser un avis sur un mécanicien (connecté ou invité)',
         params: zodToFastify(mechanicParamsSchema),
         body: zodToFastify(createMechanicReviewSchema),
       },
     },
     async (request, reply) => {
       const { id } = request.params as { id: string }
-      const { rating, comment, amountPaid, photos } = request.body as {
+      const { rating, comment, amountPaid, photos, authorName, authorPhone } = request.body as {
         rating: number
         comment?: string
         amountPaid?: number
         photos?: string[]
+        authorName?: string
+        authorPhone?: string
       }
-      const result = await createMechanicReview(request.user.id, id, {
+      const reviewerId = request.user?.id ?? null
+      const result = await createMechanicReview(reviewerId, id, {
         rating,
         comment,
         amountPaid,
         photos,
+        authorName,
+        authorPhone,
       })
-      request.log.info({ event: 'MECHANIC_REVIEW_CREATED', userId: request.user.id, mechanicId: id })
+      request.log.info({ event: 'MECHANIC_REVIEW_CREATED', userId: reviewerId, mechanicId: id })
       return reply.status(201).send({ data: result })
     },
   )

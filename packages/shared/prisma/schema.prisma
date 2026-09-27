@@ -1203,8 +1203,12 @@ model MechanicReview {
   id              String               @id @default(uuid())
   mechanicId      String               @map("mechanic_id")
   mechanic        Mechanic             @relation(fields: [mechanicId], references: [id])
-  reviewerId      String               @map("reviewer_id")
-  reviewer        User                 @relation("MechanicReviewer", fields: [reviewerId], references: [id])
+  reviewerId      String?              @map("reviewer_id")
+  reviewer        User?                @relation("MechanicReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  // Auteur non connecté — nom/téléphone déclarés au dépôt, à la place du
+  // compte lié (reviewer). Renseignés seulement si reviewerId est nul.
+  authorName      String?              @map("author_name")
+  authorPhone     String?              @map("author_phone")
   rating          Int
   comment         String?
   amountPaid      Int?                 @map("amount_paid")

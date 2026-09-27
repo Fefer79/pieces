@@ -222,9 +222,16 @@ export async function reinstateMechanic(mechanicId: string, moderatorId: string)
 // ---------------------------------------------------------------------------
 
 export async function createMechanicReview(
-  reviewerId: string,
+  reviewerId: string | null,
   mechanicId: string,
-  input: { rating: number; comment?: string; amountPaid?: number; photos?: string[] },
+  input: {
+    rating: number
+    comment?: string
+    amountPaid?: number
+    photos?: string[]
+    authorName?: string
+    authorPhone?: string
+  },
 ) {
   const mechanic = await prisma.mechanic.findUnique({
     where: { id: mechanicId },
@@ -234,20 +241,31 @@ export async function createMechanicReview(
     throw new AppError('MECHANIC_NOT_FOUND', 404, { message: 'Fiche introuvable' })
   }
 
-  const existing = await prisma.mechanicReview.findFirst({
-    where: { mechanicId, reviewerId },
-    select: { id: true },
-  })
-  if (existing) {
-    throw new AppError('MECHANIC_REVIEW_ALREADY_EXISTS', 409, {
-      message: 'Vous avez déjà laissé un avis pour ce mécanicien',
+  if (!reviewerId && !input.authorName && !input.authorPhone) {
+    throw new AppError('MECHANIC_REVIEW_AUTHOR_REQUIRED', 422, {
+      message: 'Indiquez votre nom ou votre téléphone si vous n’avez pas de compte',
     })
+  }
+
+  if (reviewerId) {
+    const existing = await prisma.mechanicReview.findFirst({
+      where: { mechanicId, reviewerId },
+      select: { id: true },
+    })
+    if (existing) {
+      throw new AppError('MECHANIC_REVIEW_ALREADY_EXISTS', 409, {
+        message: 'Vous avez déjà laissé un avis pour ce mécanicien',
+      })
+    }
   }
 
   const review = await prisma.mechanicReview.create({
     data: {
       mechanicId,
       reviewerId,
+      // Compte connecté : nom/téléphone déjà sur le profil, pas besoin de les redéclarer.
+      authorName: reviewerId ? null : input.authorName,
+      authorPhone: reviewerId ? null : input.authorPhone,
       rating: input.rating,
       comment: input.comment,
       amountPaid: input.amountPaid,
@@ -336,6 +354,7 @@ export async function listMechanicReviews(
         photos: true,
         verified: true,
         createdAt: true,
+        authorName: true,
         reviewer: { select: { name: true } },
       },
     }),

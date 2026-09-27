@@ -27,7 +27,8 @@ interface MechanicReview {
   photos: string[]
   verified: boolean
   createdAt: string
-  reviewer: { name: string | null }
+  reviewer: { name: string | null } | null
+  authorName: string | null
 }
 
 export default function MechanicProfilePage() {
@@ -158,7 +159,7 @@ export default function MechanicProfilePage() {
                   <span className="text-sm font-semibold text-ink">★ {r.rating}/5</span>
                   {r.verified && <Chip variant="status-ok">Avis vérifié</Chip>}
                   <span className="ml-auto text-xs text-muted-2">
-                    {r.reviewer.name ?? 'Client'} ·{' '}
+                    {r.reviewer?.name ?? r.authorName ?? 'Client'} ·{' '}
                     {new Date(r.createdAt).toLocaleDateString('fr-CI', { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
