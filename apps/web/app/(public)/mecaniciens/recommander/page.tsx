@@ -60,10 +60,10 @@ function RecommanderPageContent() {
     setPhotos((prev) => prev.filter((_, i) => i !== index))
   }
 
-  async function uploadPhotos(): Promise<string[]> {
-    if (photos.length === 0) return []
+  async function uploadPhotos(): Promise<{ ok: true; urls: string[] } | { ok: false; message: string }> {
+    if (photos.length === 0) return { ok: true, urls: [] }
     const token = await getMechanicAuthToken()
-    if (!token) return []
+    if (!token) return { ok: true, urls: [] }
 
     setUploadingPhotos(true)
     try {
@@ -78,11 +78,11 @@ function RecommanderPageContent() {
         })
         const body = await res.json().catch(() => ({}))
         if (!res.ok) {
-          throw new Error(body?.error?.message ?? "Échec de l'envoi d'une photo")
+          return { ok: false, message: body?.error?.message ?? "Échec de l'envoi d'une photo" }
         }
         urls.push(body.data.url)
       }
-      return urls
+      return { ok: true, urls }
     } finally {
       setUploadingPhotos(false)
     }
@@ -124,13 +124,12 @@ function RecommanderPageContent() {
     setError(null)
     setSubmitting(true)
     try {
-      let photoUrls: string[] = []
-      try {
-        photoUrls = await uploadPhotos()
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Échec de l'envoi des photos")
+      const uploadResult = await uploadPhotos()
+      if (!uploadResult.ok) {
+        setError(uploadResult.message)
         return
       }
+      const photoUrls = uploadResult.urls
 
       const parsedAmount = amountPaid.trim() ? Number(amountPaid.trim()) : undefined
 
