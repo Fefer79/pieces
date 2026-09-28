@@ -243,16 +243,23 @@ export async function sendWhatsAppTemplate(to: string, templateName: string, par
 
 /**
  * Envoie un texte transactionnel à un utilisateur, quel que soit le canal
- * disponible : privilégie Baileys (canal libre, actif en prod) s'il est
- * connecté, sinon retombe sur l'API Cloud Meta. Retourne le canal utilisé
- * (null si aucun n'a pu envoyer — p. ex. token Meta absent et Baileys hors
- * ligne). N'échoue jamais : l'appelant décide quoi faire du statut.
+ * disponible : privilégie Baileys (canal libre) s'il est connecté, sinon
+ * retombe sur l'API Cloud Meta. Retourne le canal utilisé (null si aucun n'a
+ * pu envoyer — p. ex. token Meta absent et Baileys hors ligne). N'échoue
+ * jamais : l'appelant décide quoi faire du statut.
+ *
+ * `cloudOnly: true` interdit tout passage par Baileys, même connecté — à
+ * utiliser pour tout envoi non strictement transactionnel/1-à-1 (campagnes,
+ * diffusions) : Baileys est un compte WhatsApp personnel sur protocole
+ * non-officiel, et un envoi en masse dessus est exactement le pattern que
+ * Meta détecte comme spam et qui fait suspendre le compte.
  */
 export async function notifyWhatsAppUser(
   phone: string,
   text: string,
+  options: { cloudOnly?: boolean } = {},
 ): Promise<{ sent: boolean; channel: 'baileys' | 'cloud' | null }> {
-  if (isBaileysConnected()) {
+  if (!options.cloudOnly && isBaileysConnected()) {
     const ok = await sendBaileysText(phone, text)
     if (ok) return { sent: true, channel: 'baileys' }
   }

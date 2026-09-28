@@ -64,7 +64,12 @@ export async function handleMarketingCampaignSend(job: Job, logger: Logger) {
         continue
       }
 
-      const { sent, channel } = await notifyWhatsAppUser(recipient.phone, campaign.message)
+      // cloudOnly: une campagne est une diffusion, jamais un envoi 1-à-1 —
+      // elle ne doit jamais transiter par Baileys (compte WhatsApp personnel
+      // sur protocole non-officiel, cf. baileys.gateway.ts).
+      const { sent, channel } = await notifyWhatsAppUser(recipient.phone, campaign.message, {
+        cloudOnly: true,
+      })
       if (sent) envoyes += 1
       else echecs += 1
 

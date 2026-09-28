@@ -13,7 +13,7 @@ import { processVariants, MAX_FILE_SIZE } from '../../lib/imageProcessor.js'
 import { normalizeIvorianPhone } from '../../lib/phone.js'
 import { assertMember } from '../enterprise/enterprise.service.js'
 import { getShipmentForQuoteRequest } from '../sourcing/shipment.service.js'
-import { sendBaileysText, isBaileysConnected } from '../whatsapp/baileys.sender.js'
+import { notifyWhatsAppUser } from '../whatsapp/whatsapp.service.js'
 import {
   createLogisticsQuoteRequestSchema,
   type CreateLogisticsQuoteRequestInput,
@@ -174,10 +174,11 @@ async function logEvent(
 
 function notifyOps(reference: string, partName: string, phone: string, level: string) {
   const target = process.env.LOGISTICS_OPS_PHONE
-  if (!target || !isBaileysConnected()) return
+  if (!target) return
   const text = `Nouvelle cotation logistique ${reference}\n${partName}\nContact : ${phone}\nIdentification : ${level}`
   // Fire-and-forget : une panne WhatsApp ne doit jamais faire échouer un lead.
-  void sendBaileysText(target, text).catch(() => {})
+  // notifyWhatsAppUser retombe sur l'API Cloud si Baileys est indisponible/coupé.
+  void notifyWhatsAppUser(target, text).catch(() => {})
 }
 
 // ---------------------------------------------------------------------------

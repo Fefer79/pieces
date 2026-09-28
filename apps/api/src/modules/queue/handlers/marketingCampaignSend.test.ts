@@ -129,8 +129,8 @@ describe('handleMarketingCampaignSend', () => {
 
     // Seuls les 2 destinataires éligibles sont contactés.
     expect(mockNotify).toHaveBeenCalledTimes(2)
-    expect(mockNotify).toHaveBeenCalledWith('+2250700000001', campaign().message)
-    expect(mockNotify).toHaveBeenCalledWith('+2250700000004', campaign().message)
+    expect(mockNotify).toHaveBeenCalledWith('+2250700000001', campaign().message, { cloudOnly: true })
+    expect(mockNotify).toHaveBeenCalledWith('+2250700000004', campaign().message, { cloudOnly: true })
 
     // L'interaction CRM est tracée pour chaque envoi tenté, même en échec.
     expect(mockInteractionCreate).toHaveBeenCalledTimes(2)
