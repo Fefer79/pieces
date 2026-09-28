@@ -72,9 +72,10 @@ function getNavItems(
         { href: '/profile', label: 'Profil', icon: ProfileIcon },
       ]
     default:
-      // BUYER or null
+      // BUYER or null — 5 items (DESIGN.md), le panier garde sa place pour le badge.
       return [
         { href: '/', label: 'Accueil', icon: HomeIcon },
+        { href: '/search', label: 'Chercher', icon: SearchIcon },
         { href: '/panier', label: 'Sélection', icon: CartIcon },
         { href: '/orders', label: 'Commandes', icon: OrdersIcon },
         { href: '/profile', label: 'Profil', icon: ProfileIcon },
@@ -131,6 +132,16 @@ function HomeIcon({ active }: { active: boolean }) {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
       <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  )
+}
+
+function SearchIcon({ active }: { active: boolean }) {
+  void active
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   )
 }
