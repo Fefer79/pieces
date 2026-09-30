@@ -65,7 +65,9 @@ export function LogistiqueSection() {
               <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-white/60">
                 Exemple d&apos;estimation
               </div>
-              <div className="mt-1 font-display text-[22px]">Capteur ABS — Toyota Corolla, aérien</div>
+              <div className="mt-1 font-display text-[22px]">
+                Radar de recul — Kia Picanto 2017, aérien
+              </div>
             </div>
             <div className="px-6 py-5">
               {RECEIPT_LINES.map((line) => (
