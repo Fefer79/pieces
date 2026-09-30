@@ -14,10 +14,10 @@ import { MODE_COPY } from '@/lib/logistique-content'
 const MODES = ['AIR_NOW', 'AIR_STANDARD', 'SEA_LCL'] as const
 
 const RECEIPT_LINES: Array<{ label: string; amount: number; dominant?: boolean }> = [
-  { label: 'Prix de la pièce', amount: 310000 },
-  { label: 'Acheminement aérien', amount: 96000 },
-  { label: 'Douane et taxes', amount: 74500, dominant: true },
-  { label: 'Frais d’envoi Pièces (10 %)', amount: 31000 },
+  { label: 'Prix de la pièce', amount: 38000 },
+  { label: 'Acheminement aérien', amount: 9000 },
+  { label: 'Douane et taxes', amount: 6500, dominant: true },
+  { label: 'Frais d’envoi Pièces (10 %)', amount: 3800 },
 ]
 
 const RECEIPT_TOTAL = RECEIPT_LINES.reduce((sum, line) => sum + line.amount, 0)
@@ -65,7 +65,7 @@ export function LogistiqueSection() {
               <div className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-white/60">
                 Exemple d&apos;estimation
               </div>
-              <div className="mt-1 font-display text-[22px]">Turbo — Hyundai H1, aérien</div>
+              <div className="mt-1 font-display text-[22px]">Capteur ABS — Toyota Corolla, aérien</div>
             </div>
             <div className="px-6 py-5">
               {RECEIPT_LINES.map((line) => (
