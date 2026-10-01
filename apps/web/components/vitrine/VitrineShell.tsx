@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { WhatsAppFab } from '@/components/whatsapp-fab'
 
 // Le middleware réécrit les sous-domaines de façon transparente
 // (mecanicien.pieces.ci → /mecaniciens) : un <Link> relatif reste donc sur la
@@ -16,6 +17,8 @@ interface VitrineShellProps {
   homeHref: string
   /** Libellé de section affiché à côté du logo (ex. « Mécaniciens »). */
   section: string
+  /** Message WhatsApp pré-rempli, propre à la vitrine. */
+  whatsappMessage: string
   /** Liens de navigation, repris dans le header (desktop) et le footer. */
   nav: readonly VitrineNavItem[]
   /** CTA du header (bouton orange, ou menu déroulant). */
@@ -35,6 +38,7 @@ interface VitrineShellProps {
 export function VitrineShell({
   homeHref,
   section,
+  whatsappMessage,
   nav,
   cta,
   footerNote,
@@ -101,6 +105,8 @@ export function VitrineShell({
           </p>
         </div>
       </footer>
+
+      <WhatsAppFab message={whatsappMessage} />
     </div>
   )
 }

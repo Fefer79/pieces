@@ -9,6 +9,7 @@ export default function LogistiqueLayout({ children }: { children: React.ReactNo
     <VitrineShell
       homeHref="/logistique"
       section="Logistique"
+      whatsappMessage="Bonjour, je voudrais une cotation pour livrer des pièces."
       nav={LOGISTIQUE_NAV}
       cta={<VitrineCtaLink href="/logistique/devis">Demander une cotation</VitrineCtaLink>}
       footerNote={LOGISTIQUE_FOOTER_NOTE}

@@ -53,6 +53,7 @@ export default function MecaniciensLayout({ children }: { children: React.ReactN
     <VitrineShell
       homeHref="/mecaniciens"
       section="Mécaniciens"
+      whatsappMessage="Bonjour, je suis garagiste / mécanicien et je voudrais en savoir plus sur Pièces."
       nav={MECANICIENS_NAV}
       cta={<ParticiperMenu />}
       footerNote={

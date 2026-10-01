@@ -12,6 +12,7 @@ export default function EntreprisesLayout({ children }: { children: React.ReactN
     <VitrineShell
       homeHref="/entreprises"
       section="Entreprises"
+      whatsappMessage="Bonjour, je gère une flotte de véhicules et je voudrais en savoir plus sur Pièces Flotte."
       nav={ENTREPRISES_NAV}
       cta={<VitrineCtaLink href="/enterprise/dashboard">Créer mon compte</VitrineCtaLink>}
       footerNote={
