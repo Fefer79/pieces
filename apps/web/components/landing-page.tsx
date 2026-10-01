@@ -1,116 +1,18 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import type { ReactNode } from 'react'
 import { BrowseContent } from './browse-content'
-import { PartSearchAutocomplete } from './part-search-autocomplete'
+import { BrowseHeader } from './browse-header'
 import { UniverseBar } from './universe-bar'
 import { SiteFooter } from './site-footer'
 import { LogistiqueSection } from './sections/logistique-section'
 import { FleetSection } from './sections/fleet-section'
 import { MecaniciensSection } from './sections/mecaniciens-section'
-import { useAuth } from '@/lib/auth-context'
-import { useSelectedVehicle } from '@/lib/selected-vehicle'
 
 export function LandingPage({ children }: { children?: ReactNode }) {
-  const { isAuthenticated, user } = useAuth()
-  const { vehicle, clearVehicle } = useSelectedVehicle()
-  const isAdmin = user?.roles?.includes('ADMIN') ?? false
-  const router = useRouter()
-  const [headerQuery, setHeaderQuery] = useState('')
-
-  // Recherche depuis le header — scopée au véhicule sélectionné si présent
-  // (le /search retombe sinon sur le véhicule en localStorage).
-  const goSearch = (term: string) => {
-    const q = term.trim()
-    if (q.length < 2) return
-    const params = new URLSearchParams({ q })
-    if (vehicle?.brand) {
-      params.set('brand', vehicle.brand)
-      if (vehicle.model) params.set('model', vehicle.model)
-      if (vehicle.year) params.set('year', vehicle.year)
-    }
-    router.push(`/search?${params.toString()}`)
-  }
-
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
-      {/* Navbar */}
-      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-sm">
-        <div className="mx-auto grid max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-3">
-          {/* Logo — desktop mirrors mobile: big mark + subtitle */}
-          <Link href="/" className="flex flex-shrink-0 flex-col leading-tight">
-            <span className="font-display text-3xl text-ink">
-              Pièces<span className="text-accent">.</span>
-            </span>
-            <span className="text-[11px] tracking-wide text-muted">
-              Pièces détachées automobiles
-            </span>
-          </Link>
-
-          {/* Recherche pièce — scopée au véhicule, navigue vers /search */}
-          <div className="hidden md:block">
-            <PartSearchAutocomplete
-              value={headerQuery}
-              onChange={setHeaderQuery}
-              onSubmit={goSearch}
-              vehicle={vehicle ? { brand: vehicle.brand, model: vehicle.model, year: vehicle.year } : null}
-              placeholder="Nom de la pièce ou référence OEM…"
-              className="mx-auto w-full max-w-xl"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-3">
-            {/* Vehicle pill */}
-            {vehicle && (
-              <div className="hidden items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs md:flex">
-                <span className="text-muted">Véhicule :</span>
-                <span className="font-medium text-ink">
-                  {vehicle.brand} · {vehicle.model}
-                  {vehicle.year ? ` · ${vehicle.year}` : ''}
-                </span>
-                <button
-                  type="button"
-                  onClick={clearVehicle}
-                  className="text-muted-2 transition-colors hover:text-ink"
-                  aria-label="Supprimer le véhicule"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                  </svg>
-                </button>
-              </div>
-            )}
-
-            {/* Admin + Liaison links */}
-            {isAdmin && (
-              <>
-                <a
-                  href="/admin"
-                  className="rounded-md border border-ink-2 px-4 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
-                >
-                  Admin
-                </a>
-                <a
-                  href="/liaison"
-                  className="rounded-md border border-ink-2 px-4 py-2.5 text-sm font-semibold text-ink-2 transition-colors hover:bg-ink-2 hover:text-white"
-                >
-                  Liaison
-                </a>
-              </>
-            )}
-
-            {/* CTA */}
-            <a
-              href={isAuthenticated ? '/profile' : '/login'}
-              className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
-            >
-              {isAuthenticated ? 'Mon compte' : 'Connexion'}
-            </a>
-          </div>
-        </div>
-      </header>
+      <BrowseHeader />
 
       {/* Barre « 3 univers » — marketplace / flotte / logistique */}
       <UniverseBar active="marketplace" />

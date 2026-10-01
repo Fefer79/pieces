@@ -19,6 +19,15 @@ const COLUMNS: Array<{ title: string; links: FooterLink[] }> = [
     ],
   },
   {
+    title: 'Garages',
+    links: [
+      { href: '/mecaniciens', label: 'Annuaire des mécaniciens' },
+      { href: '/mecaniciens/carte', label: 'Carte des garages' },
+      { href: '/mecaniciens/inscription', label: 'Inscrire mon atelier' },
+      { href: '/mecaniciens/comment-ca-marche', label: 'Comment ça marche' },
+    ],
+  },
+  {
     title: 'Flotte',
     links: [
       { href: '/entreprises', label: 'Offre entreprises' },
@@ -42,14 +51,14 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-card">
       <div className="mx-auto max-w-[1280px] px-6 py-12">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1.1fr]">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_1.1fr]">
           <div>
             <span className="font-display text-2xl text-ink">
               Pièces<span className="text-accent">.</span>
             </span>
             <p className="mt-3 text-sm leading-relaxed text-muted">
-              Trois services, une seule adresse : acheter la pièce, piloter la flotte, importer ce
-              qui manque. Abidjan, Côte d&apos;Ivoire.
+              Quatre services, une seule adresse : acheter la pièce, trouver un garage, piloter la
+              flotte, importer ce qui manque. Abidjan, Côte d&apos;Ivoire.
             </p>
           </div>
 

@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useSelectedVehicle } from '@/lib/selected-vehicle'
 import { LandingPage } from '@/components/landing-page'
 import { BrowseContent } from '@/components/browse-content'
-import { MobileDrawer } from '@/components/mobile-drawer'
+import { BrowseHeader } from '@/components/browse-header'
 import { BottomNav } from '@/components/bottom-nav'
 import { UniverseBar } from '@/components/universe-bar'
 import { LogistiqueSection } from '@/components/sections/logistique-section'
@@ -93,37 +92,7 @@ export default function BrowsePage() {
 
       {/* Mobile */}
       <div className="flex min-h-dvh flex-col pb-[calc(env(safe-area-inset-bottom)+5rem)] lg:hidden">
-        {/* Header */}
-        <header className="flex items-center justify-between bg-card px-4 pb-2 pt-4">
-          <Link href="/" className="flex flex-col">
-            <span className="font-display text-3xl text-ink">
-              Pièces<span className="text-accent">.</span>
-            </span>
-            <span className="text-xs tracking-wide text-muted">
-              Pièces détachées automobiles
-            </span>
-          </Link>
-          <MobileDrawer />
-        </header>
-
-        {/* Mobile contacts */}
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-border bg-card px-4 py-2 text-xs">
-          <a
-            href="mailto:contact@pieces.ci"
-            className="text-ink transition-colors hover:text-accent"
-          >
-            contact@pieces.ci
-          </a>
-          <span className="text-muted-2" aria-hidden>·</span>
-          <a
-            href="https://wa.me/2250706846268"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-ink transition-colors hover:text-accent"
-          >
-            (225) 07 06 84 62 68
-          </a>
-        </div>
+        <BrowseHeader />
 
         {/* Barre « 3 univers » — marketplace / flotte / logistique */}
         <UniverseBar active="marketplace" />

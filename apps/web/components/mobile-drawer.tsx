@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 
 const PUBLIC_LINKS = [
+  { href: '/mecaniciens', label: 'Garages & mécaniciens' },
   { href: '/entreprises', label: 'Entreprises & flottes' },
   { href: '/logistique', label: "Logistique d'import" },
   { href: '/info#a-propos', label: 'À Propos' },

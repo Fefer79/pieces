@@ -1,14 +1,15 @@
 import Link from 'next/link'
 
-// Barre « 3 univers » — rend explicite dès le premier écran que Pièces couvre
+// Barre « 4 univers » — rend explicite dès le premier écran que Pièces couvre
 // trois services distincts, chacun servi sur son propre domaine :
 //   pieces.ci            → la marketplace (ce fichier vit sur /browse)
+//   mecanicien.pieces.ci → /mecaniciens   (réécriture middleware.ts)
 //   flotte.pieces.ci     → /entreprises   (réécriture middleware.ts)
 //   logistique.pieces.ci → /logistique    (réécriture middleware.ts)
 // Les href restent relatifs : ils fonctionnent tels quels sur pieces.ci, et le
 // middleware les résout sur les sous-domaines.
 
-export type Universe = 'marketplace' | 'flotte' | 'logistique'
+export type Universe = 'marketplace' | 'garages' | 'flotte' | 'logistique'
 
 const UNIVERSES: Array<{
   key: Universe
@@ -23,6 +24,13 @@ const UNIVERSES: Array<{
     label: 'Marketplace',
     desc: 'Trouver et acheter une pièce disponible à Abidjan',
     domain: 'pieces.ci',
+  },
+  {
+    key: 'garages',
+    href: '/mecaniciens',
+    label: 'Garages',
+    desc: 'Trouver un mécanicien de confiance près de chez vous',
+    domain: 'mecanicien.pieces.ci',
   },
   {
     key: 'flotte',
@@ -42,8 +50,8 @@ const UNIVERSES: Array<{
 
 export function UniverseBar({ active }: { active?: Universe }) {
   return (
-    <nav aria-label="Nos trois services" className="border-b border-border bg-card">
-      <div className="mx-auto grid max-w-[1280px] grid-cols-3 px-0 lg:px-6">
+    <nav aria-label="Nos services" className="border-b border-border bg-card">
+      <div className="mx-auto grid max-w-[1280px] grid-cols-4 px-0 lg:px-6">
         {UNIVERSES.map((u) => {
           const isActive = u.key === active
           return (
