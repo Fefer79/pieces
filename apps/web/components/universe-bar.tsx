@@ -51,7 +51,7 @@ const UNIVERSES: Array<{
 export function UniverseBar({ active }: { active?: Universe }) {
   return (
     <nav aria-label="Nos services" className="border-b border-border bg-card">
-      <div className="mx-auto grid max-w-[1280px] grid-cols-4 px-0 lg:px-6">
+      <div className="mx-auto grid max-w-[1280px] grid-cols-4 overflow-hidden px-0 lg:px-6">
         {UNIVERSES.map((u) => {
           const isActive = u.key === active
           return (
@@ -59,11 +59,11 @@ export function UniverseBar({ active }: { active?: Universe }) {
               key={u.key}
               href={u.href}
               aria-current={isActive ? 'page' : undefined}
-              className={`flex flex-col gap-0.5 border-b-2 border-r border-r-border px-3 py-3 last:border-r-0 transition-colors hover:bg-surface lg:px-5 lg:py-3.5 ${
+              className={`flex min-w-0 flex-col items-center gap-0.5 border-b-2 border-r border-r-border px-1 py-3 text-center last:border-r-0 sm:items-start sm:px-3 sm:text-left transition-colors hover:bg-surface lg:px-5 lg:py-3.5 ${
                 isActive ? 'border-b-accent bg-surface' : 'border-b-transparent'
               }`}
             >
-              <span className="text-[14px] font-semibold text-ink lg:text-[15px]">{u.label}</span>
+              <span className="max-w-full text-[12px] font-semibold tracking-tight text-ink min-[380px]:text-[13px] sm:text-[14px] sm:tracking-normal lg:text-[15px]">{u.label}</span>
               <span className="hidden text-[12.5px] leading-snug text-muted sm:block">{u.desc}</span>
               <span className="hidden font-mono text-[10.5px] tracking-[0.04em] text-muted-2 md:block">
                 {u.domain}
